@@ -1,0 +1,173 @@
+[2025-12-23T21:17:29.689Z] POST /api/v1/lastreet/reports
+TypeError: isValidObjectId is not a function
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\reports\controller\reports.create.controller.js:21:10
+    at asyncUtilWrap (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\express-async-handler\index.js:3:20)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\route.js:157:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\middlewares\audit\audit.middleware.js:76:3
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\route.js:157:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\middlewares\protection\auth.middleware.js:22:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T21:20:37.557Z] POST /api/v1/lastreet/reports
+TypeError: isValidObjectId is not a function
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\reports\controller\reports.create.controller.js:21:10
+    at asyncUtilWrap (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\express-async-handler\index.js:3:20)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\route.js:157:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\middlewares\audit\audit.middleware.js:76:3
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\route.js:157:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\middlewares\protection\auth.middleware.js:22:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T21:51:14.439Z] GET /api/v1/lastreet/professionals/me
+Error: Aucun profil professionnel trouvé
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\professionals\controller\professionals.me.get.controller.js:19:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T21:51:14.929Z] POST /api/v1/lastreet/professionals
+Error: write ECONNRESET
+    at WriteWrap.onWriteComplete [as oncomplete] (node:internal/stream_base_commons:87:19)
+[2025-12-23T21:51:30.515Z] GET /api/v1/lastreet/professionals/me
+Error: Aucun profil professionnel trouvé
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\professionals\controller\professionals.me.get.controller.js:19:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T21:53:26.300Z] GET /api/v1/lastreet/professionals/694a91ab4b17f9cf939913ea
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:198:22)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async FindCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async FindCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async FindCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+[2025-12-23T21:53:26.357Z] GET /api/v1/lastreet/professionals
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:198:22)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async AggregationCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\aggregation_cursor.js:57:26)
+    at async AggregationCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async AggregationCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async AggregationCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+[2025-12-23T21:54:29.742Z] GET /api/v1/lastreet/professionals
+MongoPoolClearedError: Connection pool for ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net:27017 was cleared because another operation failed with: "getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net"
+    at ConnectionPool.processWaitQueue (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cmap\connection_pool.js:504:82)
+    at ConnectionPool.clear (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cmap\connection_pool.js:298:14)
+    at updateServers (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:512:29)
+    at Topology.serverUpdateHandler (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:413:9)
+    at Server.<anonymous> (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:495:77)
+    at Server.emit (node:events:518:28)
+    at markServerUnknown (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\server.js:358:12)
+    at Server.handleError (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\server.js:263:17)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cmap\connection_pool.js:450:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T21:58:01.381Z] GET /api/v1/lastreet/professionals/me
+Error: Aucun profil professionnel trouvé
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\professionals\controller\professionals.me.get.controller.js:19:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T22:22:20.112Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:36:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T22:23:10.664Z] POST /api/v1/lastreet/reports
+Error: Profil sans propriétaire
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\reports\controller\reports.create.controller.js:25:31
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T22:23:48.007Z] POST /api/v1/lastreet/reports
+Error: Impossible de signaler votre propre profil
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\reports\controller\reports.create.controller.js:35:68
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T22:25:43.575Z] GET /api/v1/lastreet/professionals/694b16d9a6241e610250d466
+Error: Professionnel indisponible
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\professionals\controller\professionals.get.controller.js:17:48
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T22:27:53.374Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:36:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-23T23:01:49.948Z] POST /api/v1/lastreet/reports
+Error: Utilisateur introuvable
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dryApp\LaStreet\features\reports\controller\reports.create.controller.js:38:22
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-24T00:26:36.416Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:36:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-12-25T08:16:26.094Z] POST /api/v1/lastreet/auth/register
+ValidationError: User validation failed: name: Path `name` is required., email: Path `email` is required., password: Path `password` is required.
+    at Document.invalidate (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\document.js:3365:32)
+    at validatePath (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\document.js:3140:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Promise.all (index 0)
+    at async model.$__validate (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\document.js:3081:3)
+    at async model.validate (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\document.js:2663:5)
+    at async model.validateBeforeSave (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\plugins\validateBeforeSave.js:34:7)
+    at async Kareem.execPre (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\kareem\index.js:65:24)
+    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:369:5)
+    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
+[2025-12-25T08:16:26.746Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:22:15
+[2025-12-25T08:36:30.899Z] POST /api/v1/lastreet/auth/register
+MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index: email_1 dup key: { email: "mayalachristgottlieb@gmail.com" }
+    at InsertOneOperation.handleOk (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async Collection.insertOne (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:398:16)
+    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
+    at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
+    at async Promise.all (index 0)
+    at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
+[2025-12-25T08:36:31.563Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:22:15
+[2025-12-25T08:36:50.631Z] POST /api/v1/lastreet/auth/register
+MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index: email_1 dup key: { email: "mayalachristgottlieb@gmail.com" }
+    at InsertOneOperation.handleOk (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async Collection.insertOne (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:398:16)
+    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
+    at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
+    at async Promise.all (index 0)
+    at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
+[2025-12-25T08:36:51.289Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:22:15
+[2025-12-25T08:37:10.685Z] POST /api/v1/lastreet/auth/register
+MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index: email_1 dup key: { email: "mayalachristgottlieb@gmail.com" }
+    at InsertOneOperation.handleOk (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async Collection.insertOne (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:398:16)
+    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
+    at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
+    at async Promise.all (index 0)
+    at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
+[2025-12-25T08:37:11.462Z] POST /api/v1/lastreet/auth/login
+Error: Identifiants invalides
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\modules\user\auth.controller.js:22:15
+[2025-12-25T08:55:33.079Z] POST /api/v1/lastreet/auth/register
+MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index: email_1 dup key: { email: "mayalachristgottlieb@gmail.com" }
+    at InsertOneOperation.handleOk (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async Collection.insertOne (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:398:16)
+    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
+    at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
+    at async Promise.all (index 0)
+    at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
