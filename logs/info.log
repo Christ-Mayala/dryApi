@@ -491,3 +491,10 @@
 [2025-12-25T09:33:23.785Z] GET /api/v1/lastreet/professionals/recommendations?limit=6 200 459ms
 [2025-12-25T09:33:25.479Z] GET /api/v1/lastreet/professionals 200 269ms
 [2025-12-25T09:33:25.499Z] GET /api/v1/lastreet/professionals/recommendations?limit=6 200 290ms
+[2025-12-27T21:19:25.721Z] GET /api/v1/lastreet/professionals?tradeId=694d3476f6ee3849b75f5fe4&page=1&limit=9 200 453ms
+[2025-12-27T21:19:25.773Z] GET /api/v1/lastreet/categories 200 528ms
+[2025-12-27T21:19:25.781Z] GET /api/v1/lastreet/professionals/recommendations?limit=6 200 531ms
+[2025-12-27T21:19:26.524Z] GET /api/v1/lastreet/professionals?page=1&limit=100 200 672ms
+[2025-12-27T21:19:39.594Z] GET /api/v1/lastreet/professionals/recommendations?limit=6 200 431ms
+[2025-12-27T21:19:39.710Z] GET /api/v1/lastreet/professionals?page=1&limit=50 200 537ms
+[2025-12-27T21:19:39.773Z] GET /api/v1/lastreet/professionals?page=1&limit=100 200 586ms

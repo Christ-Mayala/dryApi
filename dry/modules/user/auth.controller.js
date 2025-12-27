@@ -103,6 +103,13 @@ exports.updateMe = asyncHandler(async (req, res) => {
     if (body.nom !== undefined) updates.nom = String(body.nom || '').trim();
     if (body.telephone !== undefined) updates.telephone = String(body.telephone || '').trim();
 
+    if (req.file) {
+        const url = req.file?.path || req.file?.secure_url || req.file?.url || '';
+        const publicId = req.file?.filename || req.file?.public_id || '';
+        if (url) updates.avatarUrl = url;
+        if (publicId) updates.avatarPublicId = publicId;
+    }
+
     const updated = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true, runValidators: true });
     if (!updated) throw new Error('Utilisateur introuvable');
 
