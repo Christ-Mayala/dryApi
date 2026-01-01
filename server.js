@@ -34,7 +34,7 @@ app.use(limiter);
 app.use(cookieParser());
 
 // 🔥 CORRECTION ICI : Augmenter la limite
-app.use(express.json({ limit: '1kb' })); // 10MB au lieu de 10kb
+app.use(express.json({ limit: '10kb' })); // 10MB au lieu de 10kb
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Configuration CORS stricte et réutilisable
