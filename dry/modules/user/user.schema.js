@@ -60,32 +60,78 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
-// --- MIDDLEWARES (CORRIGÉ) ---
+// --- MIDDLEWARES (CORRIGÉ POUR COHÉRENCE) ---
 
 UserSchema.pre(/^find/, function() {
-    this.where({ deleted: { $ne: true }, status: { $ne: 'deleted' } });
+    // 🔥 CORRECTION : On filtre par status ET on synchronise avec deleted
+    // Pour assurer la cohérence entre les deux systèmes
+    this.where({
+        $or: [
+            { status: { $ne: 'deleted' } },
+            { deleted: { $ne: true } }
+        ]
+    });
 });
 
 // Hashage du mot de passe avant sauvegarde
-// NOTE : On utilise 'async function()' SANS 'next'
 UserSchema.pre('save', async function() {
-    // Si le mot de passe n'a pas changé, on ne fait rien
     if (!this.isModified('password')) return;
 
-    // Salt de 12 pour la robustesse
-    const salt = await bcrypt.genSalt(12); 
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
-    // Pas besoin d'appeler next(), la fin de la fonction async suffit
+});
+
+// 🔥 NOUVEAU : Middleware pour synchroniser deleted et status
+UserSchema.pre('save', function(next) {
+    // Si status devient 'deleted', on met aussi deleted à true
+    if (this.isModified('status') && this.status === 'deleted') {
+        this.deleted = true;
+        this.deletedAt = new Date();
+    }
+
+    // Si status n'est plus 'deleted', on remet deleted à false
+    if (this.isModified('status') && this.status !== 'deleted' && this.deleted === true) {
+        this.deleted = false;
+        this.deletedAt = null;
+    }
+
+    // Si deleted devient true, on met status à 'deleted'
+    if (this.isModified('deleted') && this.deleted === true) {
+        this.status = 'deleted';
+        this.deletedAt = new Date();
+    }
+
+    // Si deleted devient false, on remet status à 'active'
+    if (this.isModified('deleted') && this.deleted === false && this.status === 'deleted') {
+        this.status = 'active';
+        this.deletedAt = null;
+    }
+
+    next();
 });
 
 // --- MÉTHODES D'INSTANCE ---
 
-// Vérifier le mot de passe
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Gestion des tentatives ratées
+// 🔥 NOUVELLE MÉTHODE : Soft delete cohérent
+UserSchema.methods.softDelete = async function() {
+    this.status = 'deleted';
+    this.deleted = true;
+    this.deletedAt = new Date();
+    return await this.save();
+};
+
+// 🔥 NOUVELLE MÉTHODE : Restaurer un utilisateur
+UserSchema.methods.restore = async function() {
+    this.status = 'active';
+    this.deleted = false;
+    this.deletedAt = null;
+    return await this.save();
+};
+
 UserSchema.methods.incLoginAttempts = async function() {
     if (this.lockUntil && this.lockUntil < Date.now()) {
         return this.constructor.updateOne(

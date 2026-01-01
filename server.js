@@ -32,25 +32,27 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use(cookieParser());
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true }));
+
+// 🔥 CORRECTION ICI : Augmenter la limite
+app.use(express.json({ limit: '1kb' })); // 10MB au lieu de 10kb
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Configuration CORS stricte et réutilisable
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || '*';
 const allowedOrigins = allowedOriginsEnv.split(',').map((o) => o.trim());
 
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Origin not allowed by CORS'));
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  }),
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('Origin not allowed by CORS'));
+      },
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    }),
 );
 
 if (process.env.NODE_ENV === 'development' || process.env.LOG_REQUESTS === 'true') {
@@ -157,7 +159,7 @@ app.set('io', io);
   server.listen(PORT, () => {
     console.log(`\n=========================================`);
     console.log(`✅ SERVEUR LANCÉ SUR LE PORT : ${PORT}`);
-    console.log(`📂 NOUVELLE STRUCTURE DRY ACTIVÉE`);
+    console.log(`📂 STRUCTURE DRY ACTIVÉE`);
     console.log(`🌍 CORS Origins: ${allowedOriginsEnv}`);
     console.log(`=========================================\n`);
   });

@@ -171,3 +171,51 @@ MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index:
     at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
     at async Promise.all (index 0)
     at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
+[2026-01-01T14:00:34.452Z] POST /api/v1/lastreet/auth/register
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\read.js:114:3)
+    at jsonParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\types\json.js:90:5)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
+[2026-01-01T14:02:13.554Z] POST /api/v1/lastreet/auth/register
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\read.js:114:3)
+    at jsonParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\types\json.js:90:5)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
+[2026-01-01T14:02:55.185Z] POST /api/v1/lastreet/auth/register
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\read.js:114:3)
+    at jsonParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\types\json.js:90:5)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
+[2026-01-01T14:03:17.581Z] POST /api/v1/lastreet/auth/register
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\read.js:114:3)
+    at jsonParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\body-parser\lib\types\json.js:90:5)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
