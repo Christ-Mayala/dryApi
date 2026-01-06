@@ -7,10 +7,6 @@ const purgeTenant = async ({ appName, cutoffDate }) => {
 
     const collections = await dbConn.db.listCollections().toArray();
 
-    // 🔥 AJOUTE CE LOG
-    console.log(`📁 ${appName}: ${collections.length} collections`);
-    collections.forEach(c => console.log(`   - ${c.name}`));
-
     let deleted = 0;
 
     for (const c of collections) {

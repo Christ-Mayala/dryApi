@@ -33,9 +33,8 @@ app.use(limiter);
 
 app.use(cookieParser());
 
-// 🔥 CORRECTION ICI : Augmenter la limite
-app.use(express.json({ limit: '10kb' })); // 10MB au lieu de 10kb
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Configuration CORS stricte et réutilisable
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || '*';
@@ -154,20 +153,13 @@ app.set('io', io);
 (async () => {
   await connectCluster();
 
-  // 🔥 AJOUTE CETTE LIGNE pour vérifier
-  const purgeScheduler = startPurgeScheduler();
-  if (purgeScheduler) {
-    console.log(`🧹 Purge auto: activée (${process.env.PURGE_CRON || '0 3 * * *'})`);
-  } else {
-    console.log('⏸️  Purge auto: désactivée');
-  }
+  startPurgeScheduler();
 
   server.listen(PORT, () => {
     console.log(`\n=========================================`);
     console.log(`✅ SERVEUR LANCÉ SUR LE PORT : ${PORT}`);
     console.log(`📂 STRUCTURE DRY ACTIVÉE`);
     console.log(`🌍 CORS Origins: ${allowedOriginsEnv}`);
-    console.log(`🧹 Purge auto: ${purgeScheduler ? 'ACTIVE' : 'INACTIVE'}`);
     console.log(`=========================================\n`);
   });
 })().catch((err) => {
