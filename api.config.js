@@ -5,7 +5,7 @@
 
 // URL de base (Change l'URL si tu mets en ligne)
 export const API_BASE_URL = "http://localhost:5000";
-export const APP_PREFIX = "/api/spiritemeraude";
+export const APP_PREFIX = "/api/v1/spiritemeraude";
 
 // URL Complète
 const API = `${API_BASE_URL}${APP_PREFIX}`;

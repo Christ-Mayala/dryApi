@@ -82,7 +82,7 @@ UserSchema.pre('save', async function() {
 });
 
 // 🔥 NOUVEAU : Middleware pour synchroniser deleted et status
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function() {
     // Si status devient 'deleted', on met aussi deleted à true
     if (this.isModified('status') && this.status === 'deleted') {
         this.deleted = true;
@@ -106,8 +106,6 @@ UserSchema.pre('save', function(next) {
         this.status = 'active';
         this.deletedAt = null;
     }
-
-    next();
 });
 
 // --- MÉTHODES D'INSTANCE ---
