@@ -7,8 +7,13 @@ module.exports = asyncHandler(async (req, res) => {
 
   const { page, limit, skip } = getPagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
-  const query = {};
+  const query = {
+    status: 'active',
+    deleted: { $ne: true },
+  };
+
   if (req.query.role) query.role = req.query.role;
+
   if (req.query.search) {
     query.$or = [
       { name: { $regex: req.query.search, $options: 'i' } },

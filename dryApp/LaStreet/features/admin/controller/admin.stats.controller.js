@@ -12,7 +12,7 @@ module.exports = asyncHandler(async (req, res) => {
     Professional.countDocuments({ approvalStatus: 'pending' }),
     Professional.countDocuments({ approvalStatus: 'approved' }),
     Professional.countDocuments({ approvalStatus: 'rejected' }),
-    User.countDocuments({}),
+    User.countDocuments({ status: 'active', deleted: { $ne: true } }),
   ]);
 
   return sendResponse(
