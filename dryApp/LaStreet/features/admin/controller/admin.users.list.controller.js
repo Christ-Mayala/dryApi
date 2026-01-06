@@ -7,6 +7,8 @@ module.exports = asyncHandler(async (req, res) => {
 
   const { page, limit, skip } = getPagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
+  // Par défaut, l'admin ne voit que les comptes actifs.
+  // Les comptes supprimés (status=deleted / deleted=true) ne doivent pas remonter.
   const query = {
     status: 'active',
     deleted: { $ne: true },

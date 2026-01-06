@@ -12,6 +12,7 @@ module.exports = asyncHandler(async (req, res) => {
     Professional.countDocuments({ approvalStatus: 'pending' }),
     Professional.countDocuments({ approvalStatus: 'approved' }),
     Professional.countDocuments({ approvalStatus: 'rejected' }),
+    // On compte uniquement les utilisateurs actifs (les supprimés ne doivent pas gonfler les stats).
     User.countDocuments({ status: 'active', deleted: { $ne: true } }),
   ]);
 

@@ -2,6 +2,9 @@ const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/response');
 const sendEmail = require('../../../../../dry/services/email/email.service');
 
+// Envoi d'email depuis l'administration LaStreet.
+// Objectif: permettre à l'admin de contacter un utilisateur sans exposer d'erreur système au frontend.
+
 const escapeHtml = (s) =>
   String(s || '')
     .replace(/&/g, '&amp;')
@@ -14,6 +17,9 @@ module.exports = asyncHandler(async (req, res) => {
   const User = req.getModel('User');
 
   const { id } = req.params;
+
+  // Le frontend envoie un sujet + un message texte.
+  // On construit un HTML minimal (texte échappé) pour éviter tout contenu dangereux.
   const subject = String(req.body?.subject || '').trim();
   const message = String(req.body?.message || '').trim();
 
