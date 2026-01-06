@@ -13,8 +13,6 @@ module.exports = asyncHandler(async (req, res) => {
 
   const query = {};
 
-  const deletedCond = [{ status: 'deleted' }, { deleted: true }];
-
   if (statusFilter === 'active') {
     query.status = 'active';
     query.deleted = { $ne: true };
@@ -22,8 +20,9 @@ module.exports = asyncHandler(async (req, res) => {
     query.status = 'inactive';
     query.deleted = { $ne: true };
   } else if (statusFilter === 'deleted') {
-    query.$or = deletedCond;
+    query.status = 'deleted';
   } else if (statusFilter === 'all') {
+    query.includeDeleted = true;
   } else {
     throw new Error('Filtre statut invalide');
   }
@@ -31,18 +30,11 @@ module.exports = asyncHandler(async (req, res) => {
   if (req.query.role) query.role = req.query.role;
 
   if (req.query.search) {
-    const searchOr = [
+    query.$or = [
       { name: { $regex: req.query.search, $options: 'i' } },
       { email: { $regex: req.query.search, $options: 'i' } },
       { telephone: { $regex: req.query.search, $options: 'i' } },
     ];
-
-    if (statusFilter === 'deleted') {
-      delete query.$or;
-      query.$and = [{ $or: deletedCond }, { $or: searchOr }];
-    } else {
-      query.$or = searchOr;
-    }
   }
 
   const [items, total] = await Promise.all([
