@@ -154,13 +154,20 @@ app.set('io', io);
 (async () => {
   await connectCluster();
 
-  startPurgeScheduler();
+  // 🔥 AJOUTE CETTE LIGNE pour vérifier
+  const purgeScheduler = startPurgeScheduler();
+  if (purgeScheduler) {
+    console.log(`🧹 Purge auto: activée (${process.env.PURGE_CRON || '0 3 * * *'})`);
+  } else {
+    console.log('⏸️  Purge auto: désactivée');
+  }
 
   server.listen(PORT, () => {
     console.log(`\n=========================================`);
     console.log(`✅ SERVEUR LANCÉ SUR LE PORT : ${PORT}`);
     console.log(`📂 STRUCTURE DRY ACTIVÉE`);
     console.log(`🌍 CORS Origins: ${allowedOriginsEnv}`);
+    console.log(`🧹 Purge auto: ${purgeScheduler ? 'ACTIVE' : 'INACTIVE'}`);
     console.log(`=========================================\n`);
   });
 })().catch((err) => {
