@@ -20,6 +20,8 @@ const listAudits = require('../controller/admin.audits.list.controller');
 const listReports = require('../controller/admin.reports.list.controller');
 const decideReport = require('../controller/admin.reports.decision.controller');
 
+const broadcastEmail = require('../controller/admin.email.broadcast.controller');
+
 router.use(protect);
 router.use(authorize('admin'));
 
@@ -39,5 +41,7 @@ router.get('/audits', listAudits);
 
 router.get('/reports', listReports);
 router.post('/reports/:id/decision', withAudit('ADMIN_REPORT_DECISION'), decideReport);
+
+router.post('/email/broadcast', withAudit('ADMIN_EMAIL_BROADCAST'), broadcastEmail);
 
 module.exports = router;
