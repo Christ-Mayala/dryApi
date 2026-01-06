@@ -13,6 +13,7 @@ const deletePro = require('../controller/admin.professionals.delete.controller')
 const listUsers = require('../controller/admin.users.list.controller');
 const createUser = require('../controller/admin.users.create.controller');
 const deleteUser = require('../controller/admin.users.delete.controller');
+const updateUserStatus = require('../controller/admin.users.status.controller');
 const sendUserEmail = require('../controller/admin.users.email.controller');
 
 const listAudits = require('../controller/admin.audits.list.controller');
@@ -31,6 +32,7 @@ router.delete('/professionals/:id', withAudit('ADMIN_DELETE_PRO'), deletePro);
 router.get('/users', listUsers);
 router.post('/users', withAudit('ADMIN_CREATE_USER'), createUser);
 router.delete('/users/:id', withAudit('ADMIN_DELETE_USER'), deleteUser);
+router.patch('/users/:id/status', withAudit('ADMIN_UPDATE_USER_STATUS'), updateUserStatus);
 router.post('/users/:id/email', withAudit('ADMIN_SEND_USER_EMAIL'), sendUserEmail);
 
 router.get('/audits', listAudits);

@@ -8,20 +8,41 @@ module.exports = asyncHandler(async (req, res) => {
   const { page, limit, skip } = getPagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
   // Par défaut, l'admin ne voit que les comptes actifs.
-  // Les comptes supprimés (status=deleted / deleted=true) ne doivent pas remonter.
-  const query = {
-    status: 'active',
-    deleted: { $ne: true },
-  };
+  // status peut être: active | inactive | deleted | all
+  const statusFilter = String(req.query.status || 'active').toLowerCase().trim();
+
+  const query = {};
+
+  const deletedCond = [{ status: 'deleted' }, { deleted: true }];
+
+  if (statusFilter === 'active') {
+    query.status = 'active';
+    query.deleted = { $ne: true };
+  } else if (statusFilter === 'inactive') {
+    query.status = 'inactive';
+    query.deleted = { $ne: true };
+  } else if (statusFilter === 'deleted') {
+    query.$or = deletedCond;
+  } else if (statusFilter === 'all') {
+  } else {
+    throw new Error('Filtre statut invalide');
+  }
 
   if (req.query.role) query.role = req.query.role;
 
   if (req.query.search) {
-    query.$or = [
+    const searchOr = [
       { name: { $regex: req.query.search, $options: 'i' } },
       { email: { $regex: req.query.search, $options: 'i' } },
       { telephone: { $regex: req.query.search, $options: 'i' } },
     ];
+
+    if (statusFilter === 'deleted') {
+      delete query.$or;
+      query.$and = [{ $or: deletedCond }, { $or: searchOr }];
+    } else {
+      query.$or = searchOr;
+    }
   }
 
   const [items, total] = await Promise.all([
