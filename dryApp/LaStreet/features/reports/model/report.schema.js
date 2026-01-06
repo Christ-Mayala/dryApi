@@ -8,7 +8,7 @@ const ReportSchema = new mongoose.Schema(
 
     reason: {
       type: String,
-      enum: ['FAUX_PROFIL', 'ARNAQUE', 'COMPORTEMENT_DEPLACE'],
+      enum: ['FAUX_PROFIL', 'ARNAQUE', 'COMPORTEMENT_DEPLACE', 'INFORMATION_INCORRECTE', 'AUTRE'],
       required: true,
       index: true,
     },

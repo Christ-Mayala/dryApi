@@ -29,12 +29,16 @@ module.exports = function (schema, options) {
     });
 
     // 3. Middleware Query : Soft Delete
-    // CORRECTION : Async sans 'next'
+    // Par défaut, on masque les documents supprimés.
+    // Exception: si la requête contient { includeDeleted: true } ou un filtre explicite status='deleted'.
     schema.pre(/^find/, async function () {
-        // On vérifie si un filtre existe déjà
-        const currentFilter = this.getQuery();
-        
-        // Si on ne demande pas explicitement les 'deleted', on les exclut
+        const currentFilter = this.getQuery() || {};
+
+        if (currentFilter.includeDeleted === true) {
+            delete currentFilter.includeDeleted;
+            return;
+        }
+
         if (currentFilter.status !== 'deleted') {
             this.where({ status: { $ne: 'deleted' } });
         }

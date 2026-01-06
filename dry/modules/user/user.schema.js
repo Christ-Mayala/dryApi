@@ -60,17 +60,21 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
-// --- MIDDLEWARES (CORRIGÉ POUR COHÉRENCE) ---
+// --- MIDDLEWARES ---
 
 UserSchema.pre(/^find/, function() {
-    // 🔥 CORRECTION : On filtre par status ET on synchronise avec deleted
-    // Pour assurer la cohérence entre les deux systèmes
-    this.where({
-        $or: [
-            { status: { $ne: 'deleted' } },
-            { deleted: { $ne: true } }
-        ]
-    });
+    const q = this.getQuery() || {};
+
+    if (q.includeDeleted === true) {
+        delete q.includeDeleted;
+        return;
+    }
+
+    if (q.status === 'deleted') {
+        return;
+    }
+
+    this.where({ status: { $ne: 'deleted' }, deleted: { $ne: true } });
 });
 
 // Hashage du mot de passe avant sauvegarde
