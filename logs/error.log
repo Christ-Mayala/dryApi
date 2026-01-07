@@ -219,15 +219,3 @@ PayloadTooLargeError: request entity too large
     at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
     at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
     at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
-[2026-01-06T09:15:08.540Z] POST /api/v1/lastreet/auth/register
-MongoServerError: E11000 duplicate key error collection: LaStreetDB.users index: email_1 dup key: { email: "wacocen456@albarulo.com" }
-    at InsertOneOperation.handleOk (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\insert.js:51:19)
-    at tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
-    at async Collection.insertOne (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\collection.js:154:16)
-    at async model.$__save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:398:16)
-    at async model.save (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:609:5)
-    at async C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2722:9
-    at async Promise.all (index 0)
-    at async Function.create (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\model.js:2707:11)
