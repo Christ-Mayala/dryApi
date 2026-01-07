@@ -672,3 +672,22 @@
 [2026-01-07T08:16:59.667Z] GET /api/v1/lastreet/admin/users?status=active&limit=100 200 710ms
 [2026-01-07T08:17:01.488Z] GET /api/v1/lastreet/admin/stats 200 2542ms
 [2026-01-07T08:17:25.458Z] GET /api/v1/lastreet/admin/users?status=active&limit=200 200 2048ms
+[2026-01-07T08:39:48.731Z] GET /api/v1/lastreet/admin/users?status=active&limit=100 200 1779ms
+[2026-01-07T08:39:49.403Z] GET /api/v1/lastreet/admin/professionals?approvalStatus=pending 200 2505ms
+[2026-01-07T08:39:50.318Z] GET /api/v1/lastreet/admin/stats 200 3488ms
+[2026-01-07T08:39:50.572Z] GET /api/v1/lastreet/admin/reports?status=open&limit=80 200 3583ms
+[2026-01-07T08:39:53.509Z] GET /api/v1/lastreet/admin/users?status=active&limit=200 200 687ms
+[2026-01-07T08:40:08.787Z] Email envoyé à : mayalachristgottlieb@gmail.com
+[2026-01-07T08:40:08.899Z] POST /api/v1/lastreet/admin/users/694d60a9a39e86326e407463/email 200 4681ms
+[2026-01-07T08:54:06.532Z] GET /api/v1/lastreet/admin/professionals?approvalStatus=pending 200 1438ms
+[2026-01-07T08:54:06.731Z] GET /api/v1/lastreet/admin/reports?status=open&limit=80 200 1633ms
+[2026-01-07T08:54:07.411Z] GET /api/v1/lastreet/admin/stats 200 2424ms
+[2026-01-07T08:54:07.663Z] GET /api/v1/lastreet/admin/users?status=active&limit=100 200 2591ms
+[2026-01-07T08:54:11.836Z] GET /api/v1/lastreet/admin/users?status=active&limit=200 200 527ms
+[2026-01-07T08:54:27.684Z] Email envoyé à : mayalachristgottlieb@gmail.com
+[2026-01-07T08:54:27.862Z] POST /api/v1/lastreet/admin/users/694d60a9a39e86326e407463/email 200 4819ms
+[2026-01-07T08:55:58.708Z] GET /api/v1/lastreet/admin/users?status=active&limit=100 200 1546ms
+[2026-01-07T08:55:59.398Z] GET /api/v1/lastreet/admin/professionals?approvalStatus=pending 200 2254ms
+[2026-01-07T08:55:59.896Z] GET /api/v1/lastreet/admin/stats 200 2849ms
+[2026-01-07T08:56:00.368Z] GET /api/v1/lastreet/admin/reports?status=open&limit=80 200 3178ms
+[2026-01-07T08:56:02.258Z] GET /api/v1/lastreet/admin/users?status=active&limit=200 200 570ms
