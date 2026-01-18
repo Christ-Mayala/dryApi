@@ -219,3 +219,147 @@ PayloadTooLargeError: request entity too large
     at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
     at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
     at cookieParser (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\cookie-parser\index.js:57:14)
+[2026-01-18T21:08:50.873Z] GET /api/v1/lastreet/professionals/recommendations?limit=6
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async FindCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async FindCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async FindCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+    at async [Symbol.asyncIterator] (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:254:34)
+    at async FindCursor.toArray (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:406:26)
+    at async model.Query._find (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\query.js:2436:14)
+[2026-01-18T21:08:50.898Z] GET /api/v1/lastreet/professionals?page=1&limit=50
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async AggregationCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\aggregation_cursor.js:57:26)
+    at async AggregationCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async AggregationCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async AggregationCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+[2026-01-18T21:08:50.907Z] GET /api/v1/lastreet/professionals?page=1&limit=100
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-01.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async AggregationCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\aggregation_cursor.js:57:26)
+    at async AggregationCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async AggregationCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async AggregationCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+[2026-01-18T21:24:13.623Z] GET /api/v1/lastreet
+TypeError: req.csrfToken is not a function
+    at exposeCsrfToken (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:81:30)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:88:12
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+[2026-01-18T21:25:06.641Z] GET /api/health
+TypeError: req.csrfToken is not a function
+    at exposeCsrfToken (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:81:30)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:88:12
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+[2026-01-18T21:25:12.467Z] GET /api/
+TypeError: req.csrfToken is not a function
+    at exposeCsrfToken (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:81:30)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:88:12
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+[2026-01-18T21:25:29.301Z] GET /api/
+TypeError: req.csrfToken is not a function
+    at exposeCsrfToken (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:81:30)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\server.js:88:12
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+[2026-01-18T21:33:07.948Z] POST /api/v1/lastreet/auth/login
+ForbiddenError: invalid csrf token
+    at csrf (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\csurf\index.js:112:19)
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:291:5)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\dry\middlewares\protection\security.middleware.js:51:13
+    at Layer.handleRequest (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:342:13)
+    at C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\router\index.js:297:9
+[2026-01-18T21:44:36.338Z] GET /api/v1/lastreet/professionals/recommendations?limit=6
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-00.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async FindCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async FindCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async FindCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+    at async [Symbol.asyncIterator] (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:254:34)
+    at async FindCursor.toArray (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:406:26)
+    at async model.Query._find (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongoose\lib\query.js:2436:14)
+[2026-01-18T21:44:36.379Z] GET /api/v1/lastreet/professionals?page=1&limit=50
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-00.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async AggregationCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\aggregation_cursor.js:57:26)
+    at async AggregationCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async AggregationCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async AggregationCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+[2026-01-18T21:45:06.392Z] GET /api/v1/lastreet/professionals/recommendations?limit=6
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-00.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:526:9)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async FindCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async FindCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async FindCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
+    at async [Symbol.asyncIterator] (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:254:34)
+[2026-01-18T21:45:06.430Z] GET /api/v1/lastreet/professionals?page=1&limit=50
+MongoServerSelectionError: getaddrinfo ENOTFOUND ac-pgqhhhs-shard-00-00.nygs81u.mongodb.net
+    at Topology.selectServer (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\sdam\topology.js:346:38)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:555:9)
+    at process.processTimers (node:internal/timers:529:7)
+    at async tryOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:150:18)
+    at async executeOperation (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async AggregationCursor._initialize (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\aggregation_cursor.js:57:26)
+    at async AggregationCursor.cursorInit (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:620:27)
+    at async AggregationCursor.fetchBatch (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:654:13)
+    at async AggregationCursor.next (C:\Users\Coryas Academya\Downloads\la-street-capy-cap-1-2fff6d91\la-street-capy-cap-1-2fff6d91\backend\node_modules\mongodb\lib\cursor\abstract_cursor.js:326:17)
