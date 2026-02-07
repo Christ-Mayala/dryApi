@@ -8,7 +8,6 @@
     "test:smoke": "set SERVER_URL=http://localhost:5000&& node --test \"tests/**/*.test.js\"",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "postinstall": "pip install yt-dlp",
     "seed": "node scripts/seed/seed-all.js",
     "purge": "node dry/scripts/purgeDeleted.js",
     "killport": "for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :5000') do taskkill /PID %a /F",
@@ -73,7 +72,6 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "yt-dlp-exec": "^1.0.2",
-    "ytdl-core": "^4.11.5",
-    "@distube/ytdl-core": "^4.16.12"
+    "ytdl-core": "^4.11.5"
   }
 }
