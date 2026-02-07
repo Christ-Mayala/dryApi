@@ -4,7 +4,10 @@ const path = require('path');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { pipeline } = require('stream/promises');
-const ytdl = require('@distube/ytdl-core');
+const ytdl = require('ytdl-core');
+
+let ytdlp = null;
+try { ytdlp = require('yt-dlp-exec'); } catch (_) {}
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36';
 const sanitize = (v, fb = 'media') => (v || fb).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80) || fb;
@@ -127,6 +130,58 @@ class MultiPlatformDownloader {
     const base = sanitize(filename || (await this.youtubeTitle(url)));
     const cleanUrl = this.cleanYoutubeUrl(url);
 
+    // Essai avec yt-dlp si disponible (plus robuste)
+    if (ytdlp) {
+      try {
+        const target = path.join(this.downloadDir, `${base}.%(ext)s`);
+        const finalPath = path.join(this.downloadDir, `${base}.${mediaType === 'audio' ? 'm4a' : 'mp4'}`);
+        if (this.onTarget) this.onTarget(finalPath);
+        
+        const options = {
+          output: target,
+          format: this.ytFormat(mediaType),
+          mergeOutputFormat: mediaType === 'audio' ? undefined : 'mp4',
+          noPlaylist: true,
+          ffmpegLocation: process.env.FFMPEG_PATH,
+          restrictFilenames: true,
+          quiet: !this.verbose,
+          noCheckCertificates: true,
+          preferInsecure: true,
+          addHeader: [
+            `User-Agent:${process.env.YT_USER_AGENT || UA}`,
+            `Cookie:${process.env.YT_COOKIE || process.env.YT_COOKIES || ''}`
+          ]
+        };
+        
+        // Désactiver les mises à jour si demandé
+        if (process.env.YTDL_NO_UPDATE) {
+          options.update = false;
+        }
+        
+        await ytdlp(cleanUrl, options);
+        
+        let resolvedPath = finalPath;
+        if (!fs.existsSync(resolvedPath)) {
+          try {
+            const baseName = `${base}.`;
+            const files = fs.readdirSync(this.downloadDir).filter((f) => f.startsWith(baseName));
+            if (files.length > 0) {
+              resolvedPath = path.join(this.downloadDir, files.sort().pop());
+            }
+          } catch {}
+        }
+        return {
+          success: true,
+          message: `Telecharge: ${resolvedPath}`,
+          path: resolvedPath,
+          size: fs.existsSync(resolvedPath) ? fs.statSync(resolvedPath).size : null
+        };
+      } catch (e) {
+        if (this.verbose) console.log('yt-dlp echec, fallback ytdl-core:', e.message);
+      }
+    }
+
+    // Fallback vers ytdl-core
     try {
       const info = await ytdl.getInfo(cleanUrl, { requestOptions: ytRequestOptions() });
       const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
