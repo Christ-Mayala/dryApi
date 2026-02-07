@@ -71,6 +71,6 @@
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "ytdl-core": "^4.16.12"
+    "ytdl-core": "^4.11.5"
   }
 }
