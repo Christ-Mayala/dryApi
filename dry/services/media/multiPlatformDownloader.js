@@ -4,10 +4,19 @@ const path = require('path');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { pipeline } = require('stream/promises');
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36';
 const sanitize = (v, fb = 'media') => (v || fb).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80) || fb;
+
+const ytRequestOptions = () => {
+  const cookieHeader = process.env.YT_COOKIE || process.env.YT_COOKIES || '';
+  const headers = {
+    'User-Agent': process.env.YT_USER_AGENT || UA,
+  };
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  return { headers };
+};
 
 class MultiPlatformDownloader {
   constructor({
@@ -116,7 +125,7 @@ class MultiPlatformDownloader {
     const cleanUrl = this.cleanYoutubeUrl(url);
 
     try {
-      const info = await ytdl.getInfo(cleanUrl);
+      const info = await ytdl.getInfo(cleanUrl, { requestOptions: ytRequestOptions() });
       const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
       const filter = mediaType === 'audio'
         ? f => f.hasAudio && !f.hasVideo
@@ -125,7 +134,7 @@ class MultiPlatformDownloader {
       const ext = mediaType === 'audio' ? 'm4a' : 'mp4';
       const target = path.join(this.downloadDir, `${base}.${ext}`);
       if (this.onTarget) this.onTarget(target);
-      const stream = ytdl.downloadFromInfo(info, { format });
+      const stream = ytdl.downloadFromInfo(info, { format, requestOptions: ytRequestOptions() });
       stream.on('progress', (_chunkLength, downloaded, total) => {
         this.reportProgress(downloaded, total);
       });
@@ -148,7 +157,7 @@ class MultiPlatformDownloader {
 
   async youtubeTitle(url) {
     try {
-      const info = await ytdl.getBasicInfo(this.cleanYoutubeUrl(url));
+      const info = await ytdl.getBasicInfo(this.cleanYoutubeUrl(url), { requestOptions: ytRequestOptions() });
       return info.videoDetails?.title || 'youtube_video';
     } catch {
       return 'youtube_video';
