@@ -5,6 +5,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { pipeline } = require('stream/promises');
 const ytdl = require('ytdl-core');
+const ytdlDistube = require('@distube/ytdl-core');
 
 let ytdlp = null;
 try { ytdlp = require('yt-dlp-exec'); } catch (_) {}
@@ -166,55 +167,115 @@ class MultiPlatformDownloader {
     }
 
     try {
-      const info = await ytdl.getInfo(cleanUrl, {
-        requestOptions: {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Referer': 'https://www.youtube.com/',
-            'Origin': 'https://www.youtube.com',
-            'Connection': 'keep-alive',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin'
+      // Essayer d'abord avec @distube/ytdl-core (plus récent)
+      try {
+        const info = await ytdlDistube.getInfo(cleanUrl, {
+          requestOptions: {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              'Accept': '*/*',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Referer': 'https://www.youtube.com/',
+              'Origin': 'https://www.youtube.com',
+              'Connection': 'keep-alive',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin'
+            }
           }
-        }
-      });
-      const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
-      const filter = mediaType === 'audio'
-        ? f => f.hasAudio && !f.hasVideo
-        : f => f.hasAudio && f.hasVideo && f.container === 'mp4' && (!maxHeight || (f.height && f.height <= maxHeight));
-      const format = ytdl.chooseFormat(info.formats.filter(filter), { quality: 'highest' });
-      const ext = mediaType === 'audio' ? 'm4a' : 'mp4';
-      const target = path.join(this.downloadDir, `${base}.${ext}`);
-      if (this.onTarget) this.onTarget(target);
-      const stream = ytdl.downloadFromInfo(info, { 
-        format,
-        requestOptions: {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Referer': 'https://www.youtube.com/',
-            'Origin': 'https://www.youtube.com'
+        });
+        const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
+        const filter = mediaType === 'audio'
+          ? f => f.hasAudio && !f.hasVideo
+          : f => f.hasAudio && f.hasVideo && f.container === 'mp4' && (!maxHeight || (f.height && f.height <= maxHeight));
+        const format = ytdlDistube.chooseFormat(info.formats.filter(filter), { quality: 'highest' });
+        const ext = mediaType === 'audio' ? 'm4a' : 'mp4';
+        const target = path.join(this.downloadDir, `${base}.${ext}`);
+        if (this.onTarget) this.onTarget(target);
+        const stream = ytdlDistube.downloadFromInfo(info, { 
+          format,
+          requestOptions: {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              'Referer': 'https://www.youtube.com/',
+              'Origin': 'https://www.youtube.com'
+            }
           }
+        });
+        stream.on('progress', (_chunkLength, downloaded, total) => {
+          this.reportProgress(downloaded, total);
+        });
+        if (this.signal) {
+          if (this.signal.aborted) throw new Error('Aborted');
+          this.signal.addEventListener(
+            'abort',
+            () => {
+              try { stream.destroy(new Error('Aborted')); } catch {}
+            },
+            { once: true }
+          );
         }
-      });
-      stream.on('progress', (_chunkLength, downloaded, total) => {
-        this.reportProgress(downloaded, total);
-      });
-      if (this.signal) {
-        if (this.signal.aborted) throw new Error('Aborted');
-        this.signal.addEventListener(
-          'abort',
-          () => {
-            try { stream.destroy(new Error('Aborted')); } catch {}
-          },
-          { once: true }
-        );
+        await pipeline(stream, fs.createWriteStream(target));
+        return { success: true, message: `Telecharge: ${target}`, path: target, size: (await fsp.stat(target)).size };
+      } catch (distubeError) {
+        if (this.verbose) console.log('@distube/ytdl-core echec, fallback ytdl-core:', distubeError.message);
+        
+        // Fallback sur ytdl-core original
+        try {
+          const info = await ytdl.getInfo(cleanUrl, {
+            requestOptions: {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept': '*/*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Referer': 'https://www.youtube.com/',
+                'Origin': 'https://www.youtube.com',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin'
+              }
+            }
+          });
+          const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
+          const filter = mediaType === 'audio'
+            ? f => f.hasAudio && !f.hasVideo
+            : f => f.hasAudio && f.hasVideo && f.container === 'mp4' && (!maxHeight || (f.height && f.height <= maxHeight));
+          const format = ytdl.chooseFormat(info.formats.filter(filter), { quality: 'highest' });
+          const ext = mediaType === 'audio' ? 'm4a' : 'mp4';
+          const target = path.join(this.downloadDir, `${base}.${ext}`);
+          if (this.onTarget) this.onTarget(target);
+          const stream = ytdl.downloadFromInfo(info, { 
+            format,
+            requestOptions: {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Referer': 'https://www.youtube.com/',
+                'Origin': 'https://www.youtube.com'
+              }
+            }
+          });
+          stream.on('progress', (_chunkLength, downloaded, total) => {
+            this.reportProgress(downloaded, total);
+          });
+          if (this.signal) {
+            if (this.signal.aborted) throw new Error('Aborted');
+            this.signal.addEventListener(
+              'abort',
+              () => {
+                try { stream.destroy(new Error('Aborted')); } catch {}
+              },
+              { once: true }
+            );
+          }
+          await pipeline(stream, fs.createWriteStream(target));
+          return { success: true, message: `Telecharge: ${target}`, path: target, size: (await fsp.stat(target)).size };
+        } catch (ytdlError) {
+          return { success: false, message: `Erreur YouTube: ${ytdlError.message}` };
+        }
       }
-      await pipeline(stream, fs.createWriteStream(target));
-      return { success: true, message: `Telecharge: ${target}`, path: target, size: (await fsp.stat(target)).size };
     } catch (e) {
       return { success: false, message: `Erreur YouTube: ${e.message}` };
     }
