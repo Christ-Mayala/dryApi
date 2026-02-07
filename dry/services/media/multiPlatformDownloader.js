@@ -132,6 +132,17 @@ class MultiPlatformDownloader {
           restrictFilenames: true,
           quiet: !this.verbose,
           signal: this.signal || undefined,
+          addHeader: [
+            'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept-Language:en-US,en;q=0.9',
+            'Referer:https://www.youtube.com/'
+          ],
+          extractorArgs: {
+            youtube: {
+              'player_client': ['android', 'web'],
+              'player_skip': ['configs', 'webpage'],
+            }
+          }
         });
         let resolvedPath = finalPath;
         if (!fs.existsSync(resolvedPath)) {
