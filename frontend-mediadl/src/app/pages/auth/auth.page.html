@@ -1,36 +1,27 @@
 <section class="auth-shell">
-  <div class="auth-hero">
-    <div class="eyebrow">Studio MediaDL</div>
-    <h1>Accedez a votre espace de telechargement securise.</h1>
-    <p class="lead">
-      Connectez-vous pour suivre l'etat en direct, recuperer vos liens temporaires
-      et garder un historique propre de vos medias.
-    </p>
-
-    <div class="hero-grid">
-      <div class="hero-card">
-        <h3>Acces securise</h3>
-        <p>Chaque lien est prive et expire automatiquement pour limiter les risques.</p>
-      </div>
-      <div class="hero-card">
-        <h3>Suivi clair</h3>
-        <p>Progression, statut, erreurs : tout est visible sans rechargement.</p>
-      </div>
-      <div class="hero-card">
-        <h3>Historique utile</h3>
-        <p>Retrouvez vos telechargements recents et relancez en un clic.</p>
-      </div>
-    </div>
-  </div>
-
   <div class="card auth-card">
+    <div class="auth-intro">
+      <div class="eyebrow">MediaDL Studio</div>
+      <h1>Connexion sécurisée</h1>
+      <p>
+        Accédez à vos téléchargements, suivez les statuts en direct et récupérez vos liens temporaires.
+      </p>
+    </div>
     <div class="tabs">
       <button class="tab" [class.active]="tab === 'login'" (click)="switchTab('login')">Connexion</button>
       <button class="tab" [class.active]="tab === 'register'" (click)="switchTab('register')">
-        Creer un compte
+        Créer un compte
       </button>
     </div>
-    <div class="auth-note">Un compte est requis pour proteger vos liens et vos telechargements.</div>
+
+    <div class="auth-head" *ngIf="tab === 'login'">
+      <h2>Content de vous revoir</h2>
+      <p>Accédez à vos téléchargements et à vos liens privés.</p>
+    </div>
+    <div class="auth-head" *ngIf="tab === 'register'">
+      <h2>Créez votre espace</h2>
+      <p>Un compte est requis pour protéger vos liens et votre historique.</p>
+    </div>
 
     <form class="form" *ngIf="tab === 'login'" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
       <div class="field">
@@ -64,11 +55,17 @@
       </div>
       <div class="field">
         <label for="register-password">Mot de passe</label>
-        <input id="register-password" class="input" type="password" formControlName="password" placeholder="Min 6 caracteres">
+        <input
+          id="register-password"
+          class="input"
+          type="password"
+          formControlName="password"
+          placeholder="Minimum 6 caractères"
+        >
       </div>
       <div class="actions">
         <button class="btn primary" type="submit" [disabled]="loadingRegister">
-          {{ loadingRegister ? 'Creation...' : 'Creer un compte' }}
+          {{ loadingRegister ? 'Création...' : 'Créer un compte' }}
         </button>
       </div>
     </form>

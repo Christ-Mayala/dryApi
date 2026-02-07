@@ -97,14 +97,15 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (!res.success || !res.data?.id) {
-            this.startError = res.message || 'Echec du telechargement.';
+            this.startError = res.message || 'Échec du téléchargement.';
             return;
           }
           this.lastCreatedId = res.data.id;
           this.refreshNow();
+          this.scrollToList();
         },
         error: (err) => {
-          this.startError = err?.error?.message || 'Echec du telechargement.';
+          this.startError = err?.error?.message || 'Échec du téléchargement.';
         }
       });
   }
@@ -199,15 +200,16 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
           blob.text().then((text: string) => {
             try {
               const parsed = JSON.parse(text);
-              this.actionError = parsed?.message || 'Telechargement impossible.';
+              this.actionError = parsed?.message || 'Téléchargement impossible.';
             } catch {
-              this.actionError = 'Telechargement impossible.';
+              this.actionError = 'Téléchargement impossible.';
             }
           });
           return;
         }
         const header = res.headers.get('content-disposition') || '';
-        const filename = this.extractFilename(header) || item.filename || `media_${item._id}`;
+        const headerFilename = this.extractFilename(header);
+        const filename = this.buildDownloadFilename(item, headerFilename, contentType);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -220,14 +222,14 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
           err.error.text().then((text: string) => {
             try {
               const parsed = JSON.parse(text);
-              this.actionError = parsed?.message || 'Telechargement impossible.';
+              this.actionError = parsed?.message || 'Téléchargement impossible.';
             } catch {
-              this.actionError = 'Telechargement impossible.';
+              this.actionError = 'Téléchargement impossible.';
             }
           });
           return;
         }
-        this.actionError = err?.error?.message || 'Telechargement impossible.';
+        this.actionError = err?.error?.message || 'Téléchargement impossible.';
       }
     });
   }
@@ -272,10 +274,71 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
     return decodeURIComponent(match?.[1] || match?.[2] || '');
   }
 
+  private buildDownloadFilename(item: DownloadItem, headerFilename: string, contentType: string) {
+    const preferred = (item.filename || '').trim();
+    const fallback = (headerFilename || '').trim();
+    const extFromHeader = this.getExtension(fallback);
+    const extFromType = this.extensionFromType(contentType);
+
+    if (preferred) {
+      if (this.hasExtension(preferred)) {
+        return preferred;
+      }
+      const ext = extFromHeader || extFromType;
+      return ext ? `${preferred}.${ext}` : preferred;
+    }
+
+    if (fallback) {
+      return fallback;
+    }
+
+    const base = item._id ? `media_${item._id}` : 'media_download';
+    return extFromType ? `${base}.${extFromType}` : base;
+  }
+
+  private hasExtension(name: string) {
+    return Boolean(this.getExtension(name));
+  }
+
+  private getExtension(name: string) {
+    if (!name) return '';
+    const clean = name.split('?')[0].split('#')[0];
+    const lastDot = clean.lastIndexOf('.');
+    const lastSlash = Math.max(clean.lastIndexOf('/'), clean.lastIndexOf('\\'));
+    if (lastDot > lastSlash && lastDot < clean.length - 1) {
+      return clean.slice(lastDot + 1);
+    }
+    return '';
+  }
+
+  private extensionFromType(contentType: string) {
+    const type = contentType.split(';')[0].trim().toLowerCase();
+    switch (type) {
+      case 'video/mp4':
+        return 'mp4';
+      case 'video/webm':
+        return 'webm';
+      case 'audio/mpeg':
+        return 'mp3';
+      case 'audio/mp4':
+        return 'm4a';
+      case 'audio/webm':
+        return 'webm';
+      case 'image/jpeg':
+        return 'jpg';
+      case 'image/png':
+        return 'png';
+      case 'image/webp':
+        return 'webp';
+      default:
+        return '';
+    }
+  }
+
   private fetchDownloads() {
     return this.api.listDownloads(this.page, this.limit).pipe(
       catchError((err) => {
-        this.listError = err?.error?.message || 'Impossible de charger les telechargements.';
+        this.listError = err?.error?.message || 'Impossible de charger les téléchargements.';
         return of(null);
       })
     );
@@ -286,7 +349,7 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
       return;
     }
     if (!res.success) {
-      this.listError = res.message || 'Impossible de charger les telechargements.';
+      this.listError = res.message || 'Impossible de charger les téléchargements.';
       return;
     }
     this.listError = '';
@@ -371,5 +434,14 @@ export class DownloadsPageComponent implements OnInit, OnDestroy {
     document.querySelector('.start-card')?.scrollIntoView({ 
       behavior: 'smooth' 
     });
+  }
+
+  scrollToList() {
+    setTimeout(() => {
+      document.querySelector('#downloads-list')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 150);
   }
 }

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../api/api.service';
 import { AuthService } from '../../auth/auth.service';
@@ -9,7 +10,7 @@ import { AuthService } from '../../auth/auth.service';
 @Component({
   selector: 'app-auth-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideAngularModule],
   templateUrl: './auth.page.html',
   styleUrl: './auth.page.scss'
 })
@@ -90,15 +91,15 @@ export class AuthPageComponent {
       .subscribe({
         next: (res) => {
           if (!res.success) {
-            this.errorMessage = res.message || 'Creation impossible.';
+            this.errorMessage = res.message || 'Création impossible.';
             return;
           }
           this.tab = 'login';
-          this.successMessage = 'Compte cree. Connectez-vous.';
+          this.successMessage = 'Compte créé. Connectez-vous.';
           this.loginForm.patchValue({ email: payload.email });
         },
         error: (err) => {
-          this.errorMessage = err?.error?.message || 'Creation impossible.';
+          this.errorMessage = err?.error?.message || 'Création impossible.';
         }
       });
   }

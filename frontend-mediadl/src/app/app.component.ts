@@ -20,6 +20,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Gestion du scroll pour l'header
+    this.isMobileMenuOpen = false;
+    this.updateScrollLock();
     window.addEventListener('scroll', this.onScrollHandler);
     this.onScroll();
   }
@@ -42,14 +44,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('scroll', this.onScrollHandler);
+    this.isMobileMenuOpen = false;
+    this.updateScrollLock();
   }
 
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.updateScrollLock();
   }
 
   closeMobileMenu() {
     this.isMobileMenuOpen = false;
+    this.updateScrollLock();
   }
 
   onScroll() {
@@ -60,4 +66,15 @@ export class AppComponent implements OnInit, OnDestroy {
       header?.classList.remove('scrolled');
     }
   }
+
+  private updateScrollLock() {
+    const shouldLock = this.isMobileMenuOpen;
+    document.body.classList.toggle('menu-open', shouldLock);
+    document.documentElement.classList.toggle('menu-open', shouldLock);
+    if (!shouldLock) {
+      document.body.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('overflow');
+    }
+  }
+
 }

@@ -1,12 +1,16 @@
 .downloads-shell {
   display: grid;
   gap: 2rem;
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+  padding-bottom: 2rem;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1.4fr 0.6fr;
   gap: 1.5rem;
+  align-items: start;
 }
 
 .card-head {
@@ -105,6 +109,15 @@
   color: #b13522;
 }
 
+.start-card,
+.tips-card {
+  align-self: start;
+}
+
+.tips-card {
+  background: rgba(255, 255, 255, 0.92);
+}
+
 .tips-card h3,
 .tips-card h4 {
   display: flex;
@@ -151,7 +164,7 @@
 
 .list-card {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .list-header {
@@ -170,7 +183,7 @@
 .table-row {
   display: grid;
   grid-template-columns: 2fr 0.7fr 0.9fr 1.1fr 1fr 1.2fr 1.2fr;
-  gap: 1rem;
+  gap: 1.1rem;
   align-items: center;
 }
 
@@ -187,11 +200,35 @@
   border-radius: 14px;
   padding: 0.9rem 1rem;
   align-items: start;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.table-row:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .table-cell {
   display: grid;
   gap: 0.4rem;
+}
+
+.source-info {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.source-url {
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.source-id {
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 .type-badge,
@@ -277,26 +314,37 @@
   transition: width 0.3s ease;
 }
 
-.title {
-  font-weight: 600;
-  word-break: break-word;
+.notes-info {
+  display: grid;
+  gap: 0.3rem;
 }
 
-.sub {
-  color: var(--muted);
-  font-size: 0.75rem;
-  margin-top: 0.2rem;
+.error-note,
+.expire-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
 }
 
-.error-text {
+.error-note {
   color: #b13522;
 }
 
-.expire {
-  margin-top: 0.4rem;
-  font-size: 0.75rem;
+.expire-note {
   color: var(--amber-strong);
   font-weight: 600;
+}
+
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.actions-cell .btn.small {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
 }
 
 .empty-state {
@@ -363,18 +411,13 @@
     flex-direction: column;
     align-items: flex-start;
   }
-}
-.row-actions {
-  display: flex;
-}
 
-.row-actions .actions-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
+  .table-cell {
+    grid-template-columns: 90px 1fr;
+  }
 
-.row-actions .btn {
-  padding: 0.45rem 0.9rem;
-  font-size: 0.85rem;
+  .actions-cell .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

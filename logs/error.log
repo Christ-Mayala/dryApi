@@ -3820,3 +3820,9 @@ TypeError: req.getModel is not a function
 [07/02/2026 06:49:19] [ERROR] Erreur envoi email: fetch failed
 [07/02/2026 06:50:09] [ERROR] Erreur envoi email: fetch failed
 [07/02/2026 08:15:20] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 11:41:01] [ERROR] [f774304a-8e01-47c3-a500-e0c48f97dd16] GET /api/v1/mediadl/downloads/698704a1298d802a153b893e/file 410 2030ms
+[07/02/2026 11:57:32] [ERROR] [92322f28-b222-418f-8957-b7fafd2872d5] POST /api/v1/mediadl/downloads/start 400 168ms
+[07/02/2026 13:05:50] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 13:15:49] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 14:41:33] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 14:42:33] [ERROR] Erreur envoi email: fetch failed
