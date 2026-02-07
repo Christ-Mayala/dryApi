@@ -166,7 +166,22 @@ class MultiPlatformDownloader {
     }
 
     try {
-      const info = await ytdl.getInfo(cleanUrl);
+      const info = await ytdl.getInfo(cleanUrl, {
+        requestOptions: {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://www.youtube.com/',
+            'Origin': 'https://www.youtube.com',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin'
+          }
+        }
+      });
       const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
       const filter = mediaType === 'audio'
         ? f => f.hasAudio && !f.hasVideo
@@ -175,7 +190,16 @@ class MultiPlatformDownloader {
       const ext = mediaType === 'audio' ? 'm4a' : 'mp4';
       const target = path.join(this.downloadDir, `${base}.${ext}`);
       if (this.onTarget) this.onTarget(target);
-      const stream = ytdl.downloadFromInfo(info, { format });
+      const stream = ytdl.downloadFromInfo(info, { 
+        format,
+        requestOptions: {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Referer': 'https://www.youtube.com/',
+            'Origin': 'https://www.youtube.com'
+          }
+        }
+      });
       stream.on('progress', (_chunkLength, downloaded, total) => {
         this.reportProgress(downloaded, total);
       });
