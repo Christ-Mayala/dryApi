@@ -118,12 +118,14 @@ class MultiPlatformDownloader {
     const base = sanitize(filename || (await this.youtubeTitle(url)));
     const cleanUrl = this.cleanYoutubeUrl(url);
 
+    // Essai avec yt-dlp si disponible
     if (ytdlp) {
       try {
         const target = path.join(this.downloadDir, `${base}.%(ext)s`);
         const finalPath = path.join(this.downloadDir, `${base}.${mediaType === 'audio' ? 'm4a' : 'mp4'}`);
         if (this.onTarget) this.onTarget(finalPath);
-        await ytdlp(cleanUrl, {
+        
+        const options = {
           output: target,
           format: this.ytFormat(mediaType),
           mergeOutputFormat: mediaType === 'audio' ? undefined : 'mp4',
@@ -131,8 +133,17 @@ class MultiPlatformDownloader {
           ffmpegLocation: process.env.FFMPEG_PATH,
           restrictFilenames: true,
           quiet: !this.verbose,
-          signal: this.signal || undefined,
-        });
+          noCheckCertificates: true,
+          preferInsecure: true,
+        };
+        
+        // Désactiver les mises à jour si demandé
+        if (process.env.YTDL_NO_UPDATE) {
+          options.update = false;
+        }
+        
+        await ytdlp(cleanUrl, options);
+        
         let resolvedPath = finalPath;
         if (!fs.existsSync(resolvedPath)) {
           try {
@@ -154,6 +165,7 @@ class MultiPlatformDownloader {
       }
     }
 
+    // Fallback vers ytdl-core
     try {
       const info = await ytdl.getInfo(cleanUrl);
       const maxHeight = this.maxHeight && this.maxHeight > 0 ? this.maxHeight : null;
