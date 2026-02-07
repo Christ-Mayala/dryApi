@@ -14,7 +14,19 @@ const ytRequestOptions = () => {
   const headers = {
     'User-Agent': process.env.YT_USER_AGENT || UA,
   };
-  if (cookieHeader) headers.Cookie = cookieHeader;
+  if (cookieHeader) {
+    // Format @distube/ytdl-core: array of objects
+    try {
+      const cookies = cookieHeader.split('; ').map(cookie => {
+        const [name, value] = cookie.split('=');
+        return { name: name.trim(), value: value || '' };
+      });
+      headers.cookie = cookies;
+    } catch (e) {
+      // Fallback: string format
+      headers.Cookie = cookieHeader;
+    }
+  }
   return { headers };
 };
 
