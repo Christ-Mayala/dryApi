@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const cloudinary = require('cloudinary').v2;
-const sendResponse = require('../../../../../dry/utils/response');
-const { pickDefined } = require('../../../../../dry/utils/pick');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { pickDefined } = require('../../../../../dry/utils/data/pick');
 
 const PropertySchema = require('../model/property.schema');
 

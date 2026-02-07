@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
 const MessageSchema = require('../model/message.schema');
 

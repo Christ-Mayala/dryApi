@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 const ProductSchema = require('../model/product.schema');
 
 const deleteProduct = asyncHandler(async (req, res) => {

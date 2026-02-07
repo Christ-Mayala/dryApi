@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const sendEmail = require('../../../../../dry/services/email/email.service');
+﻿const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const emailService = require('../../../../../dry/services/auth/email.service');
 
 const escapeHtml = (s) =>
     String(s || '')
@@ -29,7 +29,7 @@ module.exports = asyncHandler(async (req, res) => {
   if (!user) throw new Error('Utilisateur introuvable');
   if (!user.email) throw new Error('Email utilisateur introuvable');
 
-  const ok = await sendEmail({
+  const ok = await emailService.sendGenericEmail({
     email: user.email,
     subject,
     html: `
@@ -50,7 +50,7 @@ module.exports = asyncHandler(async (req, res) => {
 
         <p style="margin-bottom:24px; font-size:15px;">
           Cordialement,<br/>
-          <strong>L’équipe La STREET</strong>
+          <strong>Lâ€™Ã©quipe La STREET</strong>
         </p>
 
         <hr style="border:none; border-top:1px solid #eee; margin:24px 0;" />
@@ -93,13 +93,13 @@ module.exports = asyncHandler(async (req, res) => {
         </div>
 
         <p style="color:#555; font-size:12px; margin:0;">
-          Cet email a été envoyé depuis l’administration officielle de
-          <strong>La STREET · Talents & métiers du Congo</strong>.
+          Cet email a Ã©tÃ© envoyÃ© depuis lâ€™administration officielle de
+          <strong>La STREET Â· Talents & mÃ©tiers du Congo</strong>.
         </p>
 
         <p style="color:#777; font-size:12px; margin-top:4px;">
-          La STREET est conçue et développée par
-          <strong>CyberFusion Group</strong>, maison de solutions digitales éthiques, durables et humaines.
+          La STREET est conÃ§ue et dÃ©veloppÃ©e par
+          <strong>CyberFusion Group</strong>, maison de solutions digitales Ã©thiques, durables et humaines.
         </p>
       </div>
     `.trim(),
@@ -107,5 +107,6 @@ module.exports = asyncHandler(async (req, res) => {
 
   if (!ok) throw new Error("Impossible d'envoyer l'email pour le moment");
 
-  return sendResponse(res, { to: user.email }, 'Email envoyé');
+  return sendResponse(res, { to: user.email }, 'Email envoyÃ©');
 });
+

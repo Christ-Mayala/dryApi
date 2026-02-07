@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const { getPagination } = require('../../../../../dry/utils/pagination');
-const { parseBoolean, parseCsv, parseNumber } = require('../../../../../dry/utils/parse');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { getPagination } = require('../../../../../dry/utils/data/pagination');
+const { parseBoolean, parseCsv, parseNumber } = require('../../../../../dry/utils/data/parse');
 
 const PropertySchema = require('../model/property.schema');
 

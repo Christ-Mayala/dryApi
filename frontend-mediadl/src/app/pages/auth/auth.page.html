@@ -1,0 +1,79 @@
+<section class="auth-shell">
+  <div class="auth-hero">
+    <div class="eyebrow">Studio MediaDL</div>
+    <h1>Accedez a votre espace de telechargement securise.</h1>
+    <p class="lead">
+      Connectez-vous pour suivre l'etat en direct, recuperer vos liens temporaires
+      et garder un historique propre de vos medias.
+    </p>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h3>Acces securise</h3>
+        <p>Chaque lien est prive et expire automatiquement pour limiter les risques.</p>
+      </div>
+      <div class="hero-card">
+        <h3>Suivi clair</h3>
+        <p>Progression, statut, erreurs : tout est visible sans rechargement.</p>
+      </div>
+      <div class="hero-card">
+        <h3>Historique utile</h3>
+        <p>Retrouvez vos telechargements recents et relancez en un clic.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card auth-card">
+    <div class="tabs">
+      <button class="tab" [class.active]="tab === 'login'" (click)="switchTab('login')">Connexion</button>
+      <button class="tab" [class.active]="tab === 'register'" (click)="switchTab('register')">
+        Creer un compte
+      </button>
+    </div>
+    <div class="auth-note">Un compte est requis pour proteger vos liens et vos telechargements.</div>
+
+    <form class="form" *ngIf="tab === 'login'" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input id="login-email" class="input" type="email" formControlName="email" placeholder="vous@exemple.com">
+      </div>
+      <div class="field">
+        <label for="login-password">Mot de passe</label>
+        <input id="login-password" class="input" type="password" formControlName="password" placeholder="Votre mot de passe">
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit" [disabled]="loadingLogin">
+          {{ loadingLogin ? 'Connexion...' : 'Se connecter' }}
+        </button>
+      </div>
+    </form>
+
+    <form
+      class="form"
+      *ngIf="tab === 'register'"
+      [formGroup]="registerForm"
+      (ngSubmit)="submitRegister()"
+    >
+      <div class="field">
+        <label for="register-name">Nom</label>
+        <input id="register-name" class="input" type="text" formControlName="name" placeholder="Votre nom">
+      </div>
+      <div class="field">
+        <label for="register-email">Email</label>
+        <input id="register-email" class="input" type="email" formControlName="email" placeholder="vous@exemple.com">
+      </div>
+      <div class="field">
+        <label for="register-password">Mot de passe</label>
+        <input id="register-password" class="input" type="password" formControlName="password" placeholder="Min 6 caracteres">
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit" [disabled]="loadingRegister">
+          {{ loadingRegister ? 'Creation...' : 'Creer un compte' }}
+        </button>
+      </div>
+    </form>
+
+    <div class="inline-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="inline-success" *ngIf="successMessage">{{ successMessage }}</div>
+  </div>
+</section>

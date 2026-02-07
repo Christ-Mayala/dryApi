@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/jwt');
-const { refreshCookieOptions } = require('../../../../../dry/utils/cookies');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
+const { refreshCookieOptions } = require('../../../../../dry/utils/http/cookies');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');

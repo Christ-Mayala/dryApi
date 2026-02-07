@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const mongoose = require('mongoose');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ProfessionalSchema = require('../model/professional.schema');
 const ProfessionalRatingSchema = require('../model/rating.schema');

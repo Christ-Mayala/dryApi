@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
-const AuditLog = require('../../../../../dry/models/AuditLog.model');
+const AuditLog = require('../../../../../dry/models/audit/AuditLog.model');
 
 module.exports = asyncHandler(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit || '50', 10) || 50, 200);

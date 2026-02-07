@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 const AtelierSchema = require('../model/atelier.schema');
 
 const updateAtelier = asyncHandler(async (req, res) => {

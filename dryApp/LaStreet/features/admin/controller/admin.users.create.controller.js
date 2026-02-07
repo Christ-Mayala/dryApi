@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
 module.exports = asyncHandler(async (req, res) => {
   const User = req.getModel('User');

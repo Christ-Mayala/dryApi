@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const sendEmail = require('../../../../../dry/services/email/email.service');
+﻿const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const emailService = require('../../../../../dry/services/auth/email.service');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -10,7 +10,7 @@ module.exports = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ email }).select('+resetCode +resetCodeExpires');
 
-    if (!user) return sendResponse(res, null, 'Si un compte existe, un email sera envoyé.', true);
+    if (!user) return sendResponse(res, null, 'Si un compte existe, un email sera envoyÃ©.', true);
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
 
@@ -23,14 +23,15 @@ module.exports = asyncHandler(async (req, res) => {
 
     const html = `
         <div style="font-family:Arial,sans-serif;line-height:1.6">
-          <h2>Réinitialisation du mot de passe</h2>
+          <h2>RÃ©initialisation du mot de passe</h2>
           <p>Code: <strong>${code}</strong></p>
           <p>Lien: <a href="${link}">${link}</a></p>
           <p>Ce code expire dans 15 minutes.</p>
         </div>
     `;
 
-    await sendEmail({ email, subject: 'SCIM - Réinitialisation du mot de passe', html });
+    await emailService.sendGenericEmail({ email, subject: 'SCIM - RÃ©initialisation du mot de passe', html });
 
-    return sendResponse(res, { email }, 'Email de réinitialisation envoyé');
+    return sendResponse(res, { email }, 'Email de rÃ©initialisation envoyÃ©');
 });
+

@@ -1,7 +1,7 @@
-const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-// Utilise le service email générique (et non le fichier de templates)
-const sendEmail = require('../../../../../dry/services/email/email.service');
+﻿const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+// Utilise le service email gÃ©nÃ©rique (et non le fichier de templates)
+const emailService = require('../../../../../dry/services/auth/email.service');
 const ContactSchema = require('../model/contact.schema');
 
 const sendMessage = asyncHandler(async (req, res) => {
@@ -10,7 +10,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     // 1. Sauvegarde BD
     const contact = await Contact.create(req.body);
 
-    // 2. Email Admin (optionnel : en cas d'erreur, on log mais on ne bloque pas la réponse)
+    // 2. Email Admin (optionnel : en cas d'erreur, on log mais on ne bloque pas la rÃ©ponse)
     const html = `
         <h3>Message Site Web</h3>
         <p><strong>De:</strong> ${contact.name} (${contact.phone})</p>
@@ -19,7 +19,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     `;
 
     try {
-        await sendEmail({
+        await emailService.sendGenericEmail({
             email: process.env.SMTP_EMAIL,
             subject: `[Spirit] ${contact.subject || 'Nouveau message de contact'}`,
             html,
@@ -28,6 +28,7 @@ const sendMessage = asyncHandler(async (req, res) => {
         console.error('Erreur mail', e);
     }
 
-    sendResponse(res, contact, 'Message envoyé');
+    sendResponse(res, contact, 'Message envoyÃ©');
 });
 module.exports = sendMessage;
+

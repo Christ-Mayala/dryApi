@@ -1,0 +1,448 @@
+<section class="home-shell">
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-text"> 
+        <h1 class="hero-title">
+          <span class="gradient-text">MediaDL</span>
+          <br>
+          <span class="hero-subtitle">Le téléchargement intelligent réinventé</span>
+        </h1>
+        <p class="hero-description">
+          La plateforme la plus avancée pour télécharger des vidéos, musiques et images 
+          depuis YouTube, Instagram, TikTok, Facebook et plus. 
+          <strong>Simple. Rapide. Sécurisé.</strong>
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="stat-icon">
+              <lucide-icon name="users" size="20"></lucide-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">10K+</div>
+              <div class="stat-label">Utilisateurs actifs</div>
+            </div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-icon">
+              <lucide-icon name="download" size="20"></lucide-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">50K+</div>
+              <div class="stat-label">Téléchargements/jour</div>
+            </div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-icon">
+              <lucide-icon name="shield" size="20"></lucide-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">100%</div>
+              <div class="stat-label">Sécurisé</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn primary large" (click)="goToAuth()" *ngIf="!isAuthenticated">
+            <lucide-icon name="rocket" size="20"></lucide-icon>
+            Commencer gratuitement
+          </button>
+          <button class="btn primary large" (click)="goToDownloads()" *ngIf="isAuthenticated">
+            <lucide-icon name="download" size="20"></lucide-icon>
+            Mes téléchargements
+          </button>
+          <button class="btn outline large" (click)="scrollToFeatures()">
+            <lucide-icon name="play-circle" size="20"></lucide-icon>
+            Voir démo
+          </button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-cards">
+          <div class="floating-card card-1">
+            <div class="card-icon">
+              <lucide-icon name="youtube" size="24"></lucide-icon>
+            </div>
+            <div class="card-title">YouTube</div>
+            <div class="card-status">Terminé</div>
+            <div class="card-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+              </div>
+              <span class="progress-text">100%</span>
+            </div>
+            <div class="card-badge success">
+              <lucide-icon name="check-circle" size="12"></lucide-icon>
+              <span>Complété</span>
+            </div>
+          </div>
+          <div class="floating-card card-2">
+            <div class="card-icon">
+              <lucide-icon name="instagram" size="24"></lucide-icon>
+            </div>
+            <div class="card-title">Instagram</div>
+            <div class="card-status">En cours...</div>
+            <div class="card-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%"></div>
+              </div>
+              <span class="progress-text">75%</span>
+            </div>
+            <div class="card-badge processing">
+              <lucide-icon name="clock" size="12"></lucide-icon>
+              <span>Téléchargement</span>
+            </div>
+          </div>
+          <div class="floating-card card-3">
+            <div class="card-icon">
+              <lucide-icon name="music" size="24"></lucide-icon>
+            </div>
+            <div class="card-title">Audio</div>
+            <div class="card-status">Qualité HD</div>
+            <div class="card-quality">
+              <div class="quality-badge">HD</div>
+              <div class="quality-info">320kbps</div>
+            </div>
+            <div class="card-badge premium">
+              <lucide-icon name="zap" size="12"></lucide-icon>
+              <span>Haute qualité</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Pourquoi choisir MediaDL ?</h2>
+        <p class="section-subtitle">Découvrez les fonctionnalités qui nous différencient</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card premium">
+          <div class="feature-icon">
+            <lucide-icon name="globe" size="32"></lucide-icon>
+          </div>
+          <div class="feature-content">
+            <h3>Multi-plateformes</h3>
+            <p>Compatible avec YouTube, Facebook, Instagram, TikTok, Pinterest et plus encore</p>
+            <div class="feature-tags">
+              <span class="tag">15+ plateformes</span>
+              <span class="tag">Mise à jour auto</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card premium">
+          <div class="feature-icon">
+            <lucide-icon name="zap" size="32"></lucide-icon>
+          </div>
+          <div class="feature-content">
+            <h3>Ultra-rapide</h3>
+            <p>Téléchargements optimisés avec la meilleure qualité disponible automatiquement</p>
+            <div class="feature-tags">
+              <span class="tag">4K support</span>
+              <span class="tag">Optimisé</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card premium">
+          <div class="feature-icon">
+            <lucide-icon name="shield" size="32"></lucide-icon>
+          </div>
+          <div class="feature-content">
+            <h3>Sécurisé</h3>
+            <p>Vos fichiers sont protégés et automatiquement nettoyés après 5 minutes</p>
+            <div class="feature-tags">
+              <span class="tag">Chiffrement</span>
+              <span class="tag">Auto-nettoyage</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <lucide-icon name="smartphone" size="32"></lucide-icon>
+          </div>
+          <div class="feature-content">
+            <h3>Responsive</h3>
+            <p>Fonctionne parfaitement sur tous vos appareils</p>
+            <div class="feature-tags">
+              <span class="tag">Mobile</span>
+              <span class="tag">Tablette</span>
+              <span class="tag">Desktop</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <lucide-icon name="gift" size="32"></lucide-icon>
+          </div>
+          <div class="feature-content">
+            <h3>Gratuit</h3>
+            <p>Aucun coût caché, utilisation illimitée</p>
+            <div class="feature-tags">
+              <span class="tag">Sans pub</span>
+              <span class="tag">Illimité</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Section -->
+  <div class="usage">
+    <div class="container">
+      <div class="usage-grid">
+        <div class="usage-card">
+          <h2 class="usage-title">Comment utiliser la plateforme</h2>
+          <ol class="usage-steps">
+            <li class="usage-item">
+              <div class="step-icon">
+                <lucide-icon name="user" size="20"></lucide-icon>
+              </div>
+              <div class="step-content">
+                <span class="step-text">Créez un compte en 30 secondes pour sécuriser vos téléchargements.</span>
+                <span class="step-time">30 secondes</span>
+              </div>
+            </li>
+            <li class="usage-item">
+              <div class="step-icon">
+                <lucide-icon name="link" size="20"></lucide-icon>
+              </div>
+              <div class="step-content">
+                <span class="step-text">Collez l'URL du média (YouTube, Instagram, TikTok, etc.).</span>
+                <span class="step-time">5 secondes</span>
+              </div>
+            </li>
+            <li class="usage-item">
+              <div class="step-icon">
+                <lucide-icon name="video" size="20"></lucide-icon>
+              </div>
+              <div class="step-content">
+                <span class="step-text">Choisissez le format (vidéo/audio/image) et la qualité si besoin.</span>
+                <span class="step-time">10 secondes</span>
+              </div>
+            </li>
+            <li class="usage-item">
+              <div class="step-icon">
+                <lucide-icon name="download" size="20"></lucide-icon>
+              </div>
+              <div class="step-content">
+                <span class="step-text">Lancez le téléchargement et récupérez le lien direct.</span>
+                <span class="step-time">Instantané</span>
+              </div>
+            </li>
+            <li class="usage-item">
+              <div class="step-icon">
+                <lucide-icon name="clock" size="20"></lucide-icon>
+              </div>
+              <div class="step-content">
+                <span class="step-text">Le fichier reste disponible quelques minutes puis est supprimé automatiquement.</span>
+                <span class="step-time">5 minutes</span>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="usage-card highlight">
+          <h2 class="usage-title">Pourquoi créer un compte ?</h2>
+          <ul class="usage-benefits">
+            <li class="usage-item">
+              <lucide-icon name="shield" size="18"></lucide-icon>
+              <span>Vos liens sont protégés et accessibles uniquement par vous.</span>
+            </li>
+            <li class="usage-item">
+              <lucide-icon name="download" size="18"></lucide-icon>
+              <span>Historique des téléchargements et suivi en temps réel.</span>
+            </li>
+            <li class="usage-item">
+              <lucide-icon name="file-text" size="18"></lucide-icon>
+              <span>Choix des formats et meilleure organisation de vos fichiers.</span>
+            </li>
+            <li class="usage-item">
+              <lucide-icon name="link" size="18"></lucide-icon>
+              <span>Accès rapide au lien direct sans recopier l'URL.</span>
+            </li>
+          </ul>
+          <div class="usage-cta">
+            <button class="btn primary" (click)="goToAuth()" *ngIf="!isAuthenticated">
+              Créer un compte
+            </button>
+            <button class="btn outline" (click)="goToDownloads()" *ngIf="isAuthenticated">
+              Aller aux téléchargements
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials Section -->
+  <div class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Ce que disent nos utilisateurs</h2>
+        <p class="section-subtitle">Rejoignez une communauté de milliers d'utilisateurs satisfaits</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <div class="stars">
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+            </div>
+            <p class="testimonial-text">
+              "MediaDL a complètement changé ma façon de télécharger des vidéos. 
+              C'est rapide, simple et la qualité est exceptionnelle !"
+            </p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <lucide-icon name="user" size="20"></lucide-icon>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Marie L.</div>
+              <div class="author-role">Créatrice de contenu</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <div class="stars">
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-half"></lucide-icon>
+            </div>
+            <p class="testimonial-text">
+              "J'adore la sécurité et le fait que mes fichiers soient protégés. 
+              Plus besoin de m'inquiéter de la confidentialité !"
+            </p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <lucide-icon name="user" size="20"></lucide-icon>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Thomas B.</div>
+              <div class="author-role">Étudiant</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <div class="stars">
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+              <lucide-icon name="star" size="16" class="star-filled"></lucide-icon>
+            </div>
+            <p class="testimonial-text">
+              "L'interface est magnifique et tellement intuitive. 
+              Je peux télécharger depuis YouTube et Instagram en quelques clics !"
+            </p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <lucide-icon name="user" size="20"></lucide-icon>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Sophie M.</div>
+              <div class="author-role">Marketing digital</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="cta">
+    <div class="container">
+      <div class="cta-content">
+        <div class="cta-text">
+          <h2>Prêt à révolutionner vos téléchargements ?</h2>
+          <p>Rejoignez des milliers d'utilisateurs qui font confiance à MediaDL</p>
+          <div class="cta-features">
+            <div class="cta-feature">
+              <lucide-icon name="check-circle" size="20"></lucide-icon>
+              <span>Accès instantané</span>
+            </div>
+            <div class="cta-feature">
+              <lucide-icon name="check-circle" size="20"></lucide-icon>
+              <span>100% gratuit</span>
+            </div>
+            <div class="cta-feature">
+              <lucide-icon name="check-circle" size="20"></lucide-icon>
+              <span>Sécurité maximale</span>
+            </div>
+          </div>
+        </div>
+        <div class="cta-stats">
+          <div class="stat">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Téléchargements</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Utilisateurs</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">99.9%</div>
+            <div class="stat-label">Uptime</div>
+          </div>
+        </div>
+        <div class="cta-actions">
+          <button class="btn primary large cta-btn" (click)="goToAuth()" *ngIf="!isAuthenticated">
+            <lucide-icon name="rocket" size="20"></lucide-icon>
+            Créer mon compte gratuitement
+          </button>
+          <button class="btn outline large" (click)="scrollToFeatures()">
+            <lucide-icon name="info" size="20"></lucide-icon>
+            En savoir plus
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="how-it-works">
+    <div class="container">
+      <h2 class="section-title">Comment ça marche ?</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <lucide-icon name="edit-3" size="24"></lucide-icon>
+          </div>
+          <h3>Créez votre compte</h3>
+          <p>Inscription rapide et gratuite en quelques secondes</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <lucide-icon name="link" size="24"></lucide-icon>
+          </div>
+          <h3>Collez l'URL</h3>
+          <p>Copiez-collez le lien de votre média préféré</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <lucide-icon name="arrow-down" size="24"></lucide-icon>
+          </div>
+          <h3>Téléchargez</h3>
+          <p>Choisissez la qualité et téléchargez instantanément</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+{
+  "baseUrl": "http://localhost:5000",
+  "app": "MediaDL",
+  "routes": {
+    "batches": {
+      "list": "/api/v1/mediadl/batches",
+      "create": "/api/v1/mediadl/batches",
+      "get": "/api/v1/mediadl/batches/:id",
+      "update": "/api/v1/mediadl/batches/:id",
+      "remove": "/api/v1/mediadl/batches/:id"
+    },
+    "downloads": {
+      "list": "/api/v1/mediadl/downloads",
+      "create": "/api/v1/mediadl/downloads",
+      "get": "/api/v1/mediadl/downloads/:id",
+      "update": "/api/v1/mediadl/downloads/:id",
+      "remove": "/api/v1/mediadl/downloads/:id"
+    },
+    "presets": {
+      "list": "/api/v1/mediadl/presets",
+      "create": "/api/v1/mediadl/presets",
+      "get": "/api/v1/mediadl/presets/:id",
+      "update": "/api/v1/mediadl/presets/:id",
+      "remove": "/api/v1/mediadl/presets/:id"
+    }
+  }
+}

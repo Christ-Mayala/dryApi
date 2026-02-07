@@ -1,4 +1,4 @@
-const AuditLog = require('../../models/AuditLog.model');
+const AuditLogSchema = require('../../models/audit/AuditLog.model');
 
 const SENSITIVE_KEYS = new Set([
   'password',
@@ -47,24 +47,42 @@ const auditLogger = (actionName) => async (req, res, next) => {
       const duration = Date.now() - start;
       const statusCode = res.statusCode;
 
-      AuditLog.create({
-        user: req.user._id,
-        action: actionName || req.method + ' ' + req.originalUrl,
-        method: req.method,
-        route: req.originalUrl,
-        ip: req.ip,
-        userAgent,
-        origin,
-        status: statusCode >= 400 ? 'failed' : 'success',
-        details: {
-          body: sanitize(req.body),
-          query: sanitize(req.query),
-          statusCode,
-          durationMs: duration,
-        },
-      }).catch((err) => {
-        console.error('Audit Log Error:', err.message);
-      });
+      const mapAction = () => {
+        const label = String(actionName || '').toLowerCase();
+        if (label.includes('login')) return 'login';
+        if (label.includes('logout')) return 'logout';
+        if (label.includes('create') || label.includes('start')) return 'create';
+        if (label.includes('update')) return 'update';
+        if (label.includes('delete')) return 'delete';
+        if (req.method === 'GET') return 'view';
+        if (req.method === 'POST') return 'create';
+        if (req.method === 'PUT' || req.method === 'PATCH') return 'update';
+        if (req.method === 'DELETE') return 'delete';
+        return 'view';
+      };
+
+      const AuditLog = req.getModel ? req.getModel('AuditLog', AuditLogSchema) : null;
+      if (AuditLog && typeof AuditLog.create === 'function') {
+        AuditLog.create({
+          action: mapAction(),
+          resourceType: req.baseUrl || req.path || 'unknown',
+          resourceId: req.params?.id || undefined,
+          userId: req.user?._id,
+          userEmail: req.user?.email,
+          tenantId: req.appName || req.params?.tenant || 'unknown',
+          ipAddress: req.ip,
+          userAgent,
+          details: {
+            body: sanitize(req.body),
+            query: sanitize(req.query),
+            statusCode,
+            durationMs: duration,
+          },
+          status: statusCode >= 400 ? 'failure' : 'success',
+        }).catch((err) => {
+          console.error('Audit Log Error:', err.message);
+        });
+      }
 
       // On appelle ensuite le end original
       return originalEnd.apply(this, args);

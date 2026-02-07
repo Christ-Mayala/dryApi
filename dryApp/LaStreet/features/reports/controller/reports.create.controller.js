@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const { isValidObjectId } = require('../../../../../dry/utils/ids');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { isValidObjectId } = require('../../../../../dry/utils/data/ids');
 
 const ReportSchema = require('../model/report.schema');
 const ProfessionalSchema = require('../../professionals/model/professional.schema');

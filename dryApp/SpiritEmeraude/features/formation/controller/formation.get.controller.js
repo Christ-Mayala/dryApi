@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 const FormationSchema = require('../model/formation.schema');
 
 const getFormation = asyncHandler(async (req, res) => {

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const { getPagination } = require('../../../../../dry/utils/pagination');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { getPagination } = require('../../../../../dry/utils/data/pagination');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const { getClientIp, hashIp } = require('../../../../../dry/utils/ip');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const { getClientIp, hashIp } = require('../../../../../dry/utils/http/ip');
 
 const PropertySchema = require('../model/property.schema');
 const PropertyViewSchema = require('../model/propertyView.schema');

@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 const ContactSchema = require('../model/contact.schema');
 
 const deleteMessage = asyncHandler(async (req, res) => {

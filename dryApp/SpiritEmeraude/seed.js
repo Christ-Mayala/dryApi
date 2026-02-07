@@ -1,41 +1,150 @@
-const ProductSchema = require('./features/product/model/product.schema');
-const AtelierSchema = require('./features/atelier/model/atelier.schema');
-const ImpactSchema = require('./features/impact/model/impact.schema');
-const GallerySchema = require('./features/gallery/model/gallery.schema');
-const ContactSchema = require('./features/contact/model/contact.schema');
+const path = require('path');
 
-module.exports = async ({ appName, getModel }) => {
-    const Product = getModel(appName, 'Product', ProductSchema);
-    const Atelier = getModel(appName, 'Atelier', AtelierSchema);
-    const Impact = getModel(appName, 'Impact', ImpactSchema);
-    const Gallery = getModel(appName, 'Gallery', GallerySchema);
-    const Contact = getModel(appName, 'Contact', ContactSchema);
+module.exports = async ({ appName, getModel, logSeed }) => {
+  let count = 0;
+  // atelier
+  const atelierSchema = require('./features/atelier/model/atelier.schema.js');
+  const Atelier = getModel(appName, 'Atelier', atelierSchema);
+  const atelierDocs = [
+  {
+    "label": "Exemple atelier 1"
+  },
+  {
+    "label": "Exemple atelier 2"
+  },
+  {
+    "label": "Exemple atelier 3"
+  }
+];
+  const atelierCreated = await Atelier.insertMany(atelierDocs);
+  count += atelierCreated.length;
+  await logSeed({
+    appName,
+    feature: 'atelier',
+    modelName: 'Atelier',
+    schemaPath: path.join(__dirname, 'features', 'atelier', 'model', 'atelier.schema.js'),
+    ids: atelierCreated.map((d) => d._id),
+  });
 
-    if ((await Product.countDocuments({})) === 0) {
-        await Product.create({ name: 'Sac cuir', category: 'sac', price: 25000, description: 'Sac en cuir', images: [] });
-        await Product.create({ name: 'Sandale artisanale', category: 'sandale', price: 12000, description: 'Sandale', images: [] });
-    }
+  // contact
+  const contactSchema = require('./features/contact/model/contact.schema.js');
+  const Contact = getModel(appName, 'Contact', contactSchema);
+  const contactDocs = [
+  {
+    "label": "Exemple contact 1"
+  },
+  {
+    "label": "Exemple contact 2"
+  },
+  {
+    "label": "Exemple contact 3"
+  }
+];
+  const contactCreated = await Contact.insertMany(contactDocs);
+  count += contactCreated.length;
+  await logSeed({
+    appName,
+    feature: 'contact',
+    modelName: 'Contact',
+    schemaPath: path.join(__dirname, 'features', 'contact', 'model', 'contact.schema.js'),
+    ids: contactCreated.map((d) => d._id),
+  });
 
-    if ((await Atelier.countDocuments({})) === 0) {
-        await Atelier.create({
-            name: 'Atelier couture',
-            description: 'Atelier couture',
-            duration: '3 semaines',
-            images: [],
-            videos: [],
-            nextSession: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
-    }
+  // formation
+  const formationSchema = require('./features/formation/model/formation.schema.js');
+  const Formation = getModel(appName, 'Formation', formationSchema);
+  const formationDocs = [
+  {
+    "label": "Exemple formation 1"
+  },
+  {
+    "label": "Exemple formation 2"
+  },
+  {
+    "label": "Exemple formation 3"
+  }
+];
+  const formationCreated = await Formation.insertMany(formationDocs);
+  count += formationCreated.length;
+  await logSeed({
+    appName,
+    feature: 'formation',
+    modelName: 'Formation',
+    schemaPath: path.join(__dirname, 'features', 'formation', 'model', 'formation.schema.js'),
+    ids: formationCreated.map((d) => d._id),
+  });
 
-    if ((await Impact.countDocuments({})) === 0) {
-        await Impact.create({ name: 'Action solidaire', description: 'Collecte', images: [], videos: [], location: 'Douala' });
-    }
+  // gallery
+  const gallerySchema = require('./features/gallery/model/gallery.schema.js');
+  const Gallery = getModel(appName, 'Gallery', gallerySchema);
+  const galleryDocs = [
+  {
+    "label": "Exemple gallery 1"
+  },
+  {
+    "label": "Exemple gallery 2"
+  },
+  {
+    "label": "Exemple gallery 3"
+  }
+];
+  const galleryCreated = await Gallery.insertMany(galleryDocs);
+  count += galleryCreated.length;
+  await logSeed({
+    appName,
+    feature: 'gallery',
+    modelName: 'Gallery',
+    schemaPath: path.join(__dirname, 'features', 'gallery', 'model', 'gallery.schema.js'),
+    ids: galleryCreated.map((d) => d._id),
+  });
 
-    if ((await Gallery.countDocuments({})) === 0) {
-        await Gallery.create({ name: 'Photo atelier', category: 'atelier', imageUrl: 'https://example.com/gallery1.jpg' });
-    }
+  // impact
+  const impactSchema = require('./features/impact/model/impact.schema.js');
+  const Impact = getModel(appName, 'Impact', impactSchema);
+  const impactDocs = [
+  {
+    "label": "Exemple impact 1"
+  },
+  {
+    "label": "Exemple impact 2"
+  },
+  {
+    "label": "Exemple impact 3"
+  }
+];
+  const impactCreated = await Impact.insertMany(impactDocs);
+  count += impactCreated.length;
+  await logSeed({
+    appName,
+    feature: 'impact',
+    modelName: 'Impact',
+    schemaPath: path.join(__dirname, 'features', 'impact', 'model', 'impact.schema.js'),
+    ids: impactCreated.map((d) => d._id),
+  });
 
-    if ((await Contact.countDocuments({})) === 0) {
-        await Contact.create({ name: 'Visiteur', phone: '+237699999999', email: 'visitor@example.com', subject: 'Infos', message: 'Bonjour' });
-    }
+  // product
+  const productSchema = require('./features/product/model/product.schema.js');
+  const Product = getModel(appName, 'Product', productSchema);
+  const productDocs = [
+  {
+    "label": "Exemple product 1"
+  },
+  {
+    "label": "Exemple product 2"
+  },
+  {
+    "label": "Exemple product 3"
+  }
+];
+  const productCreated = await Product.insertMany(productDocs);
+  count += productCreated.length;
+  await logSeed({
+    appName,
+    feature: 'product',
+    modelName: 'Product',
+    schemaPath: path.join(__dirname, 'features', 'product', 'model', 'product.schema.js'),
+    ids: productCreated.map((d) => d._id),
+  });
+
+  return { count };
 };

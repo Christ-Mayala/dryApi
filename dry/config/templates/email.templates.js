@@ -22,6 +22,33 @@ const templates = {
             <h3>Notification</h3>
             <p>${message}</p>
         </div>
+    `,
+    // Template réinitialisation mot de passe
+    PASSWORD_RESET: (name, code) => `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #111; text-align: center;">Code de réinitialisation</h1>
+            <p>Bonjour ${name},</p>
+            <p>Vous avez demandé à réinitialiser votre mot de passe <strong>La STREET</strong>.</p>
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px; color: #666;">Votre code de réinitialisation est :</p>
+                <h2 style="margin: 10px 0; font-size: 32px; letter-spacing: 5px; color: #007bff; font-family: monospace;">${code}</h2>
+            </div>
+            <p style="color: #666; font-size: 14px;">Ce code expire dans 15 minutes.</p>
+            <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+        </div>
+    `,
+    // Template confirmation réinitialisation
+    PASSWORD_RESET_CONFIRM: (name) => `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #28a745; text-align: center;">Mot de passe réinitialisé</h1>
+            <p>Bonjour ${name},</p>
+            <p>Votre mot de passe <strong>La STREET</strong> a été réinitialisé avec succès.</p>
+            <p>Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="http://localhost:4200/login" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Se connecter</a>
+            </div>
+            <p style="color: #666; font-size: 14px;">Si vous n'avez pas effectué cette action, contactez-nous immédiatement.</p>
+        </div>
     `
 };
 

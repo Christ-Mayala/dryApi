@@ -1,5 +1,5 @@
 const { getTenantDB } = require('../../config/connection/dbConnection');
-const { getAppNames } = require('../../core/appScanner');
+const { getAppNames } = require('../../core/application/appScanner');
 
 const purgeTenant = async ({ appName, cutoffDate }) => {
     const dbConn = getTenantDB(appName);

@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
-const sendEmail = require('../../../../../dry/services/email/email.service');
+﻿const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const emailService = require('../../../../../dry/services/auth/email.service');
 
 const escapeHtml = (s) =>
   String(s || '')
@@ -11,7 +11,7 @@ const escapeHtml = (s) =>
     .replace(/'/g, '&#039;');
 
 // Admin: envoi en lot (broadcast) vers tous les utilisateurs ou tous les professionnels.
-// On ne renvoie pas d'erreurs techniques au frontend (géré par errorHandler).
+// On ne renvoie pas d'erreurs techniques au frontend (gÃ©rÃ© par errorHandler).
 
 module.exports = asyncHandler(async (req, res) => {
   const User = req.getModel('User');
@@ -51,7 +51,7 @@ module.exports = asyncHandler(async (req, res) => {
     <div style="font-family: Arial, sans-serif; line-height: 1.5;">
       <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
       <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
-      <p style="color:#666;font-size:12px">Message envoyé depuis l'administration La STREET.</p>
+      <p style="color:#666;font-size:12px">Message envoyÃ© depuis l'administration La STREET.</p>
     </div>
   `.trim();
 
@@ -66,10 +66,11 @@ module.exports = asyncHandler(async (req, res) => {
     attempted += 1;
 
     // eslint-disable-next-line no-await-in-loop
-    const ok = await sendEmail({ email, subject, html });
+    const ok = await emailService.sendGenericEmail({ email, subject, html });
     if (ok) sent += 1;
     else failed += 1;
   }
 
-  return sendResponse(res, { attempted, sent, failed }, 'Broadcast envoyé');
+  return sendResponse(res, { attempted, sent, failed }, 'Broadcast envoyÃ©');
 });
+

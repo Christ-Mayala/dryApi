@@ -1,4 +1,111 @@
 const express = require('express');
+/**
+ * @swagger
+ * /api/v1/scim/admin:
+ *   get:
+ *     summary: Lister Admin
+ *     tags: [SCIM]
+ *     responses:
+ *       200:
+ *         description: Liste Admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   post:
+ *     summary: Creer Admin
+ *     tags: [SCIM]
+ *     responses:
+ *       200:
+ *         description: Admin cree
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * /api/v1/scim/admin/{id}:
+ *   get:
+ *     summary: Recuperer Admin par ID
+ *     tags: [SCIM]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Admin recupere
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   put:
+ *     summary: Mettre a jour Admin
+ *     tags: [SCIM]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Admin mis a jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   delete:
+ *     summary: Supprimer Admin
+ *     tags: [SCIM]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Admin supprime
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+
+
 const router = express.Router();
 
 const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
@@ -33,31 +140,178 @@ const updateSystemSettings = require('../controller/admin.settings.update.contro
 router.use(protect);
 router.use(authorize('admin'));
 
+
+
+
+
+
 router.get('/dashboard/stats', getDashboardStats);
+
+
+
+
+
+
+
 router.get('/reservations', getAllReservations);
 
+
+
+
+
+
+
+
 router.get('/properties', getAllProperties);
+
+
+
+
+
+
+
 router.get('/properties/:id', getPropertyById);
+
+
+
+
+
+
+
 router.put('/properties/:id/status', updatePropertyStatus);
+
+
+
+
+
+
+
 router.delete('/properties/:id', deleteProperty);
 
+
+
+
+
+
+
+
 router.get('/users', getAllUsers);
+
+
+
+
+
+
+
 router.get('/users/:id', getUserById);
+
+
+
+
+
+
+
 router.put('/users/:id', updateUser);
+
+
+
+
+
+
+
 router.put('/users/:id/role', updateUserRole);
+
+
+
+
+
+
+
 router.delete('/users/:id', deleteUser);
+
+
+
+
+
+
+
 router.patch('/users/:id/restore', restoreUser);
 
+
+
+
+
+
+
+
 router.get('/messages', getAllMessages);
+
+
+
+
+
+
+
 router.get('/messages/:id', getMessageById);
+
+
+
+
+
+
+
 router.put('/messages/:id/status', updateMessageStatus);
+
+
+
+
+
+
+
 router.delete('/messages/:id', deleteMessage);
 
+
+
+
+
+
+
+
 router.get('/analytics/properties', getPropertyAnalytics);
+
+
+
+
+
+
+
 router.get('/analytics/users', getUserAnalytics);
+
+
+
+
+
+
+
 router.get('/analytics/revenue', getRevenueAnalytics);
 
+
+
+
+
+
+
+
 router.get('/settings', getSystemSettings);
+
+
+
+
+
+
+
 router.put('/settings', updateSystemSettings);
+
+
 
 module.exports = router;

@@ -1,5 +1,5 @@
-const sendResponse = require('../../utils/response');
-const logger = require('../../utils/logger');
+const sendResponse = require('../../utils/http/response');
+const logger = require('../../utils/logging/logger');
 
 const looksTechnicalMessage = (msg) => {
     const s = String(msg || '').trim();
@@ -45,24 +45,25 @@ const formatMongooseValidation = (mongooseErr) => {
         }
     }
 
-    return messages.length ? messages.join(' ') : 'Données invalides.';
+    return messages.length ? messages.join(' ') : 'Donnees invalides.';
 };
 
 const errorHandler = async (err, req, res, next) => {
     const route = `${req.method} ${req.originalUrl}`;
     const stack = err?.stack || err?.message || String(err);
-    logger(`${route}\n${stack}`, 'error');
+    const rid = req.requestId || req.headers['x-request-id'] || 'no-request-id';
+    logger(`[${rid}] ${route}\n${stack}`, 'error');
 
-    let message = 'Une erreur est survenue. Veuillez réessayer.';
+    let message = 'Une erreur est survenue. Veuillez reessayer.';
 
     if (err?.code === 'LIMIT_FILE_SIZE') {
         message = 'Fichier trop volumineux (max 10MB).';
     } else if (err?.type === 'entity.too.large' || err?.name === 'PayloadTooLargeError') {
-        message = 'Données envoyées trop volumineuses.';
+        message = 'Donnees envoyees trop volumineuses.';
     } else if (err?.code === 11000) {
         const key = Object.keys(err?.keyValue || {})[0];
-        if (key === 'email') message = 'Cet email est déjà utilisé.';
-        else message = 'Valeur déjà utilisée.';
+        if (key === 'email') message = 'Cet email est deja utilise.';
+        else message = 'Valeur deja utilisee.';
     } else if (err?.name === 'ValidationError') {
         message = formatMongooseValidation(err);
     } else if (err?.name === 'CastError') {
@@ -70,7 +71,7 @@ const errorHandler = async (err, req, res, next) => {
     } else if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') {
         message = 'Session invalide. Veuillez vous reconnecter.';
     } else if (typeof err?.message === 'string' && err.message === 'Origin not allowed by CORS') {
-        message = 'Requête bloquée (CORS). Origine non autorisée.';
+        message = 'Requete bloquee (CORS). Origine non autorisee.';
     } else if (typeof err?.message === 'string' && !looksTechnicalMessage(err.message)) {
         message = err.message;
     }

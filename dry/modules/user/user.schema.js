@@ -35,6 +35,7 @@ const UserSchema = new mongoose.Schema({
     lockUntil: { type: Number },
     lastLogin: { type: Date },
     lastIp: { type: String },
+    passwordChangedAt: { type: Date },
 
     status: {
         type: String,

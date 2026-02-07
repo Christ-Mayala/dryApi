@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const sendResponse = require('../../../../../dry/utils/response');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
 const listProduct = asyncHandler(async (req, res) => {
     // res.advancedResults est rempli par le middleware queryBuilder
