@@ -18,6 +18,7 @@ const cancel = require('../controller/downloads.cancel.controller');
 const file = require('../controller/downloads.file.controller');
 const platforms = require('../controller/downloads.platforms.controller');
 const start = require('../controller/downloads.start.controller');
+const youtubeMetadata = require('./youtube-metadata.route');
 
 const setupModel = (req, res, next) => {
   req.targetModel = req.getModel('Downloads', DownloadsSchema);
@@ -299,5 +300,8 @@ router.delete(
   invalidateCache(),
   remove
 );
+
+// Utiliser les routes de YouTube metadata
+router.use('/youtube/metadata', youtubeMetadata);
 
 module.exports = router;
