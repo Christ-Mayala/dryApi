@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const ytdl = require('ytdl-core');
+
+// Import dynamique pour ytdl-core
+let ytdl = null;
+try {
+  ytdl = require('@distube/ytdl-core');
+} catch (e) {
+  console.warn('ytdl-core non disponible sur le serveur');
+}
 
 // POST /api/mediadl/youtube/metadata - Valider et récupérer métadonnées
 router.post('/youtube/metadata', async (req, res) => {
@@ -20,6 +27,14 @@ router.post('/youtube/metadata', async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         error: 'URL YouTube non valide' 
+      });
+    }
+    
+    // Vérifier si ytdl est disponible
+    if (!ytdl) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Service YouTube temporairement indisponible' 
       });
     }
     
