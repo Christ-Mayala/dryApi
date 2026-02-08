@@ -3829,3 +3829,14 @@ TypeError: req.getModel is not a function
 [07/02/2026 19:23:39] [ERROR] Erreur envoi email: fetch failed
 [07/02/2026 19:25:39] [ERROR] Erreur envoi email: fetch failed
 [07/02/2026 19:26:28] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 19:57:07] [ERROR] Erreur envoi email: fetch failed
+[07/02/2026 20:08:07] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 19:55:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:09:31] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:15:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:16:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:21:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:27:31] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:30:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:32:41] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 20:37:42] [ERROR] Erreur envoi email: fetch failed
