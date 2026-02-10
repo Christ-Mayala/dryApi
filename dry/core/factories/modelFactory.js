@@ -19,12 +19,21 @@ const UserSchema = require('../../modules/user/user.schema');
 const getModel = (appName, modelName, schema = null) => {
     const db = getTenantDB(appName);
     
+    // [FIX] S'assurer que le modèle 'User' est enregistré car le plugin DRY en a besoin pour le populate
+    if (modelName !== 'User' && !db.models.User) {
+        getModel(appName, 'User');
+    }
+
     if (db.models[modelName]) {
         return db.models[modelName];
     }
 
     if (modelName === 'User' && !schema) {
-        schema = UserSchema;
+        // [FIX] Cloner le schéma pour éviter la duplication des plugins sur l'instance partagée
+        schema = UserSchema.clone();
+    } else if (schema) {
+        // [FIX] Cloner le schéma pour l'isolation entre tenants
+        schema = schema.clone();
     }
 
     if (!schema) {
