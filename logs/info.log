@@ -4299,3 +4299,5 @@
 [10/02/2026 19:25:16] [INFO] Email service configure avec Resend API
 [10/02/2026 19:26:54] [INFO] [94647802-9893-4509-8b0b-620c65d87e38] GET /api/v1/immopro/visites 200 792ms
 [10/02/2026 19:27:42] [INFO] [c8038079-ab76-491b-bfd0-1fdb77146ca4] POST /api/v1/immopro/visites 200 10ms
+[10/02/2026 19:31:11] [INFO] Email service configure avec Resend API
+[10/02/2026 19:31:25] [INFO] Email service configure avec Resend API
