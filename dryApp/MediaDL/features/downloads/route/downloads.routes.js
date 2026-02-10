@@ -301,7 +301,7 @@ router.delete(
   remove
 );
 
-// Utiliser les routes de YouTube metadata
+// Utiliser les routes de YouTube metadata (sans auth pour le frontend)
 router.use('/youtube/metadata', youtubeMetadata);
 
 module.exports = router;

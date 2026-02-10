@@ -1,195 +1,161 @@
 # DRY API - Server GOLD (Cyberfusion)
 
-Ce document est la source unique de verite pour comprendre, utiliser et deployer le systeme DRY.
+Ce document est la source unique de vérité pour comprendre, utiliser et déployer le système DRY.
 Signature backend obligatoire : Cyberfusion.
 
-Droits d'auteur
-Server GOLD � Email: servergold2012@gmail.com � Tel: +242068457521
+**Droits d'auteur**
+Server GOLD — Email: servergold2012@gmail.com — Tél: +242068457521
 
-## Objectif du DRY
-DRY est un socle backend multi-tenant pour creer rapidement des applications API professionnelles,
-avec securite, validation, logs, swagger, cache, audit et generation automatique (routes + tests).
+---
 
-Concretement, DRY te permet de:
-- creer une nouvelle app en quelques minutes
-- obtenir un CRUD complet par feature
-- documenter automatiquement via Swagger
-- generer des tests et des clients frontend
-- garder une architecture claire, stable et extensible
+## 🎯 Objectif du DRY
+DRY est un socle backend multi-tenant conçu pour créer rapidement des applications API professionnelles, scalables et sécurisées.
+Il intègre nativement :
+- Sécurité avancée (JWT, CSRF, Helmet, Rate Limit, Mongo Sanitize)
+- Validation centralisée (Joi)
+- Documentation automatique (Swagger/OpenAPI)
+- Cache et Audit logs
+- Génération de code (Scaffolding)
+- Tests automatisés
 
-## Demarrage rapide (debutant)
-1. Installer les dependances: `npm install`
-2. Copier `.env.exemple` vers `.env` et remplir les variables
-3. Lancer le serveur: `npm run dev`
-4. Ouvrir Swagger: `http://localhost:5000/api-docs`
+Concrètement, DRY te permet de :
+1.  **Créer une app complète en 2 minutes** (Modèles, Routes, Contrôleurs, Tests).
+2.  **Héberger plusieurs projets** sur le même noyau (Architecture Multi-tenant).
+3.  **Standardiser tes développements** grâce à une architecture propre et modulaire.
 
-Si tu es debutant, commence par:
-- `npm run create-app` pour generer une app
-- `npm run seed` pour creer un admin par defaut
-- `npm run test` pour valider que tout fonctionne
+---
 
-## Concepts cles (simple)
-1. Multi-tenant: chaque application a sa base via `getTenantDB(appName)`
-2. Modeles dynamiques: `req.getModel(modelName, schema)` injecte par le bootloader
-3. DRY plugin: ajoute `label`, `slug`, `status`, `deletedAt`, `createdBy`, `updatedBy`
-4. Securite: JWT + validation Joi + rate limit + headers (helmet)
-5. Logs: logs centralises + `requestId` pour tracer chaque requete
+## 🚀 Démarrage Rapide
 
-Exemple simple:
-- tu crees une feature `produits`
-- DRY genere schema, controllers, routes, validation, tests, swagger
-- tu ajoutes seulement ta logique metier
-
-## Structure d'une application
-```
-dryApp/<App>/
-  features/<feature>/
-    model/        # schema Mongoose
-    controller/   # CRUD separes (getAll, getById, create, update, delete)
-    route/        # routes securisees + swagger
-  validation/     # schemas Joi + middlewares
-  seed.js         # seeder individuel (donnees de demo)
-  README.md       # doc locale de l'app
+### 1. Installation
+```bash
+npm install
 ```
 
-## Structure globale du projet (vue rapide)
-- `dry/` : coeur du framework DRY (middlewares, services, utils)
-- `dryApp/` : applications generes (une app = un dossier)
-- `scripts/` : scripts de generation, swagger, tests, seed, maintenance
-- `tests/` : tests auto generes par app + tests de validation
-- `generated/` : clients frontend (React/Angular) + Postman
+### 2. Configuration
+Copie le fichier `.env.exemple` vers `.env` et configure tes variables (MongoDB, JWT, etc.).
 
-## Commandes (role de chaque commande)
-### Serveur
-- `npm run dev` : demarre le serveur en mode developpement
-- `npm start` : demarre le serveur en mode production
+### 3. Lancement
+```bash
+# Mode Développement (avec redémarrage auto)
+npm run dev
 
-### Creation d'app
-- `npm run create-app` : lance le generateur d'applications (modes + templates)
+# Mode Production
+npm start
+```
 
-### Swagger
-- `npm run swagger:generate` : ajoute des commentaires swagger si manquants
-- `npm run swagger:reset` : reset propre (nettoie + regenere)
-- `npm run swagger:cleanup` : nettoyage final des doublons
-- `npm run swagger:clean` : nettoyage brut des commentaires swagger
-- `npm run docs:build` : reset swagger + affiche liens docs
+### 4. Vérification
+- API Status : `GET http://localhost:5000/`
+- Documentation Swagger : `http://localhost:5000/api-docs`
 
-Explication simple:
-- `generate` ajoute si absent
-- `clean` supprime tout
-- `reset` fait clean + regen complet
-- `cleanup` corrige les doublons
+---
 
-### Tests
-- `npm run test` : lance tous les tests (resume clair)
-- `npm run test:strict` : tests + echec si serveur indisponible
-- `npm run test:app -- <App>` : tests d'une seule app
-- `npm run test:feature -- <App> <feature>` : test d'une feature precise
-- `npm run test:list` : liste tous les tests par application
-- `npm run test:crud` : regenere tests CRUD + lance les tests
+## 🏗️ Architecture & Concepts Clés
 
-Explication simple:
-- `test` = tous les tests
-- `test:strict` = bloque si le serveur ne tourne pas
-- `test:app` = uniquement une app
-- `test:feature` = uniquement une feature
+### 1. Multi-tenant
+Chaque application créée dans `dryApp/` est isolée mais partage le même noyau `dry/`.
+- La base de données est sélectionnée dynamiquement via `getTenantDB(appName)`.
+- Les modèles sont injectés via `req.getModel(modelName, schema)`.
 
-### Seed (donnees de demo)
-- `npm run seed` : cree un admin par application (global)
-- `npm run seed:apps` : lance les seeders individuels de chaque app
-- `npm run seed:clean` : supprime uniquement les donnees seed (sans toucher aux users)
-- `npm run seed:refresh` : regenere tous les seeders individuels
+### 2. Structure des Dossiers
+```
+d:\Alvine\dryApi\
+├── dry/                  # 🧠 CŒUR DU SYSTÈME (Ne pas toucher sauf expert)
+│   ├── core/             # Bootloader, Factories, Router dynamique
+│   ├── middlewares/      # Sécurité, Auth, Cache, Audit, Validation
+│   ├── services/         # Email, Upload, Tâches planifiées
+│   └── utils/            # Helpers (JWT, Logger, Response)
+│
+├── dryApp/               # 📱 VOS APPLICATIONS MÉTIER
+│   └── MonApp/           # Une application isolée
+│       ├── features/     # Modules fonctionnels (ex: produits, users)
+│       │   └── [feature]/
+│       │       ├── controller/  # Logique métier (CRUD)
+│       │       ├── model/       # Schéma Mongoose
+│       │       └── route/       # Routes Express
+│       ├── validation/   # Schémas Joi
+│       └── seed.js       # Données de test
+│
+├── scripts/              # 🛠️ OUTILS D'AUTOMATISATION
+│   ├── generator/        # Création d'app (create-app)
+│   ├── swagger/          # Génération de doc
+│   └── tests/            # Runner de tests
+│
+└── generated/            # 📦 CODE GÉNÉRÉ (Clients Frontend, SDKs)
+```
 
-Explication simple:
-- `seed` = admin global
-- `seed:apps` = donnees metier par app
-- `seed:clean` = nettoyer les donnees ajoutees par seeds
+### 3. Le Plugin DRY Global
+Tous les modèles Mongoose bénéficient automatiquement des champs suivants :
+- `label` (String) : Nom lisible
+- `slug` (String) : URL friendly (généré depuis label)
+- `status` (String) : 'active', 'inactive', 'deleted'
+- `deletedAt` (Date) : Soft delete
+- `createdBy` / `updatedBy` (ObjectId) : Traçabilité utilisateur
 
-### Clients frontend
-- `npm run client:gen` : genere clients React/Angular + hooks + types
+---
 
-### Postman
-- `npm run postman:generate` : genere une collection Postman
+## 🛠️ Commandes Principales
 
-### Monitoring / Backups
-- `npm run monitor:health` : verifie /health/ready et alerte si probleme
-- `npm run backup:mongo` : backup Mongo (mongodump requis)
+### 🎨 Création d'Application
+Lance l'assistant interactif pour générer une nouvelle app ou un module.
+```bash
+npm run create-app
+```
+*Options : Mode Professionnel (Templates), Mode Personnalisé, Mode Rapide.*
 
-## Tutoriel complet (pas a pas)
-### 1) Creer une app
-1. `npm run create-app`
-2. Choisir un mode (Professionnel / Personnalise / Rapide)
-3. Donner un nom (ex: ImmoPro)
-4. Les fichiers sont generes dans `dryApp/ImmoPro`
+### 📚 Documentation (Swagger)
+Gère la documentation API automatiquement.
+```bash
+npm run swagger:reset    # Régénère toute la doc à partir du code
+npm run swagger:cleanup  # Nettoie les doublons
+```
 
-### 2) Lancer le serveur
-`npm run dev`
+### 🧪 Tests Automatisés
+```bash
+npm run test             # Lance tous les tests
+npm run test:crud        # Génère et lance les tests CRUD
+npm run test:strict      # Échoue si le serveur est éteint
+```
 
-### 3) Tester l'app
-- Tests complets: `npm run test`
-- Tests stricts (serveur obligatoire): `npm run test:strict`
+### 🌱 Données de Démo (Seeds)
+```bash
+npm run seed             # Crée un Admin global
+npm run seed:apps        # Peuple les apps avec des données de test
+npm run seed:clean       # Nettoie les données de test
+```
 
-### 4) Seeder (donnees de demo)
-- Admin global: `npm run seed`
-- Donnees par app: `npm run seed:apps`
-- Nettoyage des seeds: `npm run seed:clean`
+### 📦 Génération Client Frontend
+Génère les services et hooks pour Angular/React.
+```bash
+npm run client:gen
+```
 
-### 5) Swagger
-- `npm run swagger:reset`
-- Ouvrir `http://localhost:5000/api-docs`
+---
 
-### 6) Frontend
-- `npm run client:gen`
-- Utiliser les hooks React generes dans `generated/clients/<App>/react/`
+## 🛡️ Sécurité
 
-## Cycle de developpement conseille
-1. Creer une app
-2. Lancer le serveur
-3. Lancer Swagger pour verifier les routes
-4. Generer des tests et les executer
-5. Creer ou ajuster les seeders
-6. Generer le client frontend
+Le système implémente les meilleures pratiques de sécurité Node.js :
+1.  **Authentification** : JWT (Access + Refresh Token en cookie HTTPOnly).
+2.  **Protection Injection** : `express-mongo-sanitize` (NoSQL) + Validation Joi stricte.
+3.  **Headers HTTP** : `Helmet` (CSP, HSTS, X-Frame-Options).
+4.  **Anti-Brute Force** : `express-rate-limit` + `authRateLimit`.
+5.  **CSRF** : Protection contre le Cross-Site Request Forgery.
 
-## Password Reset (injecte automatiquement)
-Routes disponibles (multi-tenant et par app):
-- `/api/v1/:tenant/password-reset/request`
-- `/api/v1/:tenant/password-reset/verify`
-- `/api/v1/:tenant/password-reset/reset`
-- `/api/v1/:tenant/password-reset/status`
+---
 
-Templates email modifiables:
-- `dry/templates/email/password-reset.html`
-- `dry/templates/email/password-reset-confirmation.html`
+## 📝 Cycle de Développement Recommandé
 
-## Monitoring / Alerting (simple)
-Le monitoring envoie une alerte si le serveur n'est pas pret.
-Variables utiles:
-- `HEALTH_MONITOR_INTERVAL_MS` (ex: 60000)
-- `ALERT_WEBHOOK_URL` (webhook generic)
-- `SLACK_WEBHOOK_URL` (Slack)
-- `DISCORD_WEBHOOK_URL` (Discord)
-- `ALERT_EMAIL_TO` + `EMAIL_HOST/EMAIL_USER/EMAIL_PASS` (email)
+1.  **Conception** : Définis tes besoins (modèles, champs).
+2.  **Génération** : Utilise `npm run create-app` pour le squelette.
+3.  **Développement** : Ajoute ta logique métier spécifique dans les contrôleurs.
+4.  **Test** : Valide avec `npm run test` et Swagger.
+5.  **Frontend** : Génère ton client API avec `npm run client:gen`.
 
-## Questions frequentes (debutant)
-Q: Ou sont mes routes?
-R: Dans `dryApp/<App>/features/<feature>/route/`
+---
 
-Q: Ou sont mes schemas?
-R: Dans `dryApp/<App>/features/<feature>/model/`
+## 📧 Support & Contact
 
-Q: Ou sont mes validations?
-R: Dans `dryApp/<App>/validation/`
-
-Q: Comment changer le template email?
-R: Modifie `dry/templates/email/password-reset.html`
-
-## Bonnes pratiques production
-1. Toujours definir `ALLOWED_ORIGINS` (pas de `*`)
-2. Utiliser HTTPS (reverse proxy)
-3. Secrets forts: `JWT_SECRET` >= 32 caracteres
-4. Rotation JWT: `JWT_SECRET_PREVIOUS`
-5. Activer logs + monitoring
-6. Faire des backups Mongo reguliers
-
-## Signature backend
-Ce backend est signe Cyberfusion et doit conserver cette signature.
+Pour toute question technique ou demande d'évolution sur le noyau DRY :
+**Cyberfusion - Server GOLD**
+Email: servergold2012@gmail.com
+Tél: +242068457521

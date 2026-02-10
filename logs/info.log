@@ -4136,3 +4136,166 @@
 [08/02/2026 21:15:11] [INFO] Email service configure avec Resend API
 [08/02/2026 21:25:16] [INFO] Email service configure avec Resend API
 [08/02/2026 21:25:42] [INFO] Email service configure avec Resend API
+[08/02/2026 21:35:53] [INFO] Email service configure avec Resend API
+[08/02/2026 21:36:43] [INFO] Email service configure avec Resend API
+[08/02/2026 21:40:55] [INFO] Email service configure avec Resend API
+[08/02/2026 21:46:54] [INFO] Email service configure avec Resend API
+[08/02/2026 21:46:53] [INFO] Email service configure avec Resend API
+[08/02/2026 21:49:34] [INFO] Email service configure avec Resend API
+[08/02/2026 21:49:37] [INFO] Email service configure avec Resend API
+[08/02/2026 21:52:19] [INFO] Email service configure avec Resend API
+[08/02/2026 21:53:40] [INFO] Email service configure avec Resend API
+[08/02/2026 21:53:44] [INFO] Email service configure avec Resend API
+[08/02/2026 21:53:57] [INFO] [58720f1a-9d21-42e0-9688-48ae650e5d02] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1216ms
+[08/02/2026 21:54:01] [INFO] [cc4c86de-1b60-4461-8d20-6902ab4ac557] GET /api/v1/mediadl/downloads?page=1&limit=10 200 471ms
+[08/02/2026 21:54:08] [INFO] [1bce805a-e138-41ed-9e13-b68dd451aa71] GET /api/v1/mediadl/downloads?page=1&limit=10 200 553ms
+[08/02/2026 21:54:15] [INFO] [f3f9a951-e3e5-410b-a78a-f461d236c23f] GET /api/v1/mediadl/downloads?page=1&limit=10 200 573ms
+[08/02/2026 21:54:22] [INFO] [c9756e95-2298-41a5-95f1-8fbf3f0ddc02] GET /api/v1/mediadl/downloads?page=1&limit=10 200 337ms
+[08/02/2026 21:54:40] [INFO] Email service configure avec Resend API
+[08/02/2026 21:55:12] [INFO] [4b6074c2-ef93-4855-9364-c7e842f5e743] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1213ms
+[08/02/2026 21:55:18] [INFO] [5dd82adc-2bd9-417c-aff7-c90ddf9f36f4] GET /api/v1/mediadl/downloads?page=1&limit=10 200 357ms
+[08/02/2026 21:55:20] [INFO] [ca798b2f-49f1-4ee3-8dab-d075f5492bfd] POST /api/v1/mediadl/downloads/youtube/metadata 200 8ms
+[08/02/2026 21:55:25] [INFO] [fefc504c-bb30-473f-a213-3f0dd6357ff0] GET /api/v1/mediadl/downloads?page=1&limit=10 200 712ms
+[08/02/2026 21:55:32] [INFO] [ccb6062d-1319-47f6-8a1e-34263e48637e] GET /api/v1/mediadl/downloads?page=1&limit=10 200 474ms
+[08/02/2026 21:55:39] [INFO] [c1bb59c9-ad91-4ba3-9db3-e4685151dc6a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 635ms
+[08/02/2026 21:55:46] [INFO] [3295eacb-a766-409a-86c0-d5f6b39cd032] GET /api/v1/mediadl/downloads?page=1&limit=10 200 600ms
+[08/02/2026 21:55:53] [INFO] [5fc9fdb2-80fa-47d6-a578-0aba53aec1ed] GET /api/v1/mediadl/downloads?page=1&limit=10 200 359ms
+[08/02/2026 21:56:00] [INFO] [42662e9f-d1ac-402a-aba0-f2a37df26dcc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 796ms
+[08/02/2026 21:56:07] [INFO] [217c04b1-81f5-4fd9-9e5a-74ee8a8f3c5d] GET /api/v1/mediadl/downloads?page=1&limit=10 200 497ms
+[08/02/2026 21:56:14] [INFO] [f6ec1383-6372-4d86-82f3-69c00c1e5aaf] GET /api/v1/mediadl/downloads?page=1&limit=10 200 361ms
+[08/02/2026 21:56:21] [INFO] [70c35421-2e1e-4d55-959e-38ef0b111ca9] GET /api/v1/mediadl/downloads?page=1&limit=10 200 511ms
+[08/02/2026 21:56:29] [INFO] [92994ef7-f026-45c5-92d1-d56f2ff23521] GET /api/v1/mediadl/downloads?page=1&limit=10 200 609ms
+[08/02/2026 21:56:36] [INFO] [722350e1-1b87-4718-adef-ca5dd6c4d83a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 351ms
+[08/02/2026 21:56:43] [INFO] [cd8fb7e2-bee5-4d16-9c1c-05e54e89de42] GET /api/v1/mediadl/downloads?page=1&limit=10 200 338ms
+[08/02/2026 21:56:50] [INFO] [8b6fff1d-f1e9-430d-b0c5-9d8f57f1b6c6] GET /api/v1/mediadl/downloads?page=1&limit=10 200 589ms
+[08/02/2026 21:56:57] [INFO] [f6ac433e-529d-46f9-a799-1dab8398fadc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 486ms
+[08/02/2026 21:57:03] [INFO] [452237ef-c0aa-4468-8be7-0797f9f32e44] GET /api/v1/mediadl/downloads?page=1&limit=10 200 512ms
+[08/02/2026 21:57:11] [INFO] [254fa065-1686-4fd9-add9-e385f3c325ec] GET /api/v1/mediadl/downloads?page=1&limit=10 200 562ms
+[08/02/2026 21:57:19] [INFO] [c2cfd8e8-64d7-43c5-ac70-654ca2a760e4] GET /api/v1/mediadl/downloads?page=1&limit=10 200 352ms
+[08/02/2026 21:57:41] [INFO] [96d37d55-4cd3-4ac6-8a0c-3d93742f4c3f] POST /api/v1/mediadl/downloads/youtube/metadata 200 2ms
+[08/02/2026 21:57:42] [INFO] [8b2b82d7-df4d-4c85-b37b-cf146cfaa848] GET /api/v1/mediadl/downloads?page=1&limit=10 200 439ms
+[08/02/2026 21:58:19] [INFO] Email service configure avec Resend API
+[08/02/2026 21:58:45] [INFO] Email service configure avec Resend API
+[08/02/2026 21:58:46] [INFO] Email service configure avec Resend API
+[08/02/2026 22:00:34] [INFO] [19698398-54be-4b83-b9b4-919e19a87af1] POST /api/v1/mediadl/downloads/youtube/metadata 200 43759ms
+[08/02/2026 22:00:38] [INFO] Email service configure avec Resend API
+[08/02/2026 22:00:38] [INFO] Email service configure avec Resend API
+[08/02/2026 22:01:58] [INFO] [8719e965-520c-4962-99da-864994fe618b] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1682ms
+[08/02/2026 22:02:04] [INFO] [ece76dac-f7d6-45db-b88d-bad126c02ddc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 852ms
+[08/02/2026 22:02:11] [INFO] [9a544166-94c6-45d8-a9cd-da47d47d603c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 432ms
+[08/02/2026 22:02:18] [INFO] [7cf8ea5f-a5b7-4eb2-a013-25542f4d6f62] GET /api/v1/mediadl/downloads?page=1&limit=10 200 420ms
+[08/02/2026 22:02:25] [INFO] [397184f2-9d36-45fb-95cb-bf60c966f54a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 439ms
+[08/02/2026 22:02:32] [INFO] [c00c0d8e-d121-4c19-9b08-533e1740ded2] GET /api/v1/mediadl/downloads?page=1&limit=10 200 608ms
+[08/02/2026 22:02:39] [INFO] [fa39ffc2-974c-4a75-a714-588556effe22] GET /api/v1/mediadl/downloads?page=1&limit=10 200 683ms
+[08/02/2026 22:02:47] [INFO] [e5d36235-a9b1-4f23-ad2a-51653574a4c6] GET /api/v1/mediadl/downloads?page=1&limit=10 200 671ms
+[08/02/2026 22:02:54] [INFO] [512b9799-13c9-49c9-928b-fda5cba5c5b8] GET /api/v1/mediadl/downloads?page=1&limit=10 200 565ms
+[08/02/2026 22:03:01] [INFO] [eb129925-4076-42cc-a90e-5b277ca09181] GET /api/v1/mediadl/downloads?page=1&limit=10 200 692ms
+[08/02/2026 22:03:08] [INFO] [0f683cec-9551-4cf8-9cd4-20758c28a728] GET /api/v1/mediadl/downloads?page=1&limit=10 200 557ms
+[08/02/2026 22:03:15] [INFO] [3212c817-082b-4fc8-bcc3-9f9ee5500335] GET /api/v1/mediadl/downloads?page=1&limit=10 200 460ms
+[08/02/2026 22:03:22] [INFO] [2de89e7b-d3ef-4d6e-b399-792b6fa28f37] GET /api/v1/mediadl/downloads?page=1&limit=10 200 723ms
+[08/02/2026 22:03:29] [INFO] [1a0e76f1-5560-4ece-b0af-1a967714805e] GET /api/v1/mediadl/downloads?page=1&limit=10 200 548ms
+[08/02/2026 22:03:36] [INFO] [9185637e-bfea-4d17-a9b1-7d89693d4603] GET /api/v1/mediadl/downloads?page=1&limit=10 200 522ms
+[08/02/2026 22:04:54] [INFO] Email service configure avec Resend API
+[08/02/2026 22:05:48] [INFO] [be4c9f40-bffc-4ddc-a408-7b0a0519931b] GET /api/v1/mediadl/downloads?page=1&limit=10 200 7157ms
+[08/02/2026 22:05:55] [INFO] [3fd05ea0-139c-4c91-8df2-02c2dc143bcc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 977ms
+[08/02/2026 22:06:06] [INFO] [32ba24e8-ec49-40a8-88fd-331c1cfb7750] GET /api/v1/mediadl/downloads?page=1&limit=10 200 4230ms
+[08/02/2026 22:06:10] [INFO] [833d225e-9b7b-47dc-81e5-52dc10b144bc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1928ms
+[08/02/2026 22:06:16] [INFO] [d2729076-51d7-4a1d-9e97-d7594270ef13] GET /api/v1/mediadl/downloads?page=1&limit=10 200 660ms
+[08/02/2026 22:06:26] [INFO] [92cb2273-3016-4873-bc05-a7d5c0d7ef93] GET /api/v1/mediadl/downloads?page=1&limit=10 200 3287ms
+[08/02/2026 22:06:41] [INFO] [1497a67b-6d41-47db-b513-efeee2fd7c9d] GET /api/v1/mediadl/downloads?page=1&limit=10 200 4395ms
+[08/02/2026 22:06:44] [INFO] [57bbd553-f409-4fcb-a96a-b20cb42634f9] GET /api/v1/mediadl/downloads?page=1&limit=10 200 349ms
+[08/02/2026 22:06:51] [INFO] [c2116874-65dd-444c-88d1-68cfb8edfbe8] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1049ms
+[08/02/2026 22:06:59] [INFO] [c170ffe8-5830-4c87-a1a4-1338f07f8b16] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1594ms
+[08/02/2026 22:07:06] [INFO] [aaf74a0e-625f-4bf4-a944-6c94feb0f11a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1521ms
+[08/02/2026 22:07:12] [INFO] [dff27e55-9d36-4389-9821-1dbe618900c5] GET /api/v1/mediadl/downloads?page=1&limit=10 200 739ms
+[08/02/2026 22:07:20] [INFO] [09ad9564-97c0-4b91-ba7f-eaebdba806cc] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1277ms
+[08/02/2026 22:07:24] [INFO] [d4d85df3-cb49-4730-81b3-fda8bc99e910] POST /api/v1/mediadl/downloads/youtube/metadata 200 88511ms
+[08/02/2026 22:07:25] [INFO] [dd8d7025-e901-42f0-bce6-535ca23822ac] GET /api/v1/mediadl/downloads?page=1&limit=10 200 780ms
+[08/02/2026 22:07:29] [INFO] Email service configure avec Resend API
+[08/02/2026 22:07:29] [INFO] Email service configure avec Resend API
+[08/02/2026 22:07:41] [INFO] [93b4c5b0-fd8d-452a-8394-8012683702d4] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1575ms
+[08/02/2026 22:07:47] [INFO] [b0d354e2-640f-491c-b58a-6c6d8fbbba3c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 628ms
+[08/02/2026 22:07:54] [INFO] [9f878b77-9cb3-4b6a-8e8d-871d74b1ee6f] GET /api/v1/mediadl/downloads?page=1&limit=10 200 857ms
+[08/02/2026 22:08:01] [INFO] [1eb024c9-040c-4265-91d5-6e7324b7b12e] GET /api/v1/mediadl/downloads?page=1&limit=10 200 623ms
+[08/02/2026 22:08:08] [INFO] [9e8ef496-f13a-4995-be52-c9a6097c0d43] GET /api/v1/mediadl/downloads?page=1&limit=10 200 693ms
+[08/02/2026 22:08:15] [INFO] [7f0d551c-e2e1-4904-b234-397925cc1079] GET /api/v1/mediadl/downloads?page=1&limit=10 200 442ms
+[08/02/2026 22:08:22] [INFO] [51de674a-eeff-4582-a3b0-2e9b987d566c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 414ms
+[08/02/2026 22:08:29] [INFO] [197c4a6c-120d-4d32-9075-b1094f32290e] GET /api/v1/mediadl/downloads?page=1&limit=10 200 589ms
+[08/02/2026 22:08:37] [INFO] [aff3cc35-bdc9-4687-9c4f-e10842fa8e69] GET /api/v1/mediadl/downloads?page=1&limit=10 200 390ms
+[08/02/2026 22:08:43] [INFO] [5bd6aa51-419c-45de-b765-abc2ee95b6b1] GET /api/v1/mediadl/downloads?page=1&limit=10 200 501ms
+[08/02/2026 22:08:50] [INFO] [b3d92ecd-f694-4e39-950d-47c6822aeca5] GET /api/v1/mediadl/downloads?page=1&limit=10 200 575ms
+[08/02/2026 22:08:54] [INFO] [10e6b577-0663-49d1-b900-1a783680e754] GET /api/v1/mediadl/downloads?page=1&limit=10 200 609ms
+[08/02/2026 22:09:01] [INFO] [45b1fcf8-8c9b-463b-b0aa-5eeeb80b2331] GET /api/v1/mediadl/downloads?page=1&limit=10 200 573ms
+[08/02/2026 22:09:08] [INFO] [43a31057-b401-40fe-aeea-f80fc5f70c90] GET /api/v1/mediadl/downloads?page=1&limit=10 200 421ms
+[08/02/2026 22:09:15] [INFO] [04008e1b-f781-4c58-873a-358106959351] GET /api/v1/mediadl/downloads?page=1&limit=10 200 600ms
+[08/02/2026 22:09:23] [INFO] [91ad4361-d596-415d-9380-0e7115a04c88] GET /api/v1/mediadl/downloads?page=1&limit=10 200 538ms
+[08/02/2026 22:09:30] [INFO] [e1c7e481-0596-4f63-a23d-8da8f4788887] GET /api/v1/mediadl/downloads?page=1&limit=10 200 510ms
+[08/02/2026 22:09:37] [INFO] [52ed27e1-8c62-4262-9a09-b52ada3a4fd9] GET /api/v1/mediadl/downloads?page=1&limit=10 200 580ms
+[08/02/2026 22:09:44] [INFO] [3ad51059-e969-4218-91f1-4e85dfb2c970] GET /api/v1/mediadl/downloads?page=1&limit=10 200 446ms
+[08/02/2026 22:09:51] [INFO] [b22b936b-d8ed-4798-a177-253a6f5e8172] GET /api/v1/mediadl/downloads?page=1&limit=10 200 452ms
+[08/02/2026 22:09:58] [INFO] [64982acc-260f-4b54-90ba-ceb0f686d89c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 362ms
+[08/02/2026 22:10:04] [INFO] [e7e4427d-7ba0-4947-b3bd-941b77c1a958] GET /api/v1/mediadl/downloads?page=1&limit=10 200 446ms
+[08/02/2026 22:10:12] [INFO] [ea1a670d-aa46-4b74-a089-c0ba9399fab6] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1011ms
+[08/02/2026 22:10:19] [INFO] [2bcc0b5a-0e5f-4ac9-98a0-16b9775a8258] GET /api/v1/mediadl/downloads?page=1&limit=10 200 538ms
+[08/02/2026 22:10:25] [INFO] [1e0dc899-8ca2-4738-81dc-fa2dc45b75af] GET /api/v1/mediadl/downloads?page=1&limit=10 200 583ms
+[08/02/2026 22:10:33] [INFO] [1c24fd95-c930-460d-8fd2-b88ded391947] GET /api/v1/mediadl/downloads?page=1&limit=10 200 666ms
+[08/02/2026 22:10:35] [INFO] [ec21da3f-8c49-4634-ab98-d0ae8fd6ad9b] POST /api/v1/mediadl/downloads/youtube/metadata 200 9698ms
+[08/02/2026 22:10:43] [INFO] Email service configure avec Resend API
+[08/02/2026 22:10:43] [INFO] Email service configure avec Resend API
+[08/02/2026 22:10:54] [INFO] [b11e4edd-ac50-4dd9-b29f-181310ca164a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1361ms
+[08/02/2026 22:11:00] [INFO] [768b0ef9-0188-4f3b-86c1-ba5cee1c335f] GET /api/v1/mediadl/downloads?page=1&limit=10 200 355ms
+[08/02/2026 22:11:07] [INFO] [bd202b0a-6204-4c94-8733-853ef0680ab0] GET /api/v1/mediadl/downloads?page=1&limit=10 200 377ms
+[08/02/2026 22:11:13] [INFO] [35e4b2dc-e6db-4ec3-8740-d66ffc082ebf] GET /api/v1/mediadl/downloads?page=1&limit=10 200 559ms
+[08/02/2026 22:11:14] [INFO] [6c7cd749-1ed2-47c8-b9e7-796cf232ac58] GET /api/v1/mediadl/downloads?page=1&limit=10 200 405ms
+[08/02/2026 22:11:16] [INFO] [b2383117-d59a-46ed-ae70-a9d640ddc619] GET /api/v1/mediadl/downloads?page=1&limit=10 200 641ms
+[08/02/2026 22:11:22] [INFO] [76bb4e9e-0233-4c58-b34c-c61530778742] GET /api/v1/mediadl/downloads?page=1&limit=10 200 626ms
+[08/02/2026 22:11:29] [INFO] [fa389de6-3857-4a4b-b858-480bbec5b658] GET /api/v1/mediadl/downloads?page=1&limit=10 200 674ms
+[08/02/2026 22:11:36] [INFO] [c5db6d31-2266-44b9-8adb-1d6b10578081] GET /api/v1/mediadl/downloads?page=1&limit=10 200 571ms
+[08/02/2026 22:11:43] [INFO] [db55db61-2d32-419f-a4e3-e36abd567920] GET /api/v1/mediadl/downloads?page=1&limit=10 200 736ms
+[08/02/2026 22:11:44] [INFO] [d6945bce-0000-4272-a4b6-5de3fe46f87c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 664ms
+[08/02/2026 22:11:51] [INFO] [3f291a01-3294-4fe2-b195-a03686160991] GET /api/v1/mediadl/downloads?page=1&limit=10 200 558ms
+[09/02/2026 08:31:19] [INFO] [5f70c485-b2b0-4775-9445-49618791c3e4] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30011ms
+[09/02/2026 08:32:06] [INFO] [a95b3a44-ea9a-4e04-8696-4536e82f377e] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30010ms
+[09/02/2026 08:33:06] [INFO] [830589c3-8c60-4718-9153-47a97fb73c5a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30015ms
+[09/02/2026 08:34:06] [INFO] [3bf6e770-0765-4b3b-ba6a-99a4aabc42ce] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30022ms
+[09/02/2026 08:40:11] [INFO] [41d42c9d-1faa-466f-97ec-dd2ca0901191] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30009ms
+[09/02/2026 08:41:06] [INFO] [045c811b-590a-41c4-96d2-6aec03a58a9f] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30013ms
+[09/02/2026 08:53:15] [INFO] [fd071188-b5e2-450c-a7a4-dffea313af70] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30018ms
+[09/02/2026 08:54:06] [INFO] [285e7d98-8943-4c56-bc55-c5660a695d77] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30012ms
+[09/02/2026 08:55:06] [INFO] [493ea469-c83c-45e1-8c38-6f92c02a4d99] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30009ms
+[09/02/2026 08:56:06] [INFO] [18e62464-4c54-49b7-a86a-ec59d94f4d39] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30009ms
+[09/02/2026 08:57:06] [INFO] [a0cb9d8f-3c5d-4910-bb47-b6961c543070] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30006ms
+[09/02/2026 08:58:06] [INFO] [2c5e4634-3d07-42f6-8167-b8a28b0899ca] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30013ms
+[09/02/2026 08:59:06] [INFO] [fdd3e29b-ac29-418d-9bbd-a1c067d4afe7] GET /api/v1/mediadl/downloads?page=1&limit=10 200 30015ms
+[09/02/2026 10:07:32] [INFO] [0b2a6664-703f-47f1-9d81-3cadbb62e4c4] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1261ms
+[09/02/2026 10:07:39] [INFO] [f2171d69-334c-433f-a1a3-56328794159a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1311ms
+[09/02/2026 10:07:46] [INFO] [6aae5589-c3de-4df1-93e6-9b7b666ad198] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1250ms
+[09/02/2026 10:07:53] [INFO] [ddeff3db-1bbb-4bd9-9f28-bc180a8dbd49] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1303ms
+[09/02/2026 10:08:00] [INFO] [3a1dba03-5420-4057-9dec-c90326600597] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1394ms
+[09/02/2026 10:08:01] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[09/02/2026 10:08:07] [INFO] [1e427580-c217-4f5a-8512-597acf1eb42d] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1235ms
+[09/02/2026 10:08:14] [INFO] [e00a7e3d-129b-47d0-851e-bc6a0520b846] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1344ms
+[09/02/2026 10:08:22] [INFO] [f69b54a6-8255-4026-9cb6-354be3bb54e2] GET /api/v1/mediadl/downloads?page=1&limit=10 200 2010ms
+[09/02/2026 10:08:28] [INFO] [253b2884-dd4f-4687-b312-ccdfce0fe006] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1293ms
+[09/02/2026 10:08:35] [INFO] [0c72be68-b562-4408-a9bb-2c8e0b59d12f] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1275ms
+[09/02/2026 10:08:42] [INFO] [d9923ca9-1229-43c2-ac9c-6edbbb509561] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1274ms
+[09/02/2026 10:08:49] [INFO] [ae05af4b-9db6-4061-848d-710e5f5f57ec] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1256ms
+[09/02/2026 10:08:56] [INFO] [d06a97e6-8c1d-410c-93c8-f138a433e22c] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1245ms
+[09/02/2026 10:09:04] [INFO] [96684e26-0fa2-4111-a2cd-b8cdebbabb5a] GET /api/v1/mediadl/downloads?page=1&limit=10 200 1991ms
+[10/02/2026 18:54:16] [INFO] Email service configure avec Resend API
+[10/02/2026 18:58:09] [INFO] Email service configure avec Resend API
+[10/02/2026 19:03:39] [INFO] Email service configure avec Resend API
+[10/02/2026 19:06:10] [INFO] Email service configure avec Resend API
+[10/02/2026 19:08:23] [INFO] Email service configure avec Resend API
+[10/02/2026 19:08:47] [INFO] Email service configure avec Resend API
+[10/02/2026 19:10:02] [INFO] [6f2ac72f-7639-4182-a4a0-d6a4b1c55bed] POST /api/v1/auth/login 200 43ms
+[10/02/2026 19:16:00] [INFO] Email service configure avec Resend API
+[10/02/2026 19:19:30] [INFO] Email service configure avec Resend API
+[10/02/2026 19:20:01] [INFO] Email service configure avec Resend API
+[10/02/2026 19:20:34] [INFO] Email service configure avec Resend API
+[10/02/2026 19:21:17] [INFO] Email service configure avec Resend API
+[10/02/2026 19:23:02] [INFO] [6b667460-b753-4db8-9a1a-2d946a603e3e] GET /api/v1/immopro/visites 200 481ms
+[10/02/2026 19:24:54] [INFO] Email service configure avec Resend API
+[10/02/2026 19:25:16] [INFO] Email service configure avec Resend API
+[10/02/2026 19:26:54] [INFO] [94647802-9893-4509-8b0b-620c65d87e38] GET /api/v1/immopro/visites 200 792ms
+[10/02/2026 19:27:42] [INFO] [c8038079-ab76-491b-bfd0-1fdb77146ca4] POST /api/v1/immopro/visites 200 10ms

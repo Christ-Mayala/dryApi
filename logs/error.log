@@ -3840,3 +3840,448 @@ TypeError: req.getModel is not a function
 [08/02/2026 20:30:41] [ERROR] Erreur envoi email: fetch failed
 [08/02/2026 20:32:41] [ERROR] Erreur envoi email: fetch failed
 [08/02/2026 20:37:42] [ERROR] Erreur envoi email: fetch failed
+[08/02/2026 21:47:42] [ERROR] [58c74589-a7c7-4d70-850a-75b042797e47] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:47:49] [ERROR] [ff6fbaac-f572-4128-8f10-3a3845c587c1] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:47:56] [ERROR] [5bcdc016-62a7-4044-80f8-bb1e7c78de65] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:03] [ERROR] [6b7c5e47-89b1-4db8-b442-d23a832a5aba] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:10] [ERROR] [fb425f95-77cf-4f04-a331-39f6a4ed623e] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:17] [ERROR] [cf3e0c22-a854-4c29-8ce9-3001fd5d0128] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:29] [ERROR] [82204730-3869-41ff-801f-2dc9c0671af3] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:30] [ERROR] [0b363405-4626-4af3-9511-c6e83ac1e55e] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:35] [ERROR] [700aa210-7477-4ab2-bbc6-7071efd9d3ce] OPTIONS /api/v1/mediadl/downloads/youtube/metadata
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:37] [ERROR] [e130c92c-27e0-4458-85ed-aa644da0bbe7] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:44] [ERROR] [0b271e7e-bed5-4849-b57d-3d8366ecab96] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:55] [ERROR] [7b05a642-ad2e-4098-9eee-0b39ac82510b] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:48:59] [ERROR] [460e31fb-7742-4dee-b478-906e8f18e28c] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:49:06] [ERROR] [8f5e97a0-1f0c-4f95-93e6-9d55247dc56c] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:49:13] [ERROR] [a756f4ac-f924-4068-a84c-0671ad9058a9] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:49:20] [ERROR] [2db7d284-0ceb-49d6-85ee-0bea55b45b17] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:50:41] [ERROR] [3ae23566-5646-4e8c-9c83-76136f1b3391] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:50:51] [ERROR] [562dd5a1-b7bf-4dbb-80ad-448eae71de4b] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:50:52] [ERROR] [47cdf335-f1ce-4c3d-9dca-251d3e07f793] OPTIONS /api/v1/mediadl/downloads/youtube/metadata
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:50:58] [ERROR] [4a6937c5-4ae6-42cc-8f07-1784bab424ce] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:51:05] [ERROR] [fd4adea1-d43a-4651-bf30-0caad8d2518e] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:51:12] [ERROR] [a48e4578-1f8c-47db-8d0b-76642be1d8a9] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:51:19] [ERROR] [8e4863d0-db1c-45e7-95cb-cbd492bc69be] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:51:26] [ERROR] [d325ec8a-d987-41ae-ab92-1569abae3cd0] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:33] [ERROR] [c6f5b5db-f7ce-4b4d-9c04-9a3333d4c96c] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:35] [ERROR] [da7586e2-b871-4c86-a150-57e81547a1e5] OPTIONS /api/v1/mediadl/downloads/youtube/metadata
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:35] [ERROR] [849b00ac-78f2-4461-9730-13e3787e5df7] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:37] [ERROR] [6e820778-4e45-4e59-8eff-ff81965bc089] OPTIONS /api/v1/mediadl/downloads/youtube/metadata
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:43] [ERROR] [cba86341-f9a3-4edd-b57d-b787090998dd] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:50] [ERROR] [a0d211b3-649a-46a1-8e70-5f226aa49c6e] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:52:57] [ERROR] [33125c00-082b-4297-948d-bf344a21bdfe] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:53:04] [ERROR] [07d0b648-3cab-4343-81fc-89e70954b908] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:53:11] [ERROR] [78771df6-acb2-457b-a707-0ecfa37ed2aa] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:53:18] [ERROR] [9d33295a-4465-4cb7-84a4-6dad2269dc52] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 21:53:25] [ERROR] [3eb5e72f-f4c2-407d-bf52-6a3b2ad25622] OPTIONS /api/v1/mediadl/downloads?page=1&limit=10
+Error: Origin not allowed by CORS
+    at origin (D:\Alvine\dryApi\server.js:83:23)
+    at D:\Alvine\dryApi\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Alvine\dryApi\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Alvine\dryApi\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\server.js:45:3
+[08/02/2026 22:02:05] [ERROR] [a9a08ea4-9c71-4213-b9dc-ba0a36310cc7] POST /api/v1/mediadl/downloads/youtube/metadata 500 6702ms
+[08/02/2026 22:09:13] [ERROR] [3a5702b4-ef45-4c97-a1ab-e2329e89025b] POST /api/v1/mediadl/downloads/youtube/metadata 500 5664ms
+[08/02/2026 22:10:13] [ERROR] [e6891dc0-5e40-456e-bbc0-1d6d44e4cd0b] POST /api/v1/mediadl/downloads/youtube/metadata 500 7059ms
+[09/02/2026 01:12:05] [ERROR] Erreur envoi email: fetch failed
+[10/02/2026 19:10:02] [ERROR] [6f2ac72f-7639-4182-a4a0-d6a4b1c55bed] POST /api/v1/auth/login
+TypeError: Cannot set property query of #<IncomingMessage> which has only a getter
+    at D:\Alvine\dryApi\node_modules\express-mongo-sanitize\index.js:113:18
+    at Array.forEach (<anonymous>)
+    at D:\Alvine\dryApi\node_modules\express-mongo-sanitize\index.js:110:44
+    at Layer.handleRequest (D:\Alvine\dryApi\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Alvine\dryApi\node_modules\router\index.js:342:13)
+    at D:\Alvine\dryApi\node_modules\router\index.js:297:9
+    at processParams (D:\Alvine\dryApi\node_modules\router\index.js:582:12)
+    at next (D:\Alvine\dryApi\node_modules\router\index.js:291:5)
+    at D:\Alvine\dryApi\node_modules\express-rate-limit\dist\index.cjs:942:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[10/02/2026 19:23:02] [ERROR] [6b667460-b753-4db8-9a1a-2d946a603e3e] GET /api/v1/immopro/visites
+TypeError: next is not a function
+    at model.Query.<anonymous> (D:\Alvine\dryApi\dry\core\plugins\mongoose.plugin.js:145:9)
+    at Kareem.execPre (D:\Alvine\dryApi\node_modules\kareem\index.js:63:39)
+    at _executePreHooks (D:\Alvine\dryApi\node_modules\mongoose\lib\query.js:4677:33)
+    at model.Query.exec (D:\Alvine\dryApi\node_modules\mongoose\lib\query.js:4626:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\Alvine\dryApi\dry\middlewares\query\queryBuilder.js:49:25
+    at async dynamicQB (D:\Alvine\dryApi\dryApp\ImmoPro\features\visites\route\visites.routes.js:28:45)

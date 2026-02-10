@@ -1,10 +1,10 @@
-﻿const test = require('node:test');
+const test = require('node:test');
 const assert = require('node:assert/strict');
 const { ensureServer, loginAdmin } = require('../_helpers/api');
 
 const BASE_URL = process.env.SERVER_URL || 'http://localhost:5000';
-const APP = 'shoppro';
-const FEATURE = 'commandes';
+const APP = 'immopro';
+const FEATURE = 'clients';
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@dry.local';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
 
@@ -14,9 +14,8 @@ const ensureFetch = () => {
   }
 };
 
-test('CRUD commandes (smoke)', async () => {
+test('CRUD clients (smoke)', async () => {
   ensureFetch();
-
   const serverOk = await ensureServer(BASE_URL);
   if (!serverOk) return;
 
@@ -27,10 +26,11 @@ test('CRUD commandes (smoke)', async () => {
   if (!token) return; // pas d'admin => on saute les ecritures
 
   const payload = {
-  clientId: 'exemple_clientId',
-  produits: [],
-  total: 100,
-  statut: 'exemple_statut',
+  nom: 'exemple_nom',
+  email: `demo+${Date.now()}@example.com`,
+  telephone: '+22501020304',
+  budget: 100,
+  recherche: 'exemple_recherche',
   label: `Exemple label ${Date.now()}`
 };
 
@@ -68,4 +68,3 @@ test('CRUD commandes (smoke)', async () => {
   });
   assert.ok(deleteRes.status >= 200 && deleteRes.status < 500);
 });
-

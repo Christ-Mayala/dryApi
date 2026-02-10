@@ -3,8 +3,8 @@ const assert = require('node:assert/strict');
 const { ensureServer, loginAdmin } = require('../_helpers/api');
 
 const BASE_URL = process.env.SERVER_URL || 'http://localhost:5000';
-const APP = 'edupro';
-const FEATURE = 'cours';
+const APP = 'immopro';
+const FEATURE = 'biens';
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@dry.local';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
 
@@ -14,7 +14,7 @@ const ensureFetch = () => {
   }
 };
 
-test('CRUD cours (smoke)', async () => {
+test('CRUD biens (smoke)', async () => {
   ensureFetch();
   const serverOk = await ensureServer(BASE_URL);
   if (!serverOk) return;
@@ -28,9 +28,15 @@ test('CRUD cours (smoke)', async () => {
   const payload = {
   titre: 'exemple_titre',
   description: 'exemple_description',
-  niveau: 'exemple_niveau',
-  duree: 100,
   prix: 100,
+  type: 'exemple_type',
+  surface: 100,
+  chambres: 100,
+  sallesDeBain: 100,
+  adresse: 'exemple_adresse',
+  ville: 'exemple_ville',
+  codePostal: 'exemple_codePostal',
+  disponible: true,
   label: `Exemple label ${Date.now()}`
 };
 

@@ -9,8 +9,8 @@ try {
   console.warn('ytdl-core non disponible sur le serveur');
 }
 
-// POST /api/mediadl/youtube/metadata - Valider et récupérer métadonnées
-router.post('/youtube/metadata', async (req, res) => {
+// POST / - Valider et récupérer métadonnées
+router.post('/', async (req, res) => {
   try {
     const { url } = req.body;
     

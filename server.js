@@ -54,7 +54,7 @@ const allowedOrigins = allowedOriginsEnv
 
 // Ajouter localhost pour Swagger UI et autoriser toutes les origines en developpement
 if (process.env.NODE_ENV !== 'production') {
-  allowedOrigins.push('http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:3000', 'http://127.0.0.1:3000');
+  allowedOrigins.push('http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:4200', 'http://127.0.0.1:4200');
   // Autoriser toutes les origines en developpement pour Swagger
   allowedOrigins.push('*');
 }
@@ -71,6 +71,11 @@ app.use(
     origin: (origin, callback) => {
       // Autoriser toutes les origines pour le developpement
       if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+
+      // Autoriser localhost en toutes circonstances
+      if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
         return callback(null, true);
       }
 

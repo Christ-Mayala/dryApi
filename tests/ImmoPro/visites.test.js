@@ -3,8 +3,8 @@ const assert = require('node:assert/strict');
 const { ensureServer, loginAdmin } = require('../_helpers/api');
 
 const BASE_URL = process.env.SERVER_URL || 'http://localhost:5000';
-const APP = 'healthpro';
-const FEATURE = 'medecins';
+const APP = 'immopro';
+const FEATURE = 'visites';
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@dry.local';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
 
@@ -14,7 +14,7 @@ const ensureFetch = () => {
   }
 };
 
-test('CRUD medecins (smoke)', async () => {
+test('CRUD visites (smoke)', async () => {
   ensureFetch();
   const serverOk = await ensureServer(BASE_URL);
   if (!serverOk) return;
@@ -26,11 +26,11 @@ test('CRUD medecins (smoke)', async () => {
   if (!token) return; // pas d'admin => on saute les ecritures
 
   const payload = {
-  nom: 'exemple_nom',
-  prenom: 'exemple_prenom',
-  specialite: 'exemple_specialite',
-  email: `demo+${Date.now()}@example.com`,
-  telephone: '+22501020304',
+  bienId: 'exemple_bienId',
+  clientId: 'exemple_clientId',
+  dateVisite: `2026-01-01T12:00:00.000Z`,
+  statut: 'exemple_statut',
+  commentaire: 'exemple_commentaire',
   label: `Exemple label ${Date.now()}`
 };
 

@@ -1,0 +1,13 @@
+const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const ClientSchema = require('../model/clients.schema');
+
+// UPDATE - met a jour un element par ID
+module.exports = asyncHandler(async (req, res) => {
+  const Model = req.getModel('Client', ClientSchema);
+  const payload = { ...req.body };
+  if (req.user?.id) payload.updatedBy = req.user.id;
+  const item = await Model.findByIdAndUpdate(req.params.id, payload, { new: true, runValidators: true });
+  if (!item) throw new Error('Client introuvable');
+  return sendResponse(res, item, 'Client mis a jour');
+});

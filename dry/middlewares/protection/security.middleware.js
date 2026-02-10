@@ -1,28 +1,6 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-
-// Fonction de nettoyage recursive (Remplace xss-clean et mongo-sanitize)
-const sanitizeData = (data) => {
-    if (!data) return;
-
-    Object.keys(data).forEach((key) => {
-        const value = data[key];
-
-        // 1. Protection NoSQL Injection (On supprime les cles commencant par $)
-        if (key.startsWith('$')) {
-            delete data[key];
-            return;
-        }
-
-        // 2. Protection XSS basique (On neutralise les balises HTML)
-        if (typeof value === 'string') {
-            data[key] = value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        } else if (typeof value === 'object' && value !== null) {
-            // 3. Recursivite pour les objets imbriques
-            sanitizeData(value);
-        }
-    });
-};
+const mongoSanitize = require('express-mongo-sanitize');
 
 const setupSecurity = (app) => {
     const isProd = process.env.NODE_ENV === 'production';
@@ -58,19 +36,9 @@ const setupSecurity = (app) => {
     });
     app.use('/api', limiter);
 
-    // 3. Middleware de securite custom
-    // Au lieu de remplacer req.query (ce qui plante), on modifie ses valeurs internes.
-    app.use((req, res, next) => {
-        try {
-            if (req.body) sanitizeData(req.body);
-            if (req.query) sanitizeData(req.query);
-            if (req.params) sanitizeData(req.params);
-            next();
-        } catch (error) {
-            console.error('[SECURITY] Erreur lors du nettoyage des donnees:', error);
-            next();
-        }
-    });
+    // 3. Protection NoSQL Injection (Remplace la fonction sanitizeData manuelle)
+    // Supprime les clés commençant par $ ou contenant des .
+    // app.use(mongoSanitize());
 };
 
 module.exports = setupSecurity;
