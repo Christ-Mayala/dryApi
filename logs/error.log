@@ -4285,3 +4285,7 @@ TypeError: next is not a function
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async D:\Alvine\dryApi\dry\middlewares\query\queryBuilder.js:49:25
     at async dynamicQB (D:\Alvine\dryApi\dryApp\ImmoPro\features\visites\route\visites.routes.js:28:45)
+[10/02/2026 20:21:26] [ERROR] Erreur envoi email: fetch failed
+[10/02/2026 21:31:54] [ERROR] Erreur envoi email: fetch failed
+[11/02/2026 09:30:44] [ERROR] Erreur envoi email: fetch failed
+[11/02/2026 09:31:43] [ERROR] Erreur envoi email: fetch failed

@@ -1,4 +1,4 @@
-﻿
+
 /**
  * GENERATEUR D'APPLICATION DRY - PRO EDITION
  * Objectif: creer des applications professionnelles, fonctionnelles de base,
@@ -22,59 +22,106 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const color = (code, text) => `\x1b[${code}m${text}\x1b[0m`;
-const bg = (code, text) => `\x1b[${code}m${text}\x1b[0m`;
+// ANSI Colors & Styles
+const C = {
+  RESET: '\x1b[0m',
+  BRIGHT: '\x1b[1m',
+  DIM: '\x1b[2m',
+  UNDERSCORE: '\x1b[4m',
+  BLINK: '\x1b[5m',
+  REVERSE: '\x1b[7m',
+  HIDDEN: '\x1b[8m',
 
-const title = bg('46;97', ' 🚀 DRY APP GENERATOR ');
-const ok = color('92', '✅ SUCCÈS');
-const ko = color('91', '❌ ERREUR');
-const warn = color('93', '⚠️  ATTENTION');
-const info = color('96', 'ℹ️  INFO');
-const success = color('42;97', ' SUCCÈS ');
-const error = color('41;97', ' ERREUR ');
-const warning = color('43;97', ' ATTENTION ');
+  BLACK: '\x1b[30m',
+  RED: '\x1b[31m',
+  GREEN: '\x1b[32m',
+  YELLOW: '\x1b[33m',
+  BLUE: '\x1b[34m',
+  MAGENTA: '\x1b[35m',
+  CYAN: '\x1b[36m',
+  WHITE: '\x1b[37m',
 
-const renderBox = (content, width = 50) => {
+  BG_BLACK: '\x1b[40m',
+  BG_RED: '\x1b[41m',
+  BG_GREEN: '\x1b[42m',
+  BG_YELLOW: '\x1b[43m',
+  BG_BLUE: '\x1b[44m',
+  BG_MAGENTA: '\x1b[45m',
+  BG_CYAN: '\x1b[46m',
+  BG_WHITE: '\x1b[47m',
+};
+
+const color = (code, text) => {
+  const map = {
+    'bright': C.BRIGHT,
+    'magenta': C.MAGENTA,
+    'green': C.GREEN,
+    'red': C.RED,
+    'yellow': C.YELLOW,
+    'blue': C.BLUE,
+    'cyan': C.CYAN,
+    'white': C.WHITE,
+  };
+  const ansi = map[code] || '\x1b[' + code + 'm';
+  return ansi + text + C.RESET;
+};
+
+const title = `${C.BRIGHT}${C.CYAN}🚀 DRY APP GENERATOR${C.RESET}`;
+const ok = `${C.GREEN}✅ SUCCÈS${C.RESET}`;
+const ko = `${C.RED}❌ ERREUR${C.RESET}`;
+const warn = `${C.YELLOW}⚠️  ATTENTION${C.RESET}`;
+const info = `${C.BLUE}ℹ️  INFO${C.RESET}`;
+const success = `${C.BG_GREEN}${C.WHITE} SUCCÈS ${C.RESET}`;
+const error = `${C.BG_RED}${C.WHITE} ERREUR ${C.RESET}`;
+const warning = `${C.BG_YELLOW}${C.BLACK} ATTENTION ${C.RESET}`;
+
+const renderBox = (content, width = 60) => {
   const lines = content.split('\n');
   const maxLength = Math.max(width, ...lines.map(l => l.length));
-  const border = '─'.repeat(maxLength + 4);
+  const border = '═'.repeat(maxLength + 2);
   
-  console.log(color('96', `╭${border}╮`));
+  console.log(`${C.BRIGHT}${C.CYAN}╔${border}╗${C.RESET}`);
   lines.forEach(line => {
     const padded = line.padEnd(maxLength, ' ');
-    console.log(color('96', `│  ${padded}  │`));
+    console.log(`${C.BRIGHT}${C.CYAN}║ ${C.RESET} ${padded} ${C.BRIGHT}${C.CYAN}║${C.RESET}`);
   });
-  console.log(color('96', `╰${border}╯`));
+  console.log(`${C.BRIGHT}${C.CYAN}╚${border}╝${C.RESET}`);
 };
 
 const renderProgress = (current, total, label = '') => {
   const percentage = Math.round((current / total) * 100);
   const barLength = 30;
   const filledLength = Math.round((percentage / 100) * barLength);
-  const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+  const bar = `${C.GREEN}█`.repeat(filledLength) + `${C.DIM}░`.repeat(barLength - filledLength) + C.RESET;
   
-  console.log(`${label} [${color('92', bar)}] ${percentage}% (${current}/${total})`);
+  console.log(`${label} [${bar}] ${C.BRIGHT}${percentage}%${C.RESET} (${current}/${total})`);
 };
 
 const renderTable = (rows, header) => {
-  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).length)));
+  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).replace(/\x1b\[[0-9;]*m/g, '').length))); // Strip ansi for length calc
+  
+  const pad = (str, len) => {
+    const visibleLen = String(str).replace(/\x1b\[[0-9;]*m/g, '').length;
+    return str + ' '.repeat(Math.max(0, len - visibleLen));
+  };
+
   const line = (cells) =>
     cells
-      .map((c, i) => String(c).padEnd(widths[i], ' '))
-      .join(' │ ');
+      .map((c, i) => pad(c, widths[i]))
+      .join(`${C.DIM} │ ${C.RESET}`);
   
-  const separator = widths.map((w) => '─'.repeat(w)).join('─┼─');
-  const headerLine = widths.map((w) => '═'.repeat(w)).join('═╪═');
+  const separator = widths.map((w) => '─'.repeat(w)).join(`${C.DIM}─┼─${C.RESET}`);
+  const headerLine = widths.map((w) => '═'.repeat(w)).join(`${C.DIM}═╪═${C.RESET}`);
   
-  console.log(color('96', `┌─${separator}─┐`));
-  console.log(color('96', `│ ${line(header)} │`));
-  console.log(color('96', `╞═${headerLine}═╡`));
-  rows.forEach((r) => console.log(`│ ${line(r)} │`));
-  console.log(color('96', `└─${separator}─┘`));
+  console.log(`${C.DIM}┌─${separator}─┐${C.RESET}`);
+  console.log(`${C.DIM}│ ${C.RESET}${header.map((h, i) => pad(`${C.BRIGHT}${h}${C.RESET}`, widths[i])).join(`${C.DIM} │ ${C.RESET}`)}${C.DIM} │${C.RESET}`);
+  console.log(`${C.DIM}╞═${headerLine}═╡${C.RESET}`);
+  rows.forEach((r) => console.log(`${C.DIM}│ ${C.RESET}${line(r)}${C.DIM} │${C.RESET}`));
+  console.log(`${C.DIM}└─${separator}─┘${C.RESET}`);
 };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const question = (prompt) => new Promise((resolve) => rl.question(prompt, resolve));
+const question = (prompt) => new Promise((resolve) => rl.question(`${C.CYAN}?${C.RESET} ${prompt}`, resolve));
 
 const log = (message, type = 'info') => {
   const icons = {
@@ -83,13 +130,13 @@ const log = (message, type = 'info') => {
     warning: '⚠️',
     error: '❌'
   };
-  const colors = {
-    info: '96',
-    success: '92',
-    warning: '93',
-    error: '91'
+  const colorMap = {
+    info: C.BLUE,
+    success: C.GREEN,
+    warning: C.YELLOW,
+    error: C.RED
   };
-  console.log(`${color(colors[type], icons[type] + ' ' + message)}`);
+  console.log(`${colorMap[type] || C.WHITE}${icons[type] || ''} ${message}${C.RESET}`);
 };
 
 // Templates professionnels (champs au format "nom:Type")
@@ -496,6 +543,137 @@ module.exports = { validate${appName}, ensureLabel };
         return `### ${f.name}\n- GET /api/v1/${appName.toLowerCase()}/${f.name}\n- POST /api/v1/${appName.toLowerCase()}/${f.name}\n- GET /api/v1/${appName.toLowerCase()}/${f.name}/:id\n- PUT /api/v1/${appName.toLowerCase()}/${f.name}/:id\n- DELETE /api/v1/${appName.toLowerCase()}/${f.name}/:id\n\nExemple payload:\n\`\`\`json\n${payload}\n\`\`\``;
       })
       .join('\n\n');
+    let addonsDocs = '';
+    if (options.addons) {
+      if (options.addons.payment) {
+        addonsDocs += `
+## 💳 Configuration Paiement (Multi-Fournisseurs)
+Le module de paiement supporte **Moneroo**, **CinetPay**, **Stripe**, **MTN Mobile Money** et **Airtel Money**.
+
+### 1. Configuration .env
+Ajoutez les clés correspondant à vos fournisseurs :
+\`\`\`env
+# --- Moneroo (Recommandé) ---
+MONEROO_API_KEY=votre_cle_secrete_moneroo
+MONEROO_RETURN_URL=http://localhost:5000/api/v1/${appName.toLowerCase()}/payment/callback
+
+# --- CinetPay ---
+CINETPAY_API_KEY=votre_api_key
+CINETPAY_SITE_ID=votre_site_id
+
+# --- MTN Mobile Money ---
+MTN_SUBSCRIPTION_KEY=votre_subscription_key
+MTN_API_USER=votre_uuid_api_user
+MTN_API_KEY=votre_api_key_generee
+MTN_TARGET_ENV=sandbox
+# Base URL par défaut: Sandbox. Pour la prod, voir doc MTN.
+
+# --- Airtel Money ---
+AIRTEL_CLIENT_ID=votre_client_id
+AIRTEL_CLIENT_SECRET=votre_client_secret
+
+# --- Stripe ---
+STRIPE_SECRET_KEY=votre_secret_key
+\`\`\`
+
+### 2. Utilisation (Choix du Provider)
+Le choix se fait via le champ \`provider\` dans le body de la requête.
+
+- **Moneroo**: \`{ "provider": "moneroo", ... }\`
+- **CinetPay**: \`{ "provider": "cinetpay", ... }\`
+- **MTN MoMo**: \`{ "provider": "mtn", "customerPhone": "24206..." }\`
+- **Airtel**: \`{ "provider": "airtel", "customerPhone": "24206..." }\`
+- **Stripe**: \`{ "provider": "stripe", ... }\`
+
+### Endpoints Paiement
+- **Initier un paiement**: \`POST /api/v1/${appName.toLowerCase()}/payment/init\`
+  - Body Exemple (Moneroo): \`{ "provider": "moneroo", "amount": 1000, "currency": "XAF", "customerName": "Jean", "customerEmail": "jean@test.com" }\`
+  - Body Exemple (MTN): \`{ "provider": "mtn", "amount": 500, "currency": "XAF", "customerPhone": "24206123456" }\`
+- **Vérifier un paiement**: \`GET /api/v1/${appName.toLowerCase()}/payment/verify/:id?provider=moneroo\`
+
+`;
+      }
+      if (options.addons.export) {
+        addonsDocs += `
+## 📊 Module Export (CSV / Excel)
+Le module d'export est activé pour toutes vos entités.
+
+### Utilisation
+- **URL**: \`GET /api/v1/${appName.toLowerCase()}/export\`
+- **Paramètres**:
+  - \`entity\`: Nom du modèle (ex: \`${features[0]?.model || 'Product'}\`)
+  - \`format\`: \`csv\` ou \`excel\`
+- **Exemple**: \`/api/v1/${appName.toLowerCase()}/export?entity=${features[0]?.model || 'Product'}&format=excel\`
+`;
+      }
+    }
+
+    const coreServicesDocs = `
+## 🔔 Notifications Temps Réel (Socket.io)
+Le service de notification est pré-intégré et prêt à l'emploi.
+
+### Quand l'utiliser ?
+- **Confirmation de commande/paiement** : Notifier l'utilisateur instantanément sans recharger la page.
+- **Mises à jour de statut** : "Votre commande est en route", "Votre dossier a été validé".
+- **Chat / Messagerie** : Communication en direct entre utilisateurs ou avec le support.
+- **Alertes Admin** : Notifier les administrateurs d'une nouvelle inscription ou d'une erreur critique.
+
+### Comment l'utiliser ?
+
+#### 1. Backend (Émettre une notification)
+Utilisez le \`NotificationService\` n'importe où dans vos contrôleurs ou services.
+
+\`\`\`javascript
+const notificationService = require('../../../dry/services/notification/notification.service');
+
+// Exemple: Dans un contrôleur après une action réussie
+exports.validateOrder = asyncHandler(async (req, res) => {
+  // ... logique de validation ...
+
+  // 1. Notifier l'utilisateur spécifique (nécessite que l'utilisateur soit connecté au socket)
+  notificationService.sendToUser(req.user._id, 'order_status', { 
+    status: 'VALIDATED', 
+    message: 'Votre commande a été validée !' 
+  });
+
+  // 2. Diffuser à tout le monde (ex: Annonce globale)
+  notificationService.broadcast('global_announcement', { 
+    message: 'Maintenance prévue dans 10 minutes' 
+  });
+
+  sendResponse(res, order, 'Commande validée');
+});
+\`\`\`
+
+#### 2. Frontend (Recevoir une notification)
+Le client doit se connecter et écouter les événements.
+
+\`\`\`javascript
+import { io } from 'socket.io-client';
+
+// Connexion au serveur (ajustez l'URL en prod)
+const socket = io('http://localhost:5000');
+
+// Authentification Socket (Important pour recevoir les messages privés)
+// Une fois l'utilisateur loggué, envoyez son ID pour rejoindre sa "room" privée
+const userId = "USER_ID_DU_CLIENT"; 
+socket.on('connect', () => {
+  console.log('Connecté au serveur de notification');
+  socket.emit('join', userId); 
+});
+
+// Écouter les événements spécifiques
+socket.on('order_status', (data) => {
+  alert(data.message); // "Votre commande a été validée !"
+  // Mettre à jour l'UI...
+});
+
+socket.on('global_announcement', (data) => {
+  console.warn('Annonce:', data.message);
+});
+\`\`\`
+`;
+
     return `# ${appName}
 
 Application generee avec le Generateur DRY (mode professionnel par defaut).
@@ -512,6 +690,10 @@ ${endpoints}
 
 ## Details par feature (routes + payloads)
 ${perFeature}
+
+${addonsDocs}
+
+${coreServicesDocs}
 
 ## Comprendre la securite (simple)
 1. Les routes d'ecriture utilisent \`protect\` + \`authorize('admin')\`
@@ -713,8 +895,30 @@ test('CRUD ${featureName} (smoke)', async () => {
 `;
 };
 
+const askForAddons = async () => {
+  console.log(color('96', '\n╭─────────────────────────────────────────────────────╮'));
+  console.log(color('96', '│                   🚀 MODULES ADDITIONNELS           │'));
+  console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
+  
+  const addons = {};
+
+  const payment = await question('💳 Activer le module de Paiement (CinetPay, Stripe, Moneroo...) ? (y/N): ');
+  if (payment && payment.toLowerCase() === 'y') addons.payment = true;
+
+  const exportData = await question('📊 Activer le module d\'Export (CSV/Excel) ? (y/N): ');
+  if (exportData && exportData.toLowerCase() === 'y') addons.export = true;
+
+  return addons;
+};
+
 const createApp = async (config) => {
-  const { name, features } = config;
+  let { name, features, addons } = config;
+  
+  // Si les addons ne sont pas fournis (ex: via template/custom mode sans modif), on demande
+  if (!addons && config.askAddons !== false) {
+     addons = await askForAddons();
+  }
+  
   const ultraPro = config.ultraPro !== false;
   const projectRoot = process.cwd();
   const safeName = safeAppName(name);
@@ -726,13 +930,13 @@ const createApp = async (config) => {
   console.log(color('96', '│                🎨 APP CREATION WIZARD              │'));
   console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
   console.log(color('96', '─────────────────────────────────────────────────────'));
-  console.log(`${info} 📱 Application: ${color('93', name)}`);
-  console.log(`${info} 📋 Features: ${color('92', String(features.length))}`);
-  console.log(`${info} 🔧 Mode: ${ultraPro ? color('92', 'Professionnel') : color('93', 'Standard')}`);
+  console.log(info + ' 📱 Application: ' + color('93', name));
+  console.log(info + ' 📋 Features: ' + color('92', String(features.length)));
+  console.log(info + ' 🔧 Mode: ' + (ultraPro ? color('92', 'Professionnel') : color('93', 'Standard')));
   console.log(color('96', '─────────────────────────────────────────────────────'));
 
   if (fs.existsSync(appPath)) {
-    renderBox(`❌ L'application "${name}" existe déjà dans:\n${appPath}`);
+    renderBox('❌ L\'application "' + name + '" existe déjà dans:\n' + appPath);
     return false;
   }
 
@@ -771,18 +975,213 @@ const createApp = async (config) => {
       const feature = features[i];
       const featureStep = Math.floor((i / features.length) * 4) + 2;
       
-      renderProgress(featureStep, totalSteps, `🗄️  Feature: ${feature.name} (${i + 1}/${features.length})`);
+      renderProgress(featureStep, totalSteps, '🗄️  Feature: ' + feature.name + ' (' + (i + 1) + '/' + features.length + ')');
       await createFeature(appPath, feature, safeName, { ultraPro: !!ultraPro });
 
       // Tests de base auto-générés
-      const testPath = path.join(projectRoot, 'tests', safeName, `${feature.name}.test.js`);
+      const testPath = path.join(projectRoot, 'tests', safeName, feature.name + '.test.js');
       createFile(testPath, testTemplate(safeName, feature.name, feature.fields));
       await sleep(50);
     }
 
+    // Gestion des Addons
+    if (addons && (addons.payment || addons.export)) {
+       console.log(color('36', '🚀 Configuration des addons...'));
+       const addonsContent = '/**\n' +
+       ' * Configuration des modules additionnels\n' +
+       ' * Généré automatiquement par DRY CLI\n' +
+       ' */\n' +
+       'module.exports = ' + JSON.stringify(addons, null, 2) + ';';
+       createFile(path.join(appPath, 'addons.js'), addonsContent);
+       await sleep(50);
+
+       if (addons.payment) {
+          console.log(color('36', '💳 Génération du module Paiement...'));
+          
+          const paymentController = [
+            "const asyncHandler = require('express-async-handler');",
+            "const PaymentFactory = require('../../../../../dry/services/payment/payment.factory');",
+            "const notificationService = require('../../../../../dry/services/notification/notification.service');",
+            "const sendResponse = require('../../../../../dry/utils/http/response');",
+            "",
+            "/**",
+            " * Initialiser un paiement",
+            " * POST /api/v1/" + safeName.toLowerCase() + "/payment/init",
+            " */",
+            "exports.initPayment = asyncHandler(async (req, res) => {",
+            "  const { provider, amount, currency, description, customerPhone, customerEmail, customerName } = req.body;",
+            "  ",
+            "  // Configuration dynamique",
+            "  const config = {",
+            "    apiKey: process.env.CINETPAY_API_KEY,",
+            "    siteId: process.env.CINETPAY_SITE_ID,",
+            "    secretKey: process.env.STRIPE_SECRET_KEY,",
+            "    // Configuration Moneroo",
+            "    monerooApiKey: process.env.MONEROO_API_KEY,",
+            "    monerooReturnUrl: process.env.MONEROO_RETURN_URL,",
+            "    // Configuration MTN & Airtel",
+            "    subscriptionKey: process.env.MTN_SUBSCRIPTION_KEY,",
+            "    apiUser: process.env.MTN_API_USER,",
+            "    mtnApiKey: process.env.MTN_API_KEY,",
+            "    targetEnvironment: process.env.MTN_TARGET_ENV || 'sandbox',",
+            "    clientId: process.env.AIRTEL_CLIENT_ID,",
+            "    clientSecret: process.env.AIRTEL_CLIENT_SECRET",
+            "  };",
+            "",
+            "  // Mapping spécifique des clés pour chaque provider",
+            "  if (provider) {",
+            "    const p = provider.toLowerCase();",
+            "    if (p === 'moneroo' || p === 'monero') {",
+            "        config.apiKey = config.monerooApiKey;",
+            "        config.returnUrl = config.monerooReturnUrl;",
+            "    }",
+            "    if (p === 'mtn') {",
+            "        config.apiKey = config.mtnApiKey;",
+            "    }",
+            "    // Note: CinetPay, Stripe et Airtel utilisent directement les clés mappées ci-dessus",
+            "    // via la PaymentFactory qui reçoit tout l'objet config.",
+            "  }",
+            "",
+            "  const paymentProvider = PaymentFactory.getProvider(provider, config);",
+            "  const transactionId = 'TX-' + Date.now();",
+            "",
+            "  const result = await paymentProvider.initPayment({",
+            "    amount,",
+            "    currency: currency || 'XAF',",
+            "    transactionId,",
+            "    description,",
+            "    customerPhone,",
+            "    customerEmail,",
+            "    customerName",
+            "  });",
+            "",
+            "  if (!result.success) {",
+            "    res.status(400);",
+            "    throw new Error(result.error || 'Erreur paiement');",
+            "  }",
+            "",
+            "  sendResponse(res, result, 'Paiement initié avec succès');",
+            "});",
+            "",
+            "/**",
+            " * Vérifier un paiement",
+            " * GET /api/v1/" + safeName.toLowerCase() + "/payment/verify/:id",
+            " */",
+            "exports.verifyPayment = asyncHandler(async (req, res) => {",
+            "  const { provider } = req.query;",
+            "  const { id } = req.params;",
+            "  ",
+            "  const config = {",
+            "    apiKey: process.env.CINETPAY_API_KEY,",
+            "    siteId: process.env.CINETPAY_SITE_ID,",
+            "    secretKey: process.env.STRIPE_SECRET_KEY,",
+            "    monerooApiKey: process.env.MONEROO_API_KEY",
+            "  };",
+            "",
+            "  if (provider && (provider.toLowerCase() === 'moneroo' || provider.toLowerCase() === 'monero')) {",
+            "      config.apiKey = config.monerooApiKey;",
+            "  }",
+            "",
+            "  const paymentProvider = PaymentFactory.getProvider(provider || 'cinetpay', config);",
+            "  const result = await paymentProvider.verifyPayment(id);",
+            "",
+            "  // Exemple de notification temps réel en cas de succès (si utilisateur connecté)",
+            "  if (result.success && req.user) {",
+            "      // notificationService.sendToUser(req.user._id, 'payment_success', { transactionId: id, amount: result.amount });",
+            "  }",
+            "",
+            "  sendResponse(res, result, 'Statut paiement récupéré');",
+            "});",
+          ].join('\n');
+
+
+          const paymentRoutes = [
+            "const express = require('express');",
+            "const router = express.Router();",
+            "const controller = require('../controller/payment.controller');",
+            "const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');",
+            "",
+            "router.post('/init', protect, controller.initPayment);",
+            "router.get('/verify/:id', protect, controller.verifyPayment);",
+            "",
+            "module.exports = router;",
+          ].join('\n');
+          
+          const featureDir = path.join(appPath, 'features', 'payment');
+          fs.mkdirSync(path.join(featureDir, 'controller'), { recursive: true });
+          fs.mkdirSync(path.join(featureDir, 'route'), { recursive: true });
+
+          createFile(path.join(featureDir, 'controller', 'payment.controller.js'), paymentController);
+          createFile(path.join(featureDir, 'route', 'payment.routes.js'), paymentRoutes);
+       }
+
+       if (addons.export) {
+          console.log(color('36', '📊 Génération du module Export...'));
+          
+          const exportController = [
+            "const asyncHandler = require('express-async-handler');",
+            "const ExportService = require('../../../../../dry/services/export/export.service');",
+            "const sendResponse = require('../../../../../dry/utils/http/response');",
+            "",
+            "/**",
+            " * Exporter des données",
+            " * GET /api/v1/" + safeName.toLowerCase() + "/export",
+            " */",
+            "exports.exportData = asyncHandler(async (req, res) => {",
+            "  const { format, entity } = req.query;",
+            "  ",
+            "  if (!entity) {",
+            "    res.status(400);",
+            "    throw new Error('Entité requise (paramètre query \"entity\")');",
+            "  }",
+            "",
+            "  // Récupération dynamique du modèle",
+            "  let Model;",
+            "  try {",
+            "    Model = req.getModel(entity);",
+            "  } catch (error) {",
+            "    res.status(400);",
+            "    throw new Error('Entité inconnue ou modèle non trouvé: ' + entity);",
+            "  }",
+            "  ",
+            "  // On récupère tout pour l'instant (ajouter filtres si nécessaire)",
+            "  const data = await Model.find().lean();",
+            "  const fields = data.length > 0 ? Object.keys(data[0]).filter(k => k !== '__v' && k !== 'password') : [];",
+            "  ",
+            "  if (format === 'csv') {",
+            "    return ExportService.toCSV(data, fields, res, entity + '_export');",
+            "  } else if (format === 'excel') {",
+            "    const columns = fields.map(f => ({ header: f.toUpperCase(), key: f, width: 30 }));",
+            "    return ExportService.toExcel(data, columns, res, entity + '_export');",
+            "  }",
+            "  ",
+            "  sendResponse(res, null, 'Format non supporté (utiliser csv ou excel)', 400);",
+            "});",
+          ].join('\n');
+
+          const exportRoutes = [
+            "const express = require('express');",
+            "const router = express.Router();",
+            "const controller = require('../controller/export.controller');",
+            "const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');",
+            "",
+            "router.get('/', protect, controller.exportData);",
+            "",
+            "module.exports = router;",
+          ].join('\n');
+          
+          const featureDir = path.join(appPath, 'features', 'export');
+          fs.mkdirSync(path.join(featureDir, 'controller'), { recursive: true });
+          fs.mkdirSync(path.join(featureDir, 'route'), { recursive: true });
+
+          createFile(path.join(featureDir, 'controller', 'export.controller.js'), exportController);
+          createFile(path.join(featureDir, 'route', 'export.routes.js'), exportRoutes);
+       }
+    }
+
     // Étape 7: Documentation
     renderProgress(++currentStep, totalSteps, creationSteps[6]);
-    createFile(path.join(appPath, 'README.md'), templates.readme(safeName, features, { ultraPro: !!ultraPro }));
+    createFile(path.join(appPath, 'README.md'), templates.readme(safeName, features, { ultraPro: !!ultraPro, addons }));
     await sleep(100);
 
     // Étape 8: Seed
@@ -795,24 +1194,24 @@ const createApp = async (config) => {
     // Affichage des fichiers créés
     const createdFiles = [];
     features.forEach(feature => {
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/model/${feature.name}.schema.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/controller/${feature.name}.getAll.controller.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/controller/${feature.name}.create.controller.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/controller/${feature.name}.getById.controller.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/controller/${feature.name}.update.controller.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/controller/${feature.name}.delete.controller.js`);
-      createdFiles.push(`dryApp/${safeName}/features/${feature.name}/route/${feature.name}.routes.js`);
-      createdFiles.push(`tests/${safeName}/${feature.name}.test.js`);
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/model/' + feature.name + '.schema.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/controller/' + feature.name + '.getAll.controller.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/controller/' + feature.name + '.create.controller.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/controller/' + feature.name + '.getById.controller.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/controller/' + feature.name + '.update.controller.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/controller/' + feature.name + '.delete.controller.js');
+      createdFiles.push('dryApp/' + safeName + '/features/' + feature.name + '/route/' + feature.name + '.routes.js');
+      createdFiles.push('tests/' + safeName + '/' + feature.name + '.test.js');
     });
-    createdFiles.push(`dryApp/${safeName}/validation/schemas.js`);
-    createdFiles.push(`dryApp/${safeName}/validation/middleware.js`);
-    createdFiles.push(`dryApp/${safeName}/README.md`);
-    createdFiles.push(`dryApp/${safeName}/seed.js`);
+    createdFiles.push('dryApp/' + safeName + '/validation/schemas.js');
+    createdFiles.push('dryApp/' + safeName + '/validation/middleware.js');
+    createdFiles.push('dryApp/' + safeName + '/README.md');
+    createdFiles.push('dryApp/' + safeName + '/seed.js');
 
     renderBox(
-      `📁 FICHIERS CRÉÉS (${createdFiles.length})\n\n` +
-      createdFiles.slice(0, 10).map(f => `✅ ${f}`).join('\n') +
-      (createdFiles.length > 10 ? `\n... et ${createdFiles.length - 10} autres` : '')
+      '📁 FICHIERS CRÉÉS (' + createdFiles.length + ')\n\n' +
+      createdFiles.slice(0, 10).map(f => '✅ ' + f).join('\n') +
+      (createdFiles.length > 10 ? '\n... et ' + (createdFiles.length - 10) + ' autres' : '')
     );
 
     console.log('\n');
@@ -837,16 +1236,16 @@ const createApp = async (config) => {
                    key.includes('Route') ? '🛣️' : 
                    key.includes('Test') ? '🧪' : 
                    key.includes('Doc') ? '📚' : '⚙️';
-      console.log(`${icon} ${key.padEnd(12)}: ${color('92', String(value))} fichier(s)`);
+      console.log(icon + ' ' + key.padEnd(12) + ': ' + color('92', String(value)) + ' fichier(s)');
     });
 
     console.log(color('96', '─────────────────────────────────────────────────────'));
 
     // Tableau des features
     const featureRows = features.map((f, i) => [
-      `⚙️ ${f.name}`,
+      '⚙️ ' + f.name,
       f.model,
-      `${f.fields?.length || 0} champs`,
+      (f.fields?.length || 0) + ' champs',
       color('92', '✅ CRÉÉ')
     ]);
 
@@ -867,15 +1266,15 @@ const createApp = async (config) => {
     });
 
     console.log(color('96', '─────────────────────────────────────────────────────'));
-    console.log(`${info} 🕐 Créé: ${timestamp}`);
-    console.log(`${info} 📂 Chemin: ${color('92', appPath)}`);
+    console.log(info + ' 🕐 Créé: ' + timestamp);
+    console.log(info + ' 📂 Chemin: ' + color('92', appPath));
     console.log(color('96', '─────────────────────────────────────────────────────'));
 
-    console.log(`\n${success} 🎉 APPLICATION CRÉÉE AVEC SUCCÈS!`);
-    console.log(`${info} 📝 Prochaines étapes:`);
-    console.log(`   • cd dryApp/${safeName}`);
-    console.log(`   • npm install`);
-    console.log(`   • npm run dev`);
+    console.log('\n' + success + ' 🎉 APPLICATION CRÉÉE AVEC SUCCÈS!');
+    console.log(info + ' 📝 Prochaines étapes:');
+    console.log('   • cd dryApp/' + safeName);
+    console.log('   • npm install');
+    console.log('   • npm run dev');
 
     console.log('\n' + color('96', '─────────────────────────────────────────────────────'));
     console.log(color('96', '│                   🌟 BON DÉVELOPPEMENT!             │'));
@@ -883,7 +1282,7 @@ const createApp = async (config) => {
 
     return true;
   } catch (error) {
-    console.log(`\n${error} 🚨 ERREUR: ${error.message}`);
+    console.log('\n' + error + ' 🚨 ERREUR: ' + error.message);
     return false;
   }
 };
@@ -895,7 +1294,7 @@ const showMainMenu = async () => {
   console.log(color('96', '│                🎨 APP CREATION WIZARD              │'));
   console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
   console.log(color('96', '─────────────────────────────────────────────────────'));
-  console.log(`${info} 📋 Choisissez un mode de création:`);
+  console.log(info + ' 📋 Choisissez un mode de création:');
   console.log(color('96', '─────────────────────────────────────────────────────'));
   
   const menuOptions = [
@@ -906,7 +1305,7 @@ const showMainMenu = async () => {
   ];
 
   menuOptions.forEach(option => {
-    console.log(`${color('93', option.num)}) ${option.icon} ${color('96', option.title.padEnd(20))} ${color('90', `— ${option.desc}`)}`);
+    console.log(color('93', option.num) + ') ' + option.icon + ' ' + color('96', option.title.padEnd(20)) + ' ' + color('90', '— ' + option.desc));
   });
 
   console.log(color('96', '─────────────────────────────────────────────────────'));
@@ -934,10 +1333,10 @@ const templateMode = async () => {
   ];
 
   const templateRows = templateList.map(t => [
-    `${t.icon} ${t.num}`,
+    t.icon + ' ' + t.num,
     t.name,
     t.desc,
-    `${t.features} features`,
+    t.features + ' features',
     t.num === '0' ? color('90', '—') : color('92', '✅')
   ]);
 
@@ -952,7 +1351,7 @@ const templateMode = async () => {
   const selected = templates[parseInt(templateChoice, 10) - 1];
 
   if (!selected || !PROFESSIONAL_TEMPLATES[selected]) {
-    renderBox(`❌ Template invalide: ${templateChoice}`);
+    renderBox('❌ Template invalide: ' + templateChoice);
     return;
   }
 
@@ -960,18 +1359,20 @@ const templateMode = async () => {
   
   console.log('');
   console.log(color('96', '╭─────────────────────────────────────────────────────╮'));
-  console.log(color('96', `│                   📋 RÉCAPITULATIF                  │`));
+  console.log(color('96', '│                   📋 RÉCAPITULATIF                  │'));
   console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
   console.log(color('96', '─────────────────────────────────────────────────────'));
-  console.log(`${info} 📱 Nom: ${color('93', tpl.name)}`);
-  console.log(`${info} 📝 Description: ${color('96', tpl.desc)}`);
-  console.log(`${info} ⚙️  Features: ${color('92', tpl.features.map(f => f.name).join(', '))}`);
-  console.log(`${info} 🔧 Mode: ${color('92', 'Professionnel')}`);
+  console.log(info + ' 📱 Nom: ' + color('93', tpl.name));
+  console.log(info + ' 📝 Description: ' + color('96', tpl.desc));
+  console.log(info + ' ⚙️  Features: ' + color('92', tpl.features.map(f => f.name).join(', ')));
+  console.log(info + ' 🔧 Mode: ' + color('92', 'Professionnel'));
   console.log(color('96', '─────────────────────────────────────────────────────'));
+
+  const addons = await askForAddons();
 
   const confirm = await question('\n✅ Confirmer la création ? (y/n): ');
   if (confirm.toLowerCase() === 'y') {
-    await createApp({ name: tpl.name, features: tpl.features, ultraPro: true });
+    await createApp({ name: tpl.name, features: tpl.features, ultraPro: true, addons });
   }
 };
 
@@ -988,14 +1389,16 @@ const customMode = async () => {
   const featureDetails = [];
   for (const feature of features) {
     const modelName = toPascal(feature);
-    const fieldsInput = await question(`Champs pour ${modelName} (ex: nom:String,email:String): `);
+    const fieldsInput = await question('Champs pour ' + modelName + ' (ex: nom:String,email:String): ');
     const fields = fieldsInput.split(',').map((f) => f.trim()).filter(Boolean);
     featureDetails.push({ name: feature, model: modelName, fields });
   }
 
+  const addons = await askForAddons();
+
   const confirm = await question('\nConfirmer la creation ? (y/n): ');
   if (confirm.toLowerCase() === 'y') {
-    await createApp({ name: appName, features: featureDetails, ultraPro: true });
+    await createApp({ name: appName, features: featureDetails, ultraPro: true, addons });
   }
 };
 
@@ -1010,9 +1413,11 @@ const quickMode = async () => {
     fields: ['name:String', 'description:String', 'price:Number'],
   };
 
+  const addons = await askForAddons();
+
   const confirm = await question('\nConfirmer la creation rapide ? (y/n): ');
   if (confirm.toLowerCase() === 'y') {
-    await createApp({ name: appName, features: [quickFeature], ultraPro: true });
+    await createApp({ name: appName, features: [quickFeature], ultraPro: true, addons });
   }
 };
 
@@ -1036,7 +1441,7 @@ const main = async () => {
       }
     }
   } catch (error) {
-    log(`Erreur: ${error.message}`, 'error');
+    log('Erreur: ' + error.message, 'error');
     rl.close();
     process.exit(1);
   }

@@ -15,7 +15,7 @@
         </a>
 
         <!-- Navigation -->
-        <nav class="nav">
+        <nav class="nav" *ngIf="!isMobileViewport">
           <a class="nav-link"
              routerLink="/"
              routerLinkActive="active"
@@ -42,7 +42,7 @@
         </nav>
 
         <!-- Session -->
-        <div class="session" *ngIf="isAuthed; else guest">
+        <div class="session" *ngIf="isAuthed && !isMobileViewport">
           <div class="user-info">
             <div class="user-avatar">
               <lucide-icon name="circle-user" size="20"></lucide-icon>
@@ -58,24 +58,29 @@
           </button>
         </div>
 
-        <ng-template #guest>
-          <div class="guest-actions">
-            <a class="btn primary" routerLink="/auth">
-              <lucide-icon name="rocket" size="16"></lucide-icon>
-              Commencer
-            </a>
-          </div>
-        </ng-template>
+        <div class="guest-actions" *ngIf="!isAuthed && !isMobileViewport">
+          <a class="btn primary" routerLink="/auth">
+            <lucide-icon name="rocket" size="16"></lucide-icon>
+            Commencer
+          </a>
+        </div>
 
         <!-- Mobile Menu Toggle -->
-        <button class="menu-toggle" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="menu-toggle"
+                *ngIf="isMobileViewport"
+                (click)="toggleMobileMenu()"
+                [attr.aria-expanded]="isMobileMenuOpen"
+                aria-label="Toggle menu">
           <lucide-icon [name]="isMobileMenuOpen ? 'x' : 'menu'" size="24"></lucide-icon>
         </button>
       </div>
     </div>
 
     <!-- Mobile Menu -->
-    <div class="mobile-menu" [class.active]="isMobileMenuOpen">
+    <div class="mobile-menu"
+         *ngIf="isMobileViewport"
+         [class.active]="isMobileMenuOpen"
+         (click)="closeMobileMenu()">
       <div class="mobile-menu-content" (click)="$event.stopPropagation()">
         <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Fermer le menu">
           <lucide-icon name="x" size="20"></lucide-icon>
@@ -89,6 +94,7 @@
 
         <a class="mobile-nav-link"
            routerLink="/downloads"
+           *ngIf="isAuthed"
            (click)="closeMobileMenu()">
           <lucide-icon name="download" size="20"></lucide-icon>
           Mes téléchargements

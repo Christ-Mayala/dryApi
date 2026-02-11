@@ -1,6 +1,7 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const emailService = require('../../../../../dry/services/auth/email.service');
+const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -18,7 +19,7 @@ module.exports = asyncHandler(async (req, res) => {
     user.resetCodeExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    const site = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const site = config.FRONTEND_URL || 'http://localhost:5173';
     const link = `${site}/reset-password?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`;
 
     const html = `

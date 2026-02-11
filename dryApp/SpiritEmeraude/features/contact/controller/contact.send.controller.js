@@ -1,8 +1,9 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 // Utilise le service email gÃ©nÃ©rique (et non le fichier de templates)
 const emailService = require('../../../../../dry/services/auth/email.service');
 const ContactSchema = require('../model/contact.schema');
+const config = require('../../../../../config/database');
 
 const sendMessage = asyncHandler(async (req, res) => {
     const Contact = req.getModel('Contact', ContactSchema);
@@ -20,7 +21,7 @@ const sendMessage = asyncHandler(async (req, res) => {
 
     try {
         await emailService.sendGenericEmail({
-            email: process.env.SMTP_EMAIL,
+            email: config.ALERT_EMAIL_TO || config.EMAIL_FROM,
             subject: `[Spirit] ${contact.subject || 'Nouveau message de contact'}`,
             html,
         });

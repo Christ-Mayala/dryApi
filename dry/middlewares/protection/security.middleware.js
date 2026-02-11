@@ -1,9 +1,10 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
+const config = require('../../../config/database');
 
 const setupSecurity = (app) => {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = config.NODE_ENV === 'production';
 
     // 1. Headers de securite HTTP (CSP/HSTS/Referrer en prod)
     app.use(
@@ -28,11 +29,11 @@ const setupSecurity = (app) => {
 
     // 2. Limiteur de requetes (Anti-DDoS / Brute Force)
     const limiter = rateLimit({
-        windowMs: 10 * 60 * 1000, // 10 minutes
-        max: 100, // 100 requetes par IP
+        windowMs: config.RATE_LIMIT.windowMs,
+        max: config.RATE_LIMIT.max,
         standardHeaders: true,
         legacyHeaders: false,
-        message: { success: false, message: 'Trop de requetes, veuillez reessayer plus tard.' },
+        message: config.RATE_LIMIT.message,
     });
     app.use('/api', limiter);
 

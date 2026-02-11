@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const logger = require('../../../utils/logging/logger');
+const config = require('../../../config/database');
 
 const loadRoutes = (app) => {
-    const appName = process.env.APP_NAME;
+    const appName = config.APP_NAME;
     if (!appName) {
         console.error('❌ CRITICAL: APP_NAME non défini dans le .env');
         process.exit(1);

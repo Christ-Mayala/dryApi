@@ -1,10 +1,11 @@
 const cron = require('node-cron');
 const logger = require('../../utils/logging/logger');
+const config = require('../../../config/database');
 
 // Configuration depuis les variables d'environnement
-const PURGE_ENABLED = process.env.PURGE_ENABLED === 'true';
-const PURGE_AFTER_DAYS = parseInt(process.env.PURGE_AFTER_DAYS) || 14;
-const PURGE_CRON = process.env.PURGE_CRON || '0 3 * * *'; // Par défaut à 3h du matin
+const PURGE_ENABLED = config.PURGE_ENABLED === 'true';
+const PURGE_AFTER_DAYS = parseInt(config.PURGE_AFTER_DAYS) || 14;
+const PURGE_CRON = config.PURGE_CRON || '0 3 * * *'; // Par défaut à 3h du matin
 
 /**
  * Script de purge des données supprimées (soft delete)

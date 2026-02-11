@@ -1,10 +1,11 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { pipeline } = require('stream/promises');
 const ytdl = require('ytdl-core');
+const config = require('../../../config/database');
 
 let ytdlp = null;
 try { ytdlp = require('yt-dlp-exec'); } catch (_) {}
@@ -13,9 +14,9 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const sanitize = (v, fb = 'media') => (v || fb).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80) || fb;
 
 const ytRequestOptions = () => {
-  const cookieHeader = process.env.YT_COOKIE || process.env.YT_COOKIES || '';
+  const cookieHeader = config.YT_COOKIE || config.YT_COOKIES || '';
   const headers = {
-    'User-Agent': process.env.YT_USER_AGENT || UA,
+    'User-Agent': config.YT_USER_AGENT || UA,
   };
   if (cookieHeader) {
     // Utiliser directement le format string pour les cookies
@@ -142,19 +143,19 @@ class MultiPlatformDownloader {
           format: this.ytFormat(mediaType),
           mergeOutputFormat: mediaType === 'audio' ? undefined : 'mp4',
           noPlaylist: true,
-          ffmpegLocation: process.env.FFMPEG_PATH,
+          ffmpegLocation: config.FFMPEG_PATH,
           restrictFilenames: true,
           quiet: !this.verbose,
           noCheckCertificates: true,
           preferInsecure: true,
           addHeader: [
-            `User-Agent:${process.env.YT_USER_AGENT || UA}`,
-            `Cookie:${process.env.YT_COOKIE || process.env.YT_COOKIES || ''}`
+            `User-Agent:${config.YT_USER_AGENT || UA}`,
+            `Cookie:${config.YT_COOKIE || config.YT_COOKIES || ''}`
           ]
         };
         
         // Désactiver les mises à jour si demandé
-        if (process.env.YTDL_NO_UPDATE) {
+        if (config.YTDL_NO_UPDATE) {
           options.update = false;
         }
         

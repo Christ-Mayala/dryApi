@@ -2,8 +2,9 @@ const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const MessageSchema = require('../model/message.schema');
+const config = require('../../../../../config/database');
 
-const SCIM_EMAIL = process.env.SCIM_CONTACT_EMAIL || 'scim@example.com';
+const SCIM_EMAIL = config.SCIM_CONTACT_EMAIL || 'scim@example.com';
 
 const getScimUserId = async (User) => {
     let user = await User.findOne({ email: SCIM_EMAIL }).select('_id');

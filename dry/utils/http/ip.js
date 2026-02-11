@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const config = require('../../../config/database');
 
 const getClientIp = (req) => {
     const xff = req.headers['x-forwarded-for'];
@@ -10,7 +11,7 @@ const getClientIp = (req) => {
 };
 
 const hashIp = (ip) => {
-    const salt = process.env.VIEW_IP_SALT || 'dry';
+    const salt = config.VIEW_IP_SALT || 'dry';
     return crypto.createHash('sha256').update(`${salt}:${ip}`).digest('hex');
 };
 

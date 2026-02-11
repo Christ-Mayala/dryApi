@@ -1,4 +1,5 @@
 require('dotenv').config();
+const config = require('./config/database');
 const http = require('http');
 const { randomUUID } = require('crypto');
 const { Server: SocketIOServer } = require('socket.io');
@@ -20,7 +21,86 @@ const sendResponse = require('./dry/utils/http/response');
 const redisService = require('./dry/services/cache/redis.service');
 const healthService = require('./dry/services/health/health.service');
 const { sendAlert } = require('./dry/services/alert/alert.service');
+const notificationService = require('./dry/services/notification/notification.service');
 const { swaggerUiMiddleware, swaggerUiSetup, generateSwaggerRoutes } = require('./dry/utils/documentation/swagger.util');
+
+const boolFromEnv = (value, fallback = false) => {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+};
+
+const fatalExitDelayMs = Number(process.env.FATAL_ERROR_EXIT_DELAY_MS || config.FATAL_ERROR_EXIT_DELAY_MS || 3500);
+const crashOnUnhandledRejection = boolFromEnv(
+  process.env.CRASH_ON_UNHANDLED_REJECTION ?? config.CRASH_ON_UNHANDLED_REJECTION,
+  false
+);
+let fatalExitScheduled = false;
+
+const toErrorObject = (raw, fallbackMessage = 'Erreur inconnue') => {
+  if (raw instanceof Error) return raw;
+  const msg = typeof raw === 'string' ? raw : fallbackMessage;
+  const err = new Error(msg);
+  err.raw = raw;
+  return err;
+};
+
+const scheduleFatalExit = (origin) => {
+  if (fatalExitScheduled) return;
+  fatalExitScheduled = true;
+
+  const safeDelayMs = Number.isFinite(fatalExitDelayMs) && fatalExitDelayMs > 0 ? fatalExitDelayMs : 3500;
+  logger(`[fatal] Process exit(1) programme dans ${safeDelayMs}ms (${origin})`, 'error');
+
+  setTimeout(() => {
+    process.exit(1);
+  }, safeDelayMs).unref();
+};
+
+const sendProcessAlert = async (event, error, details = {}) => {
+  try {
+    const normalizedError = toErrorObject(error);
+    const dedupKey = `process:${event}:${normalizedError.name || 'Error'}:${normalizedError.code || ''}:${normalizedError.message || ''}`;
+    await sendAlert({
+      event,
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: normalizedError,
+      details: {
+        ...details,
+        pid: process.pid,
+        nodeVersion: process.version,
+      },
+      dedupKey,
+    });
+  } catch (alertErr) {
+    logger(`[global] Echec envoi alerte process: ${alertErr?.message || String(alertErr)}`, 'error');
+  }
+};
+
+process.on('unhandledRejection', async (reason) => {
+  const err = toErrorObject(reason, 'Promesse rejetee non geree');
+  logger(`[global] unhandledRejection: ${err.stack || err.message}`, 'error');
+
+  if (crashOnUnhandledRejection) {
+    scheduleFatalExit('unhandledRejection');
+  }
+
+  await sendProcessAlert('DRY_UNHANDLED_REJECTION', err, {
+    reasonType: typeof reason,
+  });
+});
+
+process.on('uncaughtException', async (error, origin) => {
+  const err = toErrorObject(error, 'Exception fatale non interceptee');
+  logger(`[global] uncaughtException (${origin || 'unknown'}): ${err.stack || err.message}`, 'error');
+
+  scheduleFatalExit('uncaughtException');
+
+  await sendProcessAlert('DRY_UNCAUGHT_EXCEPTION', err, {
+    origin: origin || 'unknown',
+  });
+});
 
 // Initialisation de l'application Express
 const app = express();
@@ -46,21 +126,21 @@ app.use((req, res, next) => {
 });
 
 // Configuration CORS stricte
-const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || '';
+const allowedOriginsEnv = config.ALLOWED_ORIGINS || '';
 const allowedOrigins = allowedOriginsEnv
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
 // Ajouter localhost pour Swagger UI et autoriser toutes les origines en developpement
-if (process.env.NODE_ENV !== 'production') {
+if (config.NODE_ENV !== 'production') {
   allowedOrigins.push('http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:4200', 'http://127.0.0.1:4200');
   // Autoriser toutes les origines en developpement pour Swagger
   allowedOrigins.push('*');
 }
 
 // En production, on retire le wildcard pour une CORS stricte
-if (process.env.NODE_ENV === 'production') {
+if (config.NODE_ENV === 'production') {
   const filtered = allowedOrigins.filter((o) => o !== '*');
   allowedOrigins.length = 0;
   allowedOrigins.push(...filtered);
@@ -70,7 +150,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Autoriser toutes les origines pour le developpement
-      if (process.env.NODE_ENV !== 'production') {
+      if (config.NODE_ENV !== 'production') {
         return callback(null, true);
       }
 
@@ -94,12 +174,12 @@ app.use(
 );
 
 // Logging des requetes (uniquement en developpement ou si active)
-if (process.env.NODE_ENV === 'development' || process.env.LOG_REQUESTS === 'true') {
+if (config.NODE_ENV === 'development' || config.LOG_REQUESTS === 'true') {
   app.use(morgan('dev'));
 }
 
 // Logging personnalise des requetes
-if (process.env.LOG_REQUESTS === 'true') {
+if (config.LOG_REQUESTS === 'true') {
   app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
@@ -159,7 +239,7 @@ app.get('/health/ready', async (req, res) => {
 });
 
 // Generation des routes Swagger au demarrage (une seule fois)
-console.log('\n[SWAGGER] GENERATION DOCUMENTATION...\n');
+console.log(`\x1b[34m[SWAGGER] 📄 Génération de la documentation...\x1b[0m`);
 const swaggerSpecs = generateSwaggerRoutes();
 
 // Documentation Swagger
@@ -206,7 +286,7 @@ app.use(handleCsrfError);
 app.use(errorHandler);
 
 // Initialisation du serveur HTTP
-const PORT = process.env.PORT || 5000;
+const PORT = config.PORT || 5000;
 const server = http.createServer(app);
 
 // Configuration de Socket.IO (avec CORS et authentification)
@@ -248,35 +328,16 @@ io.use((socket, next) => {
   }
 });
 
-// Gestion des evenements Socket.IO
-io.on('connection', (socket) => {
-  const uid = String(socket.userId || '');
-  if (uid) socket.join(uid);
-
-  socket.on('join', (userId) => {
-    if (userId && String(userId) === uid) {
-      socket.join(uid);
-    }
-  });
-
-  socket.on('typing:start', ({ to }) => {
-    if (!to) return;
-    io.to(String(to)).emit('typing', { from: uid, isTyping: true });
-  });
-
-  socket.on('typing:stop', ({ to }) => {
-    if (!to) return;
-    io.to(String(to)).emit('typing', { from: uid, isTyping: false });
-  });
-});
+// Gestion des evenements Socket.IO via le service de notification
+notificationService.init(io);
 
 // Attache io a l'application Express pour utilisation dans les routes
 app.set('io', io);
 
 // Verif secrets forts (JWT)
 const validateSecrets = () => {
-  const jwtSecret = process.env.JWT_SECRET || '';
-  const isProd = process.env.NODE_ENV === 'production';
+  const jwtSecret = config.JWT_SECRET || '';
+  const isProd = config.NODE_ENV === 'production';
   if (!jwtSecret || jwtSecret.length < 32) {
     const msg = 'JWT_SECRET manquant ou trop faible (>= 32 caracteres recommande).';
     if (isProd) {
@@ -288,11 +349,11 @@ const validateSecrets = () => {
 };
 
 const startHealthMonitor = () => {
-  const intervalMs = Number(process.env.HEALTH_MONITOR_INTERVAL_MS || 0);
+  const intervalMs = Number(config.HEALTH_MONITOR_INTERVAL_MS || 0);
   if (!intervalMs || intervalMs < 10000) return;
 
-  const repeatAlerts = String(process.env.MONITOR_REPEAT_ALERTS || 'false').toLowerCase() === 'true';
-  const repeatMs = Number(process.env.MONITOR_REPEAT_ALERT_MS || 900000);
+  const repeatAlerts = String(config.MONITOR_REPEAT_ALERTS || 'false').toLowerCase() === 'true';
+  const repeatMs = Number(config.MONITOR_REPEAT_ALERT_MS || 900000);
 
   let lastStatus = null;
   let lastAlertAt = 0;
@@ -351,7 +412,10 @@ const startHealthMonitor = () => {
       if (shouldSendError) {
         await sendAlert({
           event: 'DRY_HEALTH_ERROR',
-          error: e.message,
+          error: e,
+          details: {
+            monitorPhase: 'health-check-loop',
+          },
           timestamp: new Date().toISOString(),
         });
         lastErrorAt = now;
@@ -373,17 +437,35 @@ const startHealthMonitor = () => {
     startHealthMonitor();
 
     server.listen(PORT, () => {
-      console.log(`\n=========================================`);
-      console.log(`OK SERVEUR LANCE SUR LE PORT : ${PORT}`);
-      console.log(`STRUCTURE DRY ACTIVEE`);
-      console.log(`CORS Origins: ${allowedOriginsEnv || 'Aucun (desactive)'}`);
-      console.log(`CSRF Protection: Activee pour routes sensibles`);
-      console.log(`Cache Redis: ${redisService.getStatus().connected ? 'Active' : 'Desactive'}`);
-      console.log(`Documentation: http://localhost:${PORT}/api-docs`);
-      console.log(`=========================================\n`);
+      const C = {
+        RESET: '\x1b[0m',
+        BRIGHT: '\x1b[1m',
+        CYAN: '\x1b[36m',
+        GREEN: '\x1b[32m',
+        YELLOW: '\x1b[33m',
+        BLUE: '\x1b[34m',
+      };
+
+      console.log(`\n${C.BRIGHT}${C.GREEN}╔══════════════════════════════════════════════════════════════╗${C.RESET}`);
+      console.log(`${C.BRIGHT}${C.GREEN}║              🚀 SERVEUR DÉMARRÉ AVEC SUCCÈS                ║${C.RESET}`);
+      console.log(`${C.BRIGHT}${C.GREEN}╚══════════════════════════════════════════════════════════════╝${C.RESET}`);
+      
+      console.log(`\n${C.BRIGHT}${C.CYAN}📡 INFOS SYSTÈME :${C.RESET}`);
+      console.log(`${C.CYAN}────────────────────────────────────────────────────────────${C.RESET}`);
+      console.log(`   📂 Port:            ${C.BRIGHT}${PORT}${C.RESET}`);
+      console.log(`   🌍 Environnement:   ${C.BRIGHT}${config.NODE_ENV}${C.RESET}`);
+      console.log(`   🛡️  CORS:            ${allowedOriginsEnv || 'Aucun (desactive)'}`);
+      console.log(`   🔒 CSRF:            ${C.GREEN}Active${C.RESET}`);
+      console.log(`   ⚡ Redis:           ${redisService.getStatus().connected ? `${C.GREEN}Connecté${C.RESET}` : `${C.YELLOW}Désactivé${C.RESET}`}`);
+      console.log(`   📚 Documentation:   ${C.BLUE}http://localhost:${PORT}/api-docs${C.RESET}`);
+      console.log(`\n${C.CYAN}────────────────────────────────────────────────────────────${C.RESET}\n`);
     });
   } catch (error) {
     console.error('ECHEC AU DEMARRAGE DU SERVEUR :', error.message);
-    process.exit(1);
+    scheduleFatalExit('startup');
+    await sendProcessAlert('DRY_UNCAUGHT_EXCEPTION', error, {
+      origin: 'startup',
+      phase: 'bootstrap',
+    });
   }
 })();

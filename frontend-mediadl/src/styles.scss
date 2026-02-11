@@ -5,16 +5,22 @@
   --amber: #f5a623;
   --amber-light: #ffd166;
   --amber-dark: #e88b17;
+  --amber-strong: #b36817;
   --ink: #1a1a1a;
   --slate: #4a4a4a;
   --muted: #8a8a8a;
   --border: rgba(26, 26, 26, 0.1);
   --border-light: rgba(26, 26, 26, 0.05);
+  --surface-1: #fffdf9;
+  --surface-2: #ffffff;
+  --surface-3: #f7efe5;
   
   /* Élévation */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.09);
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.1);
   --shadow-amber: 0 6px 20px rgba(245, 166, 35, 0.2);
   
   /* Espacement */
@@ -31,6 +37,36 @@
   
   /* Focus */
   --focus-ring: 0 0 0 3px rgba(245, 166, 35, 0.3);
+}
+
+:root[data-theme='ocean'] {
+  --cream: #eef6fb;
+  --warm-white: #f9fcff;
+  --amber: #1f9bcf;
+  --amber-light: #6bc3e5;
+  --amber-dark: #1578a2;
+  --amber-strong: #0f5f84;
+  --border: rgba(24, 66, 88, 0.16);
+  --border-light: rgba(24, 66, 88, 0.08);
+  --surface-1: #f6fbff;
+  --surface-2: #ffffff;
+  --surface-3: #eaf4fb;
+  --focus-ring: 0 0 0 3px rgba(31, 155, 207, 0.28);
+}
+
+:root[data-theme='forest'] {
+  --cream: #eff6ef;
+  --warm-white: #f9fcf7;
+  --amber: #3f9f63;
+  --amber-light: #76be8f;
+  --amber-dark: #2f7f4e;
+  --amber-strong: #205f38;
+  --border: rgba(37, 68, 45, 0.16);
+  --border-light: rgba(37, 68, 45, 0.08);
+  --surface-1: #f8fdf7;
+  --surface-2: #ffffff;
+  --surface-3: #edf6ed;
+  --focus-ring: 0 0 0 3px rgba(63, 159, 99, 0.28);
 }
 
 *,
@@ -66,6 +102,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   touch-action: pan-y;
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -95,6 +132,15 @@ textarea {
   background: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 img,
 svg,
 video,
@@ -105,21 +151,32 @@ canvas {
 
 /* Composants réutilisables */
 .card {
-  background: var(--warm-white);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 2rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-soft);
   transition: all var(--transition-base);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
 
 .card.compact {
   padding: 1.5rem;
+}
+
+.surface {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.surface.muted {
+  background: var(--surface-3);
 }
 
 .btn {

@@ -1,5 +1,7 @@
 const sendResponse = require('../../utils/http/response');
 const logger = require('../../utils/logging/logger');
+const config = require('../../../config/database');
+const { sendAlert, sanitizeValue } = require('../../services/alert/alert.service');
 
 const looksTechnicalMessage = (msg) => {
     const s = String(msg || '').trim();
@@ -48,6 +50,80 @@ const formatMongooseValidation = (mongooseErr) => {
     return messages.length ? messages.join(' ') : 'Donnees invalides.';
 };
 
+const isClientError = (err) => {
+    if (!err) return false;
+    if (err?.code === 'LIMIT_FILE_SIZE') return true;
+    if (err?.type === 'entity.too.large' || err?.name === 'PayloadTooLargeError') return true;
+    if (err?.code === 11000) return true;
+    if (err?.name === 'ValidationError' || err?.name === 'CastError') return true;
+    if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') return true;
+    if (typeof err?.message === 'string' && err.message === 'Origin not allowed by CORS') return true;
+    if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500) return true;
+    if (typeof err?.statusCode === 'number' && err.statusCode >= 400 && err.statusCode < 500) return true;
+    return false;
+};
+
+const boolFromEnv = (value, fallback = false) => {
+    if (value === undefined || value === null || value === '') return fallback;
+    const normalized = String(value).trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+};
+
+const shouldNotifyAlert = (err) => {
+    const alertApiErrors = boolFromEnv(process.env.ALERT_API_ERRORS ?? config.ALERT_API_ERRORS, true);
+    if (!alertApiErrors) return false;
+
+    const includeClientErrors = boolFromEnv(process.env.ALERT_API_CLIENT_ERRORS ?? config.ALERT_API_CLIENT_ERRORS, false);
+    if (!includeClientErrors && isClientError(err)) return false;
+    return true;
+};
+
+const buildRequestContext = (req, rid) => {
+    return sanitizeValue({
+        id: rid,
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+        referer: req.get('referer'),
+        tenant: req.headers['x-tenant-id'] || req.headers['tenant-id'] || req.tenant,
+        userId: req.user?.id || req.user?._id || req.user?.userId,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+    });
+};
+
+const dispatchApiErrorAlert = (err, req, rid, safeMessage) => {
+    if (!shouldNotifyAlert(err)) return;
+
+    const urlPath = String(req.originalUrl || '').split('?')[0];
+    const dedupKey = `api:${req.method}:${urlPath}:${err?.name || 'Error'}:${err?.code || ''}:${safeMessage || ''}`;
+    const tenant = req.headers['x-tenant-id'] || req.headers['tenant-id'] || req.tenant || 'N/A';
+
+    setImmediate(() => {
+        sendAlert({
+            event: 'DRY_API_EXCEPTION',
+            status: 'ERROR',
+            requestId: rid,
+            http: `${req.method} ${req.originalUrl}`,
+            url: req.originalUrl,
+            tenant,
+            error: err,
+            details: {
+                publicMessage: safeMessage,
+                routePath: urlPath,
+            },
+            request: buildRequestContext(req, rid),
+            dedupKey,
+            timestamp: new Date().toISOString(),
+        }).catch((alertErr) => {
+            const msg = alertErr?.message || String(alertErr);
+            logger(`[${rid}] Echec envoi alerte erreur API: ${msg}`, 'error');
+        });
+    });
+};
+
 const errorHandler = async (err, req, res, next) => {
     const route = `${req.method} ${req.originalUrl}`;
     const stack = err?.stack || err?.message || String(err);
@@ -75,6 +151,8 @@ const errorHandler = async (err, req, res, next) => {
     } else if (typeof err?.message === 'string' && !looksTechnicalMessage(err.message)) {
         message = err.message;
     }
+
+    dispatchApiErrorAlert(err, req, rid, message);
 
     return sendResponse(res, null, message, false);
 };

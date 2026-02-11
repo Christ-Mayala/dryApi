@@ -1,9 +1,10 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const { signToken } = require('../../utils/auth/jwt.util');
 const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
 const EmailTemplates = require('../../config/templates/email.templates');
+const config = require('../../../config/database');
 
 // GÃ©nÃ©ration Token
 const generateToken = (id) => {
@@ -72,7 +73,7 @@ exports.register = asyncHandler(async (req, res) => {
 
     const user = await User.create(payload);
 
-    const shouldSend = (process.env.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
+    const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
     if (shouldSend && user?.email) {
         Promise.resolve(
             emailService.sendGenericEmail({

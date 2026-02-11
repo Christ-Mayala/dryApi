@@ -1,12 +1,13 @@
 const csrf = require('csurf');
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../utils/http/response');
+const config = require('../../../config/database');
 
 // Initialisation du middleware CSRF
 const csrfProtection = csrf({
     cookie: {
         httpOnly: true, // Empêche l'accès via JavaScript
-        secure: process.env.NODE_ENV === 'production', // Active le flag Secure en production
+        secure: config.NODE_ENV === 'production', // Active le flag Secure en production
         sameSite: 'strict', // Protège contre les attaques CSRF
     },
 });

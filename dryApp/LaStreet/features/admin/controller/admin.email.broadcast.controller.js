@@ -1,6 +1,7 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const emailService = require('../../../../../dry/services/auth/email.service');
+const config = require('../../../../../config/database');
 
 const escapeHtml = (s) =>
   String(s || '')
@@ -34,7 +35,7 @@ module.exports = asyncHandler(async (req, res) => {
 
   const role = audience === 'professionals' ? 'professional' : 'user';
 
-  const limit = Math.min(parseInt(process.env.ADMIN_BROADCAST_LIMIT || '200', 10) || 200, 500);
+  const limit = Math.min(parseInt(config.ADMIN_BROADCAST_LIMIT || '200', 10) || 200, 500);
 
   const recipients = await User.find({
     role,

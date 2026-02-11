@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const config = require('../../../config/database');
 
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
@@ -144,8 +145,8 @@ UserSchema.methods.incLoginAttempts = async function() {
     }
 
     const updates = { $inc: { loginAttempts: 1 } };
-    const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
-    const lockHours = parseInt(process.env.LOCK_TIME) || 2;
+    const maxAttempts = parseInt(config.MAX_LOGIN_ATTEMPTS) || 5;
+    const lockHours = parseInt(config.LOCK_TIME) || 2;
 
     if (this.loginAttempts + 1 >= maxAttempts) {
         updates.$set = { lockUntil: Date.now() + (lockHours * 60 * 60 * 1000) };

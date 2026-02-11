@@ -4,6 +4,7 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 const ReservationSchema = require('../model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
 const MessageSchema = require('../../message/model/message.schema');
+const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -15,7 +16,7 @@ module.exports = asyncHandler(async (req, res) => {
 
     if (!propertyId || !date) return sendResponse(res, null, 'propertyId et date sont requis.', false);
 
-    const offsetMinutes = Number(process.env.SCIM_TZ_OFFSET_MINUTES || 60);
+    const offsetMinutes = Number(config.SCIM_TZ_OFFSET_MINUTES || 60);
 
     const parseAsScimLocal = (value) => {
         const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);

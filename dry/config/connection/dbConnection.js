@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const config = require('../../../config/database');
 
 // Cache des connexions pour ne pas les réouvrir à chaque requête
 const connections = {};
@@ -8,11 +9,11 @@ const connections = {};
  */
 const connectCluster = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI);
-        console.log(`[CLUSTER] ✅ Connecté à Atlas`);
+        const conn = await mongoose.connect(config.MONGO_URI);
+        console.log(`\x1b[32m[CLUSTER] ✅ Connecté au Cluster MongoDB Atlas\x1b[0m`);
         return conn;
     } catch (error) {
-        console.error(`[CLUSTER] ❌ Erreur : ${error.message}`);
+        console.error(`\x1b[31m[CLUSTER] ❌ Erreur de connexion : ${error.message}\x1b[0m`);
         process.exit(1);
     }
 };
@@ -32,7 +33,8 @@ const getTenantDB = (appName) => {
     
     // On stocke la connexion
     connections[appName] = db;
-    console.log(`[MULTI-TENANT] 🗄️  Base de données active : ${dbName}`);
+    // Log désactivé pour éviter le doublon avec le bootloader
+    // console.log(`[MULTI-TENANT] 🗄️  Base de données active : ${dbName}`);
     
     return db;
 };

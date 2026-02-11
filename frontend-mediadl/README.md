@@ -25,3 +25,49 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## Theme configuration
+
+The app uses CSS variables defined in `src/styles.scss`.
+
+Available built-in themes:
+
+1. `default` (no attribute)
+2. `ocean`
+3. `forest`
+
+### Change theme manually
+
+Set the `data-theme` attribute on `<html>`:
+
+```html
+<html lang="en" data-theme="ocean">
+```
+
+Or remove it to return to the default theme:
+
+```html
+<html lang="en">
+```
+
+### Change theme at runtime (Angular)
+
+```ts
+document.documentElement.setAttribute('data-theme', 'forest');
+// document.documentElement.removeAttribute('data-theme'); // default theme
+```
+
+### Customize your own theme
+
+Add a new block in `src/styles.scss`:
+
+```scss
+:root[data-theme='my-theme'] {
+  --cream: #f4f6ff;
+  --warm-white: #ffffff;
+  --amber: #5566dd;
+  --amber-light: #8d9bf5;
+  --amber-dark: #3344bb;
+  --amber-strong: #24338b;
+}
+```

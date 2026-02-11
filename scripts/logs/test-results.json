@@ -1,118 +1,118 @@
 TAP version 13
-# Subtest: CRUD medecins (smoke)
-ok 1 - CRUD medecins (smoke)
-  ---
-  duration_ms: 1088.6696
-  ...
-# Subtest: CRUD patients (smoke)
-ok 2 - CRUD patients (smoke)
-  ---
-  duration_ms: 1275.6626
-  ...
-# Subtest: CRUD rendezvous (smoke)
-ok 3 - CRUD rendezvous (smoke)
-  ---
-  duration_ms: 1654.1637
-  ...
 # Subtest: CRUD admin (auto)
-ok 4 - CRUD admin (auto)
+ok 1 - CRUD admin (auto)
   ---
-  duration_ms: 333.7548
+  duration_ms: 3405.0635
   ...
 # Subtest: CRUD categories (auto)
-ok 5 - CRUD categories (auto)
+ok 2 - CRUD categories (auto)
   ---
-  duration_ms: 1409.8255
+  duration_ms: 3445.2799
   ...
 # Subtest: CRUD professionals (auto)
-ok 6 - CRUD professionals (auto)
+ok 3 - CRUD professionals (auto)
   ---
-  duration_ms: 909.4076
+  duration_ms: 4113.6588
   ...
 # Subtest: CRUD reports (auto)
-ok 7 - CRUD reports (auto)
+ok 4 - CRUD reports (auto)
   ---
-  duration_ms: 196.4528
+  duration_ms: 2584.3945
+  ...
+# Subtest: CRUD batches (smoke)
+ok 5 - CRUD batches (smoke)
+  ---
+  duration_ms: 2746.5854
+  ...
+# Subtest: CRUD downloads (smoke)
+ok 6 - CRUD downloads (smoke)
+  ---
+  duration_ms: 2270.308
+  ...
+# Subtest: CRUD presets (smoke)
+ok 7 - CRUD presets (smoke)
+  ---
+  duration_ms: 2613.1063
   ...
 # Subtest: CRUD admin (auto)
 ok 8 - CRUD admin (auto)
   ---
-  duration_ms: 157.6654
+  duration_ms: 2185.533
   ...
 # Subtest: CRUD favoris (auto)
 ok 9 - CRUD favoris (auto)
   ---
-  duration_ms: 203.6862
+  duration_ms: 2613.9126
   ...
 # Subtest: CRUD message (auto)
 ok 10 - CRUD message (auto)
   ---
-  duration_ms: 233.0929
+  duration_ms: 2290.3727
   ...
 # Subtest: CRUD property (auto)
 ok 11 - CRUD property (auto)
   ---
-  duration_ms: 1319.6041
+  duration_ms: 2730.4708
   ...
 # Subtest: CRUD reservation (auto)
 ok 12 - CRUD reservation (auto)
   ---
-  duration_ms: 832.6762
+  duration_ms: 2105.5453
   ...
 # Subtest: CRUD users (auto)
 ok 13 - CRUD users (auto)
   ---
-  duration_ms: 314.5752
+  duration_ms: 2594.3879
   ...
 # Subtest: CRUD categories (smoke)
 ok 14 - CRUD categories (smoke)
   ---
-  duration_ms: 1028.9866
+  duration_ms: 2358.543
   ...
 # Subtest: CRUD clients (smoke)
 ok 15 - CRUD clients (smoke)
   ---
-  duration_ms: 860.9117
+  duration_ms: 2054.9612
   ...
 # Subtest: CRUD commandes (smoke)
 ok 16 - CRUD commandes (smoke)
   ---
-  duration_ms: 787.8684
+  duration_ms: 2233.6344
   ...
 # Subtest: CRUD produits (smoke)
 ok 17 - CRUD produits (smoke)
   ---
-  duration_ms: 587.099
+  duration_ms: 2204.4471
   ...
 # Subtest: CRUD atelier (auto)
 ok 18 - CRUD atelier (auto)
   ---
-  duration_ms: 523.1329
+  duration_ms: 2708.4592
   ...
 # Subtest: CRUD contact (auto)
 ok 19 - CRUD contact (auto)
   ---
-  duration_ms: 377.5397
+  duration_ms: 2482.9959
   ...
 # Subtest: CRUD formation (auto)
 ok 20 - CRUD formation (auto)
   ---
-  duration_ms: 475.6768
+  duration_ms: 2711.1143
   ...
 # Subtest: CRUD gallery (auto)
 ok 21 - CRUD gallery (auto)
   ---
-  duration_ms: 338.4245
+  duration_ms: 2354.2439
   ...
 # Subtest: CRUD impact (auto)
 ok 22 - CRUD impact (auto)
   ---
-  duration_ms: 1153.3057
+  duration_ms: 2379.5188
   ...
 # Subtest: CRUD product (auto)
 ok 23 - CRUD product (auto)
   ---
-  duration_ms: 575.3023
+  duration_ms: 2685.1686
   ...
 1..23
 # tests 23
@@ -122,4 +122,4 @@ ok 23 - CRUD product (auto)
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12094.7883
+# duration_ms 30882.7821

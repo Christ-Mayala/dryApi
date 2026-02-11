@@ -1,14 +1,15 @@
 const jwt = require('jsonwebtoken');
+const config = require('../../../config/database');
 
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+  return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE });
 };
 
 const verifyToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return jwt.verify(token, config.JWT_SECRET);
   } catch (error) {
-    const previous = process.env.JWT_SECRET_PREVIOUS || '';
+    const previous = config.JWT_SECRET_PREVIOUS || '';
     if (!previous) throw error;
     return jwt.verify(token, previous);
   }

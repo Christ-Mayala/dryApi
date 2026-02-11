@@ -4,9 +4,10 @@ const fsp = require('fs/promises');
 const path = require('path');
 const DownloadsSchema = require('../model/downloads.schema');
 const { scheduleCleanup } = require('../../../../../dry/services/media/downloadJobs');
+const config = require('../../../../../config/database');
 
 const getTtlMs = () => {
-  const raw = Number(process.env.MEDIA_FILE_TTL_MINUTES || process.env.MEDIA_TTL_MINUTES || 5);
+  const raw = Number(config.MEDIA_FILE_TTL_MINUTES || 5);
   const minutes = Number.isFinite(raw) && raw > 0 ? raw : 5;
   return minutes * 60 * 1000;
 };

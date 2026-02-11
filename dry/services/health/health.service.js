@@ -1,5 +1,6 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const redisService = require('../cache/redis.service');
+const config = require('../../../config/database');
 
 class HealthService {
   async getHealthStatus() {
@@ -18,8 +19,8 @@ class HealthService {
 
     // VÃ©rifier Redis
     const redisStatus = redisService.getStatus();
-    const redisEnabledFlag = String(process.env.REDIS_ENABLED || '').toLowerCase();
-    const redisEnabled = redisEnabledFlag === 'true' || (!!process.env.REDIS_URL && redisEnabledFlag !== 'false');
+    const redisEnabledFlag = String(config.REDIS_ENABLED || '').toLowerCase();
+    const redisEnabled = redisEnabledFlag === 'true' || (!!config.REDIS_URL && redisEnabledFlag !== 'false');
     redisStatus.enabled = redisEnabled;
 
     // VÃ©rifier les applications
@@ -47,8 +48,8 @@ class HealthService {
         },
         applications: apps
       },
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV || 'development'
+      version: config.APP_VERSION || '1.0.0',
+      environment: config.NODE_ENV || 'development'
     };
   }
 

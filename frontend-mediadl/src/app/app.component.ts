@@ -13,16 +13,21 @@ import { AuthService } from './auth/auth.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   isMobileMenuOpen = false;
+  isMobileViewport = false;
   currentYear = new Date().getFullYear();
+  private readonly mobileBreakpoint = 768;
 
   private auth = inject(AuthService);
   private readonly onScrollHandler = this.onScroll.bind(this);
+  private readonly onResizeHandler = this.onResize.bind(this);
 
   ngOnInit() {
     // Gestion du scroll pour l'header
     this.isMobileMenuOpen = false;
+    this.updateViewportState();
     this.updateScrollLock();
     window.addEventListener('scroll', this.onScrollHandler);
+    window.addEventListener('resize', this.onResizeHandler);
     this.onScroll();
   }
 
@@ -44,11 +49,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('scroll', this.onScrollHandler);
+    window.removeEventListener('resize', this.onResizeHandler);
     this.isMobileMenuOpen = false;
     this.updateScrollLock();
   }
 
   toggleMobileMenu() {
+    if (!this.isMobileViewport) {
+      return;
+    }
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
     this.updateScrollLock();
   }
@@ -67,6 +76,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  private onResize() {
+    this.updateViewportState();
+  }
+
   private updateScrollLock() {
     const shouldLock = this.isMobileMenuOpen;
     document.body.classList.toggle('menu-open', shouldLock);
@@ -74,6 +87,14 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!shouldLock) {
       document.body.style.removeProperty('overflow');
       document.documentElement.style.removeProperty('overflow');
+    }
+  }
+
+  private updateViewportState() {
+    this.isMobileViewport = window.innerWidth <= this.mobileBreakpoint;
+    if (!this.isMobileViewport && this.isMobileMenuOpen) {
+      this.isMobileMenuOpen = false;
+      this.updateScrollLock();
     }
   }
 

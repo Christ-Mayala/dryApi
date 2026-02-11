@@ -1,8 +1,9 @@
 const rateLimit = require('express-rate-limit');
+const config = require('../../../config/database');
 
 // Limiteur specifique pour les routes d'authentification (login/register).
 // En production, on durcit encore plus pour limiter le brute-force.
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = config.NODE_ENV === 'production';
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

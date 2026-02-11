@@ -7,6 +7,7 @@ const DownloadsSchema = require('../model/downloads.schema');
 const PresetsSchema = require('../../presets/model/presets.schema');
 const MultiPlatformDownloader = require('../../../../../dry/services/media/multiPlatformDownloader');
 const { registerJob, scheduleCleanup } = require('../../../../../dry/services/media/downloadJobs');
+const config = require('../../../../../config/database');
 
 const detectPlatform = (url) => {
   if (/youtu(\.be|be\.com)/.test(url)) return 'youtube';
@@ -18,7 +19,7 @@ const detectPlatform = (url) => {
 };
 
 const getTtlMs = () => {
-  const raw = Number(process.env.MEDIA_FILE_TTL_MINUTES || process.env.MEDIA_TTL_MINUTES || 5);
+  const raw = Number(config.MEDIA_FILE_TTL_MINUTES || 5);
   const minutes = Number.isFinite(raw) && raw > 0 ? raw : 5;
   return minutes * 60 * 1000;
 };
@@ -111,10 +112,10 @@ module.exports = asyncHandler(async (req, res) => {
     await Download.findByIdAndUpdate(doc._id, { jobStatus: 'running', startedAt, progress: 0 });
 
     const runner = new MultiPlatformDownloader({
-      downloadDir: preset?.downloadDir || process.env.MEDIA_DIR || 'downloads',
+      downloadDir: preset?.downloadDir || config.MEDIA_DIR || 'downloads',
       qualityMode: mediaType === 'audio' ? 'audio' : (preset?.qualityMode || qualityMode),
       maxHeight: requestedMaxHeight || undefined,
-      verbose: process.env.MEDIA_VERBOSE === 'true',
+      verbose: config.MEDIA_VERBOSE === 'true',
       signal: abortController.signal,
       onProgress: reportProgress,
       onTarget

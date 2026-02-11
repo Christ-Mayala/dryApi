@@ -1,18 +1,20 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const logger = require('../../utils/logging/logger');
+const config = require('../../../config/database');
 
 class EmailService {
   constructor() {
     this.transporter = null;
     this.provider = 'none';
     this.templateDir = path.join(__dirname, '..', '..', 'templates', 'email');
+    this.lastError = null;
     this.initializeTransporter();
   }
 
   resolveProvider() {
-    const raw = (process.env.EMAIL_PROVIDER || 'auto').toLowerCase();
+    const raw = (config.EMAIL_PROVIDER || 'auto').toLowerCase();
     if (raw === 'smtp' || raw === 'resend') return raw;
     return 'auto';
   }
@@ -21,17 +23,17 @@ class EmailService {
     try {
       const provider = this.resolveProvider();
       const emailConfig = {
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: process.env.EMAIL_PORT || 587,
-        secure: process.env.EMAIL_SECURE === 'true',
+        host: config.EMAIL_HOST || 'smtp.gmail.com',
+        port: config.EMAIL_PORT || 587,
+        secure: config.EMAIL_SECURE === 'true',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: config.EMAIL_USER,
+          pass: config.EMAIL_PASS,
         },
       };
 
       if (provider === 'resend') {
-        if (!process.env.RESEND_API_KEY) {
+        if (!config.RESEND_API_KEY) {
           logger('Email service RESEND demande mais RESEND_API_KEY manquant', 'warning');
           this.provider = 'none';
           this.transporter = null;
@@ -43,7 +45,7 @@ class EmailService {
         return;
       }
 
-      if (process.env.NODE_ENV === 'development' && !process.env.EMAIL_USER && provider !== 'smtp') {
+      if (config.NODE_ENV === 'development' && !config.EMAIL_USER && provider !== 'smtp') {
         this.transporter = nodemailer.createTestAccount().then((testAccount) => {
           return nodemailer.createTransport({
             host: 'smtp.ethereal.email',
@@ -57,11 +59,11 @@ class EmailService {
         });
         this.provider = 'ethereal';
         logger('Email service configure avec Ethereal (developpement)', 'info');
-      } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      } else if (config.EMAIL_USER && config.EMAIL_PASS) {
         this.transporter = nodemailer.createTransport(emailConfig);
         this.provider = 'smtp';
         logger('Email service configure avec SMTP', 'info');
-      } else if (provider === 'auto' && process.env.RESEND_API_KEY) {
+      } else if (provider === 'auto' && config.RESEND_API_KEY) {
         this.provider = 'resend';
         this.transporter = null;
         logger('Email service configure avec Resend API', 'info');
@@ -97,10 +99,10 @@ class EmailService {
   }
 
   async sendViaResend(options) {
-    const apiKey = process.env.RESEND_API_KEY;
+    const apiKey = config.RESEND_API_KEY;
     if (!apiKey) throw new Error('RESEND_API_KEY manquant');
 
-    const from = process.env.EMAIL_FROM || process.env.FROM_EMAIL || 'onboarding@resend.dev';
+    const from = config.EMAIL_FROM || 'onboarding@resend.dev';
     const payload = {
       from,
       to: [options.email],
@@ -121,7 +123,11 @@ class EmailService {
     const data = await response.json().catch(() => null);
     if (!response.ok) {
       const message = data && (data.message || data.error);
-      throw new Error(message || `Resend HTTP ${response.status}`);
+      const err = new Error(message || `Resend HTTP ${response.status}`);
+      err.code = 'RESEND_HTTP_ERROR';
+      err.httpStatus = response.status;
+      err.responseBody = data;
+      throw err;
     }
 
     return true;
@@ -129,7 +135,13 @@ class EmailService {
 
   async sendGenericEmail(options) {
     try {
-      if (!options || !options.email) return false;
+      if (!options || !options.email) {
+        const err = new Error('Adresse email destination manquante');
+        err.code = 'EMAIL_MISSING_DESTINATION';
+        throw err;
+      }
+
+      this.lastError = null;
 
       if (this.provider === 'resend') {
         await this.sendViaResend(options);
@@ -144,9 +156,8 @@ class EmailService {
 
       const mailOptions = {
         from:
-          process.env.EMAIL_FROM ||
-          process.env.FROM_EMAIL ||
-          `"${process.env.APP_NAME || 'DRY API'}" <${process.env.EMAIL_USER}>`,
+          config.EMAIL_FROM ||
+          `"${config.APP_NAME || 'DRY API'}" <${config.EMAIL_USER}>`,
         to: options.email,
         subject: options.subject || 'Notification',
         html: options.html || '<p>Notification</p>',
@@ -160,7 +171,7 @@ class EmailService {
 
       const result = await transporter.sendMail(mailOptions);
 
-      if (process.env.NODE_ENV === 'development' && result.messageId) {
+      if (config.NODE_ENV === 'development' && result.messageId) {
         logger(`Email envoye (preview): ${nodemailer.getTestMessageUrl(result)}`, 'info');
       } else {
         logger(`Email envoye a ${options.email}`, 'info');
@@ -168,9 +179,32 @@ class EmailService {
 
       return true;
     } catch (error) {
-      logger(`Erreur envoi email: ${error.message}`, 'error');
+      this.lastError = {
+        name: error?.name || 'Error',
+        message: error?.message || String(error),
+        code: error?.code || error?.errno || error?.type,
+        status: error?.status || error?.statusCode || error?.httpStatus,
+        stack: typeof error?.stack === 'string' ? error.stack.split('\n').slice(0, 12).join('\n') : undefined,
+        responseBody: error?.responseBody || error?.response?.data,
+      };
+
+      const details = [
+        this.lastError.message,
+        this.lastError.code ? `code=${this.lastError.code}` : null,
+        this.lastError.status ? `status=${this.lastError.status}` : null,
+      ].filter(Boolean).join(' | ');
+
+      logger(`Erreur envoi email: ${details}`, 'error');
+
+      if (options?.throwOnError) {
+        throw error;
+      }
       return false;
     }
+  }
+
+  getLastError() {
+    return this.lastError;
   }
 
   async sendPasswordResetEmail(email, resetCode, tenantId) {
@@ -217,8 +251,8 @@ class EmailService {
   }
 
   generatePasswordResetTemplate(resetCode, tenantId) {
-    const appName = process.env.APP_NAME || 'DRY API';
-    const appUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    const appName = config.APP_NAME || 'DRY API';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
     const raw = this.loadTemplate('password-reset.html');
 
     if (!raw) {
@@ -235,8 +269,8 @@ class EmailService {
   }
 
   generatePasswordResetConfirmationTemplate(tenantId) {
-    const appName = process.env.APP_NAME || 'DRY API';
-    const appUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    const appName = config.APP_NAME || 'DRY API';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
     const raw = this.loadTemplate('password-reset-confirmation.html');
 
     if (!raw) {
@@ -254,7 +288,7 @@ class EmailService {
   async verifyConfiguration() {
     try {
       if (this.provider === 'resend') {
-        if (!process.env.RESEND_API_KEY) {
+        if (!config.RESEND_API_KEY) {
           return { configured: false, error: 'RESEND_API_KEY manquant' };
         }
         return { configured: true };

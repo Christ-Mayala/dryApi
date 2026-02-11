@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { verifyToken } = require('../../../../../dry/utils/auth/jwt');
+const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -18,6 +19,6 @@ module.exports = asyncHandler(async (req, res) => {
         } catch (_) {}
     }
 
-    res.clearCookie('rt', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' });
+    res.clearCookie('rt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax' });
     return sendResponse(res, null, 'Déconnexion réussie.');
 });

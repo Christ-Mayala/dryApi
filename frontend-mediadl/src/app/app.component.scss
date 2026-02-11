@@ -392,6 +392,13 @@
 }
 
 /* Responsive Design */
+@media (min-width: 769px) {
+  .menu-toggle,
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
 @media (max-width: 1024px) {
   .footer-inner {
     justify-content: center;

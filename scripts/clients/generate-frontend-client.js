@@ -9,43 +9,74 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-// Ajout des couleurs et fonctions d'affichage professionnelles
-const color = (code, text) => `\x1b[${code}m${text}\x1b[0m`;
-const bg = (code, text) => `\x1b[${code}m${text}\x1b[0m`;
+// ANSI Colors & Styles
+const C = {
+  RESET: '\x1b[0m',
+  BRIGHT: '\x1b[1m',
+  DIM: '\x1b[2m',
+  UNDERSCORE: '\x1b[4m',
+  BLINK: '\x1b[5m',
+  REVERSE: '\x1b[7m',
+  HIDDEN: '\x1b[8m',
 
-const title = bg('46;97', ' 🚀 DRY FRONTEND CLIENT GENERATOR ');
-const info = color('96', 'ℹ️  INFO');
-const success = color('42;97', ' SUCCÈS ');
-const warning = color('43;97', ' ATTENTION ');
+  BLACK: '\x1b[30m',
+  RED: '\x1b[31m',
+  GREEN: '\x1b[32m',
+  YELLOW: '\x1b[33m',
+  BLUE: '\x1b[34m',
+  MAGENTA: '\x1b[35m',
+  CYAN: '\x1b[36m',
+  WHITE: '\x1b[37m',
 
-const renderBox = (content, width = 50) => {
+  BG_BLACK: '\x1b[40m',
+  BG_RED: '\x1b[41m',
+  BG_GREEN: '\x1b[42m',
+  BG_YELLOW: '\x1b[43m',
+  BG_BLUE: '\x1b[44m',
+  BG_MAGENTA: '\x1b[45m',
+  BG_CYAN: '\x1b[46m',
+  BG_WHITE: '\x1b[47m',
+};
+
+const title = `${C.BRIGHT}${C.CYAN}🚀 DRY FRONTEND CLIENT GENERATOR${C.RESET}`;
+const info = `${C.BLUE}ℹ️  INFO${C.RESET}`;
+const success = `${C.BG_GREEN}${C.WHITE} SUCCÈS ${C.RESET}`;
+const warning = `${C.BG_YELLOW}${C.BLACK} ATTENTION ${C.RESET}`;
+
+const renderBox = (content, width = 60) => {
   const lines = content.split('\n');
   const maxLength = Math.max(width, ...lines.map(l => l.length));
-  const border = '─'.repeat(maxLength + 4);
+  const border = '═'.repeat(maxLength + 2);
   
-  console.log(color('96', `╭${border}╮`));
+  console.log(`${C.BRIGHT}${C.CYAN}╔${border}╗${C.RESET}`);
   lines.forEach(line => {
     const padded = line.padEnd(maxLength, ' ');
-    console.log(color('96', `│  ${padded}  │`));
+    console.log(`${C.BRIGHT}${C.CYAN}║ ${C.RESET} ${padded} ${C.BRIGHT}${C.CYAN}║${C.RESET}`);
   });
-  console.log(color('96', `╰${border}╯`));
+  console.log(`${C.BRIGHT}${C.CYAN}╚${border}╝${C.RESET}`);
 };
 
 const renderTable = (rows, header) => {
-  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).length)));
+  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).replace(/\x1b\[[0-9;]*m/g, '').length)));
+  
+  const pad = (str, len) => {
+    const visibleLen = String(str).replace(/\x1b\[[0-9;]*m/g, '').length;
+    return str + ' '.repeat(Math.max(0, len - visibleLen));
+  };
+
   const line = (cells) =>
     cells
-      .map((c, i) => String(c).padEnd(widths[i], ' '))
-      .join(' │ ');
+      .map((c, i) => pad(c, widths[i]))
+      .join(`${C.DIM} │ ${C.RESET}`);
   
-  const separator = widths.map((w) => '─'.repeat(w)).join('─┼─');
-  const headerLine = widths.map((w) => '═'.repeat(w)).join('═╪═');
+  const separator = widths.map((w) => '─'.repeat(w)).join(`${C.DIM}─┼─${C.RESET}`);
+  const headerLine = widths.map((w) => '═'.repeat(w)).join(`${C.DIM}═╪═${C.RESET}`);
   
-  console.log(color('96', `┌─${separator}─┐`));
-  console.log(color('96', `│ ${line(header)} │`));
-  console.log(color('96', `╞═${headerLine}═╡`));
-  rows.forEach((r) => console.log(`│ ${line(r)} │`));
-  console.log(color('96', `└─${separator}─┘`));
+  console.log(`${C.DIM}┌─${separator}─┐${C.RESET}`);
+  console.log(`${C.DIM}│ ${C.RESET}${header.map((h, i) => pad(`${C.BRIGHT}${h}${C.RESET}`, widths[i])).join(`${C.DIM} │ ${C.RESET}`)}${C.DIM} │${C.RESET}`);
+  console.log(`${C.DIM}╞═${headerLine}═╡${C.RESET}`);
+  rows.forEach((r) => console.log(`${C.DIM}│ ${C.RESET}${line(r)}${C.DIM} │${C.RESET}`));
+  console.log(`${C.DIM}└─${separator}─┘${C.RESET}`);
 };
 
 const ROOT = path.join(__dirname, '..', '..');
@@ -57,7 +88,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const question = (q) => new Promise((resolve) => rl.question(q, resolve));
+const question = (q) => new Promise((resolve) => rl.question(`${C.CYAN}?${C.RESET} ${q}`, resolve));
 
 const writeFile = (filePath, content) => {
   const dir = path.dirname(filePath);
@@ -66,13 +97,13 @@ const writeFile = (filePath, content) => {
 };
 
 const getApps = () => {
-  console.log(`[debug] Recherche dans: ${DRY_APP}`);
+  // console.log(`[debug] Recherche dans: ${DRY_APP}`);
   if (!fs.existsSync(DRY_APP)) {
-    console.log(`[debug] Dossier n'existe pas: ${DRY_APP}`);
+    // console.log(`[debug] Dossier n'existe pas: ${DRY_APP}`);
     return [];
   }
   const apps = fs.readdirSync(DRY_APP).filter((a) => !a.startsWith('.'));
-  console.log(`[debug] Apps trouvées: ${apps.join(', ')}`);
+  // console.log(`[debug] Apps trouvées: ${apps.join(', ')}`);
   return apps;
 };
 
@@ -197,14 +228,11 @@ const angularClient = (config) => {
 const main = async () => {
   console.log('');
   console.log(title);
-  console.log(color('96', '╭─────────────────────────────────────────────────────╮'));
-  console.log(color('96', '│              🎨 FRONTEND CLIENT WIZARD           │'));
-  console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  renderBox('🎨 FRONTEND CLIENT WIZARD');
   
-  console.log(`${info} 📂 Dossier des applications: ${color('92', DRY_APP)}`);
-  console.log(`${info} 📁 Dossier de sortie: ${color('92', OUT)}`);
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  console.log(`${info} 📂 Dossier des applications: ${C.GREEN}${DRY_APP}${C.RESET}`);
+  console.log(`${info} 📁 Dossier de sortie: ${C.GREEN}${OUT}${C.RESET}`);
+  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
 
   const apps = getApps();
   if (!apps.length) {
@@ -221,25 +249,22 @@ const main = async () => {
     
     return [
       `📱 ${app}`,
-      color('92', hasFeatures ? '✅' : '⚠️'),
+      hasFeatures ? `${C.GREEN}✅${C.RESET}` : `${C.YELLOW}⚠️${C.RESET}`,
       `${features.length} features`,
-      hasFeatures ? color('92', 'DISPONIBLE') : color('93', 'INCOMPLET')
+      hasFeatures ? `${C.GREEN}DISPONIBLE${C.RESET}` : `${C.YELLOW}INCOMPLET${C.RESET}`
     ];
   });
 
-  console.log(color('96', '\n╭─────────────────────────────────────────────────────╮'));
-  console.log(color('96', '│                 📱 APPLICATIONS TROUVÉES             │'));
-  console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
+  console.log(`\n${C.BRIGHT}${C.CYAN}📱 APPLICATIONS TROUVÉES${C.RESET}`);
   renderTable(appRows, ['Application', 'Features', 'Count', 'Statut']);
-  console.log(color('96', '─────────────────────────────────────────────────────'));
 
-  console.log('\n' + color('96', '─────────────────────────────────────────────────────'));
+  console.log('\n' + `${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
   console.log(`${info} 📋 Choisissez une application à générer:`);
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
 
   apps.forEach((app, index) => {
     const features = getFeatures(app);
-    console.log(`${color('93', String(index + 1))}) 📱 ${color('96', app)} ${color('90', `(${features.length} features)`)}`);
+    console.log(`${C.YELLOW}${index + 1}${C.RESET}) 📱 ${C.CYAN}${app}${C.RESET} ${C.DIM}(${features.length} features)${C.RESET}`);
   });
 
   const appChoice = await question('\n🎯 Entrez le numéro de l\'application: ');
@@ -259,13 +284,11 @@ const main = async () => {
   }
 
   console.log('');
-  console.log(color('96', '╭─────────────────────────────────────────────────────╮'));
-  console.log(color('96', `│               🛠️  CONFIGURATION: ${appName}               │`));
-  console.log(color('96', '╰─────────────────────────────────────────────────────╯'));
-  console.log(color('96', '─────────────────────────────────────────────────────'));
-  console.log(`${info} 📱 Application: ${color('92', appName)}`);
-  console.log(`${info} ⚙️  Features: ${color('92', features.join(', '))}`);
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  renderBox(`🛠️  CONFIGURATION: ${appName}`);
+  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
+  console.log(`${info} 📱 Application: ${C.GREEN}${appName}${C.RESET}`);
+  console.log(`${info} ⚙️  Features: ${C.GREEN}${features.join(', ')}${C.RESET}`);
+  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
 
   const framework = await question('🎨 Framework (react | react-native | angular): ');
   if (!['react', 'react-native', 'angular'].includes(framework)) {
@@ -293,9 +316,9 @@ const main = async () => {
     const percentage = Math.round(((index + 1) / steps.length) * 100);
     const barLength = 30;
     const filledLength = Math.round((percentage / 100) * barLength);
-    const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+    const bar = `${C.GREEN}█`.repeat(filledLength) + `${C.DIM}░`.repeat(barLength - filledLength) + C.RESET;
     
-    console.log(`${step.desc} [${color('92', bar)}] ${percentage}% (${index + 1}/${steps.length})`);
+    console.log(`${step.desc} [${bar}] ${C.BRIGHT}${percentage}%${C.RESET} (${index + 1}/${steps.length})`);
     
     if (step.file === 'api.config.json') {
       writeFile(path.join(outDir, step.file), JSON.stringify(config, null, 2));
@@ -323,21 +346,21 @@ const main = async () => {
     generatedFiles.map(f => `✅ ${path.relative(process.cwd(), f)}`).join('\n')
   );
 
-  console.log('\n' + color('96', '─────────────────────────────────────────────────────'));
+  console.log('\n' + `${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
   console.log(`${success} 🎉 CLIENT FRONTEND GÉNÉRÉ AVEC SUCCÈS!`);
-  console.log(`${info} 📂 Dossier: ${color('92', outDir)}`);
-  console.log(`${info} 🎨 Framework: ${color('92', framework)}`);
-  console.log(`${info} 📱 Application: ${color('92', appName)}`);
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  console.log(`${info} 📂 Dossier: ${C.GREEN}${outDir}${C.RESET}`);
+  console.log(`${info} 🎨 Framework: ${C.GREEN}${framework}${C.RESET}`);
+  console.log(`${info} 📱 Application: ${C.GREEN}${appName}${C.RESET}`);
+  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
 
   console.log(`\n${info} 📝 Prochaines étapes:`);
   console.log(`   • cd ${path.relative(process.cwd(), outDir)}`);
   console.log(`   • npm install (si nécessaire)`);
   console.log(`   • Importer les fichiers dans votre projet`);
 
-  console.log('\n' + color('96', '─────────────────────────────────────────────────────'));
-  console.log(color('96', '│                   🌟 BON DÉVELOPPEMENT!             │'));
-  console.log(color('96', '─────────────────────────────────────────────────────'));
+  console.log('\n' + `${C.CYAN}─────────────────────────────────────────────────────${C.RESET}`);
+  console.log(`${C.CYAN}│                   🌟 BON DÉVELOPPEMENT!             │${C.RESET}`);
+  console.log(`${C.CYAN}─────────────────────────────────────────────────────${C.RESET}`);
 
   rl.close();
 };

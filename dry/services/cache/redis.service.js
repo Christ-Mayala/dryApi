@@ -1,4 +1,5 @@
 const redis = require('redis');
+const config = require('../../../config/database');
 
 class RedisService {
   constructor() {
@@ -8,8 +9,8 @@ class RedisService {
 
   async connect() {
     try {
-      const enabledFlag = (process.env.REDIS_ENABLED || '').toLowerCase();
-      const hasUrl = !!process.env.REDIS_URL;
+      const enabledFlag = (config.REDIS_ENABLED || '').toLowerCase();
+      const hasUrl = !!config.REDIS_URL;
       if (enabledFlag === 'false' || (!hasUrl && enabledFlag !== 'true')) {
         console.log('[REDIS] Desactive (REDIS_ENABLED=false ou REDIS_URL manquant)');
         this.isConnected = false;
@@ -17,7 +18,7 @@ class RedisService {
       }
 
       this.client = redis.createClient({
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
+        url: config.REDIS_URL || 'redis://localhost:6379',
         retry_strategy: (options) => {
           if (options.error && options.error.code === 'ECONNREFUSED') {
             console.log('[REDIS] Serveur Redis non disponible, cache désactivé');
@@ -93,7 +94,7 @@ class RedisService {
   getStatus() {
     return {
       connected: this.isConnected,
-      url: process.env.REDIS_URL || 'redis://localhost:6379'
+      url: config.REDIS_URL || 'redis://localhost:6379'
     };
   }
 }
