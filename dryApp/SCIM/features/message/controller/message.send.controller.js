@@ -8,6 +8,7 @@ module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
 
     const receiverId = req.params.receiverId;
+    const sujet = String(req.body?.sujet || '').trim().slice(0, 200);
     const contenu = String(req.body?.contenu || '').trim();
     if (!contenu) return sendResponse(res, null, 'Message vide.', false);
 
@@ -24,6 +25,7 @@ module.exports = asyncHandler(async (req, res) => {
     const message = await Message.create({
         expediteur: req.user.id,
         destinataire: receiverId,
+        sujet,
         contenu,
     });
 

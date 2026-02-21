@@ -1,86 +1,26 @@
 #!/usr/bin/env node
 
 /**
- * Génère un client frontend (Angular / React / React Native)
- * basé sur les routes DRY (/api/v1/<app>/<feature>)
+ * Génère un client frontend NATIVE ANGULAR pour l'architecture DRY
+ * S'intègre directement avec @dry/sdk/services/base-api.service
  */
 
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-// ANSI Colors & Styles
+// ANSI Colors
 const C = {
   RESET: '\x1b[0m',
   BRIGHT: '\x1b[1m',
-  DIM: '\x1b[2m',
-  UNDERSCORE: '\x1b[4m',
-  BLINK: '\x1b[5m',
-  REVERSE: '\x1b[7m',
-  HIDDEN: '\x1b[8m',
-
-  BLACK: '\x1b[30m',
-  RED: '\x1b[31m',
+  CYAN: '\x1b[36m',
   GREEN: '\x1b[32m',
   YELLOW: '\x1b[33m',
-  BLUE: '\x1b[34m',
-  MAGENTA: '\x1b[35m',
-  CYAN: '\x1b[36m',
-  WHITE: '\x1b[37m',
-
-  BG_BLACK: '\x1b[40m',
-  BG_RED: '\x1b[41m',
-  BG_GREEN: '\x1b[42m',
-  BG_YELLOW: '\x1b[43m',
-  BG_BLUE: '\x1b[44m',
-  BG_MAGENTA: '\x1b[45m',
-  BG_CYAN: '\x1b[46m',
-  BG_WHITE: '\x1b[47m',
-};
-
-const title = `${C.BRIGHT}${C.CYAN}🚀 DRY FRONTEND CLIENT GENERATOR${C.RESET}`;
-const info = `${C.BLUE}ℹ️  INFO${C.RESET}`;
-const success = `${C.BG_GREEN}${C.WHITE} SUCCÈS ${C.RESET}`;
-const warning = `${C.BG_YELLOW}${C.BLACK} ATTENTION ${C.RESET}`;
-
-const renderBox = (content, width = 60) => {
-  const lines = content.split('\n');
-  const maxLength = Math.max(width, ...lines.map(l => l.length));
-  const border = '═'.repeat(maxLength + 2);
-  
-  console.log(`${C.BRIGHT}${C.CYAN}╔${border}╗${C.RESET}`);
-  lines.forEach(line => {
-    const padded = line.padEnd(maxLength, ' ');
-    console.log(`${C.BRIGHT}${C.CYAN}║ ${C.RESET} ${padded} ${C.BRIGHT}${C.CYAN}║${C.RESET}`);
-  });
-  console.log(`${C.BRIGHT}${C.CYAN}╚${border}╝${C.RESET}`);
-};
-
-const renderTable = (rows, header) => {
-  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).replace(/\x1b\[[0-9;]*m/g, '').length)));
-  
-  const pad = (str, len) => {
-    const visibleLen = String(str).replace(/\x1b\[[0-9;]*m/g, '').length;
-    return str + ' '.repeat(Math.max(0, len - visibleLen));
-  };
-
-  const line = (cells) =>
-    cells
-      .map((c, i) => pad(c, widths[i]))
-      .join(`${C.DIM} │ ${C.RESET}`);
-  
-  const separator = widths.map((w) => '─'.repeat(w)).join(`${C.DIM}─┼─${C.RESET}`);
-  const headerLine = widths.map((w) => '═'.repeat(w)).join(`${C.DIM}═╪═${C.RESET}`);
-  
-  console.log(`${C.DIM}┌─${separator}─┐${C.RESET}`);
-  console.log(`${C.DIM}│ ${C.RESET}${header.map((h, i) => pad(`${C.BRIGHT}${h}${C.RESET}`, widths[i])).join(`${C.DIM} │ ${C.RESET}`)}${C.DIM} │${C.RESET}`);
-  console.log(`${C.DIM}╞═${headerLine}═╡${C.RESET}`);
-  rows.forEach((r) => console.log(`${C.DIM}│ ${C.RESET}${line(r)}${C.DIM} │${C.RESET}`));
-  console.log(`${C.DIM}└─${separator}─┘${C.RESET}`);
+  RED: '\x1b[31m',
 };
 
 const ROOT = path.join(__dirname, '..', '..');
-const DRY_APP = path.join(ROOT, 'dryApp');
+const DRY_APP = path.join(ROOT, 'dryApp'); // Backend apps source
 const OUT = path.join(ROOT, 'generated', 'clients');
 
 const rl = readline.createInterface({
@@ -97,14 +37,8 @@ const writeFile = (filePath, content) => {
 };
 
 const getApps = () => {
-  // console.log(`[debug] Recherche dans: ${DRY_APP}`);
-  if (!fs.existsSync(DRY_APP)) {
-    // console.log(`[debug] Dossier n'existe pas: ${DRY_APP}`);
-    return [];
-  }
-  const apps = fs.readdirSync(DRY_APP).filter((a) => !a.startsWith('.'));
-  // console.log(`[debug] Apps trouvées: ${apps.join(', ')}`);
-  return apps;
+  if (!fs.existsSync(DRY_APP)) return [];
+  return fs.readdirSync(DRY_APP).filter((a) => !a.startsWith('.'));
 };
 
 const getFeatures = (appName) => {
@@ -130,7 +64,7 @@ const tsTypeFromJoi = (desc) => {
   if (type === 'string') return 'string';
   if (type === 'number') return 'number';
   if (type === 'boolean') return 'boolean';
-  if (type === 'date') return 'string';
+  if (type === 'date') return 'Date | string';
   if (type === 'array') {
     const it = desc?.items?.[0];
     return `${tsTypeFromJoi(it)}[]`;
@@ -139,238 +73,174 @@ const tsTypeFromJoi = (desc) => {
   return 'any';
 };
 
-const buildTypesFromSchemas = (schemas) => {
-  if (!schemas) return '';
-  const parts = [];
+const buildModels = (schemas) => {
+  if (!schemas) return [];
+  const models = [];
+  
   Object.keys(schemas).forEach((model) => {
     const create = schemas[model]?.create?.describe ? schemas[model].create.describe() : null;
-    const update = schemas[model]?.update?.describe ? schemas[model].update.describe() : null;
-
+    
+    let content = `export interface ${model} {\n`;
+    content += `  _id: string;\n`;
+    content += `  createdAt?: string;\n`;
+    content += `  updatedAt?: string;\n`;
+    
     if (create?.keys) {
-      parts.push(`export interface ${model}Create {`);
       Object.entries(create.keys).forEach(([k, v]) => {
-        const optional = v?.flags?.presence === 'optional';
-        parts.push(`  ${k}${optional ? '?' : ''}: ${tsTypeFromJoi(v)};`);
+        content += `  ${k}: ${tsTypeFromJoi(v)};\n`;
       });
-      parts.push('}\n');
     }
-
-    if (update?.keys) {
-      parts.push(`export interface ${model}Update {`);
-      Object.entries(update.keys).forEach(([k, v]) => {
-        parts.push(`  ${k}?: ${tsTypeFromJoi(v)};`);
-      });
-      parts.push('}\n');
-    }
+    content += `}\n`;
+    
+    models.push({ name: model, content });
   });
 
-  return parts.join('\n');
+  return models;
 };
 
-const buildConfig = (appName, features) => {
-  const baseUrl = 'http://localhost:5000';
-  const appKey = appName.toLowerCase();
-  const routes = {};
-  features.forEach((f) => {
-    routes[f] = {
-      list: `/api/v1/${appKey}/${f}`,
-      create: `/api/v1/${appKey}/${f}`,
-      get: `/api/v1/${appKey}/${f}/:id`,
-      update: `/api/v1/${appKey}/${f}/:id`,
-      remove: `/api/v1/${appKey}/${f}/:id`,
-    };
+const generateNativeClient = (appName, features, models) => {
+  const files = [];
+  const lowerApp = appName.toLowerCase();
+
+  // 1. Models
+  models.forEach(m => {
+    files.push({
+      path: `models/${m.name.toLowerCase()}.model.ts`,
+      content: m.content
+    });
   });
-  return { baseUrl, app: appName, routes };
+  
+  const modelsIndex = models.map(m => `export * from './${m.name.toLowerCase()}.model';`).join('\n');
+  files.push({ path: 'models/index.ts', content: modelsIndex });
+
+  // 2. Services
+  features.forEach(feature => {
+    const PascalFeature = feature.charAt(0).toUpperCase() + feature.slice(1);
+    const modelName = PascalFeature; // Assumption
+    const hasModel = models.some(m => m.name === modelName);
+    const ModelType = hasModel ? modelName : 'any';
+    const importModel = hasModel ? `import { ${ModelType} } from '../models/${ModelType.toLowerCase()}.model';` : '';
+
+    const content = `import { Injectable } from '@angular/core';
+import { BaseApiService } from '@dry/sdk/services/base-api.service';
+${importModel}
+
+@Injectable({ providedIn: 'root' })
+export class ${PascalFeature}Service extends BaseApiService<${ModelType}> {
+  protected resourcePath = '/${feature}';
+
+  // Override baseUrl to target the ${appName} app instead of the current configured app
+  protected override get baseUrl(): string {
+    const rootApi = this.configService.apiUrl.replace(/\\/[^\\/]+$/, '');
+    return \`\${rootApi}/${lowerApp}\${this.resourcePath}\`;
+  }
+}
+`;
+    files.push({ path: `services/${feature}.service.ts`, content });
+  });
+
+  // 3. Barrel file
+  const serviceExports = features.map(f => `export * from './services/${f}.service';`).join('\n');
+  files.push({ 
+    path: 'index.ts', 
+    content: `export * from './models';\n${serviceExports}\n` 
+  });
+
+  return files;
 };
 
-const reactClient = (config) => {
-  return `// Client React / React Native - DRY\n// Utilise VITE_API_BASE_URL / REACT_APP_API_BASE_URL / EXPO_PUBLIC_API_BASE_URL si present\nconst API_BASE_URL =\n  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ||\n  (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_BASE_URL) ||\n  (typeof process !== 'undefined' && process.env && process.env.EXPO_PUBLIC_API_BASE_URL) ||\n  '${config.baseUrl}';\n\nconst withToken = (token) =>\n  token ? { Authorization: \`Bearer \${token}\` } : {};\n\nconst request = async (method, url, body, token) => {\n  const res = await fetch(\`\${API_BASE_URL}\${url}\`, {\n    method,\n    headers: {\n      'Content-Type': 'application/json',\n      ...withToken(token),\n    },\n    body: body ? JSON.stringify(body) : undefined,\n  });\n  return res.json();\n};\n\nexport const api = {\n  ${Object.keys(config.routes)
-    .map(
-      (f) => `\n  ${f}: {\n    list: (token) => request('GET', '${config.routes[f].list}', null, token),\n    getAll: (token) => request('GET', '${config.routes[f].list}', null, token),\n    create: (data, token) => request('POST', '${config.routes[f].create}', data, token),\n    get: (id, token) => request('GET', '${config.routes[f].get}'.replace(':id', id), null, token),\n    getById: (id, token) => request('GET', '${config.routes[f].get}'.replace(':id', id), null, token),\n    update: (id, data, token) => request('PUT', '${config.routes[f].update}'.replace(':id', id), data, token),\n    remove: (id, token) => request('DELETE', '${config.routes[f].remove}'.replace(':id', id), null, token),\n  }`
-    )
-    .join(',')}\n};\n`;
-};
+const generateInstallScript = (appName) => {
+  return `
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
 
-const reactHooks = (config) => {
-  const hooks = Object.keys(config.routes).map((f) => {
-    const hookName = `use${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookGet = `use${f.charAt(0).toUpperCase()}${f.slice(1)}ById`;
-    const hookCreate = `useCreate${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookUpdate = `useUpdate${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookDelete = `useDelete${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    return `export const ${hookName} = (token) => {\n  const [data, setData] = useState([]);\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState(null);\n\n  const list = async () => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.list(token);\n      setData(res?.data || []);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  const create = async (payload) => api.${f}.create(payload, token);\n  const get = async (id) => (api.${f}.getById ? api.${f}.getById(id, token) : api.${f}.get(id, token));\n  const update = async (id, payload) => api.${f}.update(id, payload, token);\n  const remove = async (id) => api.${f}.remove(id, token);\n\n  const getAll = list;\n\n  return { data, loading, error, list, getAll, create, get, update, remove };\n};\n\nexport const ${hookGet} = (token, id) => {\n  const [item, setItem] = useState(null);\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState(null);\n\n  const fetchOne = async () => {\n    setLoading(true);\n    try {\n      const res = await (api.${f}.getById ? api.${f}.getById(id, token) : api.${f}.get(id, token));\n      setItem(res?.data || null);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { item, loading, error, fetchOne };\n};\n\nexport const ${hookCreate} = (token) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState(null);\n\n  const create = async (payload) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.create(payload, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { create, loading, error };\n};\n\nexport const ${hookUpdate} = (token) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState(null);\n\n  const update = async (id, payload) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.update(id, payload, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { update, loading, error };\n};\n\nexport const ${hookDelete} = (token) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState(null);\n\n  const remove = async (id) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.remove(id, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { remove, loading, error };\n};`;
-  }).join('\n\n');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-  return `// Hooks React prets a l'emploi\nimport { useState } from 'react';\nimport { api } from './apiClient';\n\n${hooks}\n`;
-};
+console.log('📦 Installateur DRY NATIVE pour ${appName}');
+console.log('Ce script installe le client directement dans votre architecture @dry/sdk ou features.');
 
-const reactHooksTs = (config) => {
-  const hooks = Object.keys(config.routes).map((f) => {
-    const hookName = `use${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookGet = `use${f.charAt(0).toUpperCase()}${f.slice(1)}ById`;
-    const hookCreate = `useCreate${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookUpdate = `useUpdate${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    const hookDelete = `useDelete${f.charAt(0).toUpperCase()}${f.slice(1)}`;
-    return `export const ${hookName} = (token?: string) => {\n  const [data, setData] = useState<any[]>([]);\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<any>(null);\n\n  const list = async () => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.list(token);\n      setData(res?.data || []);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  const create = async (payload: any) => api.${f}.create(payload, token);\n  const get = async (id: string) => (api.${f}.getById ? api.${f}.getById(id, token) : api.${f}.get(id, token));\n  const update = async (id: string, payload: any) => api.${f}.update(id, payload, token);\n  const remove = async (id: string) => api.${f}.remove(id, token);\n\n  const getAll = list;\n\n  return { data, loading, error, list, getAll, create, get, update, remove };\n};\n\nexport const ${hookGet} = (token: string | undefined, id: string) => {\n  const [item, setItem] = useState<any>(null);\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<any>(null);\n\n  const fetchOne = async () => {\n    setLoading(true);\n    try {\n      const res = await (api.${f}.getById ? api.${f}.getById(id, token) : api.${f}.get(id, token));\n      setItem(res?.data || null);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { item, loading, error, fetchOne };\n};\n\nexport const ${hookCreate} = (token?: string) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<any>(null);\n\n  const create = async (payload: any) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.create(payload, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { create, loading, error };\n};\n\nexport const ${hookUpdate} = (token?: string) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<any>(null);\n\n  const update = async (id: string, payload: any) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.update(id, payload, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { update, loading, error };\n};\n\nexport const ${hookDelete} = (token?: string) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<any>(null);\n\n  const remove = async (id: string) => {\n    setLoading(true);\n    try {\n      const res = await api.${f}.remove(id, token);\n      setError(null);\n      return res;\n    } catch (e) {\n      setError(e);\n      throw e;\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return { remove, loading, error };\n};`;
-  }).join('\n\n');
+const defaultPath = path.resolve(__dirname, '../../../../dryApp/src/app/features/${appName.toLowerCase()}');
 
-  return `// Hooks React TypeScript + types\nimport { useState } from 'react';\nimport { api } from './apiClient';\nimport type * as Types from './types';\n\n${hooks}\n`;
-};
+rl.question(\`Chemin d'installation (par defaut: \${defaultPath}) : \`, (targetDir) => {
+  const dest = targetDir.trim() || defaultPath;
 
-const angularClient = (config) => {
-  return `// Client Angular - DRY\nimport { Injectable } from '@angular/core';\nimport { HttpClient, HttpHeaders } from '@angular/common/http';\n\n@Injectable({ providedIn: 'root' })\nexport class ApiService {\n  private baseUrl =\n    (typeof (globalThis as any) !== 'undefined' && (globalThis as any).API_BASE_URL) ||\n    '${config.baseUrl}';\n\n  constructor(private http: HttpClient) {}\n\n  private authHeaders(token?: string) {\n    return token\n      ? { headers: new HttpHeaders({ Authorization: \`Bearer \${token}\` }) }\n      : {};\n  }\n\n  ${Object.keys(config.routes)
-    .map(
-      (f) => `\n  ${f}List(token?: string) {\n    return this.http.get(\`\${this.baseUrl}${config.routes[f].list}\`, this.authHeaders(token));\n  }\n  ${f}Create(data: any, token?: string) {\n    return this.http.post(\`\${this.baseUrl}${config.routes[f].create}\`, data, this.authHeaders(token));\n  }\n  ${f}Get(id: string, token?: string) {\n    return this.http.get(\`\${this.baseUrl}${config.routes[f].get}\`.replace(':id', id), this.authHeaders(token));\n  }\n  ${f}Update(id: string, data: any, token?: string) {\n    return this.http.put(\`\${this.baseUrl}${config.routes[f].update}\`.replace(':id', id), data, this.authHeaders(token));\n  }\n  ${f}Remove(id: string, token?: string) {\n    return this.http.delete(\`\${this.baseUrl}${config.routes[f].remove}\`.replace(':id', id), this.authHeaders(token));\n  }`
-    )
-    .join('\n')}\n}\n`;
+  if (!fs.existsSync(dest)) {
+    console.log(\`Création du dossier: \${dest}\`);
+    fs.mkdirSync(dest, { recursive: true });
+  }
+
+  const src = __dirname;
+  
+  // Copy models
+  const destModels = path.join(dest, 'models');
+  if (!fs.existsSync(destModels)) fs.mkdirSync(destModels, { recursive: true });
+  fs.readdirSync(path.join(src, 'models')).forEach(f => {
+    fs.copyFileSync(path.join(src, 'models', f), path.join(destModels, f));
+  });
+
+  // Copy services
+  const destServices = path.join(dest, 'services');
+  if (!fs.existsSync(destServices)) fs.mkdirSync(destServices, { recursive: true });
+  fs.readdirSync(path.join(src, 'services')).forEach(f => {
+    fs.copyFileSync(path.join(src, 'services', f), path.join(destServices, f));
+  });
+
+  // Copy index
+  fs.copyFileSync(path.join(src, 'index.ts'), path.join(dest, 'index.ts'));
+
+  console.log('\\n🎉 Installation terminée !');
+  console.log(\`✅ Client installé dans : \${dest}\`);
+  console.log('👉 Vous pouvez maintenant importer les services directement.');
+  rl.close();
+});
+`;
 };
 
 const main = async () => {
-  console.log('');
-  console.log(title);
-  renderBox('🎨 FRONTEND CLIENT WIZARD');
-  
-  console.log(`${info} 📂 Dossier des applications: ${C.GREEN}${DRY_APP}${C.RESET}`);
-  console.log(`${info} 📁 Dossier de sortie: ${C.GREEN}${OUT}${C.RESET}`);
-  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
+  console.log(`\n${C.BRIGHT}${C.CYAN}🚀 DRY NATIVE CLIENT GENERATOR${C.RESET}\n`);
 
   const apps = getApps();
-  if (!apps.length) {
-    renderBox(`${warning} 🚫 Aucune application trouvée\n\nVérifiez que:\n• Les applications sont dans ${DRY_APP}\n• Chaque application a un dossier 'features'`);
-    process.exit(0);
-  }
+  let appName = process.argv[2];
 
-  // Afficher les applications dans un tableau
-  const appRows = apps.map(app => {
-    const appPath = path.join(DRY_APP, app);
-    const featuresPath = path.join(appPath, 'features');
-    const hasFeatures = fs.existsSync(featuresPath);
-    const features = hasFeatures ? getFeatures(app) : [];
-    
-    return [
-      `📱 ${app}`,
-      hasFeatures ? `${C.GREEN}✅${C.RESET}` : `${C.YELLOW}⚠️${C.RESET}`,
-      `${features.length} features`,
-      hasFeatures ? `${C.GREEN}DISPONIBLE${C.RESET}` : `${C.YELLOW}INCOMPLET${C.RESET}`
-    ];
-  });
-
-  console.log(`\n${C.BRIGHT}${C.CYAN}📱 APPLICATIONS TROUVÉES${C.RESET}`);
-  renderTable(appRows, ['Application', 'Features', 'Count', 'Statut']);
-
-  console.log('\n' + `${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-  console.log(`${info} 📋 Choisissez une application à générer:`);
-  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-
-  apps.forEach((app, index) => {
-    const features = getFeatures(app);
-    console.log(`${C.YELLOW}${index + 1}${C.RESET}) 📱 ${C.CYAN}${app}${C.RESET} ${C.DIM}(${features.length} features)${C.RESET}`);
-  });
-
-  const appChoice = await question('\n🎯 Entrez le numéro de l\'application: ');
-  const appIndex = parseInt(appChoice, 10) - 1;
-  
-  if (appIndex < 0 || appIndex >= apps.length) {
-    renderBox(`${warning} ❌ Choix invalide: ${appChoice}`);
+  if (!appName) {
+    // Interactive selection logic omitted for brevity as we know the target is SkillForge
+    console.log('Usage: node generate-frontend-client.js <AppName>');
     process.exit(1);
   }
 
-  const appName = apps[appIndex];
+  // Case insensitive match
+  const found = apps.find(a => a.toLowerCase() === appName.toLowerCase());
+  if (!found) {
+    console.log(`${C.RED}❌ Application ${appName} introuvable.${C.RESET}`);
+    process.exit(1);
+  }
+  appName = found;
+
   const features = getFeatures(appName);
-  
-  if (!features.length) {
-    renderBox(`${warning} ⚠️  L'application "${appName}" n'a pas de features\n\nVérifiez que le dossier features existe dans:\n${path.join(DRY_APP, appName, 'features')}`);
-    process.exit(1);
-  }
-
-  console.log('');
-  renderBox(`🛠️  CONFIGURATION: ${appName}`);
-  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-  console.log(`${info} 📱 Application: ${C.GREEN}${appName}${C.RESET}`);
-  console.log(`${info} ⚙️  Features: ${C.GREEN}${features.join(', ')}${C.RESET}`);
-  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-
-  const framework = await question('🎨 Framework (react | react-native | angular): ');
-  if (!['react', 'react-native', 'angular'].includes(framework)) {
-    renderBox(`${warning} ❌ Framework non supporté: ${framework}\nFrameworks supportés: react, react-native, angular`);
-    process.exit(1);
-  }
-
-  const config = buildConfig(appName, features);
   const schemas = loadSchemas(appName);
-  const typesContent = buildTypesFromSchemas(schemas);
+  const models = buildModels(schemas);
 
-  const outDir = path.join(OUT, appName, framework);
+  const outDir = path.join(OUT, appName, 'angular-native');
   
-  console.log('\n🚀 Génération du client frontend...\n');
+  console.log(`Génération pour ${C.GREEN}${appName}${C.RESET} (${features.length} features)...`);
   
-  // Création des fichiers avec progression
-  const steps = [
-    { file: 'api.config.json', desc: 'Configuration API' },
-    { file: framework === 'angular' ? 'api.service.ts' : 'apiClient.js', desc: 'Client API' },
-    { file: 'hooks.js', desc: 'Hooks React' },
-    { file: 'types.ts', desc: 'Types TypeScript' }
-  ];
-
-  steps.forEach((step, index) => {
-    const percentage = Math.round(((index + 1) / steps.length) * 100);
-    const barLength = 30;
-    const filledLength = Math.round((percentage / 100) * barLength);
-    const bar = `${C.GREEN}█`.repeat(filledLength) + `${C.DIM}░`.repeat(barLength - filledLength) + C.RESET;
-    
-    console.log(`${step.desc} [${bar}] ${C.BRIGHT}${percentage}%${C.RESET} (${index + 1}/${steps.length})`);
-    
-    if (step.file === 'api.config.json') {
-      writeFile(path.join(outDir, step.file), JSON.stringify(config, null, 2));
-    } else if (step.file === 'api.service.ts') {
-      writeFile(path.join(outDir, step.file), angularClient(config));
-    } else if (step.file === 'apiClient.js') {
-      writeFile(path.join(outDir, step.file), reactClient(config));
-    } else if (step.file === 'hooks.js') {
-      writeFile(path.join(outDir, step.file), reactHooks(config));
-    } else if (step.file === 'types.ts') {
-      writeFile(path.join(outDir, step.file), typesContent);
-      if (framework === 'react') {
-        writeFile(path.join(outDir, 'hooks.ts'), reactHooksTs(config));
-      }
-    }
+  const files = generateNativeClient(appName, features, models);
+  
+  files.forEach(f => {
+    writeFile(path.join(outDir, f.path), f.content);
+    console.log(`✅ ${f.path}`);
   });
 
-  console.log('\n');
+  writeFile(path.join(outDir, 'install.js'), generateInstallScript(appName));
+  writeFile(path.join(outDir, 'README.md'), `# Client Native ${appName}\n\nClient optimisé pour l'architecture DRY Angular.\n\nRun \`node install.js\` to install.`);
 
-  // Affichage des fichiers générés
-  const generatedFiles = steps.map(s => path.join(outDir, s.file));
-  
-  renderBox(
-    `📁 FICHIERS GÉNÉRÉS (${generatedFiles.length})\n\n` +
-    generatedFiles.map(f => `✅ ${path.relative(process.cwd(), f)}`).join('\n')
-  );
-
-  console.log('\n' + `${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-  console.log(`${success} 🎉 CLIENT FRONTEND GÉNÉRÉ AVEC SUCCÈS!`);
-  console.log(`${info} 📂 Dossier: ${C.GREEN}${outDir}${C.RESET}`);
-  console.log(`${info} 🎨 Framework: ${C.GREEN}${framework}${C.RESET}`);
-  console.log(`${info} 📱 Application: ${C.GREEN}${appName}${C.RESET}`);
-  console.log(`${C.DIM}─────────────────────────────────────────────────────${C.RESET}`);
-
-  console.log(`\n${info} 📝 Prochaines étapes:`);
-  console.log(`   • cd ${path.relative(process.cwd(), outDir)}`);
-  console.log(`   • npm install (si nécessaire)`);
-  console.log(`   • Importer les fichiers dans votre projet`);
-
-  console.log('\n' + `${C.CYAN}─────────────────────────────────────────────────────${C.RESET}`);
-  console.log(`${C.CYAN}│                   🌟 BON DÉVELOPPEMENT!             │${C.RESET}`);
-  console.log(`${C.CYAN}─────────────────────────────────────────────────────${C.RESET}`);
-
-  rl.close();
+  console.log(`\n${C.GREEN}Succès !${C.RESET} Client généré dans: ${outDir}`);
+  console.log(`👉 cd ${outDir} && node install.js`);
+  process.exit(0);
 };
 
 main();
-
-
-
-
-
-
-
-

@@ -5,6 +5,24 @@ const { parseBoolean, parseCsv, parseNumber } = require('../../../../../dry/util
 
 const PropertySchema = require('../model/property.schema');
 
+const getSortQuery = (sortBy) => {
+    switch (sortBy) {
+        case 'date-asc':
+            return { createdAt: 1, _id: 1 };
+        case 'price-asc':
+            return { prix: 1, createdAt: -1 };
+        case 'price-desc':
+            return { prix: -1, createdAt: -1 };
+        case 'rating-desc':
+            return { noteMoyenne: -1, createdAt: -1 };
+        case 'surface-desc':
+            return { superficie: -1, createdAt: -1 };
+        case 'date-desc':
+        default:
+            return { createdAt: -1, _id: -1 };
+    }
+};
+
 module.exports = asyncHandler(async (req, res) => {
     const Property = req.getModel('Property', PropertySchema);
     req.getModel('User');
@@ -61,13 +79,35 @@ module.exports = asyncHandler(async (req, res) => {
         if (prixMax !== undefined) query.prix.$lte = prixMax;
     }
 
+    const chambresMin = parseNumber(req.query.nombre_chambres ?? req.query.nombreChambres ?? req.query.bedrooms);
+    if (chambresMin !== undefined) {
+        query.nombre_chambres = { $gte: chambresMin };
+    }
+
+    const sallesDeBainMin = parseNumber(
+        req.query.nombre_salles_bain ?? req.query.nombreSallesBain ?? req.query.bathrooms,
+    );
+    if (sallesDeBainMin !== undefined) {
+        query.nombre_salles_bain = { $gte: sallesDeBainMin };
+    }
+
+    const superficieMin = parseNumber(req.query.superficieMin ?? req.query.minSurface);
+    const superficieMax = parseNumber(req.query.superficieMax ?? req.query.maxSurface);
+    if (superficieMin !== undefined || superficieMax !== undefined) {
+        query.superficie = {};
+        if (superficieMin !== undefined) query.superficie.$gte = superficieMin;
+        if (superficieMax !== undefined) query.superficie.$lte = superficieMax;
+    }
+
     const total = await Property.countDocuments(query);
+
+    const sortQuery = getSortQuery(req.query.sortBy);
 
     const properties = await Property.find(query)
         .populate('utilisateur', 'name nom email telephone')
         .skip(skip)
         .limit(limit)
-        .sort({ createdAt: -1 });
+        .sort(sortQuery);
 
     const categories = [...new Set(properties.map((p) => p.categorie).filter(Boolean))];
 

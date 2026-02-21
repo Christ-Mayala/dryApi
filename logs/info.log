@@ -4445,3 +4445,722 @@
 [12/02/2026 00:28:29] [INFO] NotificationService initialized
 [12/02/2026 00:29:20] [INFO] Email service configure avec Resend API
 [12/02/2026 00:29:37] [INFO] NotificationService initialized
+[12/02/2026 09:24:25] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 00:51:24] [INFO] Email service configure avec Resend API
+[16/02/2026 00:51:31] [INFO] NotificationService initialized
+[16/02/2026 00:57:24] [INFO] Email service configure avec Resend API
+[16/02/2026 00:57:36] [INFO] NotificationService initialized
+[16/02/2026 00:57:49] [INFO] Email service configure avec Resend API
+[16/02/2026 00:57:56] [INFO] NotificationService initialized
+[16/02/2026 00:58:15] [INFO] Email service configure avec Resend API
+[16/02/2026 00:58:20] [INFO] NotificationService initialized
+[16/02/2026 01:20:23] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 01:21:14] [INFO] Email service configure avec Resend API
+[16/02/2026 01:21:19] [INFO] NotificationService initialized
+[16/02/2026 01:21:32] [INFO] Email service configure avec Resend API
+[16/02/2026 01:21:35] [INFO] NotificationService initialized
+[16/02/2026 01:25:38] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 01:38:38] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 01:42:41] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 10:02:19] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[16/02/2026 10:14:43] [INFO] Email service configure avec Resend API
+[16/02/2026 10:15:03] [INFO] NotificationService initialized
+[16/02/2026 10:16:19] [INFO] Email service configure avec Resend API
+[16/02/2026 10:16:56] [INFO] NotificationService initialized
+[16/02/2026 10:17:24] [INFO] Email service configure avec Resend API
+[16/02/2026 10:17:41] [INFO] NotificationService initialized
+[16/02/2026 10:17:51] [INFO] Email service configure avec Resend API
+[16/02/2026 10:18:02] [INFO] NotificationService initialized
+[17/02/2026 05:30:18] [INFO] Email service configure avec Resend API
+[17/02/2026 05:30:27] [INFO] NotificationService initialized
+[17/02/2026 05:43:32] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 05:44:31] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 05:50:20] [INFO] Email service configure avec Resend API
+[17/02/2026 05:50:43] [INFO] NotificationService initialized
+[17/02/2026 05:50:59] [INFO] [be5bff56-508a-4a38-837d-b3c1311586ab] GET /api/api/v1/scim/property?page=1&limit=6 200 71ms
+[17/02/2026 05:50:59] [INFO] [d010d47c-069c-4eab-a80c-f72c31efc745] GET /api/api/v1/scim/property?page=1&limit=6 200 36ms
+[17/02/2026 05:51:10] [INFO] [c47a61a6-8109-45ee-be89-55429700be33] GET /api/api/v1/scim/property?page=1 200 46ms
+[17/02/2026 05:51:10] [INFO] [0b10cfd0-5395-4e52-82d9-26f3c47a92de] GET /api/api/v1/scim/property?page=1 200 20ms
+[17/02/2026 05:51:10] [INFO] [bebd2925-22b3-4874-96ae-9002d938ca32] GET /api/api/v1/scim/property?page=1 200 31ms
+[17/02/2026 05:51:24] [INFO] [de5e9a53-15c9-4011-9971-84fb8c505ed7] GET /api/api/v1/scim/property?page=1 200 22ms
+[17/02/2026 05:51:25] [INFO] [05c331a7-2ad3-4860-b3c3-d219e90130ee] GET /api/api/v1/scim/property?page=1 200 40ms
+[17/02/2026 05:51:30] [INFO] [7b6110df-fc50-4dc7-9353-8312619a1db7] GET /api/api/v1/scim/property?page=1&limit=6 200 11ms
+[17/02/2026 05:51:30] [INFO] [e7d324b2-4e97-441c-a4cb-53013b80351e] GET /api/api/v1/scim/property?page=1&limit=6 200 36ms
+[17/02/2026 05:51:31] [INFO] [c8bded9a-23fd-42e1-924d-89d30987cc76] GET /api/api/v1/scim/property?page=1 200 14ms
+[17/02/2026 05:51:31] [INFO] [0636677f-2a18-4d27-8267-7673666b5ae3] GET /api/api/v1/scim/property?page=1 200 54ms
+[17/02/2026 05:51:31] [INFO] [50eb6d9a-9609-4ecf-9298-29455076de83] GET /api/api/v1/scim/property?page=1 200 23ms
+[17/02/2026 05:51:39] [INFO] [fe09b11e-fc1d-4cce-98be-2612d97124f6] POST /api/api/v1/scim/user/login 200 86ms
+[17/02/2026 05:53:05] [INFO] [b4ae5b93-3dbd-4def-93f1-3359a2cd957b] POST /api/api/v1/scim/user/login 200 127ms
+[17/02/2026 05:59:56] [INFO] [faa249ba-55b7-4e42-94cd-e78918f4685a] GET /api/v1/scim/property?page=1 200 45395ms
+[17/02/2026 06:00:01] [INFO] [e2a98859-d4e3-47c2-b801-cb8f83d45f90] GET /api/v1/scim/property?page=1 200 30030ms
+[17/02/2026 06:00:01] [INFO] [c79085b5-0eca-4100-a924-f9d04a4f0cfa] GET /api/v1/scim/property?page=1 200 30027ms
+[17/02/2026 06:00:11] [INFO] [82687203-0b19-4e89-95a1-8094de2177fe] GET /api/v1/scim/property?page=1&limit=6 200 30026ms
+[17/02/2026 06:00:21] [INFO] [0025d494-2efb-4a2b-8382-5ccf0fe35141] POST /api/v1/scim/user/login 200 157976ms
+[17/02/2026 06:00:31] [INFO] [5273684c-de1e-41ca-9214-2d58cbe6fb98] GET /api/v1/scim/property?page=1&limit=6 200 30035ms
+[17/02/2026 06:03:50] [INFO] [b4131713-9659-4193-9405-dbbec186b7e7] GET /api/v1/scim/property?page=1 200 41456ms
+[17/02/2026 06:03:50] [INFO] [6efda4b6-de4e-4f34-997c-e3b382e937be] POST /api/v1/scim/user/login 200 31821ms
+[17/02/2026 06:04:16] [INFO] Email service configure avec Resend API
+[17/02/2026 06:04:27] [INFO] NotificationService initialized
+[17/02/2026 06:07:33] [INFO] Email service configure avec Resend API
+[17/02/2026 06:07:40] [INFO] NotificationService initialized
+[17/02/2026 06:08:02] [INFO] [ca7a279b-bc64-4045-bb50-3b8f4b1be3f0] POST /api/v1/scim/user/login 200 3992ms
+[17/02/2026 06:08:02] [INFO] [740b8096-6208-4637-9b41-ba1113c334db] GET /api/v1/scim/user/profile 200 180ms
+[17/02/2026 06:08:02] [INFO] [18bc6ef2-7e68-463a-ba29-9ad70ca38f02] GET /api/v1/scim/user/profile 200 197ms
+[17/02/2026 06:08:03] [INFO] [ef9837a9-792e-41b1-997e-a4a4bb929cf8] GET /api/v1/scim/favoris 200 1072ms
+[17/02/2026 06:08:03] [INFO] [45da43d2-033f-4043-8f76-7d988ed1e690] GET /api/v1/scim/admin/dashboard/stats 200 1087ms
+[17/02/2026 06:08:04] [INFO] [2561751c-ccaf-4129-a9d3-a8f50279fb36] GET /api/v1/scim/message/unread 200 1592ms
+[17/02/2026 06:08:04] [INFO] [4468b5f8-8fab-4eed-9099-1d49ffd05bb9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1948ms
+[17/02/2026 06:08:05] [INFO] [11726d69-926b-450d-a9d2-245bfe7d4067] GET /api/v1/scim/admin/dashboard/stats 200 1220ms
+[17/02/2026 06:08:08] [INFO] [e0f36a13-5096-4ba3-9c58-b9723e1068c7] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 5177ms
+[17/02/2026 06:08:10] [INFO] [282d1569-f4e1-465f-a775-02e0f1d0e391] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 2841ms
+[17/02/2026 06:08:22] [INFO] [9c5a820b-49b3-48f5-98bd-841d59067e73] POST /api/v1/scim/users/logout 200 7ms
+[17/02/2026 06:08:31] [INFO] [4a599038-ba87-4540-917d-480d8cbe51d5] POST /api/v1/scim/users/reset-request 200 122ms
+[17/02/2026 06:09:13] [INFO] [d725be17-b1a4-4f27-994d-2a05f8a4df7b] POST /api/v1/scim/users/reset-request 200 225ms
+[17/02/2026 06:10:27] [INFO] [45dad2d9-1a6d-4153-b0e9-d4fe3dd05721] POST /api/v1/scim/user/register 200 1412ms
+[17/02/2026 06:10:27] [INFO] [402e5cfe-0c92-4a60-9336-05096123ced8] GET /api/v1/scim/user/profile 200 13ms
+[17/02/2026 06:10:27] [INFO] [87e81e9f-04ce-43d2-abd4-d16027e37cb0] POST /api/v1/scim/users/refresh-token 200 2ms
+[17/02/2026 06:10:28] [INFO] [e674add4-1a39-4147-bc29-b678c97fd964] GET /api/v1/scim/favoris 200 156ms
+[17/02/2026 06:10:28] [INFO] [c1882d88-5fb8-4715-98a4-ff237def89d8] GET /api/v1/scim/users/visited?limit=10 200 45ms
+[17/02/2026 06:10:28] [INFO] [5c6d0aea-18ac-47dd-bd0d-a0c468af7d44] GET /api/v1/scim/reservation/my 200 9ms
+[17/02/2026 06:10:28] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:10:29] [INFO] [6efc4c44-3a14-4373-abdf-fb2988b38495] GET /api/v1/scim/favoris 200 3ms
+[17/02/2026 06:10:29] [INFO] [8ae89f0b-d206-4309-b6f3-b991b5d8a08f] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:10:29] [INFO] [c939d229-2f1b-4503-9115-7586d4545751] GET /api/v1/scim/users/visited?limit=10 200 28ms
+[17/02/2026 06:10:29] [INFO] [e7eb7a41-4e46-4c2e-91ae-9dedbe6fc557] GET /api/v1/scim/reservation/my 200 5ms
+[17/02/2026 06:10:29] [INFO] [33a9aafd-933d-47ad-8b9d-0b6a9e289863] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:10:29] [INFO] [379a8d81-a70b-4bf5-8060-ff8631ea04ae] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 06:10:29] [INFO] [848335f8-68fa-4f4e-8dd8-0e6c3f69e63d] GET /api/v1/scim/favoris 200 4ms
+[17/02/2026 06:10:29] [INFO] [7547fe74-f4b6-41d3-b4c9-14547dac8a0b] POST /api/v1/scim/users/refresh-token 200 49ms
+[17/02/2026 06:10:30] [INFO] [02903742-abd8-43f5-9281-211a692fb087] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:10:30] [INFO] [bbc80b3b-5c2e-47d0-bc9b-bd6c240a7af8] POST /api/v1/scim/users/refresh-token 200 3ms
+[17/02/2026 06:10:30] [INFO] [5d6e29d8-a1b1-413e-8caf-f12ba11f2fdd] POST /api/v1/scim/users/refresh-token 200 1ms
+[17/02/2026 06:12:36] [INFO] [4371e84e-6aff-4929-915a-7f0a847a6fc3] GET /api/v1/scim/property?page=1 200 614ms
+[17/02/2026 06:12:36] [INFO] [91351453-6dd8-48f4-98af-343596212f18] GET /images/og/og-property.jpg 200 86ms
+[17/02/2026 06:12:36] [INFO] [89fd9a0e-f55e-4d16-8825-2efe48c8a480] GET /api/v1/scim/property?page=1 200 580ms
+[17/02/2026 06:12:36] [INFO] [be20c2e2-2999-44d9-9040-ca3d0b10c0df] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 06:12:37] [INFO] [34ae0602-b4b0-42ca-ba68-96e830859e35] GET /api/v1/scim/property?page=1 200 1079ms
+[17/02/2026 06:12:38] [INFO] [c3e7f538-879d-4556-9829-7bda40102c06] GET /api/v1/scim/property?page=1 200 499ms
+[17/02/2026 06:13:01] [INFO] [22378be7-fa1b-4330-a00a-5aeadd44fd32] GET /api/v1/scim/property/693eced1a645b120ed4b6850 200 1107ms
+[17/02/2026 06:13:01] [INFO] [35054694-247a-4207-b624-be57e44bb088] POST /api/v1/scim/property/693eced1a645b120ed4b6850/visit 200 12ms
+[17/02/2026 06:13:01] [INFO] [d04a5c72-4cbf-45c7-8b84-38cdfc5d25ea] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:13:02] [INFO] [f234cd74-bf28-45d8-b602-6cc2b5513d74] GET /api/v1/scim/property/693eced1a645b120ed4b6850 200 1126ms
+[17/02/2026 06:13:02] [INFO] [576429f2-0265-42da-99d0-2ef2d9aa9c1c] POST /api/v1/scim/property/693eced1a645b120ed4b6850/visit 200 10ms
+[17/02/2026 06:13:02] [INFO] [9d25005c-7f14-4bfc-950c-987f2f1c31d6] POST /api/v1/scim/users/refresh-token 200 3ms
+[17/02/2026 06:13:09] [INFO] [b2d8adf3-d201-4a34-8365-90ec7875bb0c] GET /images/og/og-property.jpg 200 7ms
+[17/02/2026 06:13:10] [INFO] [7a168818-8c0b-4b1b-ac84-5074ed0eef0f] GET /api/v1/scim/property?page=1 200 450ms
+[17/02/2026 06:13:10] [INFO] [12470069-429f-4ef1-8053-6eaec71ed588] GET /images/og/og-property.jpg 200 26ms
+[17/02/2026 06:13:10] [INFO] [7bf804f8-99fb-4be0-9bf1-b2a7b2eca042] GET /api/v1/scim/property?page=1 200 445ms
+[17/02/2026 06:13:12] [INFO] [4574888e-f155-4ec2-9dc7-0d8f6c075565] POST /api/v1/scim/property/693eced1a645b120ed4b6850/visit 200 54ms
+[17/02/2026 06:13:12] [INFO] [a5b041c4-5a1e-4c7f-8647-8eb61aa28046] POST /api/v1/scim/users/refresh-token 200 22ms
+[17/02/2026 06:13:12] [INFO] [4d1a1f26-052c-4cab-a6b3-a7e9ad20b5cc] POST /api/v1/scim/property/693eced1a645b120ed4b6850/visit 200 8ms
+[17/02/2026 06:13:12] [INFO] [b6ca14cc-2ae9-4fa6-b63e-4fa67ab78ad7] POST /api/v1/scim/users/refresh-token 200 13ms
+[17/02/2026 06:13:15] [INFO] [a47668c8-746d-4fcc-be7b-2bb0d78955f6] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 2331ms
+[17/02/2026 06:13:15] [INFO] [0ab12f51-6297-4199-822f-7771a2d2961b] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 15ms
+[17/02/2026 06:13:15] [INFO] [f407d543-ba78-4ba5-a351-fe48b5040941] POST /api/v1/scim/users/refresh-token 200 8ms
+[17/02/2026 06:13:16] [INFO] [2a1525a3-2fb6-4460-8bec-fe4c1f967105] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 1280ms
+[17/02/2026 06:13:16] [INFO] [9debd0a7-4059-4acb-be05-fbc6a6a2458b] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 2ms
+[17/02/2026 06:13:16] [INFO] [b4972c49-ffdd-4a37-a69d-7e07cefb826d] POST /api/v1/scim/users/refresh-token 200 2ms
+[17/02/2026 06:13:38] [INFO] [0000bb49-e3b2-4c8d-8aa0-359a6880ac19] POST /api/v1/scim/reservation 200 2ms
+[17/02/2026 06:13:38] [INFO] [0876710d-4fef-4181-af45-e6dd86340e2a] POST /api/v1/scim/users/refresh-token 200 5ms
+[17/02/2026 06:13:45] [INFO] [ca1ae17b-abcf-4cc3-ba12-09b1dbfa4483] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/rate 200 5ms
+[17/02/2026 06:13:45] [INFO] [7a1cd7dd-d1f7-4763-becb-259034a53018] POST /api/v1/scim/users/refresh-token 200 6ms
+[17/02/2026 06:13:59] [INFO] Email service configure avec Resend API
+[17/02/2026 06:14:15] [INFO] NotificationService initialized
+[17/02/2026 06:14:32] [INFO] Email service configure avec Resend API
+[17/02/2026 06:14:44] [INFO] NotificationService initialized
+[17/02/2026 06:15:14] [INFO] Email service configure avec Resend API
+[17/02/2026 06:15:22] [INFO] NotificationService initialized
+[17/02/2026 06:18:48] [INFO] [986e8731-2e20-4d79-b9ba-003ae181e348] GET /api/v1/scim/favoris 200 34ms
+[17/02/2026 06:18:48] [INFO] [6c57c092-7812-40d8-b628-7b2f3bb028c7] GET /api/v1/scim/users/visited?limit=10 200 20ms
+[17/02/2026 06:18:48] [INFO] [cf8f509f-82cc-4412-9e0d-5af03c4016de] GET /api/v1/scim/reservation/my 200 15ms
+[17/02/2026 06:18:48] [INFO] [17bc84f0-b2b7-42a3-91eb-3ca7d8a273bc] GET /api/v1/scim/users/visited?limit=10 200 8ms
+[17/02/2026 06:18:48] [INFO] [980c2304-ab16-452a-a63f-466bc76cb173] GET /api/v1/scim/reservation/my 200 6ms
+[17/02/2026 06:18:48] [INFO] [554c971e-6e54-425b-acc8-fa8c9bbc3d2e] POST /api/v1/scim/users/refresh-token 200 46ms
+[17/02/2026 06:18:48] [INFO] [2378611d-3c3c-4d64-bd72-880ded65571d] POST /api/v1/scim/users/refresh-token 200 92ms
+[17/02/2026 06:18:49] [INFO] [2e60a0e4-8dd6-4484-a56e-f11968724645] POST /api/v1/scim/users/refresh-token 200 113ms
+[17/02/2026 06:18:49] [INFO] [8d0095f8-39f4-4fda-8a54-6d3319b80546] GET /api/v1/scim/favoris 200 66ms
+[17/02/2026 06:18:49] [INFO] [a91f93f0-1137-4be9-b809-e20a61f71a97] POST /api/v1/scim/users/refresh-token 200 29ms
+[17/02/2026 06:18:49] [INFO] [b13e2847-758f-496c-b242-0622c2137ada] POST /api/v1/scim/users/refresh-token 200 64ms
+[17/02/2026 06:18:49] [INFO] [f589c363-06bb-4470-8fd2-28037f15d55b] POST /api/v1/scim/users/refresh-token 200 13ms
+[17/02/2026 06:18:56] [INFO] [d8025410-3e74-46b7-9864-65bed5ebaf8f] GET /api/v1/scim/users/stats 200 13ms
+[17/02/2026 06:18:56] [INFO] [25d93cb9-3408-47c1-b296-aedd47eb771a] GET /api/v1/scim/users/stats 200 45ms
+[17/02/2026 06:18:56] [INFO] [5765946d-6ce5-4ba5-94d8-f9c4e24b03f2] POST /api/v1/scim/users/refresh-token 200 12ms
+[17/02/2026 06:18:56] [INFO] [452d5286-764f-4862-8816-6c80bdc320f4] POST /api/v1/scim/users/refresh-token 200 14ms
+[17/02/2026 06:19:23] [INFO] [249b3d42-a806-4c93-9131-05a7e1b3dba5] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 06:19:24] [INFO] [e7132396-3522-4872-b6d1-727491335a52] GET /api/v1/scim/property?page=1 200 512ms
+[17/02/2026 06:19:24] [INFO] [e271b4de-e244-4234-a42c-49ef5136e320] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 06:19:25] [INFO] [7c68e28f-b58f-4d5a-b94a-366e435ae6c1] GET /api/v1/scim/property?page=1 200 532ms
+[17/02/2026 06:19:25] [INFO] [ef3b8b17-1b80-472a-bbc2-5f6702008d08] GET /api/v1/scim/property?page=1 200 747ms
+[17/02/2026 06:19:25] [INFO] [b23e4765-4ddf-4bab-b226-71d074476744] GET /images/og/og-property.jpg 200 31ms
+[17/02/2026 06:19:27] [INFO] [4dbc0ad9-9ddb-426a-ba74-b817480c0645] GET /api/v1/scim/property?page=1&limit=6 200 1822ms
+[17/02/2026 06:19:27] [INFO] [3339f64d-94e6-4905-ba6e-a559128a03e3] GET /api/v1/scim/property?page=1&limit=6 200 576ms
+[17/02/2026 06:19:28] [INFO] [d50eeede-b45f-4f2e-8645-44adfcff83cc] GET /images/og/og-property.jpg 200 16ms
+[17/02/2026 06:19:28] [INFO] [9cd34a7a-28db-4ae0-975a-7c696b3765c4] GET /api/v1/scim/property?page=1&limit=6 200 707ms
+[17/02/2026 06:19:36] [INFO] Email service configure avec Resend API
+[17/02/2026 06:19:44] [INFO] NotificationService initialized
+[17/02/2026 06:19:54] [INFO] Email service configure avec Resend API
+[17/02/2026 06:20:03] [INFO] NotificationService initialized
+[17/02/2026 06:21:57] [INFO] Email service configure avec Resend API
+[17/02/2026 06:22:06] [INFO] NotificationService initialized
+[17/02/2026 06:23:17] [INFO] Email service configure avec Resend API
+[17/02/2026 06:23:26] [INFO] NotificationService initialized
+[17/02/2026 06:23:47] [INFO] [e30734df-d148-41b3-b79b-be1ed78ac466] GET /api/v1/scim/favoris 200 38ms
+[17/02/2026 06:23:47] [INFO] [fbe8db88-9fb3-4ba1-a229-98159fbd0f7c] GET /api/v1/scim/favoris 200 5ms
+[17/02/2026 06:23:47] [INFO] [fcb49b48-b976-4374-b60c-9008fdc19110] POST /api/v1/scim/users/refresh-token 200 84ms
+[17/02/2026 06:23:47] [INFO] [36fa31e4-0739-4892-891f-89f84a77f6d5] POST /api/v1/scim/users/refresh-token 200 6ms
+[17/02/2026 06:23:52] [INFO] [0633f038-c30e-4834-91d8-314fbdbfc260] GET /api/v1/scim/favoris 200 7ms
+[17/02/2026 06:23:52] [INFO] [68a79408-2349-4f48-9536-420e6ae17261] GET /api/v1/scim/users/visited?limit=10 200 7ms
+[17/02/2026 06:23:52] [INFO] [0c97dabd-1eb7-4494-bdce-b06dee514eae] GET /api/v1/scim/users/visited?limit=10 200 5ms
+[17/02/2026 06:23:52] [INFO] [6502a0fe-c4f9-4f69-b6b1-f9679d1188ef] GET /api/v1/scim/reservation/my 200 8ms
+[17/02/2026 06:23:52] [INFO] [e56d2b94-ad37-47a7-9c2d-295f17729b00] GET /api/v1/scim/reservation/my 200 14ms
+[17/02/2026 06:23:52] [INFO] [99f1002d-7762-46c5-9019-20352fcee31d] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 06:23:52] [INFO] [c503b6db-5530-4687-b325-4b95e1d745e8] GET /api/v1/scim/favoris 200 5ms
+[17/02/2026 06:23:52] [INFO] [c3768c8f-aa21-4496-aba8-ba0778eeecec] POST /api/v1/scim/users/refresh-token 200 5ms
+[17/02/2026 06:23:52] [INFO] [67116c05-fa08-4b26-9036-3d2f8ede7bb9] POST /api/v1/scim/users/refresh-token 200 24ms
+[17/02/2026 06:23:52] [INFO] [a152a5f5-bfb4-43e0-9061-109204d535c6] POST /api/v1/scim/users/refresh-token 200 15ms
+[17/02/2026 06:23:52] [INFO] [53c793e6-1a06-4e44-bfed-c82f93351376] POST /api/v1/scim/users/refresh-token 200 14ms
+[17/02/2026 06:23:52] [INFO] [0d59f223-ce8c-4e70-85bd-9603decc4b0e] POST /api/v1/scim/users/refresh-token 200 22ms
+[17/02/2026 06:23:54] [INFO] [c7a00925-b366-4ff9-a2d8-fe961c798043] GET /api/v1/scim/favoris 200 4ms
+[17/02/2026 06:23:54] [INFO] [68973488-0cf1-4af7-8f46-9803faf67029] GET /api/v1/scim/favoris 200 4ms
+[17/02/2026 06:23:54] [INFO] [eefcedbc-2dad-4adc-9915-924328677a15] POST /api/v1/scim/users/refresh-token 200 15ms
+[17/02/2026 06:23:54] [INFO] [3b908be5-6c4c-4820-94c0-334898e32828] POST /api/v1/scim/users/refresh-token 200 9ms
+[17/02/2026 06:23:56] [INFO] [b7e3c669-557b-46b3-8837-d22c6788f654] GET /api/v1/scim/users/stats 200 11ms
+[17/02/2026 06:23:56] [INFO] [6b71e4d9-3204-4cbf-9908-05b582e3d525] GET /api/v1/scim/users/stats 200 6ms
+[17/02/2026 06:23:56] [INFO] [19305c1a-fc04-438f-b60d-6db3a3618e7f] POST /api/v1/scim/users/refresh-token 200 14ms
+[17/02/2026 06:23:56] [INFO] [e02d3fda-9d1f-426b-ab8a-5ce3472dadfe] POST /api/v1/scim/users/refresh-token 200 16ms
+[17/02/2026 06:23:57] [INFO] [93e9583c-787d-46b2-af0b-c37b739463fa] POST /api/v1/scim/users/logout 200 3ms
+[17/02/2026 06:24:03] [INFO] [670b5d3e-d44e-48d7-a43b-bbc381619a0e] POST /api/v1/scim/users/reset-request 200 138ms
+[17/02/2026 06:24:32] [INFO] [eeaff537-a785-4b84-a345-0e16b54b2cfa] POST /api/v1/scim/users/reset-request 200 524ms
+[17/02/2026 06:25:46] [INFO] [57b3c517-2277-4981-a766-54ec4e5b3b7a] POST /api/v1/scim/users/reset-request 200 51779ms
+[17/02/2026 06:26:12] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:26:12] [INFO] [285c58fd-0bdd-4790-8daf-9b17b7a81e20] POST /api/v1/scim/users/reset-request 200 7743ms
+[17/02/2026 06:26:29] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:27:52] [INFO] Email service configure avec Resend API
+[17/02/2026 06:28:00] [INFO] NotificationService initialized
+[17/02/2026 06:28:23] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:28:23] [INFO] [8a8c8923-9542-474b-845c-e6e182fe472a] POST /api/v1/scim/users/reset-request 200 3569ms
+[17/02/2026 06:28:56] [INFO] [f31ea7b5-889c-4ad1-accc-0bd50468a260] POST /api/v1/scim/users/reset-password 200 1661ms
+[17/02/2026 06:29:02] [INFO] [c9a32b25-d0f8-42b2-a3ec-45131905ca31] POST /api/v1/scim/users/reset-password 200 233ms
+[17/02/2026 06:29:16] [INFO] [7dd5b3e8-2615-4c0d-bd17-1f2a86182e9d] POST /api/v1/scim/users/reset-password 200 178ms
+[17/02/2026 06:32:17] [INFO] Email service configure avec Resend API
+[17/02/2026 06:32:25] [INFO] NotificationService initialized
+[17/02/2026 06:32:34] [INFO] Email service configure avec Resend API
+[17/02/2026 06:32:41] [INFO] NotificationService initialized
+[17/02/2026 06:33:28] [INFO] Email service configure avec Resend API
+[17/02/2026 06:33:36] [INFO] NotificationService initialized
+[17/02/2026 06:34:41] [INFO] Email service configure avec Resend API
+[17/02/2026 06:34:51] [INFO] NotificationService initialized
+[17/02/2026 06:35:39] [INFO] Email service configure avec Resend API
+[17/02/2026 06:35:48] [INFO] NotificationService initialized
+[17/02/2026 06:36:38] [INFO] Email service configure avec Resend API
+[17/02/2026 06:36:53] [INFO] NotificationService initialized
+[17/02/2026 06:37:08] [INFO] [9c4eb7c2-abff-41a0-ab93-d6370dd87d86] POST /api/v1/scim/user/login 200 4534ms
+[17/02/2026 06:37:10] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:39:21] [INFO] Email service configure avec Resend API
+[17/02/2026 06:39:28] [INFO] NotificationService initialized
+[17/02/2026 06:41:07] [INFO] [c26de1b5-c2aa-4050-9e25-eb8c838fd78f] POST /api/v1/scim/user/register 200 1152ms
+[17/02/2026 06:41:08] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 06:41:22] [INFO] [a3da3166-b298-47a1-835a-ffa2e64be0f8] POST /api/v1/scim/user/register 200 1556ms
+[17/02/2026 06:41:22] [INFO] [6cd9337d-ca62-42cb-9d8a-6cfd19afbdf0] GET /api/v1/scim/user/profile 200 8ms
+[17/02/2026 06:41:23] [INFO] [d5e7c4f3-ea40-41f8-bd6c-7243899e72a2] POST /api/v1/scim/users/refresh-token 200 5ms
+[17/02/2026 06:41:24] [INFO] [defbc2e0-41fe-4862-8395-70696e09160b] GET /api/v1/scim/favoris 200 230ms
+[17/02/2026 06:41:24] [INFO] [a6bdbce7-4e8f-4f49-ad8f-c98b8e51eacd] GET /api/v1/scim/users/visited?limit=10 200 51ms
+[17/02/2026 06:41:24] [INFO] [14e6d750-db8b-4e04-8822-95a2e5f0bcb5] GET /api/v1/scim/reservation/my 200 17ms
+[17/02/2026 06:41:24] [INFO] [3ff152fe-d490-49f8-904d-84219dedda0d] GET /api/v1/scim/favoris 200 9ms
+[17/02/2026 06:41:24] [INFO] [6f1e3e93-c415-4757-aa42-1db5d7376dc3] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 06:41:25] [INFO] [39be7fbd-755a-4449-8028-d9bec39ccee8] GET /api/v1/scim/reservation/my 200 4ms
+[17/02/2026 06:41:25] [INFO] [84c6eced-37f7-4128-86fd-ddf9c4447bdd] GET /api/v1/scim/users/visited?limit=10 200 5ms
+[17/02/2026 06:41:25] [INFO] [7f2bfa75-3a60-49f1-8239-e5c47c2e79ff] GET /api/v1/scim/favoris 200 31ms
+[17/02/2026 06:41:25] [INFO] [33378ed6-9825-486d-addf-f3c48e696afe] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:41:25] [INFO] [1bc852d8-aa40-4265-9128-b11bb2799ee8] POST /api/v1/scim/users/refresh-token 200 8ms
+[17/02/2026 06:41:25] [INFO] [59c4c3ac-d5d1-4b4d-8e6c-ec31bfd51eee] POST /api/v1/scim/users/refresh-token 200 3ms
+[17/02/2026 06:41:25] [INFO] [a2a4c311-2a88-4df2-9533-3943ff309ba3] POST /api/v1/scim/users/refresh-token 200 49ms
+[17/02/2026 06:41:25] [INFO] [e0a8ad31-7e93-40f6-8484-8afc6931d14a] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 06:41:26] [INFO] [8e962740-2ec3-4e8f-9374-6f089ee682fa] POST /api/v1/scim/users/refresh-token 200 7ms
+[17/02/2026 06:41:54] [INFO] [b51f1b31-1e75-409c-b19f-07821c0f38bd] POST /api/v1/scim/users/logout 200 29ms
+[17/02/2026 06:43:10] [INFO] [8738b070-b8e6-4758-93ed-4f55f4068d75] POST /api/v1/scim/user/register 200 24515ms
+[17/02/2026 06:43:10] [INFO] [e34568bb-2595-4796-851a-b1b72896da0a] GET /api/v1/scim/user/profile 200 21ms
+[17/02/2026 06:43:11] [INFO] [378c1662-7548-4871-8c79-0af996207803] POST /api/v1/scim/users/refresh-token 200 4ms
+[17/02/2026 06:43:12] [INFO] [d7f404d5-2382-47fd-89b7-45016fbc1f8b] GET /api/v1/scim/favoris 200 100ms
+[17/02/2026 06:43:12] [INFO] [de53c6a6-ba1f-4d31-a712-1d71c5898184] GET /api/v1/scim/users/visited?limit=10 200 36ms
+[17/02/2026 06:43:12] [INFO] [933477f8-c877-4df6-93e1-89178360080d] GET /api/v1/scim/reservation/my 200 3ms
+[17/02/2026 06:43:13] [INFO] [c8741448-dc4d-4c45-8a16-fab42d337319] GET /api/v1/scim/favoris 200 41ms
+[17/02/2026 06:43:13] [INFO] [8251aba2-2d73-45f6-9efd-dc16a5df316e] GET /api/v1/scim/users/visited?limit=10 200 21ms
+[17/02/2026 06:43:13] [INFO] [e337dbbb-f73a-4f42-9e60-487a9272862a] POST /api/v1/scim/users/refresh-token 200 12ms
+[17/02/2026 06:43:13] [INFO] [b6b48680-00c5-4cec-b9fc-c46fdd18630e] POST /api/v1/scim/users/refresh-token 200 34ms
+[17/02/2026 06:43:13] [INFO] [c6f7a001-aad1-4681-a112-c887e737eca2] POST /api/v1/scim/users/refresh-token 200 5ms
+[17/02/2026 06:43:13] [INFO] [400ade6a-4476-4d26-9bd9-3520ac3e4b9e] GET /api/v1/scim/reservation/my 200 10ms
+[17/02/2026 06:43:13] [INFO] [9aa7e93e-b3a4-4c0e-89a3-38e258d627c0] GET /api/v1/scim/favoris 200 4ms
+[17/02/2026 06:43:13] [INFO] [ce3a05b1-edaa-4988-8268-a370a4be0f3c] POST /api/v1/scim/users/refresh-token 200 25ms
+[17/02/2026 06:43:13] [INFO] [e4021e44-bf25-484b-942e-17c4008a7d4b] POST /api/v1/scim/users/refresh-token 200 63ms
+[17/02/2026 06:43:14] [INFO] [b987792d-fe3b-4733-af6b-ed740a14c5b6] POST /api/v1/scim/users/refresh-token 200 83ms
+[17/02/2026 06:43:14] [INFO] [e4b0fca3-effc-42d8-bfad-f733a52f60a8] POST /api/v1/scim/users/refresh-token 200 98ms
+[17/02/2026 06:46:07] [INFO] Email service configure avec Resend API
+[17/02/2026 06:46:14] [INFO] NotificationService initialized
+[17/02/2026 06:47:29] [INFO] Email service configure avec Resend API
+[17/02/2026 06:47:42] [INFO] NotificationService initialized
+[17/02/2026 06:48:34] [INFO] Email service configure avec Resend API
+[17/02/2026 06:48:43] [INFO] NotificationService initialized
+[17/02/2026 06:49:06] [INFO] Email service configure avec Resend API
+[17/02/2026 06:49:16] [INFO] NotificationService initialized
+[17/02/2026 06:49:31] [INFO] Email service configure avec Resend API
+[17/02/2026 06:49:38] [INFO] NotificationService initialized
+[17/02/2026 06:52:22] [INFO] Email service configure avec Resend API
+[17/02/2026 06:52:34] [INFO] NotificationService initialized
+[17/02/2026 06:56:19] [INFO] [10076382-b6ac-468f-9f68-00f88fabb8f2] POST /api/v1/scim/users/logout 200 597ms
+[17/02/2026 07:02:14] [INFO] [0c8c8674-3d2a-46dd-bcc7-61e57a3d41a0] POST /api/v1/scim/user/login 200 18866ms
+[17/02/2026 07:02:15] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 07:02:36] [INFO] [4dde9417-4e44-4b0e-97bc-dcdb47c812fb] POST /api/v1/scim/user/login 200 1487ms
+[17/02/2026 07:03:11] [INFO] [71e54103-7ba6-4eab-a8ac-7a9b9479c07b] POST /api/v1/scim/user/register 200 178ms
+[17/02/2026 07:03:12] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 07:03:32] [INFO] [9a175bff-9129-40f8-ae0f-93a0a3d8cf1a] POST /api/v1/scim/user/register 200 2453ms
+[17/02/2026 07:03:32] [INFO] [f075d753-e599-404f-ad0d-67c22eb58175] GET /api/v1/scim/user/profile 200 10ms
+[17/02/2026 07:03:32] [INFO] [744a2894-2d3b-44da-b6f8-16d4a8dee333] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 07:03:32] [INFO] [36e04f05-6b14-4d74-bdd0-283bc7056fb4] GET /api/v1/scim/favoris 200 87ms
+[17/02/2026 07:03:32] [INFO] [bc03cb69-0849-4455-9f87-2434fad70fc9] GET /api/v1/scim/favoris 200 19ms
+[17/02/2026 07:03:32] [INFO] [e454d9ca-d130-4dcb-a214-6a36d4cf2081] GET /api/v1/scim/favoris 200 8ms
+[17/02/2026 07:03:32] [INFO] [22ed47fd-9404-4745-923b-58d5e07dfbd8] POST /api/v1/scim/users/refresh-token 200 6ms
+[17/02/2026 07:03:32] [INFO] [594a0c5a-1582-4117-be9c-e984dd13fbdf] GET /api/v1/scim/users/visited?limit=10 200 18ms
+[17/02/2026 07:03:32] [INFO] [4183e856-15cc-41b9-a209-c709a1d8e46a] GET /api/v1/scim/reservation/my 200 27ms
+[17/02/2026 07:03:32] [INFO] [9a417208-0ef8-4b05-bbaf-045351db06c9] POST /api/v1/scim/users/refresh-token 200 21ms
+[17/02/2026 07:03:32] [INFO] [bc33a82a-8db4-472e-a481-957946c7a03a] GET /api/v1/scim/users/visited?limit=10 200 4ms
+[17/02/2026 07:03:32] [INFO] [fdcae58c-8169-48f5-a92d-22a4dc05753f] GET /api/v1/scim/reservation/my 200 7ms
+[17/02/2026 07:03:32] [INFO] [929388ff-3ad4-41da-a6a5-4f49910c7bf0] POST /api/v1/scim/users/refresh-token 200 9ms
+[17/02/2026 07:03:32] [INFO] [19ca3db8-0544-4cd8-9a3d-8060ee4d7734] POST /api/v1/scim/users/refresh-token 200 5ms
+[17/02/2026 07:03:32] [INFO] [88da93ea-3ec0-4de4-83af-28f6047ed334] POST /api/v1/scim/users/refresh-token 200 48ms
+[17/02/2026 07:03:33] [INFO] [28fa5ca8-24c9-4a34-bff9-36bf035c65c9] POST /api/v1/scim/users/refresh-token 200 17ms
+[17/02/2026 07:03:33] [INFO] [7636e71e-5bb4-4195-b853-898298d38e7b] POST /api/v1/scim/users/refresh-token 200 38ms
+[17/02/2026 07:04:58] [INFO] [5fffaf10-8867-436d-909b-cee5cd8d5d05] GET /api/v1/scim/users/stats 200 3ms
+[17/02/2026 07:04:58] [INFO] [b76ddb3e-2c29-486f-a3cc-3b1935680014] GET /api/v1/scim/users/stats 200 24ms
+[17/02/2026 07:04:58] [INFO] [3c90db7a-5d72-4b0e-96ca-99fe7fcd64d1] POST /api/v1/scim/users/refresh-token 200 20ms
+[17/02/2026 07:04:58] [INFO] [84f8adf3-8811-41b4-8a7a-50531817559d] POST /api/v1/scim/users/refresh-token 200 23ms
+[17/02/2026 07:04:59] [INFO] [7b10711f-8fba-4c41-b714-2dd377f96388] GET /api/v1/scim/favoris 200 8ms
+[17/02/2026 07:04:59] [INFO] [fd7e5346-2e62-4fb1-b798-523ca99a8a76] GET /api/v1/scim/favoris 200 7ms
+[17/02/2026 07:04:59] [INFO] [4fac3c9a-e37b-4d82-8b65-f2f54ca52045] POST /api/v1/scim/users/refresh-token 200 11ms
+[17/02/2026 07:04:59] [INFO] [c6167999-188a-4423-87f5-139c639a4b5e] POST /api/v1/scim/users/refresh-token 200 10ms
+[17/02/2026 07:05:07] [INFO] [df45b675-62bf-48ed-a377-c5b490122877] GET /api/v1/scim/users/stats 200 12ms
+[17/02/2026 07:05:07] [INFO] [c7512b4a-b54b-4dda-856f-e66eed4aea34] GET /api/v1/scim/users/stats 200 4ms
+[17/02/2026 07:05:07] [INFO] [eedfe4c9-eb7d-4f37-8a99-7f89f9765f34] POST /api/v1/scim/users/refresh-token 200 3ms
+[17/02/2026 07:05:07] [INFO] [3908b70a-5067-4ba7-a859-9428186b837d] POST /api/v1/scim/users/refresh-token 200 8ms
+[17/02/2026 07:05:54] [INFO] [00584601-6e9e-42a3-a87a-37224901190b] POST /api/v1/scim/users/logout 200 17ms
+[17/02/2026 07:06:12] [INFO] [a0425953-7086-452f-9a65-2bf6e0cf08f3] POST /api/v1/scim/users/reset-request 200 2395ms
+[17/02/2026 07:06:20] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 07:06:20] [INFO] [b4f22cc3-bf96-4fe6-b0f5-a23adfdfea26] POST /api/v1/scim/users/reset-request 200 1925ms
+[17/02/2026 07:06:41] [INFO] [3b9c1bac-f12a-4443-b638-7828f1ba542c] POST /api/v1/scim/users/reset-password 200 1734ms
+[17/02/2026 07:06:57] [INFO] [00769e11-6b1d-4cc3-a2a1-dd6d221ad2bd] POST /api/v1/scim/users/reset-password 200 196ms
+[17/02/2026 07:07:45] [INFO] [eb0bda2d-7b5b-4ad2-82c9-02a82c1828a3] POST /api/v1/scim/user/login 200 1863ms
+[17/02/2026 07:07:46] [INFO] [47d5e379-9d85-4ec5-a8a4-c259f112044a] GET /api/v1/scim/user/profile 200 791ms
+[17/02/2026 07:07:48] [INFO] [f3d01188-f3ed-44f4-8bb2-4ff64c6ab562] GET /api/v1/scim/users/visited?limit=10 200 1110ms
+[17/02/2026 07:07:48] [INFO] [ffffcf59-efcf-47d8-993a-5baf0d82140e] GET /api/v1/scim/reservation/my 200 1276ms
+[17/02/2026 07:07:48] [INFO] [5794bffd-95b3-473c-811b-a87139994c74] GET /api/v1/scim/user/profile 200 1519ms
+[17/02/2026 07:07:48] [INFO] [b01669b5-2898-429e-a0ae-695f70777017] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1696ms
+[17/02/2026 07:07:48] [INFO] [a81918ab-e0b1-47e1-9460-3b280ab8ee44] GET /api/v1/scim/favoris 200 1832ms
+[17/02/2026 07:07:48] [INFO] [0b2791c0-d9c9-4e3d-8c5a-1eaa85c65785] GET /api/v1/scim/users/visited?limit=10 200 788ms
+[17/02/2026 07:07:48] [INFO] [8a362935-db83-44e2-b7df-9cbe81589748] GET /api/v1/scim/reservation/my 200 690ms
+[17/02/2026 07:07:49] [INFO] [9f9d00e3-3f94-4c37-ace0-c1bea1fd9b81] GET /api/v1/scim/favoris 200 977ms
+[17/02/2026 07:07:49] [INFO] [89526af0-bffb-40d5-9152-c3c9249b1acc] GET /api/v1/scim/message/unread 200 2833ms
+[17/02/2026 07:07:50] [INFO] [4a29ecea-5fab-4f0a-b9e4-f7b6f02febde] GET /api/v1/scim/favoris 200 276ms
+[17/02/2026 07:07:50] [INFO] [6ca0f97c-4f1e-4950-b865-93e703aff17b] GET /api/v1/scim/users/stats 200 1825ms
+[17/02/2026 07:07:51] [INFO] [b2a7ab23-c395-4d71-8d09-7d216f9ff1c2] GET /api/v1/scim/users/stats 200 615ms
+[17/02/2026 07:08:27] [INFO] [b69c8d3d-1774-4a6d-b2b0-39504f9c6671] PATCH /api/v1/scim/user/profile 200 2371ms
+[17/02/2026 07:08:37] [INFO] [d50234f6-250f-4b44-abfe-2ff25c1e4eb2] GET /api/v1/scim/user/profile 200 302ms
+[17/02/2026 07:08:37] [INFO] [4b07bfb8-32dc-4b9c-b46c-619ce458fe41] GET /api/v1/scim/user/profile 200 239ms
+[17/02/2026 07:08:37] [INFO] [51b81626-9ccd-4390-97dc-43c8c596c6ef] GET /api/v1/scim/message/unread 200 684ms
+[17/02/2026 07:08:37] [INFO] [589c9f21-fe55-47ce-81c2-d75b8a24a07a] GET /api/v1/scim/favoris 200 726ms
+[17/02/2026 07:08:38] [INFO] [2923ddb2-eb9e-4fa6-a455-60be7d7197a5] GET /api/v1/scim/message/inbox?page=1&limit=10 200 969ms
+[17/02/2026 07:08:38] [INFO] [01ae059d-2188-488b-b508-d64610a78590] GET /api/v1/scim/message/unread 200 421ms
+[17/02/2026 07:08:38] [INFO] [5fb555b9-6977-49ee-a271-10f68e950716] GET /api/v1/scim/users/stats 200 753ms
+[17/02/2026 07:08:38] [INFO] [57eb5ec8-8d74-4cde-851e-bc97b8ec2aa7] GET /api/v1/scim/favoris 200 399ms
+[17/02/2026 07:08:38] [INFO] [acf82f96-9edd-4565-81a3-4846b5cb9772] GET /api/v1/scim/message/inbox?page=1&limit=10 200 538ms
+[17/02/2026 07:08:38] [INFO] [593d28ba-7e38-40f5-a7bd-f7c4479aad0e] GET /api/v1/scim/users/stats 200 506ms
+[17/02/2026 07:08:45] [INFO] [bc7ab7cf-b256-4282-a0f9-0a3f27f53bfe] PATCH /api/v1/scim/user/profile 200 445ms
+[17/02/2026 07:08:51] [INFO] [f50433d9-47f7-4989-98b0-77217fb075a3] GET /api/v1/scim/user/profile 200 181ms
+[17/02/2026 07:08:52] [INFO] [a4c12c18-f004-45a3-99ad-78f117d63411] GET /api/v1/scim/user/profile 200 225ms
+[17/02/2026 07:08:52] [INFO] [3f2d0d11-0d16-4572-8f0f-6950fefed178] GET /api/v1/scim/favoris 200 439ms
+[17/02/2026 07:08:52] [INFO] [559f623e-96ce-415b-ac3a-7e57ec4f3667] GET /api/v1/scim/message/unread 200 499ms
+[17/02/2026 07:08:52] [INFO] [b12e80fe-2dfa-41ff-ba80-ce236a3e6d8e] GET /api/v1/scim/message/inbox?page=1&limit=10 200 675ms
+[17/02/2026 07:08:52] [INFO] [7c273647-c079-4565-8477-9c90daf5720d] GET /api/v1/scim/users/stats 200 540ms
+[17/02/2026 07:08:52] [INFO] [39e530e9-a5f1-4cf9-b3da-913d17406042] GET /api/v1/scim/favoris 200 332ms
+[17/02/2026 07:08:52] [INFO] [9de9466e-43c5-4e29-a156-95fa4a004cfa] GET /api/v1/scim/message/unread 200 424ms
+[17/02/2026 07:08:52] [INFO] [a9aa06ae-7cc5-4af6-a423-8fbba3c5ec35] GET /api/v1/scim/message/inbox?page=1&limit=10 200 485ms
+[17/02/2026 07:08:53] [INFO] [ef416f01-0772-40df-a181-b9ea62957541] GET /api/v1/scim/users/stats 200 482ms
+[17/02/2026 07:10:45] [INFO] [920ba743-6965-4bd1-bbc5-4d2853baa04f] GET /api/v1/scim/user/profile 200 12603ms
+[17/02/2026 07:10:52] [INFO] [af1eb8ef-fe37-465f-9cc2-dfda64667581] GET /api/v1/scim/message/unread 200 19873ms
+[17/02/2026 07:10:52] [INFO] [2781f9b7-f03b-4631-ab1e-807e9173bc29] GET /api/v1/scim/favoris 200 19928ms
+[17/02/2026 07:10:52] [INFO] [a870ba14-2d66-4cb1-9ff0-dd95ac87afce] GET /api/v1/scim/user/profile 200 7339ms
+[17/02/2026 07:10:57] [INFO] [57bf0ef0-f8da-4706-a172-0d5c9f99ffdb] GET /api/v1/scim/message/inbox?page=1&limit=10 200 24231ms
+[17/02/2026 07:10:57] [INFO] [379c53a1-9a01-4b6a-8e5c-9a337691fa23] GET /api/v1/scim/user/profile 200 4430ms
+[17/02/2026 07:11:02] [INFO] [eb71e6c0-2bee-4335-919f-789d26d697ac] GET /api/v1/scim/message/unread 200 9361ms
+[17/02/2026 07:11:02] [INFO] [f889b2d3-818f-48ff-b306-73b7a89a9e97] GET /api/v1/scim/favoris 200 9312ms
+[17/02/2026 07:11:02] [INFO] [02314b92-4795-4fbc-91b4-27030fdf42bc] GET /api/v1/scim/users/stats 200 16535ms
+[17/02/2026 07:11:02] [INFO] [5f0eef0d-4b5f-4f25-b164-8d1e6a6f2092] GET /api/v1/scim/user/profile 200 4905ms
+[17/02/2026 07:11:05] [INFO] [80768d6e-642c-4444-82e4-725e53e8f2e6] GET /api/v1/scim/message/inbox?page=1&limit=10 200 8977ms
+[17/02/2026 07:11:06] [INFO] [9cf32ab1-77e6-4e61-ba43-8570447d594b] GET /api/v1/scim/message/unread 200 3979ms
+[17/02/2026 07:11:06] [INFO] [79c1c9bf-3408-4b90-b0f9-977464d4b103] GET /api/v1/scim/favoris 200 3992ms
+[17/02/2026 07:11:07] [INFO] [578f420b-9125-4f4e-8672-f4eda2f9405a] GET /api/v1/scim/users/stats 200 5083ms
+[17/02/2026 07:11:07] [INFO] [c10d467e-792d-4a84-b7d9-64b8c856bd3c] GET /api/v1/scim/message/inbox?page=1&limit=10 200 4363ms
+[17/02/2026 07:11:07] [INFO] [860011ba-4886-46c4-b711-a049abb53414] GET /api/v1/scim/message/unread 200 1406ms
+[17/02/2026 07:11:07] [INFO] [f6fa6f86-4d95-4a84-bba5-bf33d1c9a04a] GET /api/v1/scim/favoris 200 1346ms
+[17/02/2026 07:11:08] [INFO] [9f6050cc-a19c-4c32-8591-432111d8904f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 15785ms
+[17/02/2026 07:25:14] [INFO] [fecd546d-d952-4d37-af6b-c66c94791eb8] GET /api/v1/scim/user/profile 200 563ms
+[17/02/2026 07:25:14] [INFO] [327a9569-9a0e-440e-baae-bc802bf68bb7] GET /api/v1/scim/message/unread 200 727ms
+[17/02/2026 07:25:17] [INFO] [803a9646-d3e7-4a14-849f-fbd3f70af690] GET /api/v1/scim/favoris 200 3838ms
+[17/02/2026 07:25:17] [INFO] [0c6df9fd-3966-485d-b577-28daa9b08096] GET /api/v1/scim/user/profile 200 3324ms
+[17/02/2026 07:25:17] [INFO] [c8c3ac0b-94b8-4621-9acc-57b58a5a686d] GET /api/v1/scim/message/inbox?page=1&limit=10 200 4087ms
+[17/02/2026 07:25:18] [INFO] [3b72ad0c-d933-45ba-b950-e5796f163ad6] GET /api/v1/scim/message/unread 200 4062ms
+[17/02/2026 07:25:18] [INFO] [ca6840f4-5bd1-48d6-bd9b-324f5766f084] GET /api/v1/scim/favoris 200 1147ms
+[17/02/2026 07:25:18] [INFO] [d1381148-0e0b-4b29-8860-daa02b4699c9] GET /api/v1/scim/users/stats 200 4392ms
+[17/02/2026 07:25:19] [INFO] [b6130569-002d-4d14-bedc-7f7f0d0a2a75] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1183ms
+[17/02/2026 07:25:19] [INFO] [5cf4a3cd-efa4-4320-8d40-30c6e1ee157c] GET /api/v1/scim/users/stats 200 703ms
+[17/02/2026 07:25:59] [INFO] [dae1613e-e1c7-4f64-a7b0-67c119a8fe5a] GET /api/v1/scim/favoris 200 330ms
+[17/02/2026 07:25:59] [INFO] [3f7caf35-6d05-49ce-89ee-b18244d8c5d0] GET /api/v1/scim/favoris 200 274ms
+[17/02/2026 07:26:03] [INFO] [d35b380c-201d-4168-8978-7ba31cbb81e8] GET /api/v1/scim/user/profile 200 195ms
+[17/02/2026 07:26:03] [INFO] [76273a31-5ab9-4910-a24c-299b378b3464] GET /api/v1/scim/favoris 200 356ms
+[17/02/2026 07:26:03] [INFO] [2305770d-55f4-414d-a4d2-8781c5695faf] GET /api/v1/scim/message/unread 200 364ms
+[17/02/2026 07:26:03] [INFO] [7faaefb3-7cf3-48fb-984b-ff56541e3c06] GET /api/v1/scim/user/profile 200 230ms
+[17/02/2026 07:26:03] [INFO] [2fc3f488-dfef-4aa6-8f1d-b1158dce625b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 665ms
+[17/02/2026 07:26:03] [INFO] [3e0603fa-8c1f-4ef7-be18-6115b8d65f0e] GET /api/v1/scim/property?page=1 200 808ms
+[17/02/2026 07:26:03] [INFO] [04244e06-34b6-4f1d-9f42-12cdf65dcab3] GET /api/v1/scim/favoris 200 595ms
+[17/02/2026 07:26:03] [INFO] [3fe7b852-abb6-4006-9aa5-7f2021cc6f9f] GET /api/v1/scim/message/unread 200 708ms
+[17/02/2026 07:26:04] [INFO] [50fa0e4a-60bb-48a4-b835-956a6ed3ff79] GET /api/v1/scim/message/inbox?page=1&limit=10 200 714ms
+[17/02/2026 07:26:04] [INFO] [c49d91fe-7692-4159-b743-5200d4a23f28] GET /api/v1/scim/property?page=1 200 892ms
+[17/02/2026 07:26:04] [INFO] [20dc5131-2cdb-4b25-9efe-29d4ff29ce72] GET /images/og/og-property.jpg 200 11ms
+[17/02/2026 07:26:05] [INFO] [8e9817dc-05e1-4e54-aadb-40d1c0d4e22c] GET /api/v1/scim/property?page=1 200 570ms
+[17/02/2026 07:26:05] [INFO] [b6a39633-34c8-44ea-bfcd-13f317623de2] GET /api/v1/scim/property?page=1 200 491ms
+[17/02/2026 07:26:07] [INFO] [45d24d8c-ca84-4ca2-b50e-1a9343040c4c] POST /api/v1/scim/favoris/6940390cbafa7ee029df1d57 200 809ms
+[17/02/2026 07:26:08] [INFO] [0edafc9d-6d68-4ecc-b1eb-466a06b75ae6] GET /api/v1/scim/favoris 200 543ms
+[17/02/2026 07:26:09] [INFO] [2b21e052-1038-4dd6-a9a7-227b6d768e1e] GET /api/v1/scim/favoris 200 489ms
+[17/02/2026 07:38:33] [INFO] [023d6d15-7df6-4a92-aaa4-0c9cc1c81feb] GET /api/v1/scim/user/profile 200 308ms
+[17/02/2026 07:38:33] [INFO] [185352ca-28cb-47ad-83dd-91d4b595a2f5] GET /api/v1/scim/message/unread 200 536ms
+[17/02/2026 07:38:33] [INFO] [0615437a-c3b0-4456-a936-c26beae719ca] GET /api/v1/scim/message/inbox?page=1&limit=10 200 640ms
+[17/02/2026 07:38:33] [INFO] [e1df8689-6a54-4c9e-a5b6-1f0acf1caa2e] GET /api/v1/scim/favoris 200 704ms
+[17/02/2026 07:38:33] [INFO] [1afdc161-3259-46af-a051-590e9a23ee69] GET /api/v1/scim/message/unread 200 287ms
+[17/02/2026 07:38:33] [INFO] [43b726ab-7d27-4746-b161-be21c805a8c9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 496ms
+[17/02/2026 07:38:34] [INFO] [1842ebe7-8504-4f44-8b33-814820de6c46] GET /api/v1/scim/favoris 200 577ms
+[17/02/2026 07:39:16] [INFO] [c13cc56e-1fc6-4e28-9e77-f35606d43762] GET /api/v1/scim/user/profile 200 260ms
+[17/02/2026 07:39:16] [INFO] [ec32c274-5705-4b1c-a36d-1284f3d1d11d] GET /api/v1/scim/message/unread 200 365ms
+[17/02/2026 07:39:16] [INFO] [9a16458b-99da-48d8-a56d-8a3e600569cc] GET /api/v1/scim/message/inbox?page=1&limit=10 200 482ms
+[17/02/2026 07:39:16] [INFO] [225fa0be-1e43-4601-afde-81f08ef2ba33] GET /api/v1/scim/favoris 200 487ms
+[17/02/2026 07:39:16] [INFO] [15064b51-db33-48fe-8f38-6f1a8b8ffb32] GET /api/v1/scim/message/unread 200 237ms
+[17/02/2026 07:39:16] [INFO] [a55eca8a-12db-437b-9784-27e984ad998f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 455ms
+[17/02/2026 07:39:16] [INFO] [2f66aee7-2668-47d2-a3a6-7854ecc79529] GET /api/v1/scim/favoris 200 515ms
+[17/02/2026 07:39:26] [INFO] [13bff39d-0b19-4461-bd44-b9633fe05bab] GET /api/v1/scim/user/profile 200 164ms
+[17/02/2026 07:39:27] [INFO] [37173a18-d774-42b3-9923-68f8c8a05ecf] GET /api/v1/scim/message/unread 200 257ms
+[17/02/2026 07:39:27] [INFO] [4f2a6dbd-87bd-4ec3-a494-da03db432fff] GET /api/v1/scim/message/inbox?page=1&limit=10 200 374ms
+[17/02/2026 07:39:27] [INFO] [1ec5315f-ff22-4516-8c99-bbf1c780f762] GET /api/v1/scim/favoris 200 402ms
+[17/02/2026 07:39:27] [INFO] [479e0563-13d7-469d-bb70-60e1a193f4bf] GET /api/v1/scim/message/unread 200 264ms
+[17/02/2026 07:39:27] [INFO] [f0dd6960-f294-40a9-8447-557e014d03b1] GET /api/v1/scim/message/inbox?page=1&limit=10 200 500ms
+[17/02/2026 07:39:27] [INFO] [e4d0f320-8f1a-4daa-9941-f04d4b38abaf] GET /api/v1/scim/favoris 200 496ms
+[17/02/2026 07:58:46] [INFO] [efd844df-7698-412f-9012-2e27e10d5dbe] GET /api/v1/scim/users/stats 200 419ms
+[17/02/2026 07:58:47] [INFO] [36d6ee67-56ad-4b00-9030-fd3c8ea19f12] GET /api/v1/scim/users/stats 200 700ms
+[17/02/2026 07:58:52] [INFO] [db78f3c7-078d-4960-a8f2-38bbedeeea50] POST /api/v1/scim/users/logout 200 3ms
+[17/02/2026 08:08:48] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 08:24:01] [INFO] [232baab4-ce95-47d4-9cfa-bf17f9a59522] GET /api/v1/scim/property?page=1 200 2551ms
+[17/02/2026 08:24:01] [INFO] [c9b6b367-e659-4631-9e58-e7a1fd477e4d] GET /images/og/og-property.jpg 200 38ms
+[17/02/2026 08:24:01] [INFO] [d2120811-2ee8-4bcf-b0eb-7b7aeb3158b3] GET /api/v1/scim/property?page=1 200 560ms
+[17/02/2026 08:24:02] [INFO] [94e03a1c-451b-423b-b303-7bbd32527171] GET /api/v1/scim/property?page=1 200 490ms
+[17/02/2026 08:24:02] [INFO] [a6d78561-cef7-41a2-be74-a87c70be617d] GET /api/v1/scim/property?page=1 200 449ms
+[17/02/2026 08:24:24] [INFO] [acd2ba81-dc32-4373-850e-1dcffdcc9794] GET /api/v1/scim/property?page=1&limit=6 200 521ms
+[17/02/2026 08:24:25] [INFO] [bf78cef2-e4b7-4f13-9cb2-d2c0e2695203] GET /images/og/og-property.jpg 200 88ms
+[17/02/2026 08:24:25] [INFO] [01dcb3ca-322d-41ec-8803-302d47b3f863] GET /api/v1/scim/property?page=1&limit=6 200 757ms
+[17/02/2026 08:24:25] [INFO] [8f1bd098-704a-4857-9b12-252667d39a7f] GET /images/og/og-property.jpg 200 7ms
+[17/02/2026 08:24:26] [INFO] [313b2df7-c617-47e6-89b2-5dac484b5532] GET /api/v1/scim/property?page=1&limit=6 200 497ms
+[17/02/2026 08:26:46] [INFO] [1e79bb1b-b271-40ea-9c45-f44880d32162] GET /images/og/og-property.jpg 200 255ms
+[17/02/2026 08:26:47] [INFO] [157485fc-07c6-4347-8041-9abdc6a00879] GET /api/v1/scim/property?page=1 200 479ms
+[17/02/2026 08:26:47] [INFO] [72506110-59dc-47e0-a020-194674eb00ac] GET /images/og/og-property.jpg 200 60ms
+[17/02/2026 08:26:48] [INFO] [feb9373d-9e36-4115-b79d-b38d9c69cec9] GET /api/v1/scim/property?page=1 200 1068ms
+[17/02/2026 08:26:49] [INFO] [b4fccc72-5f6f-43db-8183-bb009f0c2706] GET /images/og/og-property.jpg 200 108ms
+[17/02/2026 08:26:51] [INFO] [53e0f074-8c60-401c-af33-5ee9a64cba2c] GET /api/v1/scim/property?page=1 200 2236ms
+[17/02/2026 08:26:51] [INFO] [7d45a825-33b4-466e-8b0d-5357e0cb9d77] GET /api/v1/scim/property?page=1 200 468ms
+[17/02/2026 08:27:38] [INFO] [ecd48980-6069-4c6e-bd5e-67adc3d7d5a7] GET /api/v1/scim/property?page=1&search=zaszads&nombre_salles_bain=4 200 334ms
+[17/02/2026 08:27:39] [INFO] [de06c3f7-cc0f-4a55-8746-12cbce8a964a] GET /api/v1/scim/property?page=1&search=zaszads&nombre_salles_bain=4 200 402ms
+[17/02/2026 08:27:42] [INFO] [77b940cc-803f-4d46-90d9-7576dbfdf217] GET /api/v1/scim/property?page=1&search=zaszads&nombre_salles_bain=1 200 253ms
+[17/02/2026 08:27:42] [INFO] [e4ac64c9-e34b-4286-91c8-b07c9f06eccd] GET /api/v1/scim/property?page=1&search=zaszads&nombre_salles_bain=1 200 307ms
+[17/02/2026 08:27:50] [INFO] [db9e7208-f019-4630-b1f8-65d8ca1eee64] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Appartement 200 300ms
+[17/02/2026 08:27:50] [INFO] [8bbb7bc9-f79b-43d1-a0c6-053c465d2791] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Appartement 200 324ms
+[17/02/2026 08:27:54] [INFO] [c1c1f46f-6779-4ff0-beda-b1bf23c056e0] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Commercial 200 307ms
+[17/02/2026 08:27:54] [INFO] [2fc49870-df65-4207-b875-ac8832010d80] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Commercial 200 253ms
+[17/02/2026 08:27:57] [INFO] [d4fa60ea-7f8f-473b-b282-986088454313] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Maison 200 276ms
+[17/02/2026 08:27:58] [INFO] [0b2c8940-3df2-4bf3-a019-bf48b8138c49] GET /api/v1/scim/property?page=1&search=zaszads&categorie=Maison 200 440ms
+[17/02/2026 08:27:59] [INFO] [04702b86-9634-4f3b-a0a1-2dab18574070] GET /api/v1/scim/property?page=1 200 531ms
+[17/02/2026 08:27:59] [INFO] [062440f0-5896-4a18-9a12-93399c03a760] GET /images/og/og-property.jpg 200 56ms
+[17/02/2026 08:28:00] [INFO] [16978d24-f6a1-4675-9673-a19d19a53b8e] GET /api/v1/scim/property?page=1 200 626ms
+[17/02/2026 08:28:10] [INFO] [1f4fb1c9-386d-49c6-afc1-f2ef77d4bf23] GET /api/v1/scim/property?page=1&categorie=Autre 200 428ms
+[17/02/2026 08:28:10] [INFO] [94a24a85-afb7-492a-93ef-1315086bee47] GET /api/v1/scim/property?page=1&categorie=Autre 200 286ms
+[17/02/2026 08:28:15] [INFO] [264b42cc-d582-4223-8e52-5b1b96848664] GET /api/v1/scim/property?page=1 200 523ms
+[17/02/2026 08:28:15] [INFO] [8d8dba6d-a589-4819-a6f9-939806d2602a] GET /images/og/og-property.jpg 200 18ms
+[17/02/2026 08:28:15] [INFO] [ff3a6593-2cb0-4b08-bf70-9645e25c32d5] GET /api/v1/scim/property?page=1 200 431ms
+[17/02/2026 08:28:18] [INFO] [2536622d-1d8f-4f9f-b854-3b5670165029] GET /api/v1/scim/property?page=1&nombre_chambres=1 200 523ms
+[17/02/2026 08:28:19] [INFO] [6ba368d0-1940-4330-8808-f3e6654f1711] GET /images/og/og-property.jpg 200 19ms
+[17/02/2026 08:28:19] [INFO] [5364096a-70d2-4f94-9c9d-ef9ed7dab130] GET /api/v1/scim/property?page=1&nombre_chambres=1 200 600ms
+[17/02/2026 08:28:28] [INFO] [49ef00ac-0f19-4185-b4de-8c208644e185] GET /api/v1/scim/property?page=1&nombre_chambres=3 200 579ms
+[17/02/2026 08:28:28] [INFO] [22161853-b415-4de5-a3d3-4c3217cf841d] GET /images/og/og-property.jpg 200 21ms
+[17/02/2026 08:28:28] [INFO] [cdaeda84-5536-473e-9758-1493122a6f23] GET /api/v1/scim/property?page=1&nombre_chambres=3 200 469ms
+[17/02/2026 08:28:34] [INFO] [c867a45f-e588-456c-85db-71259e7dea6d] GET /api/v1/scim/property?page=1&nombre_chambres=4 200 637ms
+[17/02/2026 08:28:34] [INFO] [b60901a4-4ddc-451a-8b7d-c5cc75c4d056] GET /images/og/og-property.jpg 200 100ms
+[17/02/2026 08:28:35] [INFO] [da8c3030-c518-496b-881c-644189ee3d4f] GET /api/v1/scim/property?page=1&nombre_chambres=4 200 1016ms
+[17/02/2026 08:28:44] [INFO] [6cb64953-5c5a-4400-839b-a2918cf5a8d3] GET /api/v1/scim/property?page=1&limit=6 200 502ms
+[17/02/2026 08:28:44] [INFO] [5cb1eb0d-274e-4350-8d31-c604f48c5481] GET /images/og/og-property.jpg 200 14ms
+[17/02/2026 08:28:44] [INFO] [8240d90d-832d-4f52-8ea6-c26e449b3dbe] GET /api/v1/scim/property?page=1&limit=6 200 549ms
+[17/02/2026 08:28:45] [INFO] [f77cbfe5-72ec-4f2e-880e-e5192eb8df14] GET /images/og/og-property.jpg 200 36ms
+[17/02/2026 08:28:45] [INFO] [a7108b32-b2bd-4bd5-aac6-66d7e780775c] GET /api/v1/scim/property?page=1&limit=6 200 749ms
+[17/02/2026 08:28:48] [INFO] [8ffce0fd-9a4f-4ecb-8b76-5dec0520bcb1] GET /images/og/og-property.jpg 200 194ms
+[17/02/2026 08:28:49] [INFO] [7ba36f2a-272d-4d89-9628-7eacc4d65e3f] GET /api/v1/scim/property?page=1&categorie=terrains 200 667ms
+[17/02/2026 08:28:49] [INFO] [7ceb043e-1e77-4b4d-8a92-985b481d352f] GET /api/v1/scim/property?page=1&categorie=terrains 200 278ms
+[17/02/2026 08:28:50] [INFO] [093205ae-5511-4f45-99ef-b4f9565cc7c3] GET /api/v1/scim/property?page=1&categorie=terrains 200 378ms
+[17/02/2026 08:28:50] [INFO] [f1521916-cf6e-4ccb-9fa6-5fa98df0699a] GET /api/v1/scim/property?page=1&categorie=terrains 200 402ms
+[17/02/2026 08:28:53] [INFO] [2482581f-7756-4312-bc33-b7045170c38a] GET /api/v1/scim/property?page=1&limit=6 200 566ms
+[17/02/2026 08:28:53] [INFO] [9d13d86e-f71a-4208-befa-2360fea64715] GET /api/v1/scim/property?page=1&limit=6 200 592ms
+[17/02/2026 08:28:53] [INFO] [ae9d1843-1138-452f-814c-03d9242fc966] GET /images/og/og-property.jpg 200 32ms
+[17/02/2026 08:28:54] [INFO] [4a45b0ed-f606-4957-9160-0ba37d05a684] GET /api/v1/scim/property?page=1&limit=6 200 739ms
+[17/02/2026 08:28:54] [INFO] [f66bd6f7-f472-47fe-af75-0936adedc671] GET /images/og/og-property.jpg 200 12ms
+[17/02/2026 08:28:55] [INFO] [3f5cbcc2-9d0d-4d6d-a647-830fc2f6fa33] GET /api/v1/scim/property?page=1&categorie=h%C3%B4tel 200 294ms
+[17/02/2026 08:28:55] [INFO] [f0713d40-f30a-4385-8038-fd0fb5783440] GET /api/v1/scim/property?page=1&categorie=h%C3%B4tel 200 442ms
+[17/02/2026 08:28:56] [INFO] [6a9df6f6-3ffc-4fd1-abe0-119f70ae0b3f] GET /api/v1/scim/property?page=1&categorie=h%C3%B4tel 200 461ms
+[17/02/2026 08:28:56] [INFO] [2fcedee8-cadc-4d38-a2b0-84f09602ac09] GET /api/v1/scim/property?page=1&categorie=h%C3%B4tel 200 442ms
+[17/02/2026 08:29:01] [INFO] [a0547bd7-679c-4675-bc63-179d5c18ab52] GET /api/v1/scim/property?page=1 200 679ms
+[17/02/2026 08:29:01] [INFO] [6dd7ba35-2fe2-41a2-a0f5-ec55459198bb] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 08:29:02] [INFO] [9bb4b9bb-e3a3-46ae-96aa-973e31045792] GET /api/v1/scim/property?page=1 200 764ms
+[17/02/2026 08:29:05] [INFO] [d91b2ed2-d773-43d4-9ae7-c091ebc4bc23] GET /api/v1/scim/property?page=1&search=h 200 590ms
+[17/02/2026 08:29:06] [INFO] [4493c336-9f8f-4470-b71c-0c30c8051b27] GET /api/v1/scim/property?page=1&search=h 200 668ms
+[17/02/2026 08:31:49] [INFO] [6529e974-bffb-4ce5-95d6-2299d062fae1] GET /api/v1/scim/property?page=1&limit=6 200 1491ms
+[17/02/2026 08:31:49] [INFO] [d1b0f683-9c18-4235-8cb0-1e29b615fa28] GET /api/v1/scim/property?page=1&limit=6 200 378ms
+[17/02/2026 08:31:50] [INFO] [a14d9ecf-03b9-4cc1-944c-ca3035183772] GET /images/og/og-property.jpg 200 16ms
+[17/02/2026 08:31:50] [INFO] [24d90f07-da07-47d9-a91e-cf0205bc67d1] GET /api/v1/scim/property?page=1&limit=6 200 608ms
+[17/02/2026 08:36:29] [INFO] [7952c01b-2c91-44bd-91a7-4628348efd60] GET /images/og/og-property.jpg 200 124ms
+[17/02/2026 08:36:30] [INFO] [cde6c3ca-ae35-4d75-a80e-9c561e581d93] GET /api/v1/scim/property?page=1 200 493ms
+[17/02/2026 08:36:30] [INFO] [28bc71c2-3b1b-407b-bcae-cc7d72ae62d4] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 08:36:31] [INFO] [f0b8f4ed-47da-4c78-8352-4a41f74b1f5b] GET /api/v1/scim/property?page=1 200 619ms
+[17/02/2026 08:36:31] [INFO] [b96973c5-3672-456b-8d55-9bf0baefa228] GET /images/og/og-property.jpg 200 5ms
+[17/02/2026 08:36:31] [INFO] [4b08a1b4-e501-4e0a-83e7-9116be3e9ea1] GET /api/v1/scim/property?page=1 200 514ms
+[17/02/2026 08:36:32] [INFO] [3e7d1301-9ae1-42f6-821d-127a245a80bb] GET /api/v1/scim/property?page=1 200 646ms
+[17/02/2026 08:36:33] [INFO] [f7437a27-da3f-46fe-a082-c2c2520023c5] GET /api/v1/scim/property?page=1 200 816ms
+[17/02/2026 08:36:33] [INFO] [22f20525-67d5-4b11-8912-6cf138e26573] GET /images/og/og-property.jpg 200 3ms
+[17/02/2026 08:41:12] [INFO] [a072afa1-fa59-4371-83b5-ccfaa3bcf0b0] GET /api/v1/scim/property?page=1&limit=6 200 12692ms
+[17/02/2026 08:41:18] [INFO] [c64a4056-bfa3-4f50-9333-4457e0a7a6d0] GET /api/v1/scim/property?page=1&limit=6 200 5957ms
+[17/02/2026 08:41:18] [INFO] [9685a50d-6e83-4d69-a168-ad3cdfddd82c] GET /images/og/og-property.jpg 200 4ms
+[17/02/2026 08:41:20] [INFO] [d3970c1d-57a4-4230-a132-22787849b714] GET /api/v1/scim/property?page=1&limit=6 200 1696ms
+[17/02/2026 08:55:39] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 09:19:40] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 09:20:40] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 09:34:38] [INFO] [1487220e-541f-494c-9c59-68a625431a81] GET /api/v1/scim/message/unread 200 3150ms
+[17/02/2026 09:34:38] [INFO] [7146a41e-2494-4571-9798-5fd345172327] GET /api/v1/scim/message/inbox?page=1&limit=10 200 3425ms
+[17/02/2026 09:34:39] [INFO] [84af90c3-9f97-42b8-988b-773936666277] GET /api/v1/scim/message/unread 200 283ms
+[17/02/2026 09:34:39] [INFO] [376834b3-e02b-4b98-a625-7f3762c46d64] GET /api/v1/scim/message/inbox?page=1&limit=10 200 505ms
+[17/02/2026 09:34:39] [INFO] [513fcb99-9e30-4880-8092-f0dce011ab35] GET /api/v1/scim/user/profile 200 3975ms
+[17/02/2026 09:34:39] [INFO] [842170d4-a3c0-410f-8b7d-48410e08733d] GET /api/v1/scim/favoris 200 4266ms
+[17/02/2026 09:34:40] [INFO] [34b2d868-3f6c-4f36-a930-a9cec83b533d] GET /api/v1/scim/user/profile 200 361ms
+[17/02/2026 09:34:40] [INFO] [f2252c4a-89e8-4ba7-9625-186bcf06e299] GET /api/v1/scim/favoris 200 684ms
+[17/02/2026 10:10:40] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 10:12:33] [INFO] [1893cbfc-297c-4e95-b719-28b0a7180843] GET /api/v1/scim/message/unread 200 23446ms
+[17/02/2026 10:12:43] [INFO] [41a03a6a-2193-42b8-b6fa-56227c9955b9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 32878ms
+[17/02/2026 10:12:51] [INFO] [c621a586-435d-4396-96f3-fdc7fd724ae1] GET /api/v1/scim/message/unread 200 23390ms
+[17/02/2026 10:12:54] [INFO] [e1bc4b67-423d-4d4e-96a4-26a0a14f009d] GET /api/v1/scim/user/profile 200 10988ms
+[17/02/2026 10:12:57] [INFO] [a59cfe73-c72e-44e8-9d88-565b70db81ea] GET /api/v1/scim/favoris 200 23298ms
+[17/02/2026 10:12:58] [INFO] [fe69e040-aa25-4a17-a3a1-92c63821e71b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 30367ms
+[17/02/2026 10:12:59] [INFO] [90e15136-7d88-45de-af4e-1690278c359b] GET /api/v1/scim/user/profile 200 47915ms
+[17/02/2026 10:13:12] [INFO] [b1e48a1e-87b9-494e-881e-e9e0f7e5e9ef] GET /api/v1/scim/favoris 200 60512ms
+[17/02/2026 10:17:18] [INFO] [8d5ba8ec-34d0-41c0-834b-962888d0d0c0] GET /api/v1/scim/property?page=1&limit=6 200 4837ms
+[17/02/2026 10:17:26] [INFO] [5e4cf6fa-6009-4e8c-9184-4c1b5b169810] GET /api/v1/scim/property?page=1&limit=6 200 8791ms
+[17/02/2026 10:17:27] [INFO] [dcdd312a-89ed-47eb-b34f-d124cccf8745] GET /images/og/og-property.jpg 200 8ms
+[17/02/2026 10:17:29] [INFO] [56c3c09e-e841-4425-b31b-1ac5a52d24ab] GET /api/v1/scim/property?page=1&limit=6 200 2782ms
+[17/02/2026 11:15:44] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[17/02/2026 11:18:21] [INFO] [2d9a72e1-ffc4-46bd-bdad-0e961bc22861] GET /api/v1/simoway/fleet?page=0&rows=10&status%5Bne%5D=Supprim%C3%A9 200 103ms
+[17/02/2026 11:20:30] [INFO] [097b0c89-2978-4f71-9118-b4f604b81da3] GET /api/v1/simoway/transport-type?status%5Bne%5D=Deleted 200 95ms
+[17/02/2026 11:20:30] [INFO] [aa00fd65-ac76-4b03-8c96-c3d5c5c939c7] GET /api/v1/simoway/operator?status%5Bne%5D=Deleted 200 62ms
+[17/02/2026 11:20:30] [INFO] [3511aec9-03e5-495d-910b-8998f417c5b9] GET /api/v1/dry/dry-user?status%5Bne%5D=Deleted 200 12ms
+[17/02/2026 11:24:05] [INFO] [43bafc53-6902-4348-8ce4-f7bf8faa1cc0] GET /api/v1/scim/property?page=1&limit=6 200 1782ms
+[17/02/2026 11:24:05] [INFO] [eefff6a2-1f92-43ae-915a-6b4e451af336] GET /api/v1/scim/favoris 200 1605ms
+[17/02/2026 11:24:05] [INFO] [cfae1e5b-b4ca-4387-a130-40bdd05472ce] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1505ms
+[17/02/2026 11:24:05] [INFO] [8d473f4b-ea7f-4a24-9406-07f6f2428793] GET /api/v1/scim/user/profile 200 1730ms
+[17/02/2026 11:24:05] [INFO] [7ba163d6-3108-42ce-9506-64440af786ee] GET /api/v1/scim/message/unread 200 1809ms
+[17/02/2026 11:24:05] [INFO] [0a21bc7b-6d28-4d5f-8f70-79ff639ac402] GET /api/v1/scim/favoris 200 466ms
+[17/02/2026 11:24:05] [INFO] [40e5823a-07e9-45e6-8ab9-ea9c1098ef35] GET /api/v1/scim/message/inbox?page=1&limit=10 200 429ms
+[17/02/2026 11:24:06] [INFO] [2edf88d4-747c-456a-8980-2030db757af3] GET /api/v1/scim/message/unread 200 298ms
+[17/02/2026 11:24:06] [INFO] [981bd6ae-c42f-471b-af91-60f5a393cb54] GET /api/v1/scim/property?page=1&limit=6 200 1261ms
+[17/02/2026 11:24:06] [INFO] [021a0842-e9bf-45d4-9b59-2ba42114f7e1] GET /api/v1/scim/user/profile 200 991ms
+[17/02/2026 11:24:07] [INFO] [ad573fc3-898c-436d-9d6e-c8eeb28845f9] GET /images/og/og-property.jpg 200 166ms
+[17/02/2026 11:24:07] [INFO] [c5b5e207-014c-4591-8516-53c898ae55ea] GET /api/v1/scim/property?page=1&limit=6 200 704ms
+[17/02/2026 11:24:24] [INFO] [5fda6e2c-26aa-4bf8-bf1c-287fef084417] GET /api/v1/scim/user/profile 200 196ms
+[17/02/2026 11:24:24] [INFO] [31848773-cb06-4d94-80b5-171ad5ebfb3e] GET /api/v1/scim/property?page=1&search=dzzezded 200 439ms
+[17/02/2026 11:24:24] [INFO] [58898f5f-3d4c-4f76-bf28-b2e8142860df] GET /api/v1/scim/message/unread 200 412ms
+[17/02/2026 11:24:24] [INFO] [0dd8e9dd-c4d6-4f30-b868-3f0693286c02] GET /api/v1/scim/user/profile 200 298ms
+[17/02/2026 11:24:25] [INFO] [884b889b-ddc2-483b-9d02-406b4a26463d] GET /api/v1/scim/message/inbox?page=1&limit=10 200 594ms
+[17/02/2026 11:24:25] [INFO] [a739ff9e-0110-4a29-b07b-17e107af2566] GET /api/v1/scim/favoris 200 788ms
+[17/02/2026 11:24:25] [INFO] [c2938257-e4a2-4714-a90f-9b274248169e] GET /api/v1/scim/message/unread 200 477ms
+[17/02/2026 11:24:25] [INFO] [1475a6d8-7e16-4764-9ace-1578013d1797] GET /api/v1/scim/property?page=1&search=dzzezded 200 724ms
+[17/02/2026 11:24:25] [INFO] [36ea255f-7a92-4911-8fb0-56467218c4d0] GET /api/v1/scim/message/inbox?page=1&limit=10 200 774ms
+[17/02/2026 11:24:26] [INFO] [9460d423-f3c8-468f-ae3d-ca34beb4b1c0] GET /api/v1/scim/favoris 200 747ms
+[17/02/2026 11:24:26] [INFO] [5af3dbec-73ec-4b5f-a1a6-bc9b13f6a4c4] GET /api/v1/scim/property?page=1&search=dzzezded 200 379ms
+[17/02/2026 11:24:26] [INFO] [d60b4927-3985-4179-a8bc-55d6de9a7f0a] GET /api/v1/scim/property?page=1&search=dzzezded 200 332ms
+[17/02/2026 11:24:29] [INFO] [903e722a-9e4f-4688-914b-41f9f8febaa8] GET /api/v1/scim/reservation/my 200 279ms
+[17/02/2026 11:24:29] [INFO] [7102a3d0-7eef-4dcc-9a28-67ef67fb85e2] GET /api/v1/scim/users/visited?limit=10 200 311ms
+[17/02/2026 11:24:29] [INFO] [c5c54986-37b3-48b2-8956-7ec462cd04c6] GET /api/v1/scim/favoris 200 419ms
+[17/02/2026 11:24:29] [INFO] [405fb09f-5622-4c6b-8f22-c920735bb3f1] GET /api/v1/scim/users/visited?limit=10 200 230ms
+[17/02/2026 11:24:29] [INFO] [42018078-ae5d-4314-b3e5-664844f8f3c5] GET /api/v1/scim/reservation/my 200 249ms
+[17/02/2026 11:24:29] [INFO] [3cb93ea3-fa2e-4dc5-8016-c751d4d332c7] GET /api/v1/scim/favoris 200 363ms
+[17/02/2026 11:24:35] [INFO] [67fb6bc2-bf70-477f-80f6-cdb242119888] GET /api/v1/scim/favoris 200 419ms
+[17/02/2026 11:24:36] [INFO] [30bdb62c-1b06-4470-bf58-c6d24327a469] GET /api/v1/scim/favoris 200 491ms
+[17/02/2026 11:24:37] [INFO] [4a2e5c3d-60be-4252-b15b-10a9ba2feb81] GET /api/v1/scim/users/stats 200 408ms
+[17/02/2026 11:24:37] [INFO] [eb6ad7f6-c874-45bc-a51b-abf2b8d3dafe] GET /api/v1/scim/users/stats 200 431ms
+[17/02/2026 11:25:11] [INFO] [f579975b-4156-427d-af60-8174b720f4d8] GET /api/v1/scim/favoris 200 783ms
+[17/02/2026 11:25:11] [INFO] [cebfa634-1374-437a-84f8-af524ea74db3] GET /api/v1/scim/favoris 200 537ms
+[17/02/2026 11:25:17] [INFO] [1aaadd24-877f-4f9a-927c-80cd2a047ea4] GET /api/v1/scim/property?page=1 200 450ms
+[17/02/2026 11:25:18] [INFO] [f2ce89c3-7a8a-4aa7-a7e5-7c753e153eaa] GET /images/og/og-property.jpg 200 13ms
+[17/02/2026 11:25:18] [INFO] [d791ed82-ed71-429b-87a7-60ee893be1f0] GET /api/v1/scim/property?page=1 200 1045ms
+[17/02/2026 11:25:19] [INFO] [25c9edac-51aa-470a-b9ca-2fe6dcf9c7eb] GET /api/v1/scim/property?page=1 200 549ms
+[18/02/2026 20:00:58] [INFO] NotificationService initialized
+[18/02/2026 20:00:49] [INFO] Email service configure avec Resend API
+[18/02/2026 20:01:01] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[18/02/2026 20:02:09] [INFO] Email service configure avec Resend API
+[18/02/2026 20:02:16] [INFO] NotificationService initialized
+[18/02/2026 20:03:12] [INFO] [b99751a5-b20f-47c2-9843-bab0121fd735] GET /api/v1/scim/property?page=1 200 505ms
+[18/02/2026 20:03:13] [INFO] [100b9349-f71c-488e-b4c3-b5b20f7032dc] GET /images/og/og-property.jpg 200 29ms
+[18/02/2026 20:03:13] [INFO] [48e33a39-cd02-4eae-a73b-c4bada2e2675] GET /api/v1/scim/property?page=1 200 240ms
+[18/02/2026 20:03:13] [INFO] [15d48d45-bcbb-4188-b89c-acc7bb1e7284] GET /images/og/og-property.jpg 200 8ms
+[18/02/2026 20:03:43] [INFO] [46758f5a-f805-443b-b54a-3492407f4237] GET /api/v1/scim/property?page=1 200 231ms
+[18/02/2026 20:03:43] [INFO] [4538ede8-ac0e-404a-b81c-3133e563df7c] GET /images/og/og-property.jpg 200 36ms
+[18/02/2026 20:08:59] [INFO] [3b70f941-985e-408c-a984-6b3d9cfe369c] GET /api/v1/scim/property/6940390cbafa7ee029df1d57 200 802ms
+[18/02/2026 20:08:59] [INFO] [829281b6-4735-4677-ba44-60b503179c67] GET /api/v1/scim/property/6940390cbafa7ee029df1d57 200 642ms
+[18/02/2026 20:09:00] [INFO] [268eaa27-7263-45ec-901d-7d658e84259b] POST /api/v1/scim/property/6940390cbafa7ee029df1d57/visit 200 706ms
+[18/02/2026 20:09:00] [INFO] [8b3e4b90-2395-47a5-8955-b4d8547a621e] POST /api/v1/scim/property/6940390cbafa7ee029df1d57/visit 200 681ms
+[18/02/2026 20:10:08] [INFO] [90076c99-305a-43f9-9d6f-4fe2b3e15aab] GET /images/og/og-property.jpg 200 8ms
+[18/02/2026 20:10:08] [INFO] [7d435734-1e26-4905-a94b-ef51e12a2d4c] GET /api/v1/scim/property?page=1 200 263ms
+[18/02/2026 20:10:09] [INFO] [6323d387-9fa8-46a5-987b-c17dcd98f1d2] GET /images/og/og-property.jpg 200 316ms
+[18/02/2026 20:10:09] [INFO] [589c4ca2-e41f-4f40-a9d7-8a2c5ed397ab] GET /api/v1/scim/property?page=1 200 810ms
+[18/02/2026 20:10:26] [INFO] [0aa445f7-8a53-46dd-857e-20fce1bbf81c] GET /api/v1/scim/property?page=1 200 218ms
+[18/02/2026 20:10:26] [INFO] [3bc6113e-b2c8-42b9-b9a0-4ed53255c199] GET /images/og/og-property.jpg 200 51ms
+[18/02/2026 20:10:46] [INFO] [b5bf2784-4fad-4f49-a01c-16de5ff5fde1] POST /api/v1/scim/property/6940390cbafa7ee029df1d57/visit 200 382ms
+[18/02/2026 20:10:46] [INFO] [4c0c445a-e16b-4ecf-b69c-8caf0ad373a5] POST /api/v1/scim/property/6940390cbafa7ee029df1d57/visit 200 387ms
+[18/02/2026 20:10:47] [INFO] [ae0415b8-b11b-4775-8013-cbc9331fd001] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 512ms
+[18/02/2026 20:10:47] [INFO] [21937f4f-4b54-4bc1-8e73-8e3af7827df5] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 458ms
+[18/02/2026 20:10:47] [INFO] [c55024b8-dc3a-4280-b66f-de56efea5578] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 362ms
+[18/02/2026 20:10:48] [INFO] [d517916b-d93d-4f14-9fc1-45ad840754c3] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 345ms
+[18/02/2026 20:12:27] [INFO] [cf329ed8-1a64-4156-b46c-7fd380d00a13] GET /api/v1/scim/user/profile 200 249ms
+[18/02/2026 20:12:27] [INFO] [ffce0b1b-cc02-4b1a-8682-bb3a8db9a4fe] GET /api/v1/scim/favoris 200 690ms
+[18/02/2026 20:12:27] [INFO] [63a988e1-4c95-45d4-aa9b-b49b02cf1ed8] GET /api/v1/scim/user/profile 200 180ms
+[18/02/2026 20:12:28] [INFO] [8424ead6-fa54-4864-b429-b18ecd300666] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 1258ms
+[18/02/2026 20:12:28] [INFO] [0816ef2c-3f6d-48a4-b955-5914d356b045] GET /api/v1/scim/favoris 200 511ms
+[18/02/2026 20:12:28] [INFO] [23ca4d71-232b-4893-8ff4-f54b7c0bce60] GET /api/v1/scim/message/unread 200 1540ms
+[18/02/2026 20:12:28] [INFO] [0fffa602-6431-489c-9131-7982e6b70e6d] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1641ms
+[18/02/2026 20:12:28] [INFO] [7c6d7ed7-c653-4c1b-a860-9ec9d4729c56] GET /api/v1/scim/message/unread 200 141ms
+[18/02/2026 20:12:29] [INFO] [d588d9d3-efcb-4674-af0f-972a58596a3a] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 526ms
+[18/02/2026 20:12:29] [INFO] [30757a7c-4f89-458f-aa31-3206572be61a] GET /api/v1/scim/message/inbox?page=1&limit=10 200 212ms
+[18/02/2026 20:14:44] [INFO] [2548267e-b054-4895-b843-a5e7313fab33] GET /api/v1/scim/user/profile 200 90ms
+[18/02/2026 20:14:44] [INFO] [63276939-e6c0-46de-a5c4-babc3055496c] GET /api/v1/scim/message/unread 200 150ms
+[18/02/2026 20:14:44] [INFO] [37a0639d-c96a-4580-8cb4-3b96e4663f34] GET /api/v1/scim/message/inbox?page=1&limit=10 200 213ms
+[18/02/2026 20:14:44] [INFO] [ca3c87c1-ceaf-4fec-af9c-8293a69dcf4d] GET /api/v1/scim/favoris 200 226ms
+[18/02/2026 20:14:44] [INFO] [9a1f9eb1-39a0-43e7-ac96-14d05894f027] GET /api/v1/scim/message/unread 200 144ms
+[18/02/2026 20:14:44] [INFO] [0a4da28b-6df1-4222-89f3-fb89bad82a8f] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 417ms
+[18/02/2026 20:14:44] [INFO] [7383052c-9813-4d58-ae01-c92d26ba71db] GET /api/v1/scim/favoris 200 209ms
+[18/02/2026 20:14:44] [INFO] [ef70e2e9-cc89-4eaa-a908-0a924c7bc790] GET /api/v1/scim/message/inbox?page=1&limit=10 200 254ms
+[18/02/2026 20:14:45] [INFO] [66c4fef3-9562-4931-b067-1d1f924d54b4] GET /api/v1/scim/user/profile 200 787ms
+[18/02/2026 20:14:45] [INFO] [053da247-6490-4024-9a10-78a9419f3566] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 513ms
+[18/02/2026 20:14:45] [INFO] [d66c5b47-cfd5-4908-9b1a-8e195c32485a] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 444ms
+[18/02/2026 20:14:45] [INFO] [204a239b-23b2-4d8b-9fd8-ffa33111aeec] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 486ms
+[19/02/2026 08:44:31] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[19/02/2026 08:49:29] [INFO] [7bfb7146-203a-4da8-9838-b20782c166e7] GET /api/v1/scim/user/profile 200 1107ms
+[19/02/2026 08:49:30] [INFO] [6062c41c-ae2a-42d3-afae-3e8e3818d55d] GET /api/v1/scim/user/profile 200 156ms
+[19/02/2026 08:49:30] [INFO] [f2fdd505-10f4-4a66-a728-ab1bcb020cea] GET /api/v1/scim/message/unread 200 1273ms
+[19/02/2026 08:49:30] [INFO] [264f8abf-decf-42b5-8097-faaba96bae32] GET /api/v1/scim/message/unread 200 230ms
+[19/02/2026 08:49:30] [INFO] [80e765d3-aca2-4ddc-8521-cc4163cc5968] GET /api/v1/scim/favoris 200 1670ms
+[19/02/2026 08:49:30] [INFO] [14efa103-583d-4ff9-aa71-f5a3b683b545] GET /api/v1/scim/message/inbox?page=1&limit=10 200 1714ms
+[19/02/2026 08:49:31] [INFO] [7b2d53dd-961c-42b9-a990-32e9a112ef2d] GET /api/v1/scim/favoris 200 396ms
+[19/02/2026 08:49:31] [INFO] [a99deae4-ee5f-464c-b965-f045e42fb9af] GET /api/v1/scim/message/inbox?page=1&limit=10 200 574ms
+[19/02/2026 08:49:31] [INFO] [8a28ce71-d64a-42b8-83b0-cff7ac695f3e] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 2984ms
+[19/02/2026 08:49:32] [INFO] [1b4e1a22-1df3-4f50-aca1-3aa403f8f469] GET /api/v1/scim/property/69694bc58e9b9fb01229d002 200 797ms
+[19/02/2026 08:49:32] [INFO] [c8e3693b-5b27-40f4-9601-a3152eaa3f84] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 764ms
+[19/02/2026 08:49:32] [INFO] [a13ddc9b-dc39-402a-8e97-02b41aa5029c] POST /api/v1/scim/property/69694bc58e9b9fb01229d002/visit 200 420ms
+[19/02/2026 08:53:51] [INFO] [f4689a09-7a1c-498f-a948-0a8b08cb079a] PUT /api/v1/simoway/driver/69932166cebf4642c8b8eed3 200 5ms
+[19/02/2026 08:53:52] [INFO] [0f92e17b-756a-410a-b15a-f52dde2a19dd] PUT /api/v1/simoway/driver/69932166cebf4642c8b8eed3 200 5ms
+[19/02/2026 09:16:53] [INFO] [eaedeb4b-126c-4877-92df-52391242af2f] GET /api/v1/simoway/driver?page=0&rows=3&status%5Bne%5D=Deleted 200 42ms
+[19/02/2026 09:17:59] [INFO] [0e14f161-89eb-42b8-982c-8ffd83259c70] GET /api/v1/simoway/driver?page=0&rows=3&status%5Bne%5D=Deleted 200 3ms
+[19/02/2026 09:19:42] [INFO] [631abc66-c848-416e-ae41-0c4aefaa16a4] GET /api/v1/simoway/driver?page=0&rows=3&status%5Bne%5D=Deleted 200 2ms
+[19/02/2026 09:35:01] [INFO] [1a2f9b62-93c6-4eff-a01b-34ec12c1c8b2] GET /api/v1/simoway/driver?page=0&rows=3&status%5Bne%5D=Deleted 200 3ms
+[21/02/2026 18:41:16] [INFO] Email service configure avec Resend API
+[21/02/2026 18:41:21] [INFO] NotificationService initialized
+[21/02/2026 18:41:31] [INFO] [18cc5bfd-496b-4d64-bfc2-9dfb4eea1726] GET /api/v1/scim/favoris 200 943ms
+[21/02/2026 18:41:31] [INFO] [56bdef55-8e9e-4d6b-901c-2e3f006d2163] GET /api/v1/scim/users/visited?limit=10 200 902ms
+[21/02/2026 18:41:32] [INFO] [6c4fb176-b79d-45a2-8679-1dcb3af6dcac] GET /api/v1/scim/reservation/my 200 1078ms
+[21/02/2026 18:41:32] [INFO] [21251b9e-fe13-4008-b7a8-760771d77f13] GET /api/v1/scim/favoris 200 309ms
+[21/02/2026 18:41:32] [INFO] [d2ec6ffb-f4dd-483a-a461-dc1af5c1f0f8] GET /api/v1/scim/reservation/my 200 170ms
+[21/02/2026 18:41:32] [INFO] [7b0bd0fd-2e7f-4680-829d-f1d5b2d553df] GET /api/v1/scim/users/visited?limit=10 200 741ms
+[21/02/2026 18:41:33] [INFO] [79ede61b-2d22-48e5-a971-8e200d903f96] GET /api/v1/scim/property?page=1 200 256ms
+[21/02/2026 18:41:33] [INFO] [e7ab7c0b-84cb-4a5b-b8c3-8326f80654df] GET /images/og/og-property.jpg 200 9ms
+[21/02/2026 18:41:33] [INFO] [2402aecc-df08-44f7-bea2-359c5af34c58] GET /api/v1/scim/property?page=1 200 279ms
+[21/02/2026 18:41:33] [INFO] [1b318847-6323-44c0-8605-c4bae44cfcb7] GET /images/og/og-property.jpg 200 1ms
+[21/02/2026 18:41:34] [INFO] [8cd8f644-6e70-45ca-be5f-80399ea70d98] GET /api/v1/scim/property?page=1 200 251ms
+[21/02/2026 18:41:34] [INFO] [e33dd9c6-9786-4970-b2a1-f659d6c6f9d0] GET /api/v1/scim/property?page=1 200 244ms
+[21/02/2026 18:41:52] [INFO] [d9add6bd-6fe1-44a1-80f4-fe5650c05545] GET /api/v1/scim/property?page=1&nombre_salles_bain=2 200 263ms
+[21/02/2026 18:41:52] [INFO] [284668ca-ead9-435f-a48b-8024f0b0bc94] GET /images/og/og-property.jpg 200 4ms
+[21/02/2026 18:41:52] [INFO] [5638cc30-b28c-4b02-84e8-ce992a00a976] GET /api/v1/scim/property?page=1&nombre_salles_bain=2 200 269ms
+[21/02/2026 18:41:59] [INFO] [316937cc-25ea-4655-83ec-2880e35f344e] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 245ms
+[21/02/2026 18:41:59] [INFO] [cbbff66f-e47e-43dc-bbd6-9c5d10757523] GET /images/og/og-property.jpg 200 1ms
+[21/02/2026 18:41:59] [INFO] [11e6dafd-5c4e-4ce5-991b-decacd858386] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 262ms
+[21/02/2026 18:45:28] [INFO] Email service configure avec Resend API
+[21/02/2026 18:45:31] [INFO] NotificationService initialized
+[21/02/2026 18:45:33] [INFO] [2eb21aca-647f-4261-ae56-e05bacd0ac13] GET /api/v1/scim/message/unread 200 710ms
+[21/02/2026 18:51:56] [INFO] [7d234df3-4c0f-4bd7-8dd8-b3d98f77be74] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 421ms
+[21/02/2026 18:51:56] [INFO] [5f29e486-73a9-45d1-a8ff-3e7087e86d6e] GET /api/v1/scim/message/inbox?page=1&limit=10 200 406ms
+[21/02/2026 18:51:56] [INFO] [12a3382e-7d0b-49ed-98d7-98b0550de18e] GET /api/v1/scim/favoris 200 410ms
+[21/02/2026 18:51:56] [INFO] [2c8f65ee-0d71-49e3-b68b-fb52203d52b3] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 361ms
+[21/02/2026 18:51:56] [INFO] [c3e882a0-dfb1-4fc5-b23f-b82ee5184edc] GET /api/v1/scim/message/inbox?page=1&limit=10 200 361ms
+[21/02/2026 18:51:56] [INFO] [8a24bd69-747c-46e6-a818-67ef72fa0130] GET /api/v1/scim/favoris 200 362ms
+[21/02/2026 18:51:56] [INFO] [c718ac3c-a4ec-411d-a1b8-e876924b37d9] GET /images/og/og-property.jpg 200 6ms
+[21/02/2026 18:51:56] [INFO] [5d2293fb-8f8b-4efd-b5bd-fab518c02cfa] GET /api/v1/scim/user/profile 200 964ms
+[21/02/2026 18:51:57] [INFO] [3577a391-8aec-4158-8d7d-97aec385bd94] GET /api/v1/scim/message/unread 200 1006ms
+[21/02/2026 18:51:57] [INFO] [43c4aca4-3d57-4fdf-8f43-6c4c00f3f8f6] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 317ms
+[21/02/2026 18:51:57] [INFO] [08800ba7-2bca-4c0d-8c61-6d3dc57a2637] GET /api/v1/scim/message/unread 200 177ms
+[21/02/2026 18:51:57] [INFO] [3220291a-08ee-4080-b951-65afdfcfd19e] GET /api/v1/scim/user/profile 200 567ms
+[21/02/2026 18:52:03] [INFO] [6686b799-c6b1-4e99-9c06-80147dfd12e5] GET /api/v1/scim/property?page=1&nombre_salles_bain=1 200 261ms
+[21/02/2026 18:52:04] [INFO] [16d904f1-670e-4f56-a7ff-c4b41a3ec7dc] GET /images/og/og-property.jpg 200 2ms
+[21/02/2026 18:52:12] [INFO] [ab2d8495-9284-4f1c-bfe8-3b7a762c1aef] GET /api/v1/scim/property?page=1&nombre_salles_bain=4 200 167ms
+[21/02/2026 18:52:12] [INFO] [03dc72fe-4da1-4f60-a48b-5850e4af6896] GET /api/v1/scim/property?page=1&nombre_salles_bain=4 200 166ms
+[21/02/2026 18:52:16] [INFO] [abcef457-56f5-470e-aa7b-69ad34cdc050] GET /api/v1/scim/property?page=1&nombre_salles_bain=2 200 266ms
+[21/02/2026 18:52:16] [INFO] [fa7b56a6-fe23-412c-851e-4dcd04ecbe4a] GET /api/v1/scim/property?page=1&nombre_salles_bain=2 200 287ms
+[21/02/2026 18:52:27] [INFO] [78112a7c-02f5-478a-b663-50c0477bb0ab] GET /api/v1/scim/property?page=1&categorie=Maison&nombre_salles_bain=2 200 173ms
+[21/02/2026 18:52:27] [INFO] [b27abba5-fdfb-408f-84a6-db862fd3a209] GET /api/v1/scim/property?page=1&categorie=Maison&nombre_salles_bain=2 200 166ms
+[21/02/2026 18:52:30] [INFO] [8cfbb3c7-78ba-4797-b441-6cbd45333c7a] GET /api/v1/scim/property?page=1 200 248ms
+[21/02/2026 18:52:30] [INFO] [cec8e122-27cf-4e13-865e-9ff06277fe3c] GET /images/og/og-property.jpg 200 6ms
+[21/02/2026 18:52:31] [INFO] [cbd0a966-697c-40eb-9f6f-4830e4edbe5e] GET /api/v1/scim/property?page=1 200 250ms
+[21/02/2026 18:52:34] [INFO] [b1f11e7f-1600-476c-8d4c-16f295605c5d] GET /api/v1/scim/property?page=1&categorie=Appartement 200 248ms
+[21/02/2026 18:52:34] [INFO] [f5088678-fecc-49ca-a393-5440c3468394] GET /images/og/og-property.jpg 200 3ms
+[21/02/2026 18:52:34] [INFO] [4dec7be6-7b5f-41e6-9f83-dd188427c183] GET /api/v1/scim/property?page=1&categorie=Appartement 200 246ms
+[21/02/2026 18:53:09] [INFO] [4e1f97cc-0902-4550-b260-997865bcab7e] GET /api/v1/scim/property?page=1 200 253ms
+[21/02/2026 18:53:09] [INFO] [ff7ec1b7-c3bd-4b25-8f68-acda707e6641] GET /images/og/og-property.jpg 200 1ms
+[21/02/2026 18:53:09] [INFO] [1c461d86-57b4-4ef3-97f3-5d94224d22b5] GET /api/v1/scim/property?page=1 200 250ms
+[21/02/2026 18:54:03] [INFO] [9a8a2373-7e95-48f8-b066-93883020bdb4] GET /api/v1/scim/reservation/my 200 180ms
+[21/02/2026 18:54:03] [INFO] [6b59c87b-8cc0-4502-a61c-587ce8b4bc50] GET /api/v1/scim/favoris 200 244ms
+[21/02/2026 18:54:03] [INFO] [f89529f0-e6aa-4d89-a6da-bc89dc992204] GET /api/v1/scim/users/visited?limit=10 200 279ms
+[21/02/2026 18:54:03] [INFO] [31ea339d-f258-4ba2-b723-96bc0097dc1e] GET /api/v1/scim/reservation/my 200 170ms
+[21/02/2026 18:54:03] [INFO] [107248ca-ffb7-4856-a486-f20d6b43fffd] GET /api/v1/scim/favoris 200 240ms
+[21/02/2026 18:54:03] [INFO] [01f3bfd4-fbe8-40a1-a111-5456809ca84c] GET /api/v1/scim/users/visited?limit=10 200 249ms
+[21/02/2026 18:54:20] [INFO] NotificationService initialized
+[21/02/2026 18:54:15] [INFO] Email service configure avec Resend API
+[21/02/2026 18:54:23] [INFO] [1d66000a-291d-4320-9589-59fe29868b06] GET /api/v1/scim/message/unread 200 770ms
+[21/02/2026 18:54:27] [INFO] [1c97c798-26f4-4a5c-b21d-aadc3a798a67] GET /api/v1/scim/message/unread 200 171ms
+[21/02/2026 18:54:27] [INFO] [e06d199c-a8ff-4a58-a0eb-5acc27b003ee] GET /api/v1/scim/message/inbox?page=1&limit=10 200 263ms
+[21/02/2026 18:54:27] [INFO] [44b7b0ca-f9d3-429b-ba2c-0fc9506d2fa7] GET /api/v1/scim/message/unread 200 170ms
+[21/02/2026 18:54:27] [INFO] [e4681635-15da-4054-ac63-b42390c6c868] GET /api/v1/scim/message/inbox?page=1&limit=10 200 252ms
+[21/02/2026 18:54:27] [INFO] [423e7b4f-d9b7-49ef-a941-d91650654962] GET /api/v1/scim/favoris 200 752ms
+[21/02/2026 18:59:38] [INFO] [a868a236-9c10-4989-9ea9-74cca36d9b89] GET /images/og/og-property.jpg 200 4ms
+[21/02/2026 18:59:38] [INFO] [c1667c55-f1fa-4d0a-a2a3-5661c68aa91f] GET /images/og/og-property.jpg 200 3ms
+[21/02/2026 18:59:38] [INFO] [a8b6e130-76cb-466e-b51b-857fb349300c] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 281ms
+[21/02/2026 18:59:38] [INFO] [4d94917b-1fe7-478b-bffe-12761926347d] GET /images/og/og-property.jpg 200 4ms
+[21/02/2026 18:59:38] [INFO] [b93ebf2c-ba42-4adb-880f-d62267985dac] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 278ms
+[21/02/2026 18:59:39] [INFO] [5af8d1c0-8b13-4509-b018-20240c278fa5] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 260ms
+[21/02/2026 18:59:41] [INFO] [2b1b5526-6cdc-46f6-944c-b6de5e79e24f] GET /api/v1/scim/property?page=1&sortBy=date-asc 200 247ms
+[21/02/2026 18:59:41] [INFO] [b6161589-a94b-450b-a773-00a09533118f] GET /images/og/og-property.jpg 200 7ms
+[21/02/2026 18:59:41] [INFO] [89478bed-ee19-4b0d-9234-f3ec7d62cf8b] GET /api/v1/scim/property?page=1&sortBy=date-asc 200 264ms
+[21/02/2026 18:59:44] [INFO] [cecce39f-a3ca-4026-848f-049821d8cb58] GET /api/v1/scim/property?page=1&sortBy=rating-desc 200 263ms
+[21/02/2026 18:59:44] [INFO] [51f0d4ed-42d2-4547-901f-77410f0b5052] GET /images/og/og-property.jpg 200 2ms
+[21/02/2026 18:59:45] [INFO] [2e1d5b79-dfb3-4065-88d2-2c5e493072ab] GET /api/v1/scim/property?page=1&sortBy=rating-desc 200 256ms
+[21/02/2026 18:59:51] [INFO] [1ff772c0-4bf9-438f-bef8-5bdd9999873e] GET /api/v1/scim/property?page=1&sortBy=surface-desc 200 250ms
+[21/02/2026 18:59:51] [INFO] [0d91732b-90b2-44e1-83f3-64fdeecaa587] GET /images/og/og-property.jpg 200 2ms
+[21/02/2026 18:59:51] [INFO] [315185d4-dc55-4dee-9d8a-78cdabd058ab] GET /api/v1/scim/property?page=1&sortBy=surface-desc 200 249ms
+[21/02/2026 19:14:47] [INFO] Email service configure avec Resend API
+[21/02/2026 19:14:55] [INFO] NotificationService initialized
+[21/02/2026 19:16:17] [INFO] Email service configure avec Resend API
+[21/02/2026 19:16:28] [INFO] NotificationService initialized
+[21/02/2026 19:23:14] [INFO] Email service configure avec Resend API
+[21/02/2026 19:23:18] [INFO] NotificationService initialized

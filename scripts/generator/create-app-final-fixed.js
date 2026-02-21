@@ -1457,4 +1457,6 @@ if (require.main === module) {
   main();
 }
 
+module.exports = { createApp };
+
 module.exports = { createApp }; 

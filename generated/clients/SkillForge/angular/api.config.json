@@ -1,0 +1,62 @@
+{
+  "baseUrl": "http://localhost:5000",
+  "app": "SkillForge",
+  "routes": {
+    "categories": {
+      "list": "/api/v1/skillforge/categories",
+      "create": "/api/v1/skillforge/categories",
+      "get": "/api/v1/skillforge/categories/:id",
+      "update": "/api/v1/skillforge/categories/:id",
+      "remove": "/api/v1/skillforge/categories/:id"
+    },
+    "courses": {
+      "list": "/api/v1/skillforge/courses",
+      "create": "/api/v1/skillforge/courses",
+      "get": "/api/v1/skillforge/courses/:id",
+      "update": "/api/v1/skillforge/courses/:id",
+      "remove": "/api/v1/skillforge/courses/:id"
+    },
+    "ebooks": {
+      "list": "/api/v1/skillforge/ebooks",
+      "create": "/api/v1/skillforge/ebooks",
+      "get": "/api/v1/skillforge/ebooks/:id",
+      "update": "/api/v1/skillforge/ebooks/:id",
+      "remove": "/api/v1/skillforge/ebooks/:id"
+    },
+    "export": {
+      "list": "/api/v1/skillforge/export",
+      "create": "/api/v1/skillforge/export",
+      "get": "/api/v1/skillforge/export/:id",
+      "update": "/api/v1/skillforge/export/:id",
+      "remove": "/api/v1/skillforge/export/:id"
+    },
+    "orders": {
+      "list": "/api/v1/skillforge/orders",
+      "create": "/api/v1/skillforge/orders",
+      "get": "/api/v1/skillforge/orders/:id",
+      "update": "/api/v1/skillforge/orders/:id",
+      "remove": "/api/v1/skillforge/orders/:id"
+    },
+    "payment": {
+      "list": "/api/v1/skillforge/payment",
+      "create": "/api/v1/skillforge/payment",
+      "get": "/api/v1/skillforge/payment/:id",
+      "update": "/api/v1/skillforge/payment/:id",
+      "remove": "/api/v1/skillforge/payment/:id"
+    },
+    "reviews": {
+      "list": "/api/v1/skillforge/reviews",
+      "create": "/api/v1/skillforge/reviews",
+      "get": "/api/v1/skillforge/reviews/:id",
+      "update": "/api/v1/skillforge/reviews/:id",
+      "remove": "/api/v1/skillforge/reviews/:id"
+    },
+    "students": {
+      "list": "/api/v1/skillforge/students",
+      "create": "/api/v1/skillforge/students",
+      "get": "/api/v1/skillforge/students/:id",
+      "update": "/api/v1/skillforge/students/:id",
+      "remove": "/api/v1/skillforge/students/:id"
+    }
+  }
+}

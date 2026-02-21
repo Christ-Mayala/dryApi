@@ -1,4 +1,4 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const emailService = require('../../../../../dry/services/auth/email.service');
 
@@ -93,8 +93,8 @@ module.exports = asyncHandler(async (req, res) => {
         </div>
 
         <p style="color:#555; font-size:12px; margin:0;">
-          Cet email a Ã©tÃ© envoyÃ© depuis lâ€™administration officielle de
-          <strong>La STREET Â· Talents & mÃ©tiers du Congo</strong>.
+          Cet email a été envoyé depuis l'administration officielle de
+          <strong>La STREET · Talents & métiers du Congo</strong>.
         </p>
 
         <p style="color:#777; font-size:12px; margin-top:4px;">

@@ -52,7 +52,7 @@ module.exports = asyncHandler(async (req, res) => {
     <div style="font-family: Arial, sans-serif; line-height: 1.5;">
       <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
       <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
-      <p style="color:#666;font-size:12px">Message envoyÃ© depuis l'administration La STREET.</p>
+      <p style="color:#666;font-size:12px">Message envoyé depuis l'administration La STREET.</p>
     </div>
   `.trim();
 
@@ -72,6 +72,6 @@ module.exports = asyncHandler(async (req, res) => {
     else failed += 1;
   }
 
-  return sendResponse(res, { attempted, sent, failed }, 'Broadcast envoyÃ©');
+  return sendResponse(res, { attempted, sent, failed }, 'Broadcast envoyé');
 });
 

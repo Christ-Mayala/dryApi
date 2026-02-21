@@ -65,7 +65,7 @@ class HealthService {
       
       for (const appName of appFolders) {
         try {
-          // VÃ©rifier si l'application a des features
+          // Vérifier si l'application a des features
           const featuresPath = path.join(dryAppPath, appName, 'features');
           const hasFeatures = fs.existsSync(featuresPath);
           

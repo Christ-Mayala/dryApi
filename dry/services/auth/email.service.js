@@ -251,7 +251,7 @@ class EmailService {
   }
 
   generatePasswordResetTemplate(resetCode, tenantId) {
-    const appName = config.APP_NAME || 'DRY API';
+    const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
     const raw = this.loadTemplate('password-reset.html');
 
@@ -269,7 +269,7 @@ class EmailService {
   }
 
   generatePasswordResetConfirmationTemplate(tenantId) {
-    const appName = config.APP_NAME || 'DRY API';
+    const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
     const raw = this.loadTemplate('password-reset-confirmation.html');
 
@@ -281,6 +281,59 @@ class EmailService {
       APP_NAME: appName,
       APP_URL: appUrl,
       TENANT_ID: tenantId || 'APP',
+      YEAR: new Date().getFullYear(),
+    });
+  }
+
+  generateWelcomeTemplate(name, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'DRY API';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const raw = this.loadTemplate('welcome.html');
+
+    if (!raw) {
+      return `<p>Bienvenue ${name} !</p>`;
+    }
+
+    return this.renderTemplate(raw, {
+      NAME: name,
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    });
+  }
+
+  generateAgenceCreatedTemplate(userName, agenceName, link, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'DRY API';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const raw = this.loadTemplate('agence-created.html');
+
+    if (!raw) {
+      return `<p>Agence ${agenceName} creee</p>`;
+    }
+
+    return this.renderTemplate(raw, {
+      USER_NAME: userName,
+      AGENCE_NAME: agenceName,
+      LINK: link,
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    });
+  }
+
+  generateNotificationTemplate(message, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'DRY API';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const raw = this.loadTemplate('notification.html');
+
+    if (!raw) {
+      return `<p>${message}</p>`;
+    }
+
+    return this.renderTemplate(raw, {
+      MESSAGE: message,
+      APP_NAME: appName,
+      APP_URL: appUrl,
       YEAR: new Date().getFullYear(),
     });
   }

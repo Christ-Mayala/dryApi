@@ -3,10 +3,9 @@ const { signToken } = require('../../utils/auth/jwt.util');
 const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
-const EmailTemplates = require('../../config/templates/email.templates');
 const config = require('../../../config/database');
 
-// GÃ©nÃ©ration Token
+// Génération Token
 const generateToken = (id) => {
     return signToken(id);
 };
@@ -14,7 +13,7 @@ const generateToken = (id) => {
 // --- LOGIN ---
 exports.login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const User = req.getModel('User'); // ModÃ¨le Dynamique
+    const User = req.getModel('User'); // Modèle Dynamique
 
     const user = await User.findOne({ email }).select('+password +loginAttempts +lockUntil');
 
@@ -24,12 +23,12 @@ exports.login = asyncHandler(async (req, res) => {
         throw new Error('Identifiants invalides');
     }
 
-    // VÃ©rif Verrouillage (sauf pour admin)
+    // Vérif Verrouillage (sauf pour admin)
     if (user.role !== 'admin' && user.lockUntil && user.lockUntil > Date.now()) {
-        throw new Error('Compte temporairement verrouillÃ©. Trop de tentatives.');
+        throw new Error('Compte temporairement verrouillé. Trop de tentatives.');
     }
 
-    // VÃ©rif Password
+    // Vérif Password       
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
         if (user.role !== 'admin') {
@@ -46,13 +45,13 @@ exports.login = asyncHandler(async (req, res) => {
 
     const token = generateToken(user._id);
     
-    // Nettoyage user pour rÃ©ponse
+    // Nettoyage user pour réponse
     const userData = user.toObject();
     delete userData.password;
     delete userData.lockUntil;
     delete userData.loginAttempts;
 
-    sendResponse(res, { token, user: userData }, 'Connexion rÃ©ussie');
+    sendResponse(res, { token, user: userData }, 'Connexion réussie');  
 });
 
 // --- REGISTER ---
@@ -69,22 +68,22 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     const userExists = await User.findOne({ email: payload.email });
-    if (userExists) throw new Error('Cet email est dÃ©jÃ  utilisÃ©');
+    if (userExists) throw new Error('Cet email est déjà utilisé');
 
     const user = await User.create(payload);
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
     if (shouldSend && user?.email) {
+        const appName = req.appName || config.APP_NAME || 'La STREET';
         Promise.resolve(
             emailService.sendGenericEmail({
                 email: user.email,
-                subject: 'Bienvenue sur La STREET',
-                html: EmailTemplates.WELCOME_REGISTER(user.name || ''),
+                subject: `Bienvenue sur ${appName}`,
+                html: emailService.generateWelcomeTemplate(user.name || '', appName),
             })
         ).catch(() => {});
     }
-
-    sendResponse(res, user, 'Inscription rÃ©ussie');
+    sendResponse(res, user, 'Inscription réussie');
 });
 
 // --- GET ME (Profil) --- 
@@ -94,7 +93,7 @@ exports.getMe = asyncHandler(async (req, res) => {
 
 // --- UPDATE ME ---
 exports.updateMe = asyncHandler(async (req, res) => {
-    if (!req.user?._id) throw new Error('Non autorisÃ©');
+    if (!req.user?._id) throw new Error('Non autorisé');
 
     const User = req.getModel('User');
 
@@ -120,7 +119,7 @@ exports.updateMe = asyncHandler(async (req, res) => {
     delete userData.lockUntil;
     delete userData.loginAttempts;
 
-    sendResponse(res, userData, 'Profil mis Ã  jour');
+    sendResponse(res, userData, 'Profil mis à jour');
 });
 
 // --- REQUEST PASSWORD RESET ---
@@ -130,11 +129,11 @@ exports.requestPasswordReset = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-        // Anti-timing attack - ne pas rÃ©vÃ©ler si l'email existe
-        return sendResponse(res, { message: 'Si cet email existe, un code de rÃ©initialisation a Ã©tÃ© envoyÃ©' }, 'Code envoyÃ©');
+        // Anti-timing attack - ne pas révéler si l'email existe
+        return sendResponse(res, { message: 'Si cet email existe, un code de réinitialisation a été envoyé' }, 'Code envoyé');
     }
 
-    // GÃ©nÃ©rer code de 6 chiffres
+    // Générer code de 6 chiffres
     const resetCode = crypto.randomInt(100000, 999999).toString();
     const resetCodeExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
 
@@ -148,15 +147,16 @@ exports.requestPasswordReset = asyncHandler(async (req, res) => {
     try {
         await emailService.sendGenericEmail({
             email: user.email,
-            subject: 'Code de rÃ©initialisation - La STREET',
-            html: emailService.generatePasswordResetTemplate(resetCode, req.appName || 'user'),
+            subject: `Code de réinitialisation - ${req.appName || config.APP_NAME || 'La STREET'}`,
+            html: emailService.generatePasswordResetTemplate(resetCode, req.appName || config.APP_NAME || 'user')   ,
         });
     } catch (emailError) {
         console.error('Erreur envoi email reset:', emailError);
         // Continuer mÃªme si l'email Ã©choue en dev
     }
 
-    sendResponse(res, { message: 'Si cet email existe, un code de rÃ©initialisation a Ã©tÃ© envoyÃ©' }, 'Code envoyÃ©');
+    // Répondre avec succès même si l'email échoue
+    sendResponse(res, { message: 'Si cet email existe, un code de réinitialisation a été envoyé' }, 'Code envoyé');
 });
 
 // --- VERIFY RESET CODE ---
@@ -171,7 +171,7 @@ exports.verifyResetCode = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new Error('Code invalide ou expirÃ©');
+        throw new Error('Code invalide ou expiré');
     }
 
     sendResponse(res, { valid: true }, 'Code valide');
@@ -189,7 +189,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new Error('Code invalide ou expirÃ©');
+        throw new Error('Code invalide ou expiré');
     }
 
     // Mettre Ã  jour le mot de passe
@@ -203,13 +203,13 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     try {
         await emailService.sendGenericEmail({
             email: user.email,
-            subject: 'Mot de passe rÃ©initialisÃ© - La STREET',
-            html: emailService.generatePasswordResetConfirmationTemplate(req.appName || 'user'),
+            subject: `Mot de passe réinitialisé - ${req.appName || config.APP_NAME || 'La STREET'}`,
+            html: emailService.generatePasswordResetConfirmationTemplate(req.appName || config.APP_NAME || 'user'),
         });
     } catch (emailError) {
         console.error('Erreur envoi email confirmation:', emailError);
     }
 
-    sendResponse(res, { message: 'Mot de passe rÃ©initialisÃ© avec succÃ¨s' }, 'SuccÃ¨s');
+    sendResponse(res, { message: 'Mot de passe réinitialisé avec succès' }, 'Succès');
 });
 

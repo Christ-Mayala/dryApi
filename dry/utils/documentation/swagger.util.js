@@ -42,39 +42,40 @@ const swaggerOptions = {
             _id: { type: 'string', description: 'ID de l\'utilisateur' },
             email: { type: 'string', format: 'email', description: 'Email de l\'utilisateur' },
             name: { type: 'string', description: 'Nom de l\'utilisateur' },
-            role: { type: 'string', enum: ['user', 'admin'], description: 'R�le de l\'utilisateur' },
-            status: { type: 'string', enum: ['active', 'inactive'], description: 'Statut du compte' },
-            createdAt: { type: 'string', format: 'date-time', description: 'Date de cr�ation' },
-            updatedAt: { type: 'string', format: 'date-time', description: 'Date de mise � jour' }
-          }
+            role: { type: 'string', enum: ['user', 'admin'], description: 'Rôle de l\'utilisateur'
         },
-        Error: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: false },
-            message: { type: 'string', description: 'Message d\'erreur' },
-            data: { type: 'object', nullable: true },
-            timestamp: { type: 'string', format: 'date-time' }
-          }
-        },
-        Success: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: true },
-            message: { type: 'string', description: 'Message de succ�s' },
-            data: { type: 'object', description: 'Donn�es retourn�es' },
-            timestamp: { type: 'string', format: 'date-time' }
-          }
-        },
-        SuccessResponse: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: true },
-            message: { type: 'string', example: 'Op�ration r�ussie' },
-            data: { type: 'object' },
-            timestamp: { type: 'string', format: 'date-time' }
-          }
-        },
+        status: { type: 'string', enum: ['active', 'inactive'], description: 'Statut du compte' },
+        createdAt: { type: 'string', format: 'date-time', description: 'Date de création' },
+        updatedAt: { type: 'string', format: 'date-time', description: 'Date de mise à jour' }
+      }
+    },
+    Error: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: false },
+        message: { type: 'string', description: 'Message d\'erreur' },
+        data: { type: 'object', nullable: true },
+        timestamp: { type: 'string', format: 'date-time' }
+      }
+    },
+    Success: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', description: 'Message de succès' },
+        data: { type: 'object', description: 'Données retournées' },
+        timestamp: { type: 'string', format: 'date-time' }
+      }
+    },
+    SuccessResponse: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Opération réussie' },
+        data: { type: 'object' },
+        timestamp: { type: 'string', format: 'date-time' }
+      }
+    },
         ErrorResponse: {
           type: 'object',
           properties: {
@@ -186,7 +187,7 @@ const scanDryModules = () => {
   return routes;
 };
 
-// G�n�rer les sp�cifications Swagger (avec cache pour �viter les doublons)
+// Générer les spécifications Swagger (avec cache pour éviter les doublons)
 let cachedSpecs = null;
 const generateSwaggerSpecs = () => {
   if (cachedSpecs) {
@@ -196,16 +197,16 @@ const generateSwaggerSpecs = () => {
   try {
     const specs = swaggerJsdoc(swaggerOptions);
     
-    // Afficher les routes trouv�es (une seule fois)
+    // Afficher les routes trouvées (une seule fois)
     const appRoutes = scanAppRoutes();
     const dryRoutes = scanDryModules();
     
-    console.log(`?? Swagger: ${appRoutes.length + dryRoutes.length} routes trouv�es`);
+    console.log(`🔍 Swagger: ${appRoutes.length + dryRoutes.length} routes trouvées`);
     
     cachedSpecs = specs;
     return specs;
   } catch (error) {
-    console.error('? Erreur g�n�ration Swagger:', error.message);
+    console.error('❌ Erreur génération Swagger:', error.message);
     return {};
   }
 };
