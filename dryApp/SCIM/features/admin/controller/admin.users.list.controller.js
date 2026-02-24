@@ -22,5 +22,16 @@ module.exports = asyncHandler(async (req, res) => {
         User.countDocuments(query),
     ]);
 
-    return sendResponse(res, { users, totalPages: Math.ceil(total / limit), currentPage: page, total }, 'Liste des utilisateurs');
+    return sendResponse(
+        res,
+        {
+            users,
+            page,
+            currentPage: page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        'Liste des utilisateurs',
+    );
 });

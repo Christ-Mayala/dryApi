@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { getPagination } = require('../../../../../dry/utils/data/pagination');
 
@@ -23,5 +23,16 @@ module.exports = asyncHandler(async (req, res) => {
         Message.countDocuments(query),
     ]);
 
-    return sendResponse(res, { messages, totalPages: Math.ceil(total / limit), currentPage: page, total }, 'Liste des messages');
+    return sendResponse(
+        res,
+        {
+            messages,
+            page,
+            currentPage: page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        'Liste des messages',
+    );
 });

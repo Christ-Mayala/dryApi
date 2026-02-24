@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 module.exports = asyncHandler(async (req, res) => {
@@ -8,7 +8,7 @@ module.exports = asyncHandler(async (req, res) => {
 
     const user = await User.findByIdAndUpdate(req.params.id, { name, nom, email, telephone, status }, { new: true }).select('-password');
 
-    if (!user) return sendResponse(res, null, 'Utilisateur non trouvé', false);
+    if (!user) return sendResponse(res, null, 'Utilisateur non trouve', false);
 
-    return sendResponse(res, user, 'Utilisateur mis à jour avec succès');
+    return sendResponse(res, user, 'Utilisateur mis a jour avec succes');
 });

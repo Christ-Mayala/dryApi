@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const PropertySchema = require('../../property/model/property.schema');
@@ -114,5 +114,5 @@ module.exports = asyncHandler(async (req, res) => {
         priceRanges,
     };
 
-    return sendResponse(res, payload, 'Analytics propriétés');
+    return sendResponse(res, payload, 'Analytics proprietes');
 });

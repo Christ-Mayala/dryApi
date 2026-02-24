@@ -1,8 +1,9 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
+const { decorateReservationCollectionForClient } = require('./reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -13,5 +14,5 @@ module.exports = asyncHandler(async (req, res) => {
         .populate('property', 'titre ville adresse prix categorie images utilisateur')
         .sort({ createdAt: -1 });
 
-    return sendResponse(res, { reservations }, 'Mes réservations');
+    return sendResponse(res, { reservations: decorateReservationCollectionForClient(reservations) }, 'Mes reservations');
 });

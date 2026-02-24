@@ -1,17 +1,28 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
 const MessageSchema = require('../../message/model/message.schema');
+const {
+    buildReservationReference,
+    buildSupportPayload,
+    buildStatusHistoryEntry,
+    decorateReservationForClient,
+    findAdminContact,
+    formatVisitDate,
+    isValidContactPhone,
+    normalizePhoneE164,
+} = require('./reservation.support.util');
 const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
     const Property = req.getModel('Property', PropertySchema);
     const Message = req.getModel('Message', MessageSchema);
+    const User = req.getModel('User');
 
-    const { propertyId, date } = req.body;
+    const { propertyId, date, telephone } = req.body;
     const userId = req.user.id;
 
     if (!propertyId || !date) return sendResponse(res, null, 'propertyId et date sont requis.', false);
@@ -37,16 +48,44 @@ module.exports = asyncHandler(async (req, res) => {
     const hasExplicitTz = typeof date === 'string' && (date.endsWith('Z') || /[+-]\d\d:\d\d$/.test(date));
     const when = !hasExplicitTz ? parseAsScimLocal(date) || new Date(date) : new Date(date);
 
-    if (isNaN(when.getTime())) return sendResponse(res, null, 'Date invalide.', false);
-    if (when < new Date()) return sendResponse(res, null, 'La date de réservation doit être dans le futur.', false);
+    if (Number.isNaN(when.getTime())) return sendResponse(res, null, 'Date invalide.', false);
+    if (when < new Date()) return sendResponse(res, null, 'La date de reservation doit etre dans le futur.', false);
 
     const localMinutes = ((((when.getUTCHours() * 60 + when.getUTCMinutes()) + offsetMinutes) % (24 * 60)) + (24 * 60)) % (24 * 60);
     if (localMinutes < 10 * 60 || localMinutes > 17 * 60) {
-        return sendResponse(res, null, 'Réservation possible uniquement entre 10h00 et 17h00.', false);
+        return sendResponse(res, null, 'Reservation possible uniquement entre 10h00 et 17h00.', false);
     }
 
-    const property = await Property.findById(propertyId).select('_id titre utilisateur isDeleted').populate('utilisateur', 'name nom email');
+    const requester = await User.findById(userId).select('_id name nom email telephone');
+    if (!requester) return sendResponse(res, null, 'Utilisateur introuvable.', false);
+
+    const bodyPhoneRaw = String(telephone || '').trim();
+    const fallbackPhoneRaw = String(requester.telephone || '').trim();
+    const effectivePhoneRaw = fallbackPhoneRaw || bodyPhoneRaw;
+
+    if (!effectivePhoneRaw) {
+        return sendResponse(res, null, 'Numero de telephone requis pour reserver.', false);
+    }
+
+    if (!isValidContactPhone(effectivePhoneRaw)) {
+        return sendResponse(res, null, 'Numero de telephone invalide pour la reservation.', false);
+    }
+
+    const requesterPhone = normalizePhoneE164(effectivePhoneRaw);
+    if (!fallbackPhoneRaw && requesterPhone) {
+        requester.telephone = requesterPhone;
+        await requester.save();
+    }
+
+    const property = await Property.findById(propertyId)
+        .select('_id titre utilisateur isDeleted')
+        .populate('utilisateur', 'name nom email telephone role');
+
     if (!property || property.isDeleted) return sendResponse(res, null, 'Bien introuvable.', false);
+
+    if (property.utilisateur && String(property.utilisateur._id) === String(userId)) {
+        return sendResponse(res, null, 'Vous ne pouvez pas reserver votre propre bien.', false);
+    }
 
     let reservation;
     try {
@@ -54,19 +93,81 @@ module.exports = asyncHandler(async (req, res) => {
             property: propertyId,
             user: userId,
             date: when,
-            status: 'en attente',
+            status: 'en_attente',
         });
     } catch (e) {
-        const msg = e?.name === 'ValidationError' ? 'Réservation invalide.' : 'Erreur lors de la création de la réservation.';
+        const msg = e?.name === 'ValidationError' ? 'Reservation invalide.' : 'Erreur lors de la creation de la reservation.';
         return sendResponse(res, null, msg, false);
     }
 
+    reservation.reference = buildReservationReference({ createdAt: reservation.createdAt, objectId: reservation._id });
+    const support = buildSupportPayload({
+        reference: reservation.reference,
+        propertyTitle: property.titre,
+        visitDate: when,
+        requesterPhone,
+        requesterEmail: requester.email || '',
+    });
+
+    reservation.support = support;
+    reservation.statusHistory = [
+        buildStatusHistoryEntry({
+            status: reservation.status,
+            actorId: userId,
+            note: 'Demande creee via site web',
+        }),
+    ];
+
+    await reservation.save();
+
     try {
         if (property.utilisateur && property.utilisateur._id.toString() !== userId.toString()) {
-            const contenu = `Nouvelle demande de réservation pour le bien "${property.titre}" le ${when.toLocaleDateString()} (ID réservation: ${reservation._id}).`;
-            await Message.create({ expediteur: userId, destinataire: property.utilisateur._id, contenu });
+            const dateLabel = formatVisitDate(when);
+            const ownerContent = [
+                `Nouvelle demande de reservation ${reservation.reference}.`,
+                `Bien: "${property.titre}".`,
+                `Date demandee: ${dateLabel}.`,
+            ].join('\n');
+
+            await Message.create({
+                expediteur: userId,
+                destinataire: property.utilisateur._id,
+                sujet: `Reservation ${reservation.reference}`,
+                contenu: ownerContent,
+            });
         }
     } catch (_) {}
 
-    return sendResponse(res, reservation, 'Réservation créée avec succès.');
+    try {
+        const adminUser = await findAdminContact(User);
+        if (adminUser && String(adminUser._id) !== String(userId)) {
+            const lines = [
+                `Votre reservation ${reservation.reference} a bien ete enregistree.`,
+                `Bien: "${property.titre}".`,
+                support.asyncNotice,
+            ];
+
+            if (support.whatsappUrl) {
+                lines.push(`Si besoin urgent, continuez sur WhatsApp: ${support.whatsappUrl}`);
+            }
+
+            await Message.create({
+                expediteur: adminUser._id,
+                destinataire: userId,
+                sujet: `Confirmation ${reservation.reference}`,
+                contenu: lines.join('\n'),
+            });
+        }
+    } catch (_) {}
+
+    const reservationData = decorateReservationForClient(reservation);
+
+    return sendResponse(
+        res,
+        {
+            reservation: reservationData,
+            support: reservationData.support || support,
+        },
+        'Reservation enregistree avec succes.',
+    );
 });

@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const PropertySchema = require('../../property/model/property.schema');
@@ -34,14 +34,14 @@ module.exports = asyncHandler(async (req, res) => {
     ]);
 
     const recentActivities = [
-        { type: 'property', title: 'Nouvelle propriété ajoutée', description: 'SCIM', time: new Date(Date.now() - 2 * 60 * 60 * 1000), status: 'success' },
+        { type: 'property', title: 'Nouvelle propriete ajoutee', description: 'SCIM', time: new Date(Date.now() - 2 * 60 * 60 * 1000), status: 'success' },
         { type: 'user', title: 'Nouvel utilisateur inscrit', description: 'SCIM', time: new Date(Date.now() - 4 * 60 * 60 * 1000), status: 'info' },
         { type: 'message', title: 'Nouveau message', description: 'SCIM', time: new Date(Date.now() - 6 * 60 * 60 * 1000), status: 'warning' },
     ];
 
     const salesData = [
         { name: 'Jan', ventes: 0, locations: 0 },
-        { name: 'Fév', ventes: 0, locations: 0 },
+        { name: 'Fev', ventes: 0, locations: 0 },
         { name: 'Mar', ventes: 0, locations: 0 },
         { name: 'Avr', ventes: 0, locations: 0 },
         { name: 'Mai', ventes: 0, locations: 0 },

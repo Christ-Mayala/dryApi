@@ -1,4 +1,4 @@
-const config = {
+﻿const config = {
   development: {
     MONGO_URI: process.env.MONGO_URI_DEV || process.env.MONGO_URI,
     REDIS_URL: process.env.REDIS_URL_DEV || 'redis://localhost:6379',
@@ -50,6 +50,20 @@ const config = {
     ADMIN_BROADCAST_LIMIT: process.env.ADMIN_BROADCAST_LIMIT_DEV || process.env.ADMIN_BROADCAST_LIMIT || '200',
     SCIM_TZ_OFFSET_MINUTES: process.env.SCIM_TZ_OFFSET_MINUTES_DEV || process.env.SCIM_TZ_OFFSET_MINUTES || '60',
     SCIM_CONTACT_EMAIL: process.env.SCIM_CONTACT_EMAIL_DEV || process.env.SCIM_CONTACT_EMAIL || 'scim@example.com',
+    SCIM_WHATSAPP_PHONE: process.env.SCIM_WHATSAPP_PHONE_DEV || process.env.SCIM_WHATSAPP_PHONE || '',
+    SCIM_RESERVATION_SLA_MINUTES: process.env.SCIM_RESERVATION_SLA_MINUTES_DEV || process.env.SCIM_RESERVATION_SLA_MINUTES || '30',
+    SCIM_RESERVATION_REMINDER_MINUTES: process.env.SCIM_RESERVATION_REMINDER_MINUTES_DEV || process.env.SCIM_RESERVATION_REMINDER_MINUTES || '30',
+    SCIM_REMINDER_ENABLED: process.env.SCIM_REMINDER_ENABLED_DEV || process.env.SCIM_REMINDER_ENABLED || 'true',
+    SCIM_REMINDER_CRON: process.env.SCIM_REMINDER_CRON_DEV || process.env.SCIM_REMINDER_CRON || '*/1 * * * *',
+    SCIM_REMINDER_BATCH_SIZE: process.env.SCIM_REMINDER_BATCH_SIZE_DEV || process.env.SCIM_REMINDER_BATCH_SIZE || '50',
+    SCIM_ENABLE_EMAIL_NOTIFICATIONS: process.env.SCIM_ENABLE_EMAIL_NOTIFICATIONS_DEV || process.env.SCIM_ENABLE_EMAIL_NOTIFICATIONS || 'false',
+    SCIM_ENABLE_SMS_NOTIFICATIONS: process.env.SCIM_ENABLE_SMS_NOTIFICATIONS_DEV || process.env.SCIM_ENABLE_SMS_NOTIFICATIONS || 'false',
+    SCIM_ENABLE_WHATSAPP_NOTIFICATIONS: process.env.SCIM_ENABLE_WHATSAPP_NOTIFICATIONS_DEV || process.env.SCIM_ENABLE_WHATSAPP_NOTIFICATIONS || 'false',
+    SCIM_DEFAULT_COUNTRY_CODE: process.env.SCIM_DEFAULT_COUNTRY_CODE_DEV || process.env.SCIM_DEFAULT_COUNTRY_CODE || '+242',
+    SCIM_TWILIO_ACCOUNT_SID: process.env.SCIM_TWILIO_ACCOUNT_SID_DEV || process.env.SCIM_TWILIO_ACCOUNT_SID || '',
+    SCIM_TWILIO_AUTH_TOKEN: process.env.SCIM_TWILIO_AUTH_TOKEN_DEV || process.env.SCIM_TWILIO_AUTH_TOKEN || '',
+    SCIM_TWILIO_SMS_FROM: process.env.SCIM_TWILIO_SMS_FROM_DEV || process.env.SCIM_TWILIO_SMS_FROM || '',
+    SCIM_TWILIO_WHATSAPP_FROM: process.env.SCIM_TWILIO_WHATSAPP_FROM_DEV || process.env.SCIM_TWILIO_WHATSAPP_FROM || '',
     FFMPEG_PATH: process.env.FFMPEG_PATH_DEV || process.env.FFMPEG_PATH || '',
     YTDL_NO_UPDATE: process.env.YTDL_NO_UPDATE_DEV || process.env.YTDL_NO_UPDATE || '',
     MEDIA_DIR: process.env.MEDIA_DIR_DEV || process.env.MEDIA_DIR || 'downloads',
@@ -107,6 +121,20 @@ const config = {
     ADMIN_BROADCAST_LIMIT: process.env.ADMIN_BROADCAST_LIMIT || '200',
     SCIM_TZ_OFFSET_MINUTES: process.env.SCIM_TZ_OFFSET_MINUTES || '60',
     SCIM_CONTACT_EMAIL: process.env.SCIM_CONTACT_EMAIL || 'scim@example.com',
+    SCIM_WHATSAPP_PHONE: process.env.SCIM_WHATSAPP_PHONE || '',
+    SCIM_RESERVATION_SLA_MINUTES: process.env.SCIM_RESERVATION_SLA_MINUTES || '30',
+    SCIM_RESERVATION_REMINDER_MINUTES: process.env.SCIM_RESERVATION_REMINDER_MINUTES || '30',
+    SCIM_REMINDER_ENABLED: process.env.SCIM_REMINDER_ENABLED || 'true',
+    SCIM_REMINDER_CRON: process.env.SCIM_REMINDER_CRON || '*/1 * * * *',
+    SCIM_REMINDER_BATCH_SIZE: process.env.SCIM_REMINDER_BATCH_SIZE || '50',
+    SCIM_ENABLE_EMAIL_NOTIFICATIONS: process.env.SCIM_ENABLE_EMAIL_NOTIFICATIONS || 'true',
+    SCIM_ENABLE_SMS_NOTIFICATIONS: process.env.SCIM_ENABLE_SMS_NOTIFICATIONS || 'false',
+    SCIM_ENABLE_WHATSAPP_NOTIFICATIONS: process.env.SCIM_ENABLE_WHATSAPP_NOTIFICATIONS || 'false',
+    SCIM_DEFAULT_COUNTRY_CODE: process.env.SCIM_DEFAULT_COUNTRY_CODE || '+242',
+    SCIM_TWILIO_ACCOUNT_SID: process.env.SCIM_TWILIO_ACCOUNT_SID || '',
+    SCIM_TWILIO_AUTH_TOKEN: process.env.SCIM_TWILIO_AUTH_TOKEN || '',
+    SCIM_TWILIO_SMS_FROM: process.env.SCIM_TWILIO_SMS_FROM || '',
+    SCIM_TWILIO_WHATSAPP_FROM: process.env.SCIM_TWILIO_WHATSAPP_FROM || '',
     FFMPEG_PATH: process.env.FFMPEG_PATH || '',
     YTDL_NO_UPDATE: process.env.YTDL_NO_UPDATE || '',
     MEDIA_DIR: process.env.MEDIA_DIR || 'downloads',
@@ -164,6 +192,20 @@ const config = {
     ADMIN_BROADCAST_LIMIT: process.env.ADMIN_BROADCAST_LIMIT_TEST || '200',
     SCIM_TZ_OFFSET_MINUTES: process.env.SCIM_TZ_OFFSET_MINUTES_TEST || '60',
     SCIM_CONTACT_EMAIL: process.env.SCIM_CONTACT_EMAIL_TEST || 'scim@example.com',
+    SCIM_WHATSAPP_PHONE: process.env.SCIM_WHATSAPP_PHONE_TEST || '',
+    SCIM_RESERVATION_SLA_MINUTES: process.env.SCIM_RESERVATION_SLA_MINUTES_TEST || '30',
+    SCIM_RESERVATION_REMINDER_MINUTES: process.env.SCIM_RESERVATION_REMINDER_MINUTES_TEST || '10',
+    SCIM_REMINDER_ENABLED: process.env.SCIM_REMINDER_ENABLED_TEST || 'false',
+    SCIM_REMINDER_CRON: process.env.SCIM_REMINDER_CRON_TEST || '*/1 * * * *',
+    SCIM_REMINDER_BATCH_SIZE: process.env.SCIM_REMINDER_BATCH_SIZE_TEST || '20',
+    SCIM_ENABLE_EMAIL_NOTIFICATIONS: process.env.SCIM_ENABLE_EMAIL_NOTIFICATIONS_TEST || 'false',
+    SCIM_ENABLE_SMS_NOTIFICATIONS: process.env.SCIM_ENABLE_SMS_NOTIFICATIONS_TEST || 'false',
+    SCIM_ENABLE_WHATSAPP_NOTIFICATIONS: process.env.SCIM_ENABLE_WHATSAPP_NOTIFICATIONS_TEST || 'false',
+    SCIM_DEFAULT_COUNTRY_CODE: process.env.SCIM_DEFAULT_COUNTRY_CODE_TEST || '+242',
+    SCIM_TWILIO_ACCOUNT_SID: process.env.SCIM_TWILIO_ACCOUNT_SID_TEST || '',
+    SCIM_TWILIO_AUTH_TOKEN: process.env.SCIM_TWILIO_AUTH_TOKEN_TEST || '',
+    SCIM_TWILIO_SMS_FROM: process.env.SCIM_TWILIO_SMS_FROM_TEST || '',
+    SCIM_TWILIO_WHATSAPP_FROM: process.env.SCIM_TWILIO_WHATSAPP_FROM_TEST || '',
     FFMPEG_PATH: process.env.FFMPEG_PATH_TEST || '',
     YTDL_NO_UPDATE: process.env.YTDL_NO_UPDATE_TEST || '',
     MEDIA_DIR: process.env.MEDIA_DIR_TEST || 'downloads',
@@ -183,12 +225,26 @@ requiredVars.forEach(varName => {
   }
 });
 
+const parsePositiveInt = (value, fallback) => {
+  const n = Number.parseInt(String(value ?? ''), 10);
+  if (Number.isNaN(n) || n <= 0) return fallback;
+  return n;
+};
+
+const parseBoolean = (value, fallback = false) => {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+};
+
 // Fusionner avec les variables d'environnement actuelles
 const finalConfig = {
   ...currentConfig,
   NODE_ENV: env,
   
-  // Configuration supplémentaire
+  // Configuration supplÃ©mentaire
   CORS: {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -196,8 +252,12 @@ const finalConfig = {
   },
   
   RATE_LIMIT: {
-    windowMs: 10 * 60 * 1000, // 10 minutes
-    max: env === 'production' ? 100 : 1000, // Plus strict en production
+    windowMs: parsePositiveInt(process.env.RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000), // 10 minutes
+    max: parsePositiveInt(process.env.RATE_LIMIT_MAX, env === 'production' ? 100 : 1000),
+    authMultiplier: parsePositiveInt(process.env.RATE_LIMIT_AUTH_MULTIPLIER, env === 'production' ? 20 : 30),
+    adminMultiplier: parsePositiveInt(process.env.RATE_LIMIT_ADMIN_MULTIPLIER, env === 'production' ? 100 : 150),
+    skipAuthenticated: parseBoolean(process.env.RATE_LIMIT_SKIP_AUTHENTICATED, env !== 'production'),
+    skipAdmin: parseBoolean(process.env.RATE_LIMIT_SKIP_ADMIN, false),
     message: { success: false, message: 'Trop de requêtes, veuillez réessayer plus tard.' }
   },
   
@@ -215,3 +275,4 @@ const finalConfig = {
 };
 
 module.exports = finalConfig;
+

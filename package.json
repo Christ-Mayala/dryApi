@@ -39,7 +39,8 @@
     "test:strict": "node scripts/tests/test-runner.js --strict",
     "test:app": "node scripts/tests/test-runner.js --app",
     "test:feature": "node scripts/tests/test-runner.js --app --feature",
-    "test:list": "node scripts/tests/list-tests.js"
+    "test:list": "node scripts/tests/list-tests.js",
+    "test:e2e:scim:reservation": "node scripts/tests/scim-reservation-e2e.js"
   },
   "keywords": [],
   "author": "",

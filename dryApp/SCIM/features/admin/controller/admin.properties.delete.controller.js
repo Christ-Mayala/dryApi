@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const PropertySchema = require('../../property/model/property.schema');
@@ -12,7 +12,7 @@ module.exports = asyncHandler(async (req, res) => {
         { new: true },
     );
 
-    if (!property) return sendResponse(res, null, 'Propriété non trouvée', false);
+    if (!property) return sendResponse(res, null, 'Propriete non trouvee', false);
 
-    return sendResponse(res, null, 'Propriété supprimée avec succès');
+    return sendResponse(res, null, 'Propriete supprimee avec succes');
 });

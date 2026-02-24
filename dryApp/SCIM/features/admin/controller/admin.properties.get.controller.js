@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const PropertySchema = require('../../property/model/property.schema');
@@ -8,7 +8,7 @@ module.exports = asyncHandler(async (req, res) => {
     req.getModel('User');
 
     const property = await Property.findById(req.params.id).populate('utilisateur', 'name nom email telephone');
-    if (!property || property.isDeleted) return sendResponse(res, null, 'Propriété non trouvée', false);
+    if (!property || property.isDeleted) return sendResponse(res, null, 'Propriete non trouvee', false);
 
-    return sendResponse(res, property, 'Détails propriété');
+    return sendResponse(res, property, 'Details propriete');
 });

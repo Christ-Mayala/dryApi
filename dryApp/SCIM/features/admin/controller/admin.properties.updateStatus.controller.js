@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const PropertySchema = require('../../property/model/property.schema');
@@ -9,7 +9,7 @@ module.exports = asyncHandler(async (req, res) => {
     const status = req.body?.status;
     const property = await Property.findByIdAndUpdate(req.params.id, { status }, { new: true });
 
-    if (!property || property.isDeleted) return sendResponse(res, null, 'Propriété non trouvée', false);
+    if (!property || property.isDeleted) return sendResponse(res, null, 'Propriete non trouvee', false);
 
-    return sendResponse(res, property, 'Statut mis à jour avec succès');
+    return sendResponse(res, property, 'Statut mis a jour avec succes');
 });

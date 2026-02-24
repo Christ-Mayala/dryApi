@@ -187,6 +187,7 @@ router.post('/reset-password', resetPassword);
 
 
 router.get('/profil', protect, profile);
+router.get('/profile', protect, profile);
 
 
 

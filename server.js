@@ -22,6 +22,7 @@ const redisService = require('./dry/services/cache/redis.service');
 const healthService = require('./dry/services/health/health.service');
 const { sendAlert } = require('./dry/services/alert/alert.service');
 const notificationService = require('./dry/services/notification/notification.service');
+const { startScimReservationReminderScheduler } = require('./dry/services/notification/scimReservationReminder.scheduler');
 const { swaggerUiMiddleware, swaggerUiSetup, generateSwaggerRoutes } = require('./dry/utils/documentation/swagger.util');
 
 const boolFromEnv = (value, fallback = false) => {
@@ -435,6 +436,7 @@ const startHealthMonitor = () => {
 
     startPurgeScheduler();
     startHealthMonitor();
+    startScimReservationReminderScheduler();
 
     server.listen(PORT, () => {
       const C = {

@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 module.exports = asyncHandler(async (req, res) => {
@@ -7,7 +7,7 @@ module.exports = asyncHandler(async (req, res) => {
     const { role } = req.body;
     const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
 
-    if (!user) return sendResponse(res, null, 'Utilisateur non trouvé', false);
+    if (!user) return sendResponse(res, null, 'Utilisateur non trouve', false);
 
-    return sendResponse(res, user, 'Rôle mis à jour avec succès');
+    return sendResponse(res, user, 'Role mis a jour avec succes');
 });

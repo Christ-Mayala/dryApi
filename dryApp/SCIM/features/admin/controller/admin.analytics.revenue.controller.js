@@ -1,8 +1,9 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../../reservation/model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
+const { CONFIRMED_STATUS_VALUES } = require('../../reservation/controller/reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -10,10 +11,8 @@ module.exports = asyncHandler(async (req, res) => {
 
     const propertiesCollection = Property.collection.name;
 
-    const confirmedStatuses = ['confirmée', 'confirmee', 'confirmed'];
-
     const pipeline = [
-        { $match: { status: { $in: confirmedStatuses } } },
+        { $match: { status: { $in: CONFIRMED_STATUS_VALUES } } },
         {
             $lookup: {
                 from: propertiesCollection,

@@ -2,14 +2,16 @@ const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
 const { refreshCookieOptions } = require('../../../../../dry/utils/http/cookies');
+const { isValidContactPhone, normalizePhoneE164 } = require('../../reservation/controller/reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
 
     const nom = req.body?.nom;
     const name = req.body?.name;
-    const email = req.body?.email;
-    const telephone = req.body?.telephone;
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const telephoneRaw = String(req.body?.telephone || '').trim();
+    const telephone = normalizePhoneE164(telephoneRaw);
     const password = req.body?.password;
 
     const payload = {
@@ -21,8 +23,12 @@ module.exports = asyncHandler(async (req, res) => {
         role: req.body?.role,
     };
 
-    if (!payload.name || !payload.email || !payload.password) {
-        return sendResponse(res, null, 'name/nom, email et password sont requis.', false);
+    if (!payload.name || !payload.email || !payload.password || !telephoneRaw) {
+        return sendResponse(res, null, 'name/nom, email, telephone et password sont requis.', false);
+    }
+
+    if (!isValidContactPhone(telephoneRaw)) {
+        return sendResponse(res, null, 'Numero de telephone invalide.', false);
     }
 
     const exists = await User.findOne({ email: payload.email });

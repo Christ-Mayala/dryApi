@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 module.exports = asyncHandler(async (req, res) => {
@@ -6,7 +6,7 @@ module.exports = asyncHandler(async (req, res) => {
         res,
         {
             siteName: 'SCIM Immobilier',
-            siteDescription: 'Plateforme immobilière',
+            siteDescription: 'Plateforme immobiliere',
             maintenanceMode: false,
             allowRegistration: true,
             emailNotifications: true,
@@ -15,6 +15,6 @@ module.exports = asyncHandler(async (req, res) => {
             currency: 'EUR',
             language: 'fr',
         },
-        'Paramètres système',
+        'Parametres systeme',
     );
 });

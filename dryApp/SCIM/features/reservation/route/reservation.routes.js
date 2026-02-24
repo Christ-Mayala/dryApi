@@ -115,6 +115,7 @@ const getMyReservations = require('../controller/reservation.my.controller');
 const getOwnerReservations = require('../controller/reservation.owner.controller');
 const cancelReservation = require('../controller/reservation.cancel.controller');
 const confirmReservation = require('../controller/reservation.confirm.controller');
+const acknowledgeReservation = require('../controller/reservation.ack.controller');
 const getReservationById = require('../controller/reservation.get.controller');
 
 
@@ -155,6 +156,14 @@ router.patch('/:id/cancel', protect, cancelReservation);
 
 
 router.patch('/:id/confirm', protect, confirmReservation);
+
+
+
+
+
+
+
+router.patch('/:id/ack', protect, acknowledgeReservation);
 
 
 

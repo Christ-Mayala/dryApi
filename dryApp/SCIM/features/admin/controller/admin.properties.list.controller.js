@@ -1,4 +1,4 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { getPagination } = require('../../../../../dry/utils/data/pagination');
 const { parseCsv } = require('../../../../../dry/utils/data/parse');
@@ -34,5 +34,16 @@ module.exports = asyncHandler(async (req, res) => {
         Property.countDocuments(query),
     ]);
 
-    return sendResponse(res, { properties, totalPages: Math.ceil(total / limit), currentPage: page, total }, 'Liste des propriétés');
+    return sendResponse(
+        res,
+        {
+            properties,
+            page,
+            currentPage: page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        'Liste des proprietes',
+    );
 });
