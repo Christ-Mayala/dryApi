@@ -14,9 +14,14 @@ module.exports = asyncHandler(async (req, res) => {
     const Property = req.getModel('Property', PropertySchema);
 
     // Debug logs
+    console.log('=== DEBUG PROPERTY CREATE ===');
+    console.log('DEBUG req.files exists:', !!req.files);
+    console.log('DEBUG req.files length:', req.files?.length || 0);
     console.log('DEBUG req.files:', req.files);
+    console.log('DEBUG req.body type:', typeof req.body);
     console.log('DEBUG req.body keys:', Object.keys(req.body || {}));
     console.log('DEBUG req.body:', req.body);
+    console.log('=== END DEBUG ===');
 
     if (!req.files || req.files.length === 0) {
         return sendResponse(res, null, 'Au moins une image est requise pour une propriété.', false);
