@@ -27,6 +27,8 @@ const ReservationSchema = new mongoose.Schema(
         property: { type: mongoose.Schema.Types.ObjectId, ref: 'Property', required: true },
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         date: { type: Date, required: true },
+        telephone: { type: String, trim: true, default: '' },
+        isWhatsapp: { type: Boolean, default: false },
         reference: { type: String, trim: true, uppercase: true, unique: true, sparse: true, index: true },
         status: {
             type: String,

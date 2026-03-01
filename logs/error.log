@@ -5130,3 +5130,27 @@ Use mongoose.model(name, schema)
 Use mongoose.model(name, schema)
 [24/02/2026 03:56:00] [ERROR] SCIM reminder scheduler failure: Schema hasn't been registered for model "Property".
 Use mongoose.model(name, schema)
+[01/03/2026 18:51:58] [ERROR] [global] uncaughtException (uncaughtException): ReferenceError: routePath is not defined
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:218:44
+    at Array.forEach (<anonymous>)
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:209:18
+    at Array.forEach (<anonymous>)
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:191:14
+    at Array.forEach (<anonymous>)
+    at bootstrapApps (D:\Alvine\dryApi\dry\core\application\bootloader.js:135:8)
+    at Object.<anonymous> (D:\Alvine\dryApi\server.js:218:1)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+[01/03/2026 18:51:58] [ERROR] [fatal] Process exit(1) programme dans 3500ms (uncaughtException)
+[01/03/2026 18:55:59] [ERROR] [global] uncaughtException (uncaughtException): ReferenceError: routePath is not defined
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:218:44
+    at Array.forEach (<anonymous>)
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:209:18
+    at Array.forEach (<anonymous>)
+    at D:\Alvine\dryApi\dry\core\application\bootloader.js:191:14
+    at Array.forEach (<anonymous>)
+    at bootstrapApps (D:\Alvine\dryApi\dry\core\application\bootloader.js:135:8)
+    at Object.<anonymous> (D:\Alvine\dryApi\server.js:218:1)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+[01/03/2026 18:55:59] [ERROR] [fatal] Process exit(1) programme dans 3500ms (uncaughtException)

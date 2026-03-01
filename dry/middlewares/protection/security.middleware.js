@@ -72,7 +72,7 @@ const setupSecurity = (app) => {
         keyGenerator: (req) => {
             const tokenBucket = getTokenBucket(req);
             if (tokenBucket) return `auth:${tokenBucket}`;
-            return req.ip || req.socket?.remoteAddress || 'unknown';
+            return rateLimit.keyGeneratorIpFallback(req);
         },
         skip: shouldSkipRateLimit,
         message: config.RATE_LIMIT.message,

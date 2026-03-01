@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const config = require('../../../config/database');
 
+// Deprecation warning fix: Mongoose 7+
+mongoose.set('returnDocument', 'after');
+
 // Cache des connexions pour ne pas les réouvrir à chaque requête
 const connections = {};
 

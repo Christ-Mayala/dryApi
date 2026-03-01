@@ -1,9 +1,12 @@
 ﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
+const logger = require('../../../../../dry/utils/logging/logger');
 
 const ReservationSchema = require('../model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
 const MessageSchema = require('../../message/model/message.schema');
+const UserSchema = require('../../users/model/userPublic.schema.js');
+
 const {
     buildReservationReference,
     buildSupportPayload,
@@ -13,6 +16,7 @@ const {
     formatVisitDate,
     isValidContactPhone,
     normalizePhoneE164,
+    sendAdminWhatsAppNotification,
 } = require('./reservation.support.util');
 const config = require('../../../../../config/database');
 
@@ -20,9 +24,9 @@ module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
     const Property = req.getModel('Property', PropertySchema);
     const Message = req.getModel('Message', MessageSchema);
-    const User = req.getModel('User');
+    const User = req.getModel('User', UserSchema);
 
-    const { propertyId, date, telephone } = req.body;
+    const { propertyId, date, telephone, isWhatsapp } = req.body;
     const userId = req.user.id;
 
     if (!propertyId || !date) return sendResponse(res, null, 'propertyId et date sont requis.', false);
@@ -93,6 +97,8 @@ module.exports = asyncHandler(async (req, res) => {
             property: propertyId,
             user: userId,
             date: when,
+            telephone: requesterPhone,
+            isWhatsapp: Boolean(isWhatsapp),
             status: 'en_attente',
         });
     } catch (e) {
@@ -157,6 +163,44 @@ module.exports = asyncHandler(async (req, res) => {
                 sujet: `Confirmation ${reservation.reference}`,
                 contenu: lines.join('\n'),
             });
+        }
+
+        // Envoyer notification WhatsApp à l'admin
+        try {
+            await sendAdminWhatsAppNotification({
+                reservation,
+                propertyTitle: property.titre,
+                requesterPhone,
+                isWhatsapp: Boolean(isWhatsapp),
+            });
+        } catch (error) {
+            logger(`Erreur notification WhatsApp admin pour reservation ${reservation.reference}: ${error?.message || error}`, 'warning');
+        }
+
+        // Envoyer message interne à l'admin
+        try {
+            const adminUser = await User.findOne({ role: 'admin' }).select('_id');
+            if (adminUser) {
+                const messageContent = `🏠 NOUVELLE RÉSERVATION\n\n` +
+                    `📋 Référence: ${reservation.reference}\n` +
+                    `🏠 Bien: ${property.titre}\n` +
+                    `📅 Date: ${formatVisitDate(date)}\n` +
+                    `📞 Téléphone: ${telephone}${isWhatsapp ? ' (WhatsApp)' : ''}\n` +
+                    `👤 Client: ${user?.name || user?.nom || 'Client'}\n` +
+                    `📊 Statut: En attente de confirmation\n\n` +
+                    `Veuillez traiter cette demande dans le panel d'administration.`;
+
+                await Message.create({
+                    expediteur: user._id,
+                    destinataire: adminUser._id,
+                    sujet: `Nouvelle réservation - ${property.titre}`,
+                    contenu: messageContent,
+                    type: 'reservation',
+                    referenceId: reservation._id
+                });
+            }
+        } catch (error) {
+            logger(`Erreur message interne admin pour reservation ${reservation.reference}: ${error?.message || error}`, 'warning');
         }
     } catch (_) {}
 

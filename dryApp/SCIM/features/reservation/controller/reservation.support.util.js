@@ -365,6 +365,38 @@ const sendReservationContactNotifications = async ({ reservation, user, property
     return result;
 };
 
+const sendAdminWhatsAppNotification = async ({ reservation, propertyTitle, requesterPhone, isWhatsapp } = {}) => {
+    const adminWhatsAppPhone = String(config.SCIM_ADMIN_WHATSAPP_PHONE || config.SCIM_WHATSAPP_PHONE || '').trim();
+    const twilioEnabled = hasTwilioConfig();
+    const sendAdminWhatsapp = parseBool(config.SCIM_ENABLE_ADMIN_WHATSAPP_NOTIFICATIONS, true);
+    
+    if (!twilioEnabled || !adminWhatsAppPhone || !sendAdminWhatsapp) {
+        return { sent: false, reason: 'admin_whatsapp_disabled_or_not_configured' };
+    }
+
+    const reference = reservation?.reference || reservation?._id || 'reservation';
+    const dateLabel = formatVisitDate(reservation?.date);
+    const title = propertyTitle || reservation?.property?.titre || 'le bien';
+    const whatsappIndicator = isWhatsapp ? ' (WhatsApp)' : ' (SMS)';
+    
+    const message = `🏠 NOUVELLE RÉSERVATION SCIM\n\n` +
+        `📋 Référence: ${reference}\n` +
+        `🏘️ Bien: "${title}"\n` +
+        `📅 Date: ${dateLabel}\n` +
+        `📞 Téléphone: ${requesterPhone}${whatsappIndicator}\n` +
+        `📊 Statut: En attente de confirmation\n\n` +
+        `Veuillez traiter cette demande dans le panel d'administration.`;
+
+    const whatsappFrom = String(config.SCIM_TWILIO_WHATSAPP_FROM || '').trim();
+    
+    return await sendTwilioMessage({
+        toE164: normalizePhoneE164(adminWhatsAppPhone),
+        from: whatsappFrom,
+        body: message,
+        whatsapp: true,
+    });
+};
+
 module.exports = {
     normalizeWhatsappPhone,
     normalizePhoneE164,
@@ -385,4 +417,5 @@ module.exports = {
     parseReminderMinutes,
     formatVisitDate,
     sendReservationContactNotifications,
+    sendAdminWhatsAppNotification,
 };

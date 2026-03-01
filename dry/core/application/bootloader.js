@@ -207,8 +207,9 @@ const bootstrapApps = (app) => {
       }
 
       routeFiles.forEach((file) => {
+        let routePath;
         try {
-          const routePath = path.join(routeDir, file);
+          routePath = path.join(routeDir, file);
           const router = require(routePath);
           appRouter.use(`/${feature.toLowerCase()}`, router);
           console.log(`   ${C.GREEN}✅ ${feature.padEnd(20)}${C.RESET} → ${C.DIM}/${feature.toLowerCase()}${C.RESET}`);
