@@ -18,7 +18,7 @@ const scimSchemas = {
       images: Joi.array().items(Joi.object({
         url: Joi.string().required(),
         public_id: Joi.string().required()
-      })).required(),
+      })).optional(),
       devise: Joi.string().default('XAF'),
       categorie: Joi.string().valid('Appartement', 'Maison', 'Hôtel', 'Terrain', 'Commercial', 'Autre').default('Autre'),
       status: Joi.string().valid('active', 'inactive').default('active'),
