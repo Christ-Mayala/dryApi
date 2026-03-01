@@ -123,6 +123,7 @@ const deleteProperty = require('../controller/property.delete.controller');
 const toggleFavori = require('../controller/property.favoris.controller');
 const rateProperty = require('../controller/property.rate.controller');
 const getPropertyWithRating = require('../controller/property.rating.controller');
+const getUserNote = require('../controller/property.userNote.controller');
 const recordVisit = require('../controller/property.visit.controller');
 
 const propertyUpload = upload.fields([
@@ -188,6 +189,9 @@ router.post('/:id/favoris', protect, validateId, toggleFavori);
 
 
 router.post('/:id/rate', protect, validateId, validateSCIM.reservation.create, rateProperty);
+
+// Route pour récupérer la note de l'utilisateur pour une propriété
+router.get('/:id/user-note', protect, validateId, getUserNote);
 
 
 

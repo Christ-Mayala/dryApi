@@ -10,6 +10,10 @@ const authLimiter = rateLimit({
     max: isProd ? 5 : 15, // plus strict en prod
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+        // Utiliser l'IP comme clé de fallback
+        return req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    },
     message: {
         success: false,
         message: 'Trop de tentatives de connexion, veuillez reessayer plus tard.',

@@ -378,13 +378,17 @@ const sendAdminWhatsAppNotification = async ({ reservation, propertyTitle, reque
     const dateLabel = formatVisitDate(reservation?.date);
     const title = propertyTitle || reservation?.property?.titre || 'le bien';
     const whatsappIndicator = isWhatsapp ? ' (WhatsApp)' : ' (SMS)';
+    const propertyId = reservation?.propertyId || reservation?.property?._id || 'N/A';
+    const propertyUrl = `${config.FRONTEND_URL || 'https://scim.netlify.app'}/properties/${propertyId}`;
     
     const message = `🏠 NOUVELLE RÉSERVATION SCIM\n\n` +
         `📋 Référence: ${reference}\n` +
+        `🆔 ID Bien: ${propertyId}\n` +
         `🏘️ Bien: "${title}"\n` +
         `📅 Date: ${dateLabel}\n` +
         `📞 Téléphone: ${requesterPhone}${whatsappIndicator}\n` +
         `📊 Statut: En attente de confirmation\n\n` +
+        `🔗 Lien du bien: ${propertyUrl}\n\n` +
         `Veuillez traiter cette demande dans le panel d'administration.`;
 
     const whatsappFrom = String(config.SCIM_TWILIO_WHATSAPP_FROM || '').trim();

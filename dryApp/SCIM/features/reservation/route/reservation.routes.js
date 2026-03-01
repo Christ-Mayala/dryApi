@@ -117,6 +117,7 @@ const cancelReservation = require('../controller/reservation.cancel.controller')
 const confirmReservation = require('../controller/reservation.confirm.controller');
 const acknowledgeReservation = require('../controller/reservation.ack.controller');
 const getReservationById = require('../controller/reservation.get.controller');
+const updateReservationStatus = require('../controller/reservation.status.controller');
 
 
 
@@ -164,6 +165,9 @@ router.patch('/:id/confirm', protect, confirmReservation);
 
 
 router.patch('/:id/ack', protect, acknowledgeReservation);
+
+// Route pour mettre à jour le statut d'une réservation
+router.patch('/:id/status', protect, updateReservationStatus);
 
 
 
