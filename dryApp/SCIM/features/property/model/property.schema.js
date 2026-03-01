@@ -31,18 +31,10 @@ const PropertySchema = new mongoose.Schema(
 
         prixOriginal: { type: Number },
         devise: { type: String, default: 'XAF', trim: true },
-        images: [
-            {
-                url: { type: String, required: true },
-                public_id: { type: String, required: true },
-            },
-        ],
-        validate: {
-            validator: function() {
-                return this.images && this.images.length > 0;
-            },
-            message: 'Au moins une image est requise'
-        },
+        images: [{
+            url: { type: String, required: true },
+            public_id: { type: String, required: true },
+        }],
         evaluations: [
             {
                 utilisateur: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
