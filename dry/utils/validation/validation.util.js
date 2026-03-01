@@ -66,7 +66,6 @@ const validate = (schema, source = 'body') => {
     });
 
     if (error) {
-      console.error('Validation Error Details:', JSON.stringify(error.details, null, 2));
       const errors = error.details.map(detail => ({
         field: detail.path.join('.'),
         message: detail.message
