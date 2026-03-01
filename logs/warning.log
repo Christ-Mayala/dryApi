@@ -145,3 +145,4 @@
 [23/02/2026 07:54:57] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
 [24/02/2026 03:57:00] [WARN] Reservation notification non envoyee (RSV-20260222-E3BE1)
 [24/02/2026 04:16:57] [WARN] Reservation notification non envoyee (RSV-20260224-64372)
+[01/03/2026 00:48:57] [WARN] JWT_SECRET manquant ou trop faible (>= 32 caracteres recommande).

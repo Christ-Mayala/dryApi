@@ -1,10 +1,4 @@
 const express = require('express');
-
-
-
-
-
-
 const router = express.Router();
 
 // 1. Import des contrôleurs (login, register, profil)

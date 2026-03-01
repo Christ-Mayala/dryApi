@@ -6,8 +6,15 @@ const UserSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     nom: { type: String, trim: true },
     email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
-    password: { type: String, required: true, select: false },
+    password: {
+        type: String,
+        required: function() { return !this.googleId && !this.facebookId; },
+        select: false
+    },
     role: { type: String, default: 'user' },
+
+    googleId: { type: String, unique: true, sparse: true, select: false },
+    facebookId: { type: String, unique: true, sparse: true, select: false },
 
     telephone: { type: String, trim: true },
 

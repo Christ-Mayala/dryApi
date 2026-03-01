@@ -6879,3 +6879,53 @@
 [24/02/2026 04:24:07] [INFO] [f0c49957-6b6e-48be-ad32-718ecd3e7003] GET /api/v1/simoway/story?page=1&rows=3&status%5Bne%5D=Deleted 200 9ms
 [24/02/2026 04:24:07] [INFO] [24056932-e699-40da-a104-2e51da71959d] GET /api/v1/dry/dry-user?status%5Bne%5D=Deleted 200 7ms
 [24/02/2026 04:24:07] [INFO] [158cdf9d-59cc-4198-b134-c2966d831980] GET /api/v1/dry/dry-city?status%5Bne%5D=Deleted 200 3ms
+[28/02/2026 23:08:55] [INFO] Email service configure avec Resend API
+[28/02/2026 23:09:08] [INFO] NotificationService initialized
+[28/02/2026 23:09:32] [INFO] Email service configure avec Resend API
+[28/02/2026 23:09:42] [INFO] NotificationService initialized
+[28/02/2026 23:13:55] [INFO] Email service configure avec Resend API
+[28/02/2026 23:14:02] [INFO] NotificationService initialized
+[28/02/2026 23:49:52] [INFO] Email service configure avec Resend API
+[28/02/2026 23:50:01] [INFO] NotificationService initialized
+[28/02/2026 23:54:21] [INFO] Email service configure avec Resend API
+[28/02/2026 23:54:29] [INFO] NotificationService initialized
+[28/02/2026 23:56:14] [INFO] Email service configure avec Resend API
+[28/02/2026 23:56:24] [INFO] NotificationService initialized
+[01/03/2026 00:03:29] [INFO] Email service configure avec Resend API
+[01/03/2026 00:03:35] [INFO] NotificationService initialized
+[01/03/2026 00:35:38] [INFO] Email service configure avec Resend API
+[01/03/2026 00:35:44] [INFO] NotificationService initialized
+[01/03/2026 00:48:52] [INFO] Email service configure avec SMTP
+[01/03/2026 00:48:57] [INFO] NotificationService initialized
+[01/03/2026 00:52:43] [INFO] Email service configure avec Resend API
+[01/03/2026 00:52:51] [INFO] NotificationService initialized
+[01/03/2026 00:53:50] [INFO] Email service configure avec Resend API
+[01/03/2026 00:53:54] [INFO] NotificationService initialized
+[01/03/2026 00:57:44] [INFO] Email service configure avec Resend API
+[01/03/2026 00:57:49] [INFO] NotificationService initialized
+[01/03/2026 01:00:27] [INFO] Email service configure avec Resend API
+[01/03/2026 01:00:37] [INFO] NotificationService initialized
+[01/03/2026 01:02:44] [INFO] Email service configure avec Resend API
+[01/03/2026 01:02:50] [INFO] NotificationService initialized
+[01/03/2026 01:03:30] [INFO] Email service configure avec Resend API
+[01/03/2026 01:03:37] [INFO] NotificationService initialized
+[01/03/2026 01:09:29] [INFO] Email service configure avec Resend API
+[01/03/2026 01:09:34] [INFO] NotificationService initialized
+[01/03/2026 01:13:09] [INFO] Email service configure avec Resend API
+[01/03/2026 01:13:15] [INFO] NotificationService initialized
+[01/03/2026 01:13:34] [INFO] Email service configure avec Resend API
+[01/03/2026 01:13:39] [INFO] NotificationService initialized
+[01/03/2026 01:16:13] [INFO] Email service configure avec Resend API
+[01/03/2026 01:16:18] [INFO] NotificationService initialized
+[01/03/2026 01:19:08] [INFO] Email service configure avec Resend API
+[01/03/2026 01:19:12] [INFO] NotificationService initialized
+[01/03/2026 01:23:55] [INFO] Email service configure avec Resend API
+[01/03/2026 01:24:03] [INFO] NotificationService initialized
+[01/03/2026 01:35:08] [INFO] Email service configure avec Resend API
+[01/03/2026 01:35:13] [INFO] NotificationService initialized
+[01/03/2026 01:35:30] [INFO] Email service configure avec Resend API
+[01/03/2026 01:35:36] [INFO] NotificationService initialized
+[01/03/2026 01:45:30] [INFO] Email service configure avec Resend API
+[01/03/2026 01:45:41] [INFO] NotificationService initialized
+[01/03/2026 01:46:18] [INFO] Email service configure avec Resend API
+[01/03/2026 01:46:28] [INFO] NotificationService initialized

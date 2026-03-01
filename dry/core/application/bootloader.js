@@ -12,6 +12,10 @@ const config = require('../../../config/database');
 const getModel = require('../factories/modelFactory');
 const passwordResetRoutes = require('../../modules/user/passwordReset.routes');
 const authRoutes = require('../../modules/user/auth.routes');
+const passportPlugin = require('../plugins/passport.plugin');
+
+// Routes d'authentification sociale (DRY)
+const socialAuthRoutes = require('../../modules/user/socialAuth.routes');
 
 // ANSI Colors
 const C = {
@@ -30,6 +34,36 @@ const bootstrapApps = (app) => {
   console.log(`\n${C.BRIGHT}${C.CYAN}╔══════════════════════════════════════════════════════════════╗${C.RESET}`);
   console.log(`${C.BRIGHT}${C.CYAN}║      🚀 DÉMARRAGE DU SYSTÈME DRY - BOOTLOADER v3.5         ║${C.RESET}`);
   console.log(`${C.BRIGHT}${C.CYAN}╚══════════════════════════════════════════════════════════════╝${C.RESET}\n`);
+
+  // ==========================================
+  // ÉTAPE -1 : PRÉ-CHARGEMENT DES SCHÉMAS GLOBAUX
+  // ==========================================
+  // Nécessaire pour que les plugins (ex: Passport) puissent trouver les modèles (ex: User) à l'initialisation.
+  const modelsPath = path.join(__dirname, '../../modules');
+  fs.readdirSync(modelsPath).forEach((dir) => {
+    const modelDir = path.join(modelsPath, dir);
+    if (fs.statSync(modelDir).isDirectory()) {
+      fs.readdirSync(modelDir).forEach((file) => {
+        if (file.endsWith('.schema.js')) {
+          require(path.join(modelDir, file));
+        }
+      });
+    }
+  });
+
+  // ==========================================
+  // ÉTAPE 0 : INITIALISATION DES PLUGINS GLOBAUX
+  // ==========================================
+  passportPlugin.initialize(app);
+  console.log(`\n${C.BRIGHT}${C.BLUE}🔌 PLUGINS GLOBAUX :${C.RESET}`);
+  console.log(`${C.DIM}────────────────────────────────────────────────────────────${C.RESET}`);
+  console.log(`   ${C.GREEN}✅ ${passportPlugin.name.padEnd(15)}${C.RESET} → ${C.DIM}${passportPlugin.description}${C.RESET}`);
+  
+  // Monter les routes d'authentification sociale globales (DRY)
+  app.use('/api/auth', socialAuthRoutes);
+  console.log(`   ${C.GREEN}✅ social-auth`.padEnd(21) + ` → ${C.DIM}/api/auth/google, /api/auth/facebook${C.RESET}`);
+
+
 
   // ==========================================
   // ÉTAPE 1 : CHARGEMENT DES MODULES NATIFS DRY
