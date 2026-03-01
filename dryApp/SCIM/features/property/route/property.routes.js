@@ -126,7 +126,7 @@ const getPropertyWithRating = require('../controller/property.rating.controller'
 const recordVisit = require('../controller/property.visit.controller');
 
 const propertyUpload = upload.fields([
-  { name: 'images', maxCount: 10 }
+  { name: 'images', maxCount: 25 }
 ]);
 
 // Routes publiques avec cache

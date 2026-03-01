@@ -13,8 +13,9 @@ const toImages = (files = []) => {
 module.exports = asyncHandler(async (req, res) => {
     const Property = req.getModel('Property', PropertySchema);
 
-    // Images are now optional
-    const images = req.files && req.files.length > 0 ? toImages(req.files) : [];
+    if (!req.files || req.files.length === 0) {
+        return sendResponse(res, null, 'Au moins une image est requise pour une propriété.', false);
+    }
 
 
     const payload = {
@@ -42,7 +43,7 @@ module.exports = asyncHandler(async (req, res) => {
             'piscine',
             'jardin',
         ]),
-        images: images,
+        images: toImages(req.files),
         utilisateur: req.user.id,
     };
 
