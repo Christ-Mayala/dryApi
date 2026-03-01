@@ -61,6 +61,7 @@
     "express-async-handler": "^1.2.0",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.2.1",
+    "express-session": "^1.19.0",
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "json2csv": "^6.0.0-alpha.2",

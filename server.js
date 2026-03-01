@@ -4,6 +4,7 @@ const http = require('http');
 const { randomUUID } = require('crypto');
 const { Server: SocketIOServer } = require('socket.io');
 const express = require('express');
+const session = require('express-session');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -105,6 +106,14 @@ process.on('uncaughtException', async (error, origin) => {
 
 // Initialisation de l'application Express
 const app = express();
+
+// Configuration de la session
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'une-super-cle-secrete-pour-la-session',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
 
 // Configuration de confiance pour les proxies (Render/Netlify/Heroku)
 app.set('trust proxy', 1);
