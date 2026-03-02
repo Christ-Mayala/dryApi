@@ -12,6 +12,13 @@ const toImages = (files = []) => {
 };
 
 module.exports = asyncHandler(async (req, res) => {
+    console.log('🔍 DEBUG - Update Property Request:', {
+        params: req.params,
+        body: req.body,
+        files: req.files?.length || 0,
+        user: req.user?.role
+    });
+
     const Property = req.getModel('Property', PropertySchema);
 
     const property = await Property.findById(req.params.id);
@@ -57,6 +64,8 @@ module.exports = asyncHandler(async (req, res) => {
         'jardin',
     ]);
 
+    console.log('🔍 DEBUG - Updates to apply:', updates);
+
     Object.assign(property, updates);
 
     if (req.body?.status) {
@@ -64,6 +73,8 @@ module.exports = asyncHandler(async (req, res) => {
     }
 
     await property.save();
+
+    console.log('✅ DEBUG - Property updated successfully');
 
     return sendResponse(res, property, 'Bien mis à jour avec succès.');
 });

@@ -11,7 +11,12 @@ const commonSchemas = {
   }),
 
   // ID MongoDB
-  objectId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
+  objectId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).optional().messages({
+    'string.pattern.base': 'ID invalide'
+  }),
+
+  // ID pour paramètres de route (requis)
+  paramId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
     'string.pattern.base': 'ID invalide'
   }),
 
@@ -86,9 +91,16 @@ const validate = (schema, source = 'body') => {
 
 // Validation des paramètres ID
 const validateId = (req, res, next) => {
-  const { error } = commonSchemas.objectId.validate(req.params.id);
+  console.log('🔍 DEBUG - validateId:', {
+    id: req.params.id,
+    idLength: req.params.id?.length,
+    pattern: /^[0-9a-fA-F]{24}$/.test(req.params.id)
+  });
+
+  const { error } = commonSchemas.paramId.validate(req.params.id);
 
   if (error) {
+    console.log('❌ DEBUG - Validation error:', error);
     return res.status(400).json({
       success: false,
       message: 'ID invalide',
@@ -96,6 +108,7 @@ const validateId = (req, res, next) => {
     });
   }
 
+  console.log('✅ DEBUG - ID validation passed');
   next();
 };
 

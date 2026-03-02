@@ -35,30 +35,32 @@ const scimSchemas = {
     }),
     
     update: Joi.object({
-      title: commonSchemas.name.optional(),
+      titre: commonSchemas.name.optional(),
       description: Joi.string().min(20).max(2000).optional(),
-      type: Joi.string().valid('appartement', 'maison', 'studio', 'villa', 'terrain', 'commerce').optional(),
-      price: commonSchemas.price.optional(),
-      area: Joi.number().positive().optional(),
-      bedrooms: Joi.number().integer().min(0).max(20).optional(),
-      bathrooms: Joi.number().integer().min(0).max(10).optional(),
-      address: Joi.string().min(5).max(500).optional(),
-      city: Joi.string().min(2).max(100).optional(),
-      postalCode: Joi.string().pattern(/^\d{5}$/).optional(),
-      images: Joi.array().items(commonSchemas.url).optional(),
-      features: Joi.object({
-        parking: Joi.boolean().optional(),
-        balcony: Joi.boolean().optional(),
-        garden: Joi.boolean().optional(),
-        pool: Joi.boolean().optional(),
-        elevator: Joi.boolean().optional(),
-        furnished: Joi.boolean().optional(),
-        airConditioning: Joi.boolean().optional(),
-        heating: Joi.boolean().optional()
-      }).optional(),
-      energyClass: Joi.string().valid('A', 'B', 'C', 'D', 'E', 'F', 'G').optional(),
-      availableFrom: commonSchemas.date.min('now').optional(),
-      status: Joi.string().valid('available', 'rented', 'sold', 'under_offer').optional()
+      transactionType: Joi.string().valid('location', 'vente').optional(),
+      prix: commonSchemas.price.optional(),
+      prixOriginal: Joi.number().optional(),
+      devise: Joi.string().optional(),
+      superficie: Joi.number().positive().optional(),
+      nombre_chambres: Joi.number().integer().min(0).max(20).optional(),
+      nombre_salles_bain: Joi.number().integer().min(0).max(10).optional(),
+      nombre_salons: Joi.number().integer().min(0).optional(),
+      adresse: Joi.string().min(5).max(500).optional(),
+      ville: Joi.string().min(2).max(100).optional(),
+      categorie: Joi.string().valid('Appartement', 'Maison', 'Hôtel', 'Terrain', 'Commercial', 'Autre').optional(),
+      status: Joi.string().valid('active', 'inactive').optional(),
+      isBonPlan: Joi.boolean().optional(),
+      bonPlanLabel: Joi.string().optional(),
+      bonPlanExpiresAt: Joi.date().optional(),
+      garage: Joi.boolean().optional(),
+      gardien: Joi.boolean().optional(),
+      balcon: Joi.boolean().optional(),
+      piscine: Joi.boolean().optional(),
+      jardin: Joi.boolean().optional(),
+      images: Joi.array().items(Joi.object({
+        url: Joi.string().required(),
+        public_id: Joi.string().required()
+      })).optional()
     })
   },
 
@@ -80,7 +82,7 @@ const scimSchemas = {
       endDate: Joi.date().iso().min(Joi.ref('startDate')).optional(),
       numberOfGuests: Joi.number().integer().min(1).max(20).optional(),
       message: commonSchemas.description.max(1000).optional(),
-      status: Joi.string().valid('pending', 'confirmed', 'cancelled', 'completed').optional()
+      status: Joi.string().valid('en_attente', 'confirmee', 'annulee', 'terminee').optional()
     })
   },
 
