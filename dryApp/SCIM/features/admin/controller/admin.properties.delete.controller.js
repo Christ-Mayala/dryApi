@@ -1,5 +1,6 @@
 ﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
+const { triggerSitemapRegeneration } = require('../../../utils/triggerSitemap');
 
 const PropertySchema = require('../../property/model/property.schema');
 
@@ -14,5 +15,6 @@ module.exports = asyncHandler(async (req, res) => {
 
     if (!property) return sendResponse(res, null, 'Propriete non trouvee', false);
 
+    triggerSitemapRegeneration('admin-property-delete');
     return sendResponse(res, null, 'Propriete supprimee avec succes');
 });

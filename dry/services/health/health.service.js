@@ -8,7 +8,7 @@ class HealthService {
     const uptime = process.uptime();
     const memory = process.memoryUsage();
     
-    // VÃ©rifier la connexion MongoDB
+    // Vérifier la connexion MongoDB
     const dbStatus = mongoose.connection.readyState === 1 ? 'UP' : 'DOWN';
     const dbInfo = {
       status: dbStatus,
@@ -17,13 +17,13 @@ class HealthService {
       readyState: mongoose.connection.readyState
     };
 
-    // VÃ©rifier Redis
+    // Vérifier Redis
     const redisStatus = redisService.getStatus();
     const redisEnabledFlag = String(config.REDIS_ENABLED || '').toLowerCase();
     const redisEnabled = redisEnabledFlag === 'true' || (!!config.REDIS_URL && redisEnabledFlag !== 'false');
     redisStatus.enabled = redisEnabled;
 
-    // VÃ©rifier les applications
+    // Vérifier les applications
     const apps = await this.getAppsStatus();
 
     // Calculer le statut global

@@ -109,6 +109,8 @@ const express = require('express');
 const router = express.Router();
 
 const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
+const { validateSCIM } = require('../../../validation/middleware');
 
 const getDashboardStats = require('../controller/admin.dashboardStats.controller');
 const getAllReservations = require('../controller/admin.reservations.list.controller');
@@ -117,6 +119,9 @@ const getAllProperties = require('../controller/admin.properties.list.controller
 const getPropertyById = require('../controller/admin.properties.get.controller');
 const updatePropertyStatus = require('../controller/admin.properties.updateStatus.controller');
 const deleteProperty = require('../controller/admin.properties.delete.controller');
+const listPropertySubmissions = require('../controller/admin.propertySubmissions.list.controller');
+const updatePropertySubmission = require('../controller/admin.propertySubmissions.update.controller');
+const updatePropertySubmissionStatus = require('../controller/admin.propertySubmissions.updateStatus.controller');
 
 const getAllUsers = require('../controller/admin.users.list.controller');
 const getUserById = require('../controller/admin.users.get.controller');
@@ -187,6 +192,9 @@ router.put('/properties/:id/status', updatePropertyStatus);
 
 
 router.delete('/properties/:id', deleteProperty);
+router.get('/property-submissions', listPropertySubmissions);
+router.put('/property-submissions/:id', validateId, validateSCIM.property.submissionUpdate, updatePropertySubmission);
+router.put('/property-submissions/:id/status', validateId, validateSCIM.property.submissionReview, updatePropertySubmissionStatus);
 
 
 

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+﻿const mongoose = require('mongoose');
 
 const PropertySchema = new mongoose.Schema(
     {
@@ -21,7 +21,7 @@ const PropertySchema = new mongoose.Schema(
         },
         categorie: {
             type: String,
-            enum: ['Appartement', 'Maison', 'Hôtel', 'Terrain', 'Commercial', 'Autre'],
+            enum: ['Appartement', 'Maison', 'Hotel', 'Hôtel', 'Terrain', 'Commercial', 'Autre'],
             default: 'Autre',
             index: true,
         },
@@ -31,10 +31,12 @@ const PropertySchema = new mongoose.Schema(
 
         prixOriginal: { type: Number },
         devise: { type: String, default: 'XAF', trim: true },
-        images: [{
-            url: { type: String, required: true },
-            public_id: { type: String, required: true },
-        }],
+        images: [
+            {
+                url: { type: String, required: true },
+                public_id: { type: String, required: true },
+            },
+        ],
         evaluations: [
             {
                 utilisateur: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -46,6 +48,14 @@ const PropertySchema = new mongoose.Schema(
         nombreAvis: { type: Number, default: 0 },
         vues: { type: Number, default: 0 },
         utilisateur: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        adminReference: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+        submittedByUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        submissionSource: {
+            type: String,
+            enum: ['admin_direct', 'client_submission'],
+            default: 'admin_direct',
+            index: true,
+        },
         favoris: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         isDeleted: { type: Boolean, default: false, index: true },
         deletedAt: { type: Date },

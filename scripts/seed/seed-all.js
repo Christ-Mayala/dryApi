@@ -13,9 +13,9 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { connectCluster } = require('../dry/config/connection/dbConnection');
-const { getTenantDB } = require('../dry/config/connection/dbConnection');
-const getModel = require('../dry/core/factories/modelFactory');
+const { connectCluster } = require('../../dry/config/connection/dbConnection');
+const { getTenantDB } = require('../../dry/config/connection/dbConnection');
+const getModel = require('../../dry/core/factories/modelFactory');
 
 const log = (msg) => console.log(`[seed-all] ${msg}`);
 
@@ -24,7 +24,7 @@ const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
 const adminName = process.env.SEED_ADMIN_NAME || 'Admin DRY';
 
 const run = async () => {
-  const dryAppPath = path.join(__dirname, '../dryApp');
+  const dryAppPath = path.join(__dirname, '../../dryApp');
   if (!fs.existsSync(dryAppPath)) {
     log('Dossier dryApp introuvable.');
     process.exit(1);

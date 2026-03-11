@@ -181,17 +181,19 @@ module.exports = asyncHandler(async (req, res) => {
         try {
             const adminUser = await User.findOne({ role: 'admin' }).select('_id');
             if (adminUser) {
+                const requesterName = requester?.name || requester?.nom || 'Client';
+                const phoneLabel = requesterPhone || bodyPhoneRaw || fallbackPhoneRaw || '';
                 const messageContent = `🏠 NOUVELLE RÉSERVATION\n\n` +
                     `📋 Référence: ${reservation.reference}\n` +
                     `🏠 Bien: ${property.titre}\n` +
-                    `📅 Date: ${formatVisitDate(date)}\n` +
-                    `📞 Téléphone: ${telephone}${isWhatsapp ? ' (WhatsApp)' : ''}\n` +
-                    `👤 Client: ${user?.name || user?.nom || 'Client'}\n` +
+                    `📅 Date: ${formatVisitDate(when)}\n` +
+                    `📞 Téléphone: ${phoneLabel}${isWhatsapp ? ' (WhatsApp)' : ''}\n` +
+                    `👤 Client: ${requesterName}\n` +
                     `📊 Statut: En attente de confirmation\n\n` +
                     `Veuillez traiter cette demande dans le panel d'administration.`;
 
                 await Message.create({
-                    expediteur: user._id,
+                    expediteur: requester._id,
                     destinataire: adminUser._id,
                     sujet: `Nouvelle réservation - ${property.titre}`,
                     contenu: messageContent,

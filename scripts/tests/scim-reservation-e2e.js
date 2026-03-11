@@ -45,7 +45,12 @@ const buildScimLocalDate = ({ offsetMinutes = 60, dayOffset = 1, hour = 11, minu
     const d = pad(local.getUTCDate());
     const hh = pad(local.getUTCHours());
     const mm = pad(local.getUTCMinutes());
-    return `${y}-${m}-${d}T${hh}:${mm}`;
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const offsetAbs = Math.abs(offsetMinutes);
+    const offH = pad(Math.floor(offsetAbs / 60));
+    const offM = pad(offsetAbs % 60);
+    // Include timezone to satisfy Joi.date().iso() and keep SCIM local time explicit
+    return `${y}-${m}-${d}T${hh}:${mm}:00${sign}${offH}:${offM}`;
 };
 
 const callApi = async (url, { method = 'GET', token = '', body } = {}) => {

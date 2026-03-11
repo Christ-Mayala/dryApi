@@ -28,6 +28,7 @@ module.exports = asyncHandler(async (req, res) => {
     const [properties, total] = await Promise.all([
         Property.find(query)
             .populate('utilisateur', 'name nom email')
+            .populate('adminReference', 'name nom email')
             .sort({ createdAt: -1 })
             .limit(limit)
             .skip(skip),

@@ -109,6 +109,8 @@ const express = require('express');
 const router = express.Router();
 
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
+const { validateSCIM } = require('../../../validation/middleware');
 
 const createReservation = require('../controller/reservation.create.controller');
 const getMyReservations = require('../controller/reservation.my.controller');
@@ -124,7 +126,7 @@ const updateReservationStatus = require('../controller/reservation.status.contro
 
 
 
-router.post('/', protect, createReservation);
+router.post('/', protect, validateSCIM.reservation.create, createReservation);
 
 
 
@@ -148,7 +150,7 @@ router.get('/owner', protect, getOwnerReservations);
 
 
 
-router.patch('/:id/cancel', protect, cancelReservation);
+router.patch('/:id/cancel', protect, validateId, cancelReservation);
 
 
 
@@ -156,7 +158,7 @@ router.patch('/:id/cancel', protect, cancelReservation);
 
 
 
-router.patch('/:id/confirm', protect, confirmReservation);
+router.patch('/:id/confirm', protect, validateId, confirmReservation);
 
 
 
@@ -164,10 +166,10 @@ router.patch('/:id/confirm', protect, confirmReservation);
 
 
 
-router.patch('/:id/ack', protect, acknowledgeReservation);
+router.patch('/:id/ack', protect, validateId, acknowledgeReservation);
 
 // Route pour mettre à jour le statut d'une réservation
-router.patch('/:id/status', protect, updateReservationStatus);
+router.patch('/:id/status', protect, validateId, validateSCIM.reservation.update, updateReservationStatus);
 
 
 
@@ -175,7 +177,7 @@ router.patch('/:id/status', protect, updateReservationStatus);
 
 
 
-router.get('/:id', protect, getReservationById);
+router.get('/:id', protect, validateId, getReservationById);
 
 
 

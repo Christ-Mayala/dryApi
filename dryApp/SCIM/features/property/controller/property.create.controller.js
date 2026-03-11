@@ -1,6 +1,7 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { pickDefined } = require('../../../../../dry/utils/data/pick');
+const { triggerSitemapRegeneration } = require('../../../utils/triggerSitemap');
 
 const PropertySchema = require('../model/property.schema');
 
@@ -14,9 +15,8 @@ module.exports = asyncHandler(async (req, res) => {
     const Property = req.getModel('Property', PropertySchema);
 
     if (!req.files || !req.files.images || req.files.images.length === 0) {
-        return sendResponse(res, null, 'Au moins une image est requise pour une propriété.', 400);
+        return sendResponse(res, null, 'Au moins une image est requise pour une propriete.', 400);
     }
-
 
     const payload = {
         ...pickDefined(req.body, [
@@ -45,8 +45,12 @@ module.exports = asyncHandler(async (req, res) => {
         ]),
         images: toImages(req.files.images),
         utilisateur: req.user.id,
+        adminReference: req.user.id,
+        submissionSource: 'admin_direct',
     };
 
     const property = await Property.create(payload);
-    return sendResponse(res, property, 'Annonce créée avec succès.');
+    triggerSitemapRegeneration('property-create');
+
+    return sendResponse(res, property, 'Annonce creee avec succes.');
 });

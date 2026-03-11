@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const config = require('../../../config/database');
 
 // Limiteur specifique pour les routes d'authentification (login/register).
@@ -11,8 +12,8 @@ const authLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req) => {
-        // Utiliser l'IP comme clé de fallback
-        return req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+        const ip = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown-ip';
+        return ipKeyGenerator(ip);
     },
     message: {
         success: false,

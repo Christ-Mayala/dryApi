@@ -1,7 +1,8 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const cloudinary = require('cloudinary').v2;
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { pickDefined } = require('../../../../../dry/utils/data/pick');
+const { triggerSitemapRegeneration } = require('../../../utils/triggerSitemap');
 
 const PropertySchema = require('../model/property.schema');
 
@@ -12,12 +13,7 @@ const toImages = (files = []) => {
 };
 
 module.exports = asyncHandler(async (req, res) => {
-    console.log('🔍 DEBUG - Update Property Request:', {
-        params: req.params,
-        body: req.body,
-        files: req.files?.length || 0,
-        user: req.user?.role
-    });
+    const uploadedImages = Array.isArray(req.files?.images) ? req.files.images : [];
 
     const Property = req.getModel('Property', PropertySchema);
 
@@ -26,10 +22,10 @@ module.exports = asyncHandler(async (req, res) => {
 
     const isAdmin = req.user.role === 'admin';
     if (!isAdmin) {
-        return sendResponse(res, null, 'Non autorisé.', false);
+        return sendResponse(res, null, 'Non autorise.', false);
     }
 
-    if (req.files && req.files.length > 0) {
+    if (uploadedImages.length > 0) {
         for (const img of property.images || []) {
             if (img.public_id) {
                 try {
@@ -37,7 +33,7 @@ module.exports = asyncHandler(async (req, res) => {
                 } catch (_) {}
             }
         }
-        property.images = toImages(req.files);
+        property.images = toImages(uploadedImages);
     }
 
     const updates = pickDefined(req.body, [
@@ -64,17 +60,17 @@ module.exports = asyncHandler(async (req, res) => {
         'jardin',
     ]);
 
-    console.log('🔍 DEBUG - Updates to apply:', updates);
-
     Object.assign(property, updates);
 
     if (req.body?.status) {
         property.status = req.body.status;
     }
+    if (!property.adminReference) {
+        property.adminReference = req.user.id;
+    }
 
     await property.save();
+    triggerSitemapRegeneration('property-update');
 
-    console.log('✅ DEBUG - Property updated successfully');
-
-    return sendResponse(res, property, 'Bien mis à jour avec succès.');
+    return sendResponse(res, property, 'Bien mis a jour avec succes.');
 });

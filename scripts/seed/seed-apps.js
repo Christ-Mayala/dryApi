@@ -1,10 +1,10 @@
 ﻿const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
-const { connectCluster, getTenantDB } = require('../dry/config/connection/dbConnection');
-const getModel = require('../dry/core/factories/modelFactory');
+const { connectCluster, getTenantDB } = require('../../dry/config/connection/dbConnection');
+const getModel = require('../../dry/core/factories/modelFactory');
 
-const DRY_APP = path.join(__dirname, '..', 'dryApp');
+const DRY_APP = path.join(__dirname, '..', '..', 'dryApp');
 
 const log = (msg) => console.log(`[seed-apps] ${msg}`);
 

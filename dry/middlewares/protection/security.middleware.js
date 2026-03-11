@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const helmet = require('helmet');
 const crypto = require('crypto');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -72,8 +73,8 @@ const setupSecurity = (app) => {
         keyGenerator: (req) => {
             const tokenBucket = getTokenBucket(req);
             if (tokenBucket) return `auth:${tokenBucket}`;
-            // Utiliser l'IP comme fallback direct
-            return req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown-ip';
+            const ip = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown-ip';
+            return ipKeyGenerator(ip);
         },
         skip: shouldSkipRateLimit,
         message: config.RATE_LIMIT.message,

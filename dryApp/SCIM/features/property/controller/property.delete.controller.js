@@ -1,6 +1,7 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const cloudinary = require('cloudinary').v2;
 const sendResponse = require('../../../../../dry/utils/http/response');
+const { triggerSitemapRegeneration } = require('../../../utils/triggerSitemap');
 
 const PropertySchema = require('../model/property.schema');
 
@@ -12,7 +13,7 @@ module.exports = asyncHandler(async (req, res) => {
 
     const isAdmin = req.user.role === 'admin';
     if (!isAdmin) {
-        return sendResponse(res, null, 'Non autorisé.', false);
+        return sendResponse(res, null, 'Non autorise.', false);
     }
 
     for (const img of property.images || []) {
@@ -28,5 +29,7 @@ module.exports = asyncHandler(async (req, res) => {
     property.status = 'deleted';
     await property.save();
 
-    return sendResponse(res, null, 'Bien supprimé.');
+    triggerSitemapRegeneration('property-delete');
+
+    return sendResponse(res, null, 'Bien supprime.');
 });

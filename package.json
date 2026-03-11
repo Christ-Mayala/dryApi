@@ -35,6 +35,7 @@
     "monitor:health:watch": "node scripts/maintenance/monitor-health-runner.js",
     "seed:apps": "node scripts/seed/seed-apps.js",
     "seed:clean": "node scripts/seed/seed-clean.js",
+    "seed:scim:fixtures": "node scripts/seed/seed-scim-reservation-fixtures.js",
     "seed:refresh": "node scripts/seed/refresh-app-seeds.js",
     "test:strict": "node scripts/tests/test-runner.js --strict",
     "test:app": "node scripts/tests/test-runner.js --app",

@@ -6,7 +6,11 @@ const validateSCIM = {
   // Propriétés immobilières
   property: {
     create: validate(scimSchemas.property.create),
-    update: validate(scimSchemas.property.update)
+    update: validate(scimSchemas.property.update),
+    rate: validate(scimSchemas.property.rate),
+    submissionCreate: validate(scimSchemas.property.submissionCreate),
+    submissionReview: validate(scimSchemas.property.submissionReview),
+    submissionUpdate: validate(scimSchemas.property.submissionUpdate),
   },
 
   // Réservations

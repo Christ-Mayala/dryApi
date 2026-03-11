@@ -1,6 +1,6 @@
-const Joi = require('joi');
+﻿const Joi = require('joi');
 
-// Schémas de validation COMMUNS à toutes les applications
+// SchÃ©mas de validation COMMUNS Ã  toutes les applications
 const commonSchemas = {
   // Pagination
   pagination: Joi.object({
@@ -15,7 +15,7 @@ const commonSchemas = {
     'string.pattern.base': 'ID invalide'
   }),
 
-  // ID pour paramètres de route (requis)
+  // ID pour paramÃ¨tres de route (requis)
   paramId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
     'string.pattern.base': 'ID invalide'
   }),
@@ -27,18 +27,23 @@ const commonSchemas = {
 
   // Mot de passe
   password: Joi.string().min(6).required().messages({
-    'string.min': 'Le mot de passe doit contenir au moins 6 caractères'
+    'string.min': 'Le mot de passe doit contenir au moins 6 caractÃ¨res'
   }),
 
   // Nom
   name: Joi.string().min(2).max(100).required().messages({
-    'string.min': 'Le nom doit contenir au moins 2 caractères',
-    'string.max': 'Le nom ne peut pas dépasser 100 caractères'
+    'string.min': 'Le nom doit contenir au moins 2 caractÃ¨res',
+    'string.max': 'Le nom ne peut pas dÃ©passer 100 caractÃ¨res'
   }),
 
-  // Téléphone
-  phone: Joi.string().pattern(/^[+]?[\d\s-()]{10,}$/).messages({
-    'string.pattern.base': 'Numéro de téléphone invalide'
+  // TÃ©lÃ©phone
+  phone: Joi.string().trim().custom((value, helpers) => {
+    const digits = String(value || '').replace(/[^\d]/g, '');
+    if (!digits) return helpers.error('any.invalid');
+    if (digits.length < 9 || digits.length > 15) return helpers.error('any.invalid');
+    return value;
+  }).messages({
+    'any.invalid': 'Numero de telephone invalide'
   }),
 
   // Description
@@ -49,7 +54,7 @@ const commonSchemas = {
 
   // Prix
   price: Joi.number().positive().messages({
-    'number.positive': 'Le prix doit être positif'
+    'number.positive': 'Le prix doit Ãªtre positif'
   }),
 
   // Date
@@ -61,7 +66,7 @@ const commonSchemas = {
   status: Joi.string().valid('active', 'inactive', 'pending', 'deleted').default('active')
 };
 
-// Middleware de validation générique
+// Middleware de validation gÃ©nÃ©rique
 const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     const data = req[source];
@@ -83,15 +88,15 @@ const validate = (schema, source = 'body') => {
       });
     }
 
-    // Remplacer les données par les données validées et nettoyées
+    // Remplacer les donnÃ©es par les donnÃ©es validÃ©es et nettoyÃ©es
     req[source] = value;
     next();
   };
 };
 
-// Validation des paramètres ID
+// Validation des paramÃ¨tres ID
 const validateId = (req, res, next) => {
-  console.log('🔍 DEBUG - validateId:', {
+  console.log('ðŸ” DEBUG - validateId:', {
     id: req.params.id,
     idLength: req.params.id?.length,
     pattern: /^[0-9a-fA-F]{24}$/.test(req.params.id)
@@ -100,7 +105,7 @@ const validateId = (req, res, next) => {
   const { error } = commonSchemas.paramId.validate(req.params.id);
 
   if (error) {
-    console.log('❌ DEBUG - Validation error:', error);
+    console.log('âŒ DEBUG - Validation error:', error);
     return res.status(400).json({
       success: false,
       message: 'ID invalide',
@@ -108,7 +113,7 @@ const validateId = (req, res, next) => {
     });
   }
 
-  console.log('✅ DEBUG - ID validation passed');
+  console.log('âœ… DEBUG - ID validation passed');
   next();
 };
 
@@ -117,3 +122,4 @@ module.exports = {
   validate,
   validateId
 };
+

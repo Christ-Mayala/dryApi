@@ -1,91 +1,49 @@
-/**
- * @swagger
- * /api/v1/scim/reservation/{id}/status:
- *   patch:
- *     summary: Mettre à jour le statut d'une réservation
- *     tags: [SCIM]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *       - name: status
- *         in: body
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             status:
- *               type: string
- *               enum: [en_attente, confirmee, annulee, terminee]
- *     responses:
- *       200:
- *         description: Statut mis à jour
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
+const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
-const protect = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { buildStatusHistoryEntry, decorateReservationForClient } = require('./reservation.support.util');
 
-const updateReservationStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
+const ALLOWED_STATUSES = new Set(['en_attente', 'confirmee', 'annulee']);
+
+module.exports = asyncHandler(async (req, res) => {
+    const Reservation = req.getModel('Reservation', ReservationSchema);
+
     const { status } = req.body;
+    const nextStatus = String(status || '').trim().toLowerCase();
 
-    // Validation du statut
-    const statusValides = ['en_attente', 'confirmee', 'annulee', 'terminee'];
-    if (!statusValides.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Statut invalide. Statuts valides: en_attente, confirmee, annulee, terminee',
-        data: null
-      });
+    if (!ALLOWED_STATUSES.has(nextStatus)) {
+        return sendResponse(res, null, 'Statut invalide. Valeurs: en_attente, confirmee, annulee.', false);
     }
 
-    // Vérifier si la réservation existe
-    const reservation = await ReservationSchema.findById(id);
-    if (!reservation) {
-      return res.status(404).json({
-        success: false,
-        message: 'Réservation non trouvée',
-        data: null
-      });
+    const reservation = await Reservation.findById(req.params.id).populate('property', 'utilisateur');
+    if (!reservation) return sendResponse(res, null, 'Reservation introuvable.', false);
+
+    const isOwner = String(reservation.property?.utilisateur || '') === String(req.user.id);
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+        return sendResponse(res, null, 'Non autorise.', false);
     }
 
-    // Mettre à jour le statut
-    const updatedReservation = await ReservationSchema.findByIdAndUpdate(
-      id,
-      { 
-        status,
-        updatedAt: new Date()
-      },
-      { new: true, runValidators: true }
-    );
+    reservation.status = nextStatus;
+    reservation.statusHistory = [
+        ...(Array.isArray(reservation.statusHistory) ? reservation.statusHistory : []),
+        buildStatusHistoryEntry({
+            status: nextStatus,
+            actorId: req.user.id,
+            note: `Statut modifie vers ${nextStatus} via endpoint status.`,
+            source: 'web',
+        }),
+    ];
 
-    res.status(200).json({
-      success: true,
-      message: 'Statut de la réservation mis à jour avec succès',
-      data: updatedReservation
-    });
+    reservation.support = reservation.support || {};
+    reservation.support.lastContactAt = new Date();
+    reservation.support.lastContactChannel = 'status_update';
+    if (nextStatus === 'confirmee' && !reservation.support.confirmedAt) {
+        reservation.support.confirmedAt = new Date();
+    }
 
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du statut de la réservation:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur serveur lors de la mise à jour du statut',
-      data: null
-    });
-  }
-};
+    await reservation.save();
 
-module.exports = updateReservationStatus;
+    return sendResponse(res, decorateReservationForClient(reservation), 'Statut de reservation mis a jour.');
+});
