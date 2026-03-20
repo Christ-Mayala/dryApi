@@ -390,7 +390,6 @@ const templates = {
       getAll: `${base}\n// GET ALL - retourne une liste paginee via queryBuilder\nmodule.exports = asyncHandler(async (req, res) => {\n  // res.advancedResults est rempli par le middleware queryBuilder\n  const { data, pagination } = res.advancedResults || { data: [], pagination: null };\n  return sendResponse(res, data, 'Liste recuperee', true, pagination || undefined);\n});\n`,
 
       create: `${base}\n// CREATE - cree un element\nmodule.exports = asyncHandler(async (req, res) => {\n  const Model = req.getModel('${modelName}', ${modelName}Schema);\n  const payload = { ...req.body };\n  if (req.user?.id) payload.createdBy = req.user.id;\n  const item = await Model.create(payload);\n  return sendResponse(res, item, '${modelName} cree');\n});\n`,
-
       getById: `${base}\n// GET BY ID - recupere un element par ID\nmodule.exports = asyncHandler(async (req, res) => {\n  const Model = req.getModel('${modelName}', ${modelName}Schema);\n  const item = await Model.findById(req.params.id);\n  if (!item) throw new Error('${modelName} introuvable');\n  return sendResponse(res, item, '${modelName} recupere');\n});\n`,
 
       update: `${base}\n// UPDATE - met a jour un element par ID\nmodule.exports = asyncHandler(async (req, res) => {\n  const Model = req.getModel('${modelName}', ${modelName}Schema);\n  const payload = { ...req.body };\n  if (req.user?.id) payload.updatedBy = req.user.id;\n  const item = await Model.findByIdAndUpdate(req.params.id, payload, { new: true, runValidators: true });\n  if (!item) throw new Error('${modelName} introuvable');\n  return sendResponse(res, item, '${modelName} mis a jour');\n});\n`,
@@ -403,7 +402,166 @@ const templates = {
 
   routes: (featureName, modelName, appName, options = {}, fields = []) => {
     const swaggerSchema = buildSwaggerSchema(fields);
-    return `const express = require('express');\nconst router = express.Router();\n\nconst { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');\nconst { validateId, validateQuery } = require('../../../../../dry/middlewares/validation/validation.middleware');\nconst { validate${appName}, ensureLabel } = require('../../../validation/middleware');\nconst { cache, invalidateCache } = require('../../../../../dry/middlewares/cache/cache.middleware');\nconst { withAudit } = require('../../../../../dry/middlewares/audit');\nconst queryBuilder = require('../../../../../dry/middlewares/query/queryBuilder');\nconst ${modelName}Schema = require('../model/${featureName}.schema');\n${options.ultraPro ? "// Mode Professionnel: securite globale geree par le DRY (security.middleware.js)\\n" : ''}\n\nconst create = require('../controller/${featureName}.create.controller');\nconst getAll = require('../controller/${featureName}.getAll.controller');\nconst getById = require('../controller/${featureName}.getById.controller');\nconst update = require('../controller/${featureName}.update.controller');\nconst remove = require('../controller/${featureName}.delete.controller');\n\n${options.ultraPro ? `// Mode Professionnel: securite globale activee dans le serveur\\n` : ''}\n\n// Injection du modele dynamique pour ce tenant (multi-tenant)\nconst setupModel = (req, res, next) => {\n  req.targetModel = req.getModel('${modelName}', ${modelName}Schema);\n  next();\n};\n\n// Query builder generique reutilisable (tri, pagination, filtres)\nconst dynamicQB = async (req, res, next) => await queryBuilder(req.targetModel)(req, res, next);\n\n// =========================\n// Routes publiques (lecture)\n// =========================\n/**\n * @swagger\n * /api/v1/${appName.toLowerCase()}/${featureName}:\n *   get:\n *     summary: Lister ${modelName}\n *     tags: [${appName}]\n *     parameters:\n *       - in: query\n *         name: page\n *         schema:\n *           type: integer\n *           default: 1\n *       - in: query\n *         name: limit\n *         schema:\n *           type: integer\n *           default: 10\n *     responses:\n *       200:\n *         description: Liste ${modelName}\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/SuccessResponse'\n *       400:\n *         description: Erreur\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/ErrorResponse'\n */\nrouter.get('/', setupModel, validateQuery.pagination, cache(300), dynamicQB, getAll);\n\n/**\n * @swagger\n * /api/v1/${appName.toLowerCase()}/${featureName}/{id}:\n *   get:\n *     summary: Recuperer ${modelName} par ID\n *     tags: [${appName}]\n *     parameters:\n *       - name: id\n *         in: path\n *         required: true\n *         schema:\n *           type: string\n *     responses:\n *       200:\n *         description: ${modelName} recupere\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/SuccessResponse'\n *       400:\n *         description: Erreur\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/ErrorResponse'\n */\nrouter.get('/:id', validateId, cache(600), getById);\n\n// ==============================================\n// Routes admin securisees (ecriture / modification)\n// ==============================================\n/**\n * @swagger\n * /api/v1/${appName.toLowerCase()}/${featureName}:\n *   post:\n *     summary: Creer ${modelName}\n *     tags: [${appName}]\n *     requestBody:\n *       required: true\n *       content:\n *         application/json:\n *           schema:\n *             type: object\n *             properties:\n${swaggerSchema}\n *     responses:\n *       200:\n *         description: ${modelName} cree\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/SuccessResponse'\n *       400:\n *         description: Erreur\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/ErrorResponse'\n */\nrouter.post(\n  '/',\n  protect,\n  authorize('admin'),\n  ensureLabel('${featureName}'),\n  validate${appName}.${featureName}.create,\n  withAudit('${featureName.toUpperCase()}_CREATE'),\n  invalidateCache(),\n  create\n);\n\n/**\n * @swagger\n * /api/v1/${appName.toLowerCase()}/${featureName}/{id}:\n *   put:\n *     summary: Mettre a jour ${modelName}\n *     tags: [${appName}]\n *     parameters:\n *       - name: id\n *         in: path\n *         required: true\n *         schema:\n *           type: string\n *     requestBody:\n *       required: true\n *       content:\n *         application/json:\n *           schema:\n *             type: object\n *             properties:\n${swaggerSchema}\n *     responses:\n *       200:\n *         description: ${modelName} mis a jour\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/SuccessResponse'\n *       400:\n *         description: Erreur\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/ErrorResponse'\n */\nrouter.put(\n  '/:id',\n  protect,\n  authorize('admin'),\n  validateId,\n  ensureLabel('${featureName}'),\n  validate${appName}.${featureName}.update,\n  withAudit('${featureName.toUpperCase()}_UPDATE'),\n  invalidateCache(),\n  update\n);\n\n/**\n * @swagger\n * /api/v1/${appName.toLowerCase()}/${featureName}/{id}:\n *   delete:\n *     summary: Supprimer ${modelName}\n *     tags: [${appName}]\n *     parameters:\n *       - name: id\n *         in: path\n *         required: true\n *         schema:\n *           type: string\n *     responses:\n *       200:\n *         description: ${modelName} supprime\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/SuccessResponse'\n *       400:\n *         description: Erreur\n *         content:\n *           application/json:\n *             schema:\n *               $ref: '#/components/schemas/ErrorResponse'\n */\nrouter.delete(\n  '/:id',\n  protect,\n  authorize('admin'),\n  validateId,\n  withAudit('${featureName.toUpperCase()}_DELETE'),\n  invalidateCache(),\n  remove\n);\n\nmodule.exports = router;\n`;
+    return `const express = require('express');
+const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
+const ${modelName}Schema = require('../model/${featureName}.schema');
+const upload = require('../../../../../dry/services/cloudinary/cloudinary.service');
+const { validate${appName} } = require('../../../validation/middleware');
+
+/**
+ * @swagger
+ * /api/v1/${appName.toLowerCase()}/${featureName}:
+ *   get:
+ *     summary: Lister ${modelName}
+ *     tags: [${appName}]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Liste ${modelName}
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   post:
+ *     summary: Creer ${modelName}
+ *     tags: [${appName}]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+${swaggerSchema}
+ *     responses:
+ *       200:
+ *         description: ${modelName} cree
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * /api/v1/${appName.toLowerCase()}/${featureName}/{id}:
+ *   get:
+ *     summary: Recuperer ${modelName} par ID
+ *     tags: [${appName}]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: ${modelName} recupere
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   put:
+ *     summary: Mettre a jour ${modelName}
+ *     tags: [${appName}]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+${swaggerSchema}
+ *     responses:
+ *       200:
+ *         description: ${modelName} mis a jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   delete:
+ *     summary: Supprimer ${modelName}
+ *     tags: [${appName}]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: ${modelName} supprime
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Erreur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+// Utilisation du Router Factory "DRY" pour generer toutes les routes CRUD
+// Cela remplace les contrôleurs manuels et simplifie la maintenance
+const router = buildCrudRouter('${modelName}', ${modelName}Schema, {
+  auth: {
+    create: 'admin',
+    update: 'admin',
+    delete: 'admin'
+  },
+  caching: {
+    list: 300,
+    get: 600
+  },
+  validation: {
+    create: validate${appName}.${featureName}.create,
+    update: validate${appName}.${featureName}.update
+  },
+  // Audit activé par défaut
+  audit: true
+});
+
+module.exports = router;
+`;
   },
 
   schemas: (appKey, features) => {
@@ -520,7 +678,7 @@ module.exports = { validate${appName}, ensureLabel };
           const key = k.trim();
           if (!key) return;
           const lower = key.toLowerCase();
-          let value = `'exemple_${key}_' + index`;
+          let value = `'exemple_${key}_${index}'`;
           if (lower.includes('email')) value = '`demo+${Date.now()}@example.com`';
           else if (lower.includes('tel')) value = `'+22501020304'`;
           lines.push(`    ${key}: ${value}`);

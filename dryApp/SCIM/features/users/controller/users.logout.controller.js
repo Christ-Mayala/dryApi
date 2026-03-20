@@ -20,5 +20,6 @@ module.exports = asyncHandler(async (req, res) => {
     }
 
     res.clearCookie('rt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax' });
+    res.clearCookie('jwt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax' });
     return sendResponse(res, null, 'Déconnexion réussie.');
 });

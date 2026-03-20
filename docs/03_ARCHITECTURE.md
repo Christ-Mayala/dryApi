@@ -1,46 +1,69 @@
-# 🏗️ Architecture & Concepts (Under the Hood)
+# 🏗️ Architecture & Concepts (Niveau Expert)
 
-Ce document explique comment DRY fonctionne "sous le capot". Utile pour comprendre la magie.
-
-## 🧠 Le Noyau (Kernel) vs Les Apps
-Le projet est séparé en deux mondes :
-
-1. **`dry/` (Le Framework)** : C'est le moteur. Il contient tout ce qui est technique et répétitif (Connexion BDD, Sécurité, Gestion d'erreurs). **On ne touche jamais à ce dossier** pour des besoins métier.
-2. **`dryApp/` (Les Applications)** : C'est ton code métier. Chaque dossier ici est une application isolée.
-
-## 🏢 Le Multi-Tenant (Isolation des Données)
-DRY est conçu pour héberger plusieurs clients sur le même serveur sans mélanger leurs données.
-
-### Comment ça marche ?
-1. Une requête arrive sur `/api/v1/lastreet/products`.
-2. Le système détecte le segment `lastreet`.
-3. Il active la connexion à la base de données `LaStreetDB`.
-4. Si une autre requête arrive sur `/api/v1/immopro/products`, il active `ImmoProDB`.
-
-**Résultat** : Même si le code est le même, les données sont physiquement séparées.
-
-## 🔌 Le Plugin Mongoose (Champs Automatiques)
-Tu as remarqué que tes objets ont des champs que tu n'as pas créés (`slug`, `status`, `deletedAt`) ? C'est le **Plugin DRY**.
-
-Il est injecté automatiquement dans tous tes modèles et gère :
-- **Soft Delete** : Quand tu supprimes, ça met juste `status: 'deleted'`. La donnée reste en base mais devient invisible.
-- **Audit** : Remplit `createdBy` et `updatedBy` automatiquement avec l'ID de l'utilisateur connecté.
-- **Slugs** : Génère une URL propre (ex: "Mon Super Produit" -> "mon-super-produit") pour le SEO.
-
-## 🏭 Les Factories (Usines à Code)
-Pour éviter de copier-coller 50 fois le même code CRUD (Create, Read, Update, Delete), DRY utilise des "Factories".
-
-- **`modelFactory`** : Charge le bon modèle pour la bonne base de données.
-- **`crudFactory`** : Génère les fonctions de contrôleur standard (getAll, getOne, create, update, delete).
-
-## 🛡️ Sécurité (Par défaut)
-Tout est sécurisé sans que tu y penses :
-- **Helmet** : Cache les infos du serveur.
-- **Mongo Sanitize** : Empêche les pirates d'injecter des commandes NoSQL.
-- **Rate Limit** : Bloque les gens qui spam ton API.
-- **JWT** : Authentification par token sécurisée.
+Ce document décortique le fonctionnement interne du framework DRY. Comprendre ces concepts est essentiel pour ne pas "subir" l'architecture mais la maîtriser pour bâtir des systèmes complexes.
 
 ---
 
-## ⏭️ Prochaine étape
-Découvre les outils pour valider ton travail dans le **[Guide de Test](./04_TESTING_GUIDE.md)**.
+## 1. La Séparations des Responsabilités : Kernel vs Business
+
+L'architecture est scindée en deux couches hermétiques :
+
+### 🛡️ Le Kernel (`dry/`)
+C'est le "Cœur" du système. On n'y touche **JAMAIS** pour du code métier. Il contient :
+- **Services Globaux** : Alertes (Resend), Uploads (Cloudinary), Notifications (Socket.io).
+- **Middlewares Core** : Identification du tenant, Protection Auth, Audit, Cache.
+- **Factories** : `crudFactory` et `routerFactory`.
+- **Infrastructure** : Connexion MongoDB, gestion des erreurs chirurgicales.
+
+### 💼 Le Business Layer (`dryApp/`)
+C'est ton espace de travail. Ici, tu définis la valeur de ton application :
+- **Apps (Tenants)** : Chaque dossier est un client isolé.
+- **Features** : Chaque dossier est un module métier (ex: `product`, `order`).
+- **Modèles** : Définis par des Schémas Mongoose simples.
+
+---
+
+## 2. Le Moteur Multi-Tenant Dynamique 🏢
+
+L'un des plus grands atouts de DRY est sa capacité à gérer des bases de données multiples avec un seul code source.
+
+### Comment se fait la commutation ?
+Lorsqu'une requête arrive, le middleware `tenantContext` (dans `dry/middlewares/context`) analyse l'URL. 
+Si l'URL contient `spiritemeraude`, le système :
+1. Récupère la configuration de base de données spécifique à ce client.
+2. Utilise `modelFactory` pour "linker" tes schémas à cette base précise.
+3. Injecte cette connexion dans `req.getModel()`.
+
+> [!IMPORTANT]
+> Ne fais jamais `const MyModel = mongoose.model(...)`. 
+> Utilise toujours `const Model = req.getModel(...)` pour garantir que tu parles à la bonne base de données du bon client.
+
+---
+
+## 3. Le Plugin DRY (L'ADN de tes données) 🔌
+
+Chaque modèle dans DRY reçoit automatiquement un "ADN" technique via un plugin Mongoose global. 
+Cela signifie que même si tu ne les définis pas, tes objets auront toujours :
+
+- **`status`** : `active`, `inactive`, `deleted`, `banned`.
+- **`slug`** : Une version textuelle "URL-friendly" générée depuis ton champ `label`.
+- **Soft Delete** : La donnée n'est jamais supprimée de `MongoDB`. Elle passe juste en `status: deleted` et disparait des API via des filtres globaux.
+- **Audit Trace** : `createdBy` et `updatedBy` stockent automatiquement l'ID de l'utilisateur ayant fait l'action.
+
+---
+
+## 4. La Puissance des Factories 🏭
+
+Pourquoi écrire 100 lignes quand 5 suffisent ?
+
+- **`routerFactory`** : Un robot qui assemble les middlewares (auth, cache, audit, validation) et les branche sur les handlers CRUD.
+- **`crudFactory`** : Une usine qui génère les fonctions de contrôleur en gérant de base :
+  - La pagination intelligente via `queryBuilder`.
+  - Le tri dynamique.
+  - La gestion des erreurs 404 automatique.
+
+---
+
+## 🚀 Résumé pour le Développeur
+Tu fournis le **Schéma** (quoi stocker) et le **Routeur** (comment sécuriser). 
+DRY s'occupe de la **Base de données**, de la **Sécurité**, du **Cache** et du **Monitoring**.

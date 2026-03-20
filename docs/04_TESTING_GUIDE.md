@@ -1,50 +1,55 @@
-# 🧪 Guide de Test & Validation
+# 🧪 Guide de Test & Validation (Surgical Testing)
 
-Une fois ta fonctionnalité générée, comment savoir si elle marche ? Ce guide t'explique tout.
-
-## 🚀 La Méthode "CURL Rapide"
-
-À chaque génération de feature, DRY crée un fichier magique : **`TEST_CURL.md`**.
-Il se trouve dans `dryApp/<TonApp>/features/<TaFeature>/TEST_CURL.md`.
-
-### Comment l'utiliser ?
-
-1. **Ouvre ton terminal** (Git Bash sur Windows est recommandé).
-2. **Récupère un Token** (Si ta route est protégée) :
-   - Connecte-toi via la route `/login` (voir section Auth).
-   - Copie le token reçu (ex: `eyJhbGciOiJIUzI1...`).
-   - Exporte-le dans une variable pour ne pas le retaper :
-     ```bash
-     export TOKEN="ton_token_ici"
-     ```
-
-3. **Copie-colle les commandes** :
-   Le fichier `TEST_CURL.md` contient des commandes prêtes à l'emploi.
-
-   *Exemple de création :*
-   ```bash
-   curl -X POST http://localhost:5000/api/v1/monapp/products \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer $TOKEN" \
-     -d '{"name": "Test Produit", "price": 100}'
-   ```
-
-## 🔍 Tester avec Postman / Insomnia (Alternative)
-
-Si tu préfères une interface graphique :
-1. Importe l'URL de ton API.
-2. Dans l'onglet **Auth**, choisis **Bearer Token**.
-3. Colle ton token JWT.
-4. Lance tes requêtes.
-
-## 🐞 En cas d'erreur
-
-- **401 Unauthorized** : Ton token est invalide ou expiré. Refais un login.
-- **403 Forbidden** : Tu es connecté, mais tu n'as pas le droit (ex: il faut être admin).
-- **400 Bad Request** : Tu as oublié un champ obligatoire ou le format est mauvais. Regarde le message d'erreur, DRY te dit exactement ce qui manque (ex: `"price" is required`).
-- **500 Internal Server Error** : Oups, un bug serveur. Regarde les logs dans ton terminal `npm run dev` pour comprendre.
+Un expert ne teste pas au hasard. Ce guide t'apprend à valider ton travail avec la précision d'un ingénieur senior.
 
 ---
 
-## ⏭️ Prochaine étape
-Consulte la **[Référence API](./05_API_REFERENCE.md)** pour connaître toutes les options de filtrage et de tri disponibles.
+## 1. La Méthode "CURL Rapide" (L'Essentiel) ⚡
+
+Chaque feature générée possède son propre fichier **`TEST_CURL.md`**. 
+C'est ta première ligne de défense.
+
+### Workflow d'Expert :
+1.  **Authentification** : Récupère ton token JWT via `POST /api/v1/{app}/user/login`.
+2.  **Export du Token** : `export TOKEN="ton_token_ici"` dans ton terminal.
+3.  **Exécution** : Copie-colle les commandes du fichier pour tester le CRUD (Lister, Créer, Voir, Modifier, Supprimer).
+
+---
+
+## 2. Validation Industrielle (Automatisée) 🤖
+
+DRY inclut un moteur de test automatisé. Il ne se contente pas de vérifier si "ça répond", il vérifie la structure des données.
+
+### Lancer les tests :
+- **Tous les tests** : `npm run test`
+- **Uniquement ton application** : `npm run test:app -- --app=TestGuru`
+- **Une seule feature spécifique** : `npm run test:feature -- --app=TestGuru --feature=lesson`
+
+---
+
+## 3. Débogage Chirurgical (Que faire en cas d'erreur ?) 🐞
+
+Grâce au **Surgical Error Handling**, tu ne devrais jamais être perdu.
+
+- **400 Bad Request** : Joi a bloqué la requête. Regarde le champ `message` pour voir quel champ est invalide.
+- **401/403** : Problème de permissions. Vérifie si tu as le rôle `admin` dans ton profil utilisateur.
+- **500 Internal Error** : Consulte immédiatement tes emails ! Tu recevras un rapport avec l'extrait de code exact de l'erreur.
+- **Délai de Réponse Long** : Vérifie l'état de Redis ou de MongoDB via `GET http://localhost:5000/status`.
+
+---
+
+## 4. Outils Graphiques (Postman / Swagger) 🎨
+
+- **Swagger (Recommandé)** : [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+  C'est l'outil le plus précis car il est généré directement depuis ton code. Utilise le bouton "Authorize" en haut à droite pour coller ton Token.
+- **Postman** : Tu peux générer une collection Postman via `npm run postman:generate`.
+
+---
+
+## 💡 Pro Tip : Test de Charge (Stress Test)
+Si tu veux tester la robustesse de ton API avant la mise en ligne, utilise l'outil `ab` (Apache Benchmark) :
+`ab -n 100 -c 10 http://localhost:5000/api/v1/lastreet/product`
+*(Envoie 100 requêtes avec 10 connexions simultanées)*
+
+---
+*Un test réussi est un test qui a tenté de casser le code.*

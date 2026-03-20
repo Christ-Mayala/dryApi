@@ -61,8 +61,17 @@ const run = async () => {
         log(`${appName}: admin deja present`);
       }
 
-      // Seed individuel des apps desactive (on garde uniquement les users/admins)
-      log(`${appName}: seed individuel ignore`);
+      // Seed individuel des apps
+      const appSeedPath = path.join(dryAppPath, appName, 'seed.js');
+      if (fs.existsSync(appSeedPath)) {
+        log(`${appName}: lancement du seed specifique...`);
+        const appSeed = require(appSeedPath);
+        const { logSeed } = require('./seed-util'); // Helper pour logger les IDs generes
+        await appSeed({ appName, getModel, logSeed });
+        log(`${appName}: seed specifique termine`);
+      } else {
+        log(`${appName}: aucun seed specifique trouve`);
+      }
     } catch (error) {
       log(`${appName}: erreur seed -> ${error.message}`);
     }

@@ -1,12 +1,18 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const { verifyToken } = require('../../utils/auth/jwt.util');
 // Mise a jour chemin response (On remonte de middlewares/protection -> middlewares -> dry -> utils)
 const sendResponse = require('../../utils/http/response');
 
 const getTokenFromRequest = (req, allowQuery = false) => {
+    // 1. Chercher dans les cookies (HttpOnly) en priorité
+    if (req.cookies && req.cookies.jwt) {
+        return req.cookies.jwt;
+    }
+    // 2. Fallback sur le header Authorization (Bearer token)
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         return req.headers.authorization.split(' ')[1];
     }
+    // 3. Fallback sur la query (si explicitement autorisé)
     if (allowQuery && req.query && typeof req.query.token === 'string') {
         return req.query.token;
     }

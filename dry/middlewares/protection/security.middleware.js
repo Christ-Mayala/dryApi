@@ -81,9 +81,14 @@ const setupSecurity = (app) => {
     });
     app.use('/api', limiter);
 
-    // 3. Protection NoSQL Injection (Remplace la fonction sanitizeData manuelle)
-    // Supprime les clés commençant par $ ou contenant des .
-    // app.use(mongoSanitize());
+    // 3. Protection NoSQL Injection 
+    // Supprime les clés commençant par $ ou contenant des . en mutant les objets (Express 5 safe)
+    app.use((req, res, next) => {
+        if (req.body) mongoSanitize.sanitize(req.body);
+        if (req.query) mongoSanitize.sanitize(req.query);
+        if (req.params) mongoSanitize.sanitize(req.params);
+        next();
+    });
 };
 
 module.exports = setupSecurity;

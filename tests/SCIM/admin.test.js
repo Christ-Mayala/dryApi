@@ -1,8 +1,7 @@
-﻿const test = require('node:test');
+const test = require('node:test');
 const assert = require('node:assert/strict');
-const { ensureServer, loginAdmin } = require('../_helpers/api');
 
-const BASE_URL = process.env.SERVER_URL || 'http://localhost:5000';
+const BASE_URL = process.env.SERVER_URL || 'http://127.0.0.1:5000';
 const APP = 'scim';
 const FEATURE = 'admin';
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@dry.local';
@@ -12,16 +11,23 @@ const ensureFetch = () => {
   if (typeof fetch !== 'function') throw new Error('fetch indisponible (Node 18+ requis)');
 };
 
+const loginAdmin = async () => {
+  const res = await fetch(`${BASE_URL}/api/v1/user/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+  });
+  const json = await res.json();
+  return json?.data?.token || null;
+};
+
 test('CRUD admin (auto)', async () => {
   ensureFetch();
-
-  const serverOk = await ensureServer(BASE_URL);
-  if (!serverOk) return;
 
   const listRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`);
   assert.ok(listRes.status >= 200 && listRes.status < 500);
 
-  const token = await loginAdmin(BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD);
+  const token = await loginAdmin();
   if (!token) return;
 
   const payload = null;
@@ -59,4 +65,3 @@ test('CRUD admin (auto)', async () => {
   });
   assert.ok(deleteRes.status >= 200 && deleteRes.status < 500);
 });
-

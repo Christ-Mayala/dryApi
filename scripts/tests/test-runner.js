@@ -1,8 +1,8 @@
-﻿const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const TESTS_DIR = path.join(ROOT, 'tests');
 
 const getArg = (name) => {
@@ -15,9 +15,33 @@ const app = getArg('--app');
 const feature = getArg('--feature');
 const strict = process.argv.includes('--strict');
 
-let pattern = 'tests/**/*.test.js';
-if (app && feature) pattern = `tests/${app}/${feature}.test.js`;
-else if (app) pattern = `tests/${app}/*.test.js`;
+const getAllTestFiles = (dir, files = []) => {
+  if (!fs.existsSync(dir)) return files;
+  const list = fs.readdirSync(dir);
+  for (const item of list) {
+    const fullPath = path.join(dir, item);
+    if (fs.statSync(fullPath).isDirectory()) {
+      getAllTestFiles(fullPath, files);
+    } else if (item.endsWith('.test.js')) {
+            const relative = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+      files.push(relative);
+    }
+  }
+  return files;
+};
+
+const testFiles = getAllTestFiles(TESTS_DIR);
+console.log(`[debug] Discovered ${testFiles.length} test files`);
+
+if (app && feature) {
+  const target = `tests/${app}/${feature}.test.js`;
+  pattern = testFiles.includes(target) ? target : null;
+} else if (app) {
+  const prefix = `tests/${app}/`;
+  pattern = testFiles.filter(f => f.startsWith(prefix));
+} else {
+  pattern = testFiles;
+}
 
 const jsonPath = path.join(ROOT, 'logs', 'test-results.json');
 try {
@@ -27,10 +51,15 @@ try {
 const env = { ...process.env };
 if (strict) env.TEST_STRICT = 'true';
 
-const args = ['--test', pattern, '--test-reporter', 'tap'];
-const res = spawnSync(process.execPath, args, { stdio: ['ignore', 'pipe', 'pipe'], env });
+let raw = '';
+const filesToRun = Array.isArray(pattern) ? pattern : [pattern].filter(Boolean);
 
-const raw = res.stdout.toString();
+for (const file of filesToRun) {
+  const args = ['--test', file, '--test-reporter', 'tap'];
+  const res = spawnSync(process.execPath, args, { stdio: ['ignore', 'pipe', 'pipe'], env, cwd: ROOT });
+  raw += res.stdout.toString() + '\n';
+}
+
 fs.writeFileSync(jsonPath, raw, 'utf8');
 
 // Parser le format TAP
@@ -59,10 +88,10 @@ for (const line of lines) {
     }
   }
   
-  // Parser le résumé final
-  const summaryMatch = line.match(/^# (tests|pass|fail|cancelled|skipped|todo)\s+(\d+)$/);
-  if (summaryMatch) {
-    const key = summaryMatch[1];
+    // Parser le résumé final (supporte # ou ℹ)
+    const summaryMatch = line.match(/^[#ℹi]\s+(tests|pass|fail|cancelled|skipped|todo)\s+(\d+)$/i);
+    if (summaryMatch) {
+      const key = summaryMatch[1].toLowerCase();
     const value = parseInt(summaryMatch[2]);
     
     let summaryEvent = events.find(e => e.type === 'test:summary');
@@ -72,12 +101,12 @@ for (const line of lines) {
     }
     
     switch (key) {
-      case 'tests': summaryEvent.data.total = value; break;
-      case 'pass': summaryEvent.data.passed = value; break;
-      case 'fail': summaryEvent.data.failed = value; break;
-      case 'cancelled': summaryEvent.data.cancelled = value; break;
-      case 'skipped': summaryEvent.data.skipped = value; break;
-      case 'todo': summaryEvent.data.todo = value; break;
+      case 'tests': summaryEvent.data.total = (summaryEvent.data.total || 0) + value; break;
+      case 'pass': summaryEvent.data.passed = (summaryEvent.data.passed || 0) + value; break;
+      case 'fail': summaryEvent.data.failed = (summaryEvent.data.failed || 0) + value; break;
+      case 'cancelled': summaryEvent.data.cancelled = (summaryEvent.data.cancelled || 0) + value; break;
+      case 'skipped': summaryEvent.data.skipped = (summaryEvent.data.skipped || 0) + value; break;
+      case 'todo': summaryEvent.data.todo = (summaryEvent.data.todo || 0) + value; break;
     }
   }
   

@@ -73,7 +73,7 @@ module.exports = asyncHandler(async (req, res) => {
         return sendResponse(res, { submission, property: created }, 'Soumission approuvee et bien publie.');
     }
 
-    // Rejet demande: suppression definitive de la soumission pour la retirer de la liste.
-    await submission.deleteOne();
-    return sendResponse(res, null, 'Soumission rejetee et supprimee.');
+    // Rejet demande: On conserve dans l'historique et on met a jour
+    await submission.save();
+    return sendResponse(res, { submission }, 'Soumission rejetee et conservee dans l\'historique.');
 });

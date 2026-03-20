@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
-const { refreshCookieOptions } = require('../../../../../dry/utils/http/cookies');
+const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
 const { isValidContactPhone, normalizePhoneE164 } = require('../../reservation/controller/reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
@@ -47,6 +47,7 @@ module.exports = asyncHandler(async (req, res) => {
     await user.save();
 
     res.cookie('rt', rt, refreshCookieOptions());
+    res.cookie('jwt', token, accessTokenCookieOptions());
 
     return sendResponse(
         res,

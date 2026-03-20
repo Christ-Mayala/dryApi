@@ -29,48 +29,64 @@ module.exports = function (schema, options) {
     schema.add(baseFields);
 
     // ---------------------------------------------------------
-    // 2. Middleware Pre-save : Logic Metier & Audit Prep
+    // 2. Fonctions Utilitaires DRY
+    // ---------------------------------------------------------
+    const generateDryMetadata = (doc) => {
+        // [LOGIC] Garantir un label si absent (source principale du slug)
+        if (!doc.label) {
+            const sourceLabel =
+                doc.name ||
+                doc.titre ||
+                doc.title ||
+                doc.subject ||
+                doc.nom ||
+                doc.prenom ||
+                doc.email;
+
+            if (sourceLabel) {
+                doc.label = sourceLabel;
+            } else {
+                // Fallback: premier champ string du schema
+                const stringPath = Object.values(schema.paths).find(
+                    (p) => p?.instance === 'String' && !['__v', 'slug', 'label'].includes(p.path)
+                );
+                if (stringPath && doc[stringPath.path]) {
+                    doc.label = doc[stringPath.path];
+                }
+            }
+        }
+
+        // [LOGIC] Generation de Slug
+        if (!doc.slug) {
+            const source = doc.name || doc.label || doc.titre || doc.title || doc.subject;
+            if (source) {
+                doc.slug = slugify(source, { lower: true, strict: true }) + '-' + Date.now().toString().slice(-4);
+            }
+        }
+
+        // [LOGIC] Gestion Soft Delete
+        if (doc.status === 'deleted' && !doc.deletedAt) {
+            doc.deletedAt = new Date();
+        }
+    };
+
+    // ---------------------------------------------------------
+    // 3. Middlewares Pre-save (Document)
     // ---------------------------------------------------------
     schema.pre('save', async function () {
         // [AUDIT] Capture l'etat avant modification pour le log
         this._wasNew = this.isNew;
         this._modifiedPaths = this.modifiedPaths();
 
-        // [LOGIC] Garantir un label si absent (source principale du slug)
-        if (!this.label) {
-            const sourceLabel =
-                this.name ||
-                this.titre ||
-                this.title ||
-                this.subject ||
-                this.nom ||
-                this.prenom ||
-                this.email;
+        generateDryMetadata(this);
+    });
 
-            if (sourceLabel) {
-                this.label = sourceLabel;
-            } else {
-                // Fallback: premier champ string du schema
-                const stringPath = Object.values(schema.paths).find(
-                    (p) => p?.instance === 'String' && !['__v', 'slug', 'label'].includes(p.path)
-                );
-                if (stringPath && this[stringPath.path]) {
-                    this.label = this[stringPath.path];
-                }
-            }
-        }
-
-        // [LOGIC] Generation de Slug
-        if (!this.slug) {
-            const source = this.name || this.label || this.titre || this.title || this.subject;
-            if (source) {
-                this.slug = slugify(source, { lower: true, strict: true }) + '-' + Date.now().toString().slice(-4);
-            }
-        }
-
-        // [LOGIC] Gestion Soft Delete
-        if (this.isModified('status') && this.status === 'deleted' && !this.deletedAt) {
-            this.deletedAt = new Date();
+    // ---------------------------------------------------------
+    // 4. Middleware Pre-insertMany (Bulk)
+    // ---------------------------------------------------------
+    schema.pre('insertMany', async function (docs) {
+        if (Array.isArray(docs)) {
+            docs.forEach(doc => generateDryMetadata(doc));
         }
     });
 

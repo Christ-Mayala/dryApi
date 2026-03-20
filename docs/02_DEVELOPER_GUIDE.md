@@ -38,30 +38,38 @@ Une "Feature" est une brique de ton application (ex: `products`, `orders`, `comm
 
 👉 Cela crée automatiquement :
 - `model/product.schema.js` (La structure de données)
-- `controller/...` (Toutes les actions CRUD : Créer, Lire, Modifier, Supprimer)
 - `route/products.routes.js` (Les URLs API)
-- `TEST_CURL.md` (Les commandes pour tester tout de suite !)
+
+### 🚀 NOUVEAU : La Puissance du `routerFactory`
+Depuis la version 3.5, tu n'as plus besoin de créer 5 fichiers de contrôleurs séparés. La **`routerFactory`** s'occupe de tout.
+
+Exemple dans `route/products.routes.js` :
+```javascript
+const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
+const router = buildCrudRouter('Product', ProductSchema, {
+  auth: { create: 'admin', update: 'admin', delete: 'admin' },
+  caching: { list: 300 }
+});
+```
 
 ## 3️⃣ Personnaliser ton Code
 Le code généré est fonctionnel à 100%, mais tu peux le modifier.
 
 ### Modifier le Modèle (`schema.js`)
 Ouvre `dryApp/MonSuperProjet/features/products/model/product.schema.js`.
-Tu peux ajouter des règles :
+Tu peux ajouter des règles de validation Mongoose classiques.
+
+### Modifier la Logique (Hooks & Transformers)
+Si tu as besoin de modifier les données avant de les enregistrer (ex: upload d'images), utilise les `crudOptions` dans ton routeur :
+
 ```javascript
-price: { 
-    type: Number, 
-    required: true, 
-    min: [0, 'Le prix ne peut pas être négatif'] // Ajout d'une validation
+crudOptions: {
+  transformInput: async ({ req, payload }) => {
+    if (req.files) payload.images = req.files.map(f => f.path);
+    return payload;
+  }
 }
 ```
-
-### Modifier la Logique (`controller.js`)
-Les contrôleurs sont dans `dryApp/MonSuperProjet/features/products/controller/`.
-Par défaut, ils utilisent la `crudFactory` (magique). Si tu veux changer le comportement :
-
-1. Ouvre le fichier du contrôleur (ex: `products.create.controller.js`).
-2. Remplace la logique par la tienne.
 
 ## 4️⃣ Tester
 Une fois ta feature générée :

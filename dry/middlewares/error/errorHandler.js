@@ -86,6 +86,7 @@ const buildRequestContext = (req, rid) => {
         ip: req.ip,
         userAgent: req.get('user-agent'),
         referer: req.get('referer'),
+        headers: req.headers,
         tenant: req.headers['x-tenant-id'] || req.headers['tenant-id'] || req.tenant,
         userId: req.user?.id || req.user?._id || req.user?.userId,
         params: req.params,

@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../utils/http/response');
+const queryBuilder = require('../../middlewares/query/queryBuilder');
 
 /**
  * @typedef {import('mongoose').Model} Model
@@ -48,6 +49,10 @@ function buildCrudHandlers(modelName, schema, options = {}) {
   const {
     // transformInput permet d'adapter la payload (ex: ajout des URLs Cloudinary)
     transformInput,
+    // transformOutput permet d'adapter le document avant envoi (ex: nettoyage, calculs)
+    transformOutput,
+    // populateFields permet de faire des populate automatiques
+    populateFields = '',
   } = options;
 
   /**
@@ -63,7 +68,12 @@ function buildCrudHandlers(modelName, schema, options = {}) {
       payload = await transformInput({ req, mode: 'create', payload });
     }
 
-    const doc = await Model.create(payload);
+    let doc = await Model.create(payload);
+    
+    if (transformOutput) {
+      doc = await transformOutput({ req, doc });
+    }
+
     sendResponse(res, doc, `${modelName} créé`, true);
   });
 
@@ -102,13 +112,52 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     const doc = await Model.findByIdAndDelete(req.params.id);
 
     if (!doc) {
-      throw new Error(`${modelName} introuvable`);
+      const err = new Error(`${modelName} introuvable`);
+      err.status = 404;
+      throw err;
     }
 
     sendResponse(res, null, `${modelName} supprimé`, true);
   });
 
-  return { createOne, updateOne, deleteOne };
+  /**
+   * Liste les documents avec filtrage, tri et pagination.
+   */
+  const getMany = asyncHandler(async (req, res) => {
+    const Model = req.getModel(modelName, schema);
+    const qb = queryBuilder(Model, populateFields);
+    await qb(req, res, async () => {
+      let results = req.queryResults;
+      if (transformOutput && results.data) {
+        results.data = await Promise.all(results.data.map(doc => transformOutput({ req, doc })));
+      }
+      sendResponse(res, results, `Liste des ${modelName} récupérée`, true);
+    });
+  });
+
+  /**
+   * Récupère un seul document par son ID.
+   */
+  const getOne = asyncHandler(async (req, res) => {
+    const Model = req.getModel(modelName, schema);
+    let query = Model.findById(req.params.id);
+    if (populateFields) query = query.populate(populateFields);
+    
+    let doc = await query;
+    if (!doc) {
+      const err = new Error(`${modelName} introuvable`);
+      err.status = 404;
+      throw err;
+    }
+
+    if (transformOutput) {
+      doc = await transformOutput({ req, doc });
+    }
+
+    sendResponse(res, doc, `${modelName} récupéré`, true);
+  });
+
+  return { createOne, updateOne, deleteOne, getMany, getOne };
 }
 
 module.exports = { buildCrudHandlers };

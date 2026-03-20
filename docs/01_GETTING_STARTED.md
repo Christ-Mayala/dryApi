@@ -1,58 +1,71 @@
-# 🚀 Démarrage Rapide (Getting Started)
+# 🚀 Démarrage Rapide (L'Expérience Google-Style)
 
-Bienvenue sur le framework **DRY API**. Ce guide va t'aider à installer et lancer ton premier projet en moins de 5 minutes.
+Bienvenue sur le framework **DRY API**. Ce document est ton point d'entrée pour installer un environnement de production en quelques minutes.
 
-## 📋 Prérequis
+---
 
-Avant de commencer, assure-toi d'avoir installé :
-- **Node.js** (version 16 ou supérieure)
-- **MongoDB** (doit être lancé localement ou avoir une URI distante)
-- **Git** (pour le versionning)
+## 📋 Prérequis Système
 
-## 🛠️ Installation
+Assure-toi que ton environnement respecte ces standards de fiabilité :
+- **Node.js** : v20.x (LTS) recommandé.
+- **MongoDB** : v6.0+ (Local ou Atlas).
+- **RAM** : 512MB minimum (Le kernel est optimisé pour les processeurs à 1 cœur).
 
-1. **Cloner le projet**
-   ```bash
-   git clone <ton-repo-url>
-   cd dryApi
-   ```
+---
 
-2. **Installer les dépendances**
-   ```bash
-   npm install
-   ```
+## 🛠️ Installation Chirurgicale
 
-3. **Configurer l'environnement**
-   Copie le fichier d'exemple pour créer ton fichier de configuration :
-   ```bash
-   cp .env.exemple .env
-   ```
-   
-   Ouvre le fichier `.env` et vérifie les points clés :
-   - `MONGO_URI` : L'adresse de ta base de données (ex: `mongodb://localhost:27017/DryBase`)
-   - `JWT_SECRET` : Une clé secrète pour sécuriser les tokens (ex: `super_secret_key_123`)
+1.  **Clonage du Repository**
+    ```bash
+    git clone <votre-repo-url>
+    cd dryApi
+    ```
 
-## ▶️ Lancement
+2.  **Installation des Dépendances**
+    ```bash
+    npm install
+    # Note: Si tu es sur Windows et que tu as des erreurs de build, installe 'windows-build-tools'.
+    ```
 
-### Mode Développement (Recommandé)
-Ce mode redémarre automatiquement le serveur quand tu modifies un fichier.
+3.  **Configuration Environnementale**
+    Ne commence pas sans un fichier `.env` solide. Copie l'exemple :
+    ```bash
+    cp .env.exemple .env
+    ```
+    **Clés critiques à configurer :**
+    - `MONGO_URI` : L'URL de ta base principale (utilisée pour l'admin global).
+    - `JWT_SECRET` : Une chaîne de 64 caractères aléatoires (Sécurité maximale).
+    - `RESEND_API_KEY` : Pour recevoir les alertes de crash par mail.
+
+---
+
+## ▶️ Lancement & Modes
+
+### ⚡ Mode Développement (Agile)
+Utilisé pour coder en temps réel. Le serveur redémarre à chaque modification.
 ```bash
 npm run dev
 ```
 
-### Mode Production
-Ce mode est optimisé pour la performance et la sécurité.
+### 💎 Mode Production (Robuste)
+Utilise les optimisations du Kernel (HSTS, Cache durci, Compression).
 ```bash
 npm start
 ```
 
-## ✅ Vérification
+---
 
-Une fois lancé, ouvre ton navigateur :
-- **API Status** : [http://localhost:5000/](http://localhost:5000/) (Doit afficher "API Running...")
-- **Documentation Swagger** : [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+## ✅ Vérification de Santé (Health Check)
+
+Une fois le serveur lancé sur le port **5000**, effectue ces trois tests :
+
+1.  **Status Ping** : `GET http://localhost:5000/` 
+    - *Résultat attendu* : JSON avec `status: UP`.
+2.  **Documentation Native** : [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+    - *Résultat attendu* : Interface Swagger chargée.
+3.  **Logs de Démarrage** : Vérifie dans ton terminal qu'aucune erreur `DATABASE_CONNECTION_ERROR` n'apparaît.
 
 ---
 
-## ⏭️ Prochaine étape
-Maintenant que le serveur tourne, apprends à **[Créer ta première Application](./02_DEVELOPER_GUIDE.md)** !
+## ⏭️ Prochaine Étape
+Maintenant que ton moteur tourne, passe au **[Guide du Développeur](./02_DEVELOPER_GUIDE.md)** pour créer ta première application multi-tenant.

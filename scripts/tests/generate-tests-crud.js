@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const DRY_APP = path.join(ROOT, 'dryApp');
 const TESTS_DIR = path.join(ROOT, 'tests');
 
@@ -52,7 +52,7 @@ const testTemplate = (appName, featureName, payload) => {
   return `const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const BASE_URL = process.env.SERVER_URL || 'http://localhost:5000';
+const BASE_URL = process.env.SERVER_URL || 'http://127.0.0.1:5000';
 const APP = '${appName.toLowerCase()}';
 const FEATURE = '${featureName}';
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@dry.local';

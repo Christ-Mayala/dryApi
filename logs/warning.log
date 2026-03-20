@@ -159,3 +159,14 @@
 [06/03/2026 04:55:00] [WARN] Reservation notification non envoyee (RSV-20260306-8416C)
 [06/03/2026 09:04:44] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
 [11/03/2026 20:35:51] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[14/03/2026 14:16:15] [WARN] Reservation notification non envoyee (RSV-20260314-900B7)
+[14/03/2026 14:47:00] [WARN] Reservation notification non envoyee (RSV-20260314-900B7)
+[14/03/2026 21:06:31] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[15/03/2026 06:18:01] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[15/03/2026 11:49:31] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[16/03/2026 14:48:55] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[16/03/2026 19:52:38] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[17/03/2026 06:05:30] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[17/03/2026 09:11:38] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[17/03/2026 10:13:49] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[20/03/2026 10:46:54] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN

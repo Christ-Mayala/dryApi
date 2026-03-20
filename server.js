@@ -63,16 +63,25 @@ const sendProcessAlert = async (event, error, details = {}) => {
   try {
     const normalizedError = toErrorObject(error);
     const dedupKey = `process:${event}:${normalizedError.name || 'Error'}:${normalizedError.code || ''}:${normalizedError.message || ''}`;
+    
+    const mem = process.memoryUsage();
+    const healthInfo = {
+      ...details,
+      pid: process.pid,
+      nodeVersion: process.version,
+      uptime: Math.round(process.uptime()),
+      memory: {
+        rss: `${Math.round(mem.rss / 1024 / 1024)}MB`,
+        heapUsed: `${Math.round(mem.heapUsed / 1024 / 1024)}MB`
+      }
+    };
+
     await sendAlert({
       event,
       status: 'ERROR',
       timestamp: new Date().toISOString(),
       error: normalizedError,
-      details: {
-        ...details,
-        pid: process.pid,
-        nodeVersion: process.version,
-      },
+      details: healthInfo,
       dedupKey,
     });
   } catch (alertErr) {

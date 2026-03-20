@@ -122,6 +122,7 @@ const deleteProperty = require('../controller/admin.properties.delete.controller
 const listPropertySubmissions = require('../controller/admin.propertySubmissions.list.controller');
 const updatePropertySubmission = require('../controller/admin.propertySubmissions.update.controller');
 const updatePropertySubmissionStatus = require('../controller/admin.propertySubmissions.updateStatus.controller');
+const deletePropertySubmission = require('../controller/admin.propertySubmissions.delete.controller');
 
 const getAllUsers = require('../controller/admin.users.list.controller');
 const getUserById = require('../controller/admin.users.get.controller');
@@ -195,6 +196,7 @@ router.delete('/properties/:id', deleteProperty);
 router.get('/property-submissions', listPropertySubmissions);
 router.put('/property-submissions/:id', validateId, validateSCIM.property.submissionUpdate, updatePropertySubmission);
 router.put('/property-submissions/:id/status', validateId, validateSCIM.property.submissionReview, updatePropertySubmissionStatus);
+router.delete('/property-submissions/:id', validateId, deletePropertySubmission);
 
 
 

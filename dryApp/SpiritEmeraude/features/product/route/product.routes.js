@@ -1,4 +1,9 @@
 const express = require('express');
+const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
+const ProductSchema = require('../model/product.schema');
+const upload = require('../../../../../dry/services/cloudinary/cloudinary.service');
+const { validateSpiritEmeraude } = require('../../../validation/middleware');
+
 /**
  * @swagger
  * /api/v1/spiritemeraude/product:
@@ -104,84 +109,32 @@ const express = require('express');
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-
-
-const router = express.Router();
-const upload = require('../../../../../dry/services/cloudinary/cloudinary.service');
-const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
-const { validateQuery, validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
-const { validateSpiritEmeraude } = require('../../../validation/middleware');
-const { cache, invalidateCache } = require('../../../../../dry/middlewares/cache/cache.middleware');
-const queryBuilder = require('../../../../../dry/middlewares/query/queryBuilder');
-const { withAudit } = require('../../../../../dry/middlewares/audit');
-const ProductSchema = require('../model/product.schema');
-
-// Contrôleurs spécifiques produit
-const create = require('../controller/product.create.controller');
-const list = require('../controller/product.list.controller');
-const get = require('../controller/product.get.controller');
-const update = require('../controller/product.update.controller');
-const remove = require('../controller/product.delete.controller');
-
-// Injection du modèle dynamique pour ce tenant
-const setupModel = (req, res, next) => {
-  req.targetModel = req.getModel('Product', ProductSchema);
-  next();
-};
-
-// Query builder générique réutilisable (tri, pagination, filtres)
-const dynamicQB = async (req, res, next) => await queryBuilder(req.targetModel)(req, res, next);
-
-// Routes publiques avec cache
-
-
-
-
-
-router.get('/', setupModel, cache(300), dynamicQB, list);
-
-
-
-
-
-
-
-router.get('/:id', validateId, cache(600), get);
-
-
-
-// Routes admin sécurisées (écriture avec audit, validation et rôle admin)
-router.post(
-  '/',
-  protect,
-  authorize('admin'),
-  upload.array('images', 5),
-  validateSpiritEmeraude.product.create,
-  withAudit('PRODUCT_CREATE'),
-  invalidateCache(),
-  create,
-);
-
-router.put(
-  '/:id',
-  protect,
-  authorize('admin'),
-  validateId,
-  upload.array('images', 5),
-  validateSpiritEmeraude.product.update,
-  withAudit('PRODUCT_UPDATE'),
-  invalidateCache(),
-  update,
-);
-
-router.delete(
-  '/:id',
-  protect,
-  authorize('admin'),
-  validateId,
-  withAudit('PRODUCT_DELETE'),
-  invalidateCache(),
-  remove,
-);
+// Utilisation du Router Factory "DRY" pour générer toutes les routes CRUD
+// Cela remplace les 5 fichiers de contrôleurs et l'assemblage manuel
+const router = buildCrudRouter('Product', ProductSchema, {
+  auth: {
+    create: 'admin',
+    update: 'admin',
+    delete: 'admin'
+  },
+  caching: {
+    list: 300,
+    get: 600
+  },
+  upload: upload.array('images', 5),
+  validation: {
+    create: validateSpiritEmeraude.product.create,
+    update: validateSpiritEmeraude.product.update
+  },
+  crudOptions: {
+    // On transforme l'input pour inclure les images Cloudinary (DRY)
+    transformInput: async ({ req, payload }) => {
+      if (req.files && req.files.length > 0) {
+        payload.images = req.files.map(file => file.path);
+      }
+      return payload;
+    }
+  }
+});
 
 module.exports = router;

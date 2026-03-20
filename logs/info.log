@@ -9781,3 +9781,1458 @@
 [12/03/2026 01:47:54] [INFO] [68d1c593-2f8a-400a-a963-825ff11bea6d] GET /api/v1/scim/favoris 200 43ms
 [12/03/2026 01:47:54] [INFO] [a3388045-a30e-4d20-b956-5dab20b27e63] GET /api/v1/scim/reservation/my 200 55ms
 [12/03/2026 01:47:54] [INFO] [55d2c3ff-4c0f-434a-b03e-c184e623c6e0] GET /api/v1/scim/users/visited?limit=10 200 63ms
+[14/03/2026 11:12:46] [INFO] Email service configure avec Resend API
+[14/03/2026 11:12:49] [INFO] NotificationService initialized
+[14/03/2026 11:12:49] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 11:13:19] [INFO] [1f746c9f-5049-47f1-9255-c69f8f4c19f3] GET /api/v1/scim/users/profile 200 86ms
+[14/03/2026 11:13:19] [INFO] [0bc5b226-e705-4bf0-b3a6-804ea599d265] GET /api/v1/scim/users/profile 200 24ms
+[14/03/2026 11:13:19] [INFO] [82063103-84a3-41c5-a1be-8071d72cb737] GET /api/v1/scim/message/unread 200 154ms
+[14/03/2026 11:13:19] [INFO] [2144ee3a-8f0f-41b1-84e8-2097d6774d3f] GET /api/v1/scim/property?page=1&limit=6 200 243ms
+[14/03/2026 11:13:19] [INFO] [312ee5d4-d1a2-4d97-b34f-931698994ebb] GET /api/v1/scim/favoris 200 252ms
+[14/03/2026 11:13:19] [INFO] [97b156ff-ce77-4f70-aed0-952b88d83e5d] GET /api/v1/scim/message/unread 200 38ms
+[14/03/2026 11:13:19] [INFO] [0a4ef641-a411-46c6-9460-cea609976c4e] GET /api/v1/scim/message/inbox?page=1&limit=10 200 236ms
+[14/03/2026 11:13:19] [INFO] [1e849d8c-5342-442d-afe9-9e93661a6082] GET /api/v1/scim/property?page=1&limit=6 200 162ms
+[14/03/2026 11:13:19] [INFO] [14f96dde-4f5f-4924-9915-abf0cf833127] GET /api/v1/scim/favoris 200 245ms
+[14/03/2026 11:13:19] [INFO] [ffebbc46-7bc5-4883-8c45-01cb988b1826] GET /api/v1/scim/message/inbox?page=1&limit=10 200 316ms
+[14/03/2026 11:13:20] [INFO] [f3d52fc2-d95c-45cd-92f4-001c4fba3b96] GET /api/v1/scim/property?page=1&limit=6 200 148ms
+[14/03/2026 11:13:46] [INFO] [113f1915-cad0-429e-9ba8-7a09af022d11] POST /api/v1/scim/favoris/69a6fc346a1d8b92106e3235 200 139ms
+[14/03/2026 11:14:53] [INFO] [2bf056b6-2662-4413-b96e-a10d0273134c] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 85ms
+[14/03/2026 11:14:53] [INFO] [cca61968-62a1-4288-b99e-90f60f01356a] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 46ms
+[14/03/2026 11:14:53] [INFO] [15097e71-4db5-4a27-a45a-d167425f7e87] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 21ms
+[14/03/2026 11:14:53] [INFO] [fe9498a6-bc96-47de-af9b-c81e2b2bb2d9] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 32ms
+[14/03/2026 11:15:02] [INFO] [c7ca17af-2097-44d4-9d34-32a45bfc850b] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 21ms
+[14/03/2026 11:15:02] [INFO] [0cf73689-a813-4ae5-94dc-8e126371938d] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 149ms
+[14/03/2026 11:15:04] [INFO] [a3006bfc-dc93-41b3-b7fa-8ad2de96b35c] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 18ms
+[14/03/2026 11:15:04] [INFO] [64d9dd9a-9c98-4a1e-99d7-c0a0edad6ef5] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 21ms
+[14/03/2026 11:15:06] [INFO] [42286fa2-d37b-40fe-ae85-b0edb8fa3af5] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 16ms
+[14/03/2026 11:15:06] [INFO] [de491b59-a584-400d-aaa7-d989b545af3d] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 17ms
+[14/03/2026 11:15:17] [INFO] [2890e605-e995-4c6f-bb55-128e9c89e425] POST /api/v1/scim/property/69a6fc346a1d8b92106e322d/rate 200 19ms
+[14/03/2026 11:15:17] [INFO] [08dd2b63-e724-4d70-b657-af1ad056f8cc] GET /api/v1/scim/property/69a6fc346a1d8b92106e322d 200 18ms
+[14/03/2026 11:15:20] [INFO] [c829a9b4-b69c-4bf7-8a90-13b13d324d6d] GET /api/v1/scim/property/69a6fc346a1d8b92106e322d 200 87ms
+[14/03/2026 11:15:20] [INFO] [0f1c83ae-a19d-4ffd-bc24-e2ec3c6f98b7] GET /api/v1/scim/property/69a6fc346a1d8b92106e322d 200 118ms
+[14/03/2026 11:15:21] [INFO] [a891862f-4fa4-4486-aa30-1c292b5365f6] GET /api/v1/scim/property/69a6fc346a1d8b92106e322d/user-note 200 17ms
+[14/03/2026 11:15:21] [INFO] [b510b65c-22e9-4425-8ab0-b7fb2d3775b6] POST /api/v1/scim/property/69a6fc346a1d8b92106e322d/visit 200 144ms
+[14/03/2026 11:17:39] [INFO] [62855e3d-9782-415f-937a-589be16d11da] GET /api/v1/scim/property?page=1&limit=6 200 24ms
+[14/03/2026 11:17:39] [INFO] [e66145e8-2c7e-44ab-a92e-a794cc49ba05] GET /api/v1/scim/property?page=1&limit=6 200 22ms
+[14/03/2026 11:17:39] [INFO] [e31fb50a-f800-4934-be04-650447d90a1e] GET /api/v1/scim/property?page=1&limit=6 200 75ms
+[14/03/2026 11:17:44] [INFO] [6aacc0e3-6c5e-4170-827b-143c6caa19b9] GET /api/v1/scim/users/stats 200 26ms
+[14/03/2026 11:17:44] [INFO] [7dc0c207-b8db-461e-87a4-a6349cd57881] GET /api/v1/scim/users/stats 200 25ms
+[14/03/2026 11:18:04] [INFO] [e8ebbf60-7bbe-42ae-9717-ed3e06fe7dc4] GET /api/v1/scim/favoris 200 19ms
+[14/03/2026 11:18:04] [INFO] [891e32f1-43fb-4302-a708-1ab728e6062e] GET /api/v1/scim/favoris 200 36ms
+[14/03/2026 11:18:18] [INFO] [9797d810-8ced-477e-bf73-0ae23b3c52e9] GET /api/v1/scim/favoris 200 39ms
+[14/03/2026 11:18:18] [INFO] [c7e62d1f-33d7-4887-a56f-3ff592b8be2f] GET /api/v1/scim/users/visited?limit=10 200 88ms
+[14/03/2026 11:18:18] [INFO] [18c76523-258d-4186-9e98-aa5303fc5975] GET /api/v1/scim/reservation/my 200 113ms
+[14/03/2026 11:18:18] [INFO] [776004bd-1ba4-4366-8ff8-0c8c1a659dc1] GET /api/v1/scim/users/visited?limit=10 200 85ms
+[14/03/2026 11:18:18] [INFO] [cd6b5e68-5142-49e3-9a13-d6dcd2f87cb1] GET /api/v1/scim/favoris 200 91ms
+[14/03/2026 11:18:18] [INFO] [12bbbe25-2c80-4997-8ef0-3b57a33f3a25] GET /api/v1/scim/reservation/my 200 67ms
+[14/03/2026 11:38:39] [INFO] Email service configure avec Resend API
+[14/03/2026 11:38:42] [INFO] NotificationService initialized
+[14/03/2026 11:38:43] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 11:39:16] [INFO] Email service configure avec Resend API
+[14/03/2026 11:39:19] [INFO] NotificationService initialized
+[14/03/2026 11:39:19] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 11:39:19] [INFO] [3959d370-a1a4-413a-b975-029a60bf96e9] GET /api/v1/scim/message/unread 200 82ms
+[14/03/2026 11:39:41] [INFO] Email service configure avec Resend API
+[14/03/2026 11:39:44] [INFO] NotificationService initialized
+[14/03/2026 11:39:44] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 11:39:44] [INFO] [73aae8eb-861e-461c-871c-e05a0e7fe2cc] GET /api/v1/scim/message/unread 200 68ms
+[14/03/2026 11:40:30] [INFO] [03d7068d-607b-4fc7-ac68-a809b4792c95] GET /api/v1/scim/message/inbox?page=1&limit=10 200 18ms
+[14/03/2026 11:40:30] [INFO] [0ac24087-1129-4f3c-9e26-5f025ff55d35] GET /api/v1/scim/message/unread 200 7ms
+[14/03/2026 11:40:30] [INFO] [d313ceeb-e973-4c7e-bc21-69010e29db05] GET /api/v1/scim/favoris 200 2ms
+[14/03/2026 11:40:31] [INFO] [852b4e94-96cd-4c4f-8b66-688ec620d39d] GET /api/v1/scim/users/profile 200 15ms
+[14/03/2026 11:40:31] [INFO] [127207d2-72ab-41d4-9b2b-23d7e8f1a647] GET /api/v1/scim/message/inbox?page=1&limit=10 200 13ms
+[14/03/2026 11:40:31] [INFO] [e9bf8b5d-122f-4ae6-a3a1-c098984b9967] GET /api/v1/scim/message/unread 200 2ms
+[14/03/2026 11:40:31] [INFO] [6db8d125-b06c-4783-b0be-8b5fe46258d3] GET /api/v1/scim/favoris 200 2ms
+[14/03/2026 11:40:31] [INFO] [f0a3de01-81a4-41bf-be3f-b43e677e0f44] POST /api/v1/scim/users/refresh-token 200 159ms
+[14/03/2026 11:40:31] [INFO] [deeaa8b5-bdce-4976-a4c8-1136141dcf27] POST /api/v1/scim/users/refresh-token 200 180ms
+[14/03/2026 11:40:31] [INFO] [5b34142e-2974-46fa-992b-24c819b5d161] POST /api/v1/scim/users/refresh-token 200 208ms
+[14/03/2026 11:40:31] [INFO] [830c279f-6030-4193-8a92-855107bb417d] POST /api/v1/scim/users/refresh-token 200 264ms
+[14/03/2026 11:40:31] [INFO] [11fe16b6-79de-477a-bf51-c4e1565a99aa] POST /api/v1/scim/users/refresh-token 200 62ms
+[14/03/2026 11:40:31] [INFO] [7fd3e65f-2dd0-4a64-ab31-7d680f88bb54] POST /api/v1/scim/users/refresh-token 200 343ms
+[14/03/2026 11:40:31] [INFO] [041cb888-5633-4337-bc8c-39df09a41181] POST /api/v1/scim/users/refresh-token 200 340ms
+[14/03/2026 11:40:32] [INFO] [083b4580-58d8-4cda-84b2-ccaaf9b6aeed] GET /api/v1/scim/message/inbox?page=1&limit=10 200 48ms
+[14/03/2026 11:40:32] [INFO] [0895aed5-b6ad-47d4-b518-119a44f8b0d9] GET /api/v1/scim/message/unread 200 28ms
+[14/03/2026 11:40:32] [INFO] [0fcf9352-1310-4793-b95f-06c1686e8568] GET /api/v1/scim/favoris 200 58ms
+[14/03/2026 11:40:32] [INFO] [c7df0296-862e-4b3e-9dad-fe6ca3e2ed26] GET /api/v1/scim/message/inbox?page=1&limit=10 200 22ms
+[14/03/2026 11:40:32] [INFO] [5005f5f7-7958-4a6e-bd6c-9325028c7582] GET /api/v1/scim/users/profile 200 10ms
+[14/03/2026 11:40:33] [INFO] [714c40b3-0ee0-4f6c-8953-d333bae96068] GET /api/v1/scim/users/profile 200 25ms
+[14/03/2026 11:40:33] [INFO] [df3b15c8-252b-4485-b9e3-a15e3d6bcbd2] GET /api/v1/scim/message/unread 200 39ms
+[14/03/2026 11:40:33] [INFO] [fc84ccc1-6377-45d6-9c04-28930d953c0c] GET /api/v1/scim/message/inbox?page=1&limit=10 200 60ms
+[14/03/2026 11:40:33] [INFO] [95c7d936-f933-45f5-b73c-6114ef828e86] GET /api/v1/scim/favoris 200 91ms
+[14/03/2026 11:40:34] [INFO] [6082104e-4f6e-4285-b758-916362b75522] GET /api/v1/scim/favoris 200 20ms
+[14/03/2026 11:40:34] [INFO] [f1e2d32b-81f3-4442-bc8e-3e69f67aa1ef] GET /api/v1/scim/users/visited?limit=10 200 40ms
+[14/03/2026 11:40:34] [INFO] [6c0002b0-60a1-4dc2-b464-f7cfdca04c99] GET /api/v1/scim/reservation/my 200 64ms
+[14/03/2026 11:40:34] [INFO] [68a96242-7a31-48e5-a314-2989b4777c55] GET /api/v1/scim/favoris 200 82ms
+[14/03/2026 11:40:34] [INFO] [f21d4c07-1d72-4cbe-8ab8-ef04b9015595] GET /api/v1/scim/users/visited?limit=10 200 48ms
+[14/03/2026 11:40:34] [INFO] [c8a68e0d-f9fa-41f1-9f40-3cc9ebbebac0] GET /api/v1/scim/reservation/my 200 25ms
+[14/03/2026 11:40:35] [INFO] [e80e76e1-eadc-44dc-8859-0da6d70d0b46] GET /api/v1/scim/favoris 200 19ms
+[14/03/2026 11:40:35] [INFO] [b66b5c88-d9a2-45b0-a33a-b6e8b2c9a933] GET /api/v1/scim/users/visited?limit=10 200 44ms
+[14/03/2026 11:40:35] [INFO] [ad5ffec5-915c-4cbc-80a9-7e333ecacea3] GET /api/v1/scim/reservation/my 200 52ms
+[14/03/2026 11:40:35] [INFO] [6a262772-af05-45cb-9ef0-80e49277a120] GET /api/v1/scim/favoris 200 319ms
+[14/03/2026 11:40:35] [INFO] [ba40eac3-8a97-4d1a-9051-9bdaa8f234a1] GET /api/v1/scim/users/visited?limit=10 200 505ms
+[14/03/2026 11:40:35] [INFO] [c8ee3bfe-5b36-4e2e-8360-119661ec5e42] GET /api/v1/scim/reservation/my 200 585ms
+[14/03/2026 11:41:44] [INFO] Email service configure avec Resend API
+[14/03/2026 11:41:48] [INFO] NotificationService initialized
+[14/03/2026 11:41:48] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 12:08:01] [INFO] [a997b84f-78f3-4e29-8059-91f7c45bfd59] GET /api/v1/scim/property?page=1&limit=6 200 58ms
+[14/03/2026 12:08:01] [INFO] [9285a932-28bf-4b73-a521-23d7c63c25ac] GET /api/v1/scim/property?page=1&limit=6 200 38ms
+[14/03/2026 12:08:04] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[14/03/2026 12:08:26] [INFO] [dad0faf0-c01e-49c2-8c46-49b800f9219a] POST /api/v1/scim/users/login 200 37ms
+[14/03/2026 12:08:28] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[14/03/2026 12:08:32] [INFO] [4af8923e-f21c-4a74-9399-612a54fa74ab] POST /api/v1/scim/users/login 200 12ms
+[14/03/2026 12:08:52] [INFO] [c1ac1093-650e-4892-9c3c-f56489af55f7] GET /api/v1/scim/property?limit=1000 200 110ms
+[14/03/2026 12:09:23] [INFO] [30158c99-ce57-4c1d-b6c9-86b4e8007f53] POST /api/v1/scim/users/login 200 11ms
+[14/03/2026 12:09:24] [INFO] [5db8c55a-45f7-4aa9-b1ce-dc50b4893a8c] POST /api/v1/scim/users/login 200 10ms
+[14/03/2026 12:11:28] [INFO] Email service configure avec Resend API
+[14/03/2026 12:11:31] [INFO] NotificationService initialized
+[14/03/2026 12:11:32] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 12:12:01] [INFO] [4875cdfb-d823-483d-b03e-0bfd59070efb] POST /api/v1/scim/users/login 200 25ms
+[14/03/2026 12:12:03] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[14/03/2026 12:12:19] [INFO] Email service configure avec Resend API
+[14/03/2026 12:12:22] [INFO] NotificationService initialized
+[14/03/2026 12:12:22] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 12:12:26] [INFO] [9fc4ff0a-925c-40b3-a229-c988295d81c2] POST /api/v1/scim/users/login 200 50ms
+[14/03/2026 12:13:34] [INFO] [89082d4c-2bb7-45cf-a91b-9b329d7ef083] POST /api/v1/scim/users/login 200 643ms
+[14/03/2026 12:13:34] [INFO] [7b4b51d0-05ae-4551-a795-8f0824ebbec7] GET /api/v1/scim/users/profile 200 37ms
+[14/03/2026 12:13:34] [INFO] [3e0d23bc-b405-49b4-a350-9e32401f1a26] GET /api/v1/scim/message/inbox?page=1&limit=10 200 70ms
+[14/03/2026 12:13:34] [INFO] [a9c0fcfd-c56b-4dd3-b0ff-bd425c4d8aa3] GET /api/v1/scim/favoris 200 88ms
+[14/03/2026 12:13:34] [INFO] [0df9d1c2-7cb1-4824-92b6-89be4d157823] GET /api/v1/scim/message/unread 200 165ms
+[14/03/2026 12:13:35] [INFO] [8bc40b10-678a-4c5e-8b1e-5919835de9ff] GET /api/v1/scim/admin/dashboard/stats 200 145ms
+[14/03/2026 12:13:35] [INFO] [15d6fea5-2a19-4ccf-a1f6-ceeba1d78b92] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 157ms
+[14/03/2026 12:13:35] [INFO] [d9d76bdb-6183-4647-aa0f-5227dc321192] GET /api/v1/scim/admin/dashboard/stats 200 236ms
+[14/03/2026 12:13:35] [INFO] [7d99cf0f-6870-434f-976e-466393c512c8] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 246ms
+[14/03/2026 12:13:44] [INFO] [35d76205-9e75-4522-b8cd-9c52ecff2d3a] GET /api/v1/scim/admin/properties?page=1&limit=10 200 33ms
+[14/03/2026 12:13:44] [INFO] [8b66cc36-e7b7-4545-9936-8fa1ec882856] GET /api/v1/scim/admin/properties?page=1&limit=10 200 61ms
+[14/03/2026 12:13:51] [INFO] [f7b5f727-1159-438b-8d68-3afb131f4e00] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 74ms
+[14/03/2026 12:13:51] [INFO] [197cbc54-edf1-4861-adf4-ea1deae0efae] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 44ms
+[14/03/2026 12:13:54] [INFO] [bfd2749f-bd4e-4562-8c65-93a1aa325317] GET /api/v1/scim/admin/messages?page=1&limit=50 200 30ms
+[14/03/2026 12:13:54] [INFO] [bde46f98-6979-4f54-958a-7093229cbd78] GET /api/v1/scim/admin/messages?page=1&limit=50 200 51ms
+[14/03/2026 12:13:58] [INFO] [f4c6e984-c7ef-49f6-bf1f-f158e6f2078c] GET /api/v1/scim/admin/analytics/users 200 39ms
+[14/03/2026 12:13:58] [INFO] [0a2cb6d1-115e-4911-9c2b-39e133b4ad0c] GET /api/v1/scim/admin/analytics/revenue 200 42ms
+[14/03/2026 12:13:58] [INFO] [24fa8cef-e4f0-4729-b1eb-f0f3a028231c] GET /api/v1/scim/admin/analytics/properties 200 120ms
+[14/03/2026 12:13:58] [INFO] [a024c235-afe6-4507-b2e9-7e63824b171f] GET /api/v1/scim/admin/analytics/users 200 175ms
+[14/03/2026 12:13:58] [INFO] [a3f4ffc6-eaa3-4dd2-bbe0-a336e0d499f6] GET /api/v1/scim/admin/analytics/revenue 200 179ms
+[14/03/2026 12:13:59] [INFO] [1c5111b3-9cd0-4201-a47a-aae96312c741] GET /api/v1/scim/admin/analytics/properties 200 125ms
+[14/03/2026 12:14:06] [INFO] [7762eba9-47f6-4330-9979-84c3579044bc] GET /api/v1/scim/admin/settings 200 10ms
+[14/03/2026 12:14:06] [INFO] [1f6a2bde-82d7-4325-bdfc-a6adb92b2590] GET /api/v1/scim/admin/settings 200 36ms
+[14/03/2026 12:14:09] [INFO] [cc1bb205-aa20-4a35-a04e-c13a41f05bf5] GET /api/v1/scim/admin/dashboard/stats 200 81ms
+[14/03/2026 12:14:09] [INFO] [16750d61-3354-4068-b6c9-f367e1d354cd] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 88ms
+[14/03/2026 12:14:09] [INFO] [df3912de-7299-497d-a9b4-c1c3eb132121] GET /api/v1/scim/admin/dashboard/stats 200 176ms
+[14/03/2026 12:14:09] [INFO] [d86c0e9a-9f04-4c4e-9727-ef3651592da3] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 222ms
+[14/03/2026 12:37:54] [INFO] [7cf7cb56-d4c5-4b1f-8c6f-b51c98d338ff] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 28ms
+[14/03/2026 12:37:54] [INFO] [f3a020e0-3897-47a5-ae0f-dc6bb79b55e3] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 50ms
+[14/03/2026 12:39:11] [INFO] [78dc9b79-13aa-49bb-969e-797d23d0fd43] POST /api/v1/scim/property/submissions 200 9941ms
+[14/03/2026 12:39:19] [INFO] [32061d4b-6bf3-459c-93c9-a3a74b93fc4c] GET /api/v1/scim/admin/properties?page=1&limit=10 200 28ms
+[14/03/2026 12:39:19] [INFO] [6495a7e2-6305-435c-8f34-5a7ec286503f] GET /api/v1/scim/admin/properties?page=1&limit=10 200 70ms
+[14/03/2026 12:39:20] [INFO] [708bd043-2071-477d-af19-de1c993e4e3b] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 22ms
+[14/03/2026 12:39:20] [INFO] [aca7e993-7fa1-45dd-855a-c800a836b846] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 43ms
+[14/03/2026 12:39:24] [INFO] [875614c7-135e-454a-94be-608a5d592bd0] GET /api/v1/scim/message/unread 200 22ms
+[14/03/2026 12:39:24] [INFO] [bf440597-3c50-4923-b554-0035fc3c8dd2] GET /api/v1/scim/message/inbox?page=1&limit=10 200 32ms
+[14/03/2026 12:39:24] [INFO] [d5029602-582c-46fd-8745-d7defd233003] GET /api/v1/scim/users/profile 200 54ms
+[14/03/2026 12:39:24] [INFO] [fa91e2ea-0155-4120-a5dd-9af456dda9bb] GET /api/v1/scim/favoris 200 69ms
+[14/03/2026 12:39:24] [INFO] [91b1a1c5-6924-4e14-a145-4b33158f7ea7] GET /api/v1/scim/users/profile 200 65ms
+[14/03/2026 12:39:24] [INFO] [e5e35ea7-5e9d-48b9-967f-20ed69b7babe] GET /api/v1/scim/message/unread 200 93ms
+[14/03/2026 12:39:24] [INFO] [27efa357-f64b-4ae1-b759-b54fb1240a44] GET /api/v1/scim/message/inbox?page=1&limit=10 200 123ms
+[14/03/2026 12:39:24] [INFO] [921064c8-23f1-436f-81fe-64b7279ca146] GET /api/v1/scim/favoris 200 151ms
+[14/03/2026 12:39:24] [INFO] [7bd02ef9-acf1-42fc-a35a-f7608f371065] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 124ms
+[14/03/2026 12:39:24] [INFO] [1db4be40-22ad-49c2-93ca-2cc14ec31c1d] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 18ms
+[14/03/2026 12:39:27] [INFO] [a2605eb3-9552-48c4-a601-94895d293faa] GET /api/v1/scim/admin/dashboard/stats 200 65ms
+[14/03/2026 12:39:27] [INFO] [f7ed49d9-84f1-474b-bc19-ffad6040e9c1] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 110ms
+[14/03/2026 12:39:27] [INFO] [84dc2dd9-4181-4d85-a476-6984e41633a1] GET /api/v1/scim/admin/dashboard/stats 200 236ms
+[14/03/2026 12:39:27] [INFO] [dd09f146-497d-4441-a1e7-70f787c31cd0] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 154ms
+[14/03/2026 12:39:58] [INFO] [58b6b6a0-6c86-4163-8bac-5a09384c7f2a] GET /api/v1/scim/admin/messages?page=1&limit=50 200 40ms
+[14/03/2026 12:39:58] [INFO] [f349a241-3e10-4b37-9a48-ffa3793f673a] GET /api/v1/scim/admin/messages?page=1&limit=50 200 68ms
+[14/03/2026 12:40:06] [INFO] [98e6f60c-542c-4793-bae6-0c65b4593c5c] GET /api/v1/scim/admin/users?page=1&limit=15 200 17ms
+[14/03/2026 12:40:06] [INFO] [6a3bd3c0-dd37-4bfe-a91d-333ec24e0afb] GET /api/v1/scim/admin/users?page=1&limit=15 200 23ms
+[14/03/2026 12:40:25] [INFO] [de176db8-325b-405d-9783-d2e133fe8577] GET /api/v1/scim/admin/messages?page=1&limit=50 200 26ms
+[14/03/2026 12:40:25] [INFO] [7e9365a4-a638-4d65-a287-a5448ad6ee6c] GET /api/v1/scim/admin/messages?page=1&limit=50 200 51ms
+[14/03/2026 12:40:28] [INFO] [96e430ec-dadb-4ef5-be8b-e54ef2968e9d] GET /api/v1/scim/admin/properties?page=1&limit=10 200 20ms
+[14/03/2026 12:40:29] [INFO] [aed43246-1c65-41ed-819e-dde4d416b563] GET /api/v1/scim/admin/properties?page=1&limit=10 200 65ms
+[14/03/2026 12:40:30] [INFO] [aef77365-a612-4268-90d2-ebb1a11551e8] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 22ms
+[14/03/2026 12:40:30] [INFO] [04a283c4-3e60-4b9b-8596-bbafc8b2cc8e] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 13ms
+[14/03/2026 12:40:36] [INFO] [42b2aeed-bc50-49d1-a1ce-32d23a196a23] GET /api/v1/scim/admin/dashboard/stats 200 65ms
+[14/03/2026 12:40:36] [INFO] [8b8edc8f-34d5-4e42-9c9e-a7820e8dc2ae] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 71ms
+[14/03/2026 12:40:36] [INFO] [7eacc5ff-e249-4dd4-bc8f-8cdba18768af] GET /api/v1/scim/admin/dashboard/stats 200 154ms
+[14/03/2026 12:40:36] [INFO] [cd7cd68d-f4d9-4dc2-b663-79aa16a5c283] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 164ms
+[14/03/2026 12:40:44] [INFO] [13248b57-c6ea-4c46-bcd2-a79f36f599d4] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 17ms
+[14/03/2026 12:40:44] [INFO] [2f185518-0210-4d75-ad19-470f34b104e4] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 48ms
+[14/03/2026 12:40:46] [INFO] [85829ee4-bc6a-4644-add1-14695ca739da] GET /api/v1/scim/admin/dashboard/stats 200 47ms
+[14/03/2026 12:40:46] [INFO] [9ec074fb-5739-4aac-8ac5-fae67cefceac] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 126ms
+[14/03/2026 12:40:46] [INFO] [e7d13a8e-3252-4396-b3b1-ed000630daf0] GET /api/v1/scim/admin/dashboard/stats 200 161ms
+[14/03/2026 12:40:46] [INFO] [4b58de9a-d764-4289-88cb-9a0b181f39b1] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 124ms
+[14/03/2026 12:40:49] [INFO] [716c8cfb-ecda-4b1f-9945-b01cf6ea30f9] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 30ms
+[14/03/2026 12:40:49] [INFO] [7b7a7122-6499-43e7-950a-21743751f72d] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 48ms
+[14/03/2026 12:42:17] [INFO] [223e05f4-aafd-4460-94ec-8f0f4bcc3719] GET /api/v1/scim/message/inbox?page=1&limit=10 200 19ms
+[14/03/2026 12:42:17] [INFO] [212efde9-08c2-4aff-9f3a-22c7633559b8] GET /api/v1/scim/users/profile 200 11ms
+[14/03/2026 12:42:17] [INFO] [3ed18306-b3ba-4d24-b9fd-3f0f656dc3c4] GET /api/v1/scim/message/unread 200 22ms
+[14/03/2026 12:42:17] [INFO] [1d9968ed-b31c-4d70-82ae-c521946a141f] GET /api/v1/scim/favoris 200 21ms
+[14/03/2026 12:42:17] [INFO] [2863bb87-3615-45de-9a0f-24642c30db10] GET /api/v1/scim/users/profile 200 22ms
+[14/03/2026 12:42:17] [INFO] [693199cf-4d70-4d52-9d99-bdadfc8cb8dc] GET /api/v1/scim/favoris 200 31ms
+[14/03/2026 12:42:17] [INFO] [8cc3e2bb-dc1e-4d2b-9753-d8979f257ab7] GET /api/v1/scim/message/unread 200 44ms
+[14/03/2026 12:42:17] [INFO] [1fae84ba-edec-464f-8bb8-2719b053133e] GET /api/v1/scim/message/inbox?page=1&limit=10 200 56ms
+[14/03/2026 12:42:17] [INFO] [ff27a0d4-fe11-4191-a798-15c408464434] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 61ms
+[14/03/2026 12:42:17] [INFO] [184a89ce-3b5b-4f21-9359-d29cafaefe7d] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 40ms
+[14/03/2026 12:42:19] [INFO] [44b5dabb-5868-49fd-99a6-2d2162ea583b] GET /api/v1/scim/users/profile 200 14ms
+[14/03/2026 12:42:19] [INFO] [b6eb6210-7d62-46a4-86ab-36b0a256e9b1] GET /api/v1/scim/message/unread 200 29ms
+[14/03/2026 12:42:19] [INFO] [abc8e928-272d-4be3-9628-dd015be5849d] GET /api/v1/scim/message/inbox?page=1&limit=10 200 37ms
+[14/03/2026 12:42:19] [INFO] [e756da0d-c3fa-4c7b-8d4a-d545be4b261b] GET /api/v1/scim/favoris 200 36ms
+[14/03/2026 12:42:19] [INFO] [5a694eb6-4351-4d12-81a8-feb717a80915] GET /api/v1/scim/property?page=1&limit=6 200 59ms
+[14/03/2026 12:42:19] [INFO] [ba18bf94-b939-47fa-ab53-f9f0ed7fd1a1] GET /api/v1/scim/users/profile 200 26ms
+[14/03/2026 12:42:19] [INFO] [4173ae80-d3a5-43a6-9917-9d8db335510b] GET /api/v1/scim/message/unread 200 36ms
+[14/03/2026 12:42:19] [INFO] [e1eafeaa-4804-4b93-8c62-585d2f55e49b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 40ms
+[14/03/2026 12:42:19] [INFO] [6f3bff5a-7fbf-47a8-b992-ef7bb5df0f55] GET /api/v1/scim/favoris 200 44ms
+[14/03/2026 12:42:19] [INFO] [9c819d62-12a4-4e95-a973-7561dc809a69] GET /api/v1/scim/property?page=1&limit=6 200 51ms
+[14/03/2026 12:42:20] [INFO] [1fa3b2a3-75b0-4ed1-97c9-4be8d5e50727] GET /api/v1/scim/property?page=1&limit=6 200 30ms
+[14/03/2026 12:42:22] [INFO] [8ce9e7bc-ac07-4c1a-9da4-512682f0b648] GET /api/v1/scim/admin/dashboard/stats 200 58ms
+[14/03/2026 12:42:22] [INFO] [3187de0c-7d93-4939-a59a-7b0f32645c37] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 87ms
+[14/03/2026 12:42:22] [INFO] [ca4bc787-06d6-4c62-a9f9-2ef1e6dbdcc3] GET /api/v1/scim/admin/dashboard/stats 200 101ms
+[14/03/2026 12:42:22] [INFO] [0190a459-e01a-4266-91ea-bedf98cc6dbe] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 94ms
+[14/03/2026 12:42:42] [INFO] [d50b5d82-283c-4b87-9275-99e183358e8a] PATCH /api/v1/scim/reservation/69a6fc356a1d8b92106e32a6/cancel 200 49ms
+[14/03/2026 12:42:44] [INFO] [8035d91e-067f-435c-92d7-40e74e1727d7] PATCH /api/v1/scim/reservation/69a6fcc30038f99d1d76d9c3/cancel 200 25ms
+[14/03/2026 12:42:45] [INFO] [1c3c109b-3545-44e3-a7f4-961509ddbf95] PATCH /api/v1/scim/reservation/69aa48dd9f68989087a8416c/cancel 200 24ms
+[14/03/2026 12:42:49] [INFO] [f45e3fc1-6c66-4ee5-88a1-0f42d5897824] PATCH /api/v1/scim/reservation/69b1a2f672cba15f4b85eeb2/cancel 200 32ms
+[14/03/2026 12:43:09] [INFO] [851126c8-f227-4a35-afd8-ea75d3909008] GET /api/v1/scim/admin/properties?page=1&limit=10 200 27ms
+[14/03/2026 12:43:09] [INFO] [271871c5-08c4-48d6-bb05-ab717f7a4c22] GET /api/v1/scim/admin/properties?page=1&limit=10 200 26ms
+[14/03/2026 12:43:10] [INFO] [f53e5163-2918-4068-b22b-839a6094c3bb] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 24ms
+[14/03/2026 12:43:10] [INFO] [521b0df4-8fd8-465d-855f-74caf99199b2] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 18ms
+[14/03/2026 12:43:27] [INFO] [25b3a607-f483-48d7-8ca2-37e557a42b29] GET /api/v1/scim/message/unread 200 18ms
+[14/03/2026 12:43:27] [INFO] [4d5ba0f4-edb1-42e0-b8d7-a7dedd15a7ba] GET /api/v1/scim/message/inbox?page=1&limit=10 200 25ms
+[14/03/2026 12:43:27] [INFO] [a045b2f1-95c4-461e-9b97-1aacfdb08d84] GET /api/v1/scim/users/profile 200 19ms
+[14/03/2026 12:43:27] [INFO] [985d1809-2e14-4149-a253-e5954039de9e] GET /api/v1/scim/favoris 200 32ms
+[14/03/2026 12:43:27] [INFO] [5dd37246-54b5-4968-87e1-ce5a4d782e42] GET /api/v1/scim/users/profile 200 31ms
+[14/03/2026 12:43:27] [INFO] [064f2fb0-a874-4bfe-91b8-bda03e1c1137] GET /api/v1/scim/message/unread 200 40ms
+[14/03/2026 12:43:27] [INFO] [a42d001b-c143-4496-90b9-03717cc70da7] GET /api/v1/scim/message/inbox?page=1&limit=10 200 52ms
+[14/03/2026 12:43:27] [INFO] [1fd13614-18d1-483e-9ac0-7dd543ae44b9] GET /api/v1/scim/favoris 200 71ms
+[14/03/2026 12:43:27] [INFO] [a47808e8-c256-48d3-8122-58f4c890d28a] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 26ms
+[14/03/2026 12:43:27] [INFO] [e8993d08-b95c-4cf7-8dc7-3d1583f56bed] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 22ms
+[14/03/2026 12:51:50] [INFO] [daf0f368-5579-4c59-b2b9-a9b4d93a36b1] GET /api/v1/scim/admin/properties?page=1&limit=10 200 26ms
+[14/03/2026 12:51:50] [INFO] [ee5403b5-5c65-4d09-a291-979771dae0c4] GET /api/v1/scim/admin/properties?page=1&limit=10 200 24ms
+[14/03/2026 12:51:51] [INFO] [68e196ea-15f0-442d-9595-e2283d9199cc] GET /api/v1/scim/admin/dashboard/stats 200 68ms
+[14/03/2026 12:51:51] [INFO] [50dfda7e-d649-47ea-9105-8100f2f975df] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 91ms
+[14/03/2026 12:51:51] [INFO] [c2f47484-6f25-465b-9b44-97d7e0bdf069] GET /api/v1/scim/admin/dashboard/stats 200 189ms
+[14/03/2026 12:51:51] [INFO] [303a55a5-40f1-4947-ab7c-011a8d92f74d] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 212ms
+[14/03/2026 12:51:52] [INFO] [fb35b9ee-5a4c-4374-a967-3fea304b24d8] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 23ms
+[14/03/2026 12:51:52] [INFO] [43ce3d38-f264-4749-af11-31e0a8849871] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 15ms
+[14/03/2026 12:52:21] [INFO] [7a226285-6e60-45b7-8a98-0e5798ce02cd] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 75ms
+[14/03/2026 13:01:17] [INFO] [d1fff3f1-b234-4df4-91f1-ce20f945ba85] PUT /api/v1/scim/admin/property-submissions/69a9ef041ee65d4633761aa7/status 200 18ms
+[14/03/2026 13:01:23] [INFO] [b3ca72c9-048d-43b6-8255-85a017287b47] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a/status 200 247ms
+[14/03/2026 13:01:23] [INFO] [88844500-7116-444e-8064-3d7de734f05b] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 24ms
+[14/03/2026 13:01:24] [INFO] [d3de8f40-304b-4620-a85c-ede9fea44657] GET /api/v1/scim/property?limit=1000 200 13ms
+[14/03/2026 13:01:32] [INFO] [5837ee69-4a35-457b-b7bf-1b9835b65400] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 49ms
+[14/03/2026 13:01:32] [INFO] [326d8982-307a-4870-ba39-c51b63e28740] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 85ms
+[14/03/2026 13:01:32] [INFO] [d67638e7-ceef-40d4-a41e-0872887e3daa] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 123ms
+[14/03/2026 13:01:32] [INFO] [776af8a1-5850-42c9-95ce-cc569880bb1b] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 54ms
+[14/03/2026 13:01:45] [INFO] [10b117fe-8a8e-4105-a4cf-f82ade9794f1] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 23ms
+[14/03/2026 13:01:45] [INFO] [fd46a4d5-c0e3-491f-a9ad-5bf0092fa276] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 284ms
+[14/03/2026 13:01:45] [INFO] [b198529f-e516-42e0-acce-6c3f1aeb1fbf] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 37ms
+[14/03/2026 13:01:45] [INFO] [b18114d7-ab12-4de4-8f74-09ae17c977ed] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 200ms
+[14/03/2026 13:01:46] [INFO] [9a8b1ecf-2ae1-46eb-baaf-a94443ce8f22] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 153ms
+[14/03/2026 13:01:46] [INFO] [399b20ba-2bda-423c-8dee-d89f37719362] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 213ms
+[14/03/2026 13:06:48] [INFO] Email service configure avec Resend API
+[14/03/2026 13:06:51] [INFO] NotificationService initialized
+[14/03/2026 13:06:51] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 13:06:52] [INFO] [3c7e2703-a81b-4de6-b631-6e84f4facf7d] GET /api/v1/scim/message/unread 200 153ms
+[14/03/2026 13:07:15] [INFO] Email service configure avec Resend API
+[14/03/2026 13:07:20] [INFO] NotificationService initialized
+[14/03/2026 13:07:20] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[14/03/2026 13:07:20] [INFO] [dea47eac-07d2-4a85-8daf-1d5b94cb230d] GET /api/v1/scim/message/unread 200 102ms
+[14/03/2026 13:07:25] [INFO] [1e309b89-858d-4e09-9f1d-fc0947c192f9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 95ms
+[14/03/2026 13:07:25] [INFO] [4b60c0f1-83ca-47e0-823f-415cc5b34a60] GET /api/v1/scim/message/unread 200 131ms
+[14/03/2026 13:07:26] [INFO] [1703e577-70f3-4fd6-877b-d870ecb3a6f3] GET /api/v1/scim/users/profile 200 168ms
+[14/03/2026 13:07:26] [INFO] [91e8ea14-5af3-4eff-8391-eebaaa98f9aa] GET /api/v1/scim/favoris 200 206ms
+[14/03/2026 13:07:26] [INFO] [db7e6b02-4805-4703-9713-2f95c8f9aa7f] GET /api/v1/scim/message/unread 200 94ms
+[14/03/2026 13:07:26] [INFO] [b7fca0bc-ae75-481d-8447-a83b87538d36] GET /api/v1/scim/message/inbox?page=1&limit=10 200 107ms
+[14/03/2026 13:07:26] [INFO] [2a605215-437d-460e-bbb4-26aa2db75f33] GET /api/v1/scim/favoris 200 47ms
+[14/03/2026 13:07:29] [INFO] [593547fe-58f4-4908-851b-8ee2a0512bd2] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 54ms
+[14/03/2026 13:07:29] [INFO] [d5ca76bb-7420-43ca-a50e-4a34bf02b35f] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 52ms
+[14/03/2026 13:07:29] [INFO] [6516997b-143a-4a9c-8eb0-cc078ea216e3] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 20ms
+[14/03/2026 13:07:29] [INFO] [4b1a6ccd-e558-4182-afe1-bb06adba9796] GET /api/v1/scim/admin/property-submissions?page=1&limit=10 200 27ms
+[14/03/2026 13:07:30] [INFO] [e20e2a85-6e44-413d-9d60-13e889025ee9] GET /api/v1/scim/message/unread 200 82ms
+[14/03/2026 13:07:30] [INFO] [9c6d2f86-0d5a-40cd-9580-7d60afd8fbf6] GET /api/v1/scim/message/inbox?page=1&limit=10 200 86ms
+[14/03/2026 13:07:30] [INFO] [659bde97-44c7-4f77-b11b-00d0df0906d7] GET /api/v1/scim/favoris 200 102ms
+[14/03/2026 13:07:30] [INFO] [56311a1e-1f45-4866-a07a-30964e092882] GET /api/v1/scim/users/profile 200 120ms
+[14/03/2026 13:07:30] [INFO] [2ffe1704-ed6e-4cfe-9e4a-23c249da176c] GET /api/v1/scim/message/unread 200 55ms
+[14/03/2026 13:07:30] [INFO] [7b7f8160-0060-4597-a48d-bb2ccd6f4265] GET /api/v1/scim/message/inbox?page=1&limit=10 200 77ms
+[14/03/2026 13:07:30] [INFO] [f7e39856-16be-4adc-a4c9-7e02e22998c0] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 223ms
+[14/03/2026 13:07:30] [INFO] [fb7a06ce-b314-4924-ac52-64c26e7181ba] GET /api/v1/scim/favoris 200 81ms
+[14/03/2026 13:07:30] [INFO] [040b471b-c077-4e1c-862c-9a90826cf192] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 23ms
+[14/03/2026 13:07:30] [INFO] [6a011f8f-8ea8-4d1d-b328-73753336260a] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 24ms
+[14/03/2026 13:07:30] [INFO] [94cbea3b-4657-48c0-b682-b073a60a9902] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 54ms
+[14/03/2026 13:07:30] [INFO] [c8d26e1a-9950-4983-841f-db6b65b25ff2] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 21ms
+[14/03/2026 13:07:30] [INFO] [bd43ca3e-ef0f-460e-84bc-dbc39b6fdba2] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 47ms
+[14/03/2026 13:11:52] [INFO] [845e26a6-4c1d-4323-99d6-c9365454dba0] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/rate 200 26ms
+[14/03/2026 13:11:52] [INFO] [0718673f-35ac-4b1d-ab5d-475d6c726a8b] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 15ms
+[14/03/2026 13:11:52] [INFO] [45b4f506-352c-413c-9b4c-f6270dd0b06a] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 15ms
+[14/03/2026 13:11:52] [INFO] [da1889c5-b2c2-44a5-b1db-b0d871843e8f] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 33ms
+[14/03/2026 13:11:55] [INFO] [1ec26420-3576-413d-8dd9-9c4ada75a58e] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 23ms
+[14/03/2026 13:11:55] [INFO] [59ec6b49-212c-4861-bcfb-bed80504b8f0] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 23ms
+[14/03/2026 13:14:10] [INFO] [f992b495-b8f7-4b8d-9fe0-5c26bee648b2] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 24ms
+[14/03/2026 13:14:10] [INFO] [74db0322-ff72-4665-a8a0-f0ff181c0e4d] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 19ms
+[14/03/2026 13:17:09] [INFO] [ce9b4cf1-cc2b-4a0d-a2ca-f280a9cf42f1] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 20ms
+[14/03/2026 13:17:11] [INFO] [3f594b9d-2a0e-485b-b635-334bf33553b4] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 40ms
+[14/03/2026 13:17:13] [INFO] [aa32a9ca-3477-46d8-8543-d5d50b0f7caf] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 16ms
+[14/03/2026 13:17:18] [INFO] [1ad526ff-750d-4a83-b45a-ded4afbfcc39] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 18ms
+[14/03/2026 13:17:21] [INFO] [af799a04-eb79-48c2-959f-ab44544d118e] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 26ms
+[14/03/2026 13:17:28] [INFO] [c347ecd8-bbcf-4a4a-a5f6-919c515338ab] DELETE /api/v1/scim/admin/property-submissions/69a9ef041ee65d4633761aa7 200 26ms
+[14/03/2026 13:17:28] [INFO] [a249c443-3f58-4e85-b8e1-8feaf49d00df] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 19ms
+[14/03/2026 13:17:36] [INFO] [803aaffa-3665-4c87-818c-243f049d30eb] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 15ms
+[14/03/2026 13:17:40] [INFO] [814c4ab4-3d1b-4210-8d55-87a9f834a58f] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 21ms
+[14/03/2026 13:17:43] [INFO] [10a1480e-720c-40aa-b45a-8f3896fe4e15] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a/status 200 13ms
+[14/03/2026 13:19:59] [INFO] [80c2800f-e277-4024-9f6b-0c83a9843bd7] GET /api/v1/scim/admin/properties?page=1&limit=10 200 45ms
+[14/03/2026 13:19:59] [INFO] [b31c4276-de57-43c7-b469-84990f026330] GET /api/v1/scim/admin/properties?page=1&limit=10 200 93ms
+[14/03/2026 13:20:02] [INFO] [2828c35a-f7ab-473f-b388-dea1dd796ff7] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 18ms
+[14/03/2026 13:20:02] [INFO] [a3aa3ee2-6c87-486c-893e-47752fff1361] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 22ms
+[14/03/2026 13:20:24] [INFO] [977c7c85-6a60-4a55-9c0e-dcb560cf8a3f] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 31ms
+[14/03/2026 13:20:24] [INFO] [7b68d909-c974-4afe-9dcb-2f61f2c189b1] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 23ms
+[14/03/2026 13:20:24] [INFO] [b74fb09d-7087-405d-8f97-391c27414f80] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 82ms
+[14/03/2026 13:20:24] [INFO] [2be4df7f-df69-4318-a9bc-5fb9eaea1a85] GET /api/v1/scim/admin/dashboard/stats 200 92ms
+[14/03/2026 13:20:24] [INFO] [cc6f8815-f7b6-4d5b-b89f-0b4543caa9ca] GET /api/v1/scim/admin/dashboard/stats 200 83ms
+[14/03/2026 13:20:24] [INFO] [a3e8d531-72ef-48c5-a804-8e1b61383cd1] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 117ms
+[14/03/2026 13:20:25] [INFO] [64ca862f-fdc8-4a38-97e3-31994f9ea39e] GET /api/v1/scim/admin/properties?page=1&limit=10 200 30ms
+[14/03/2026 13:20:25] [INFO] [5505f56d-8081-4809-b04b-75f0d8236298] GET /api/v1/scim/admin/properties?page=1&limit=10 200 31ms
+[14/03/2026 13:20:26] [INFO] [1df3c4e4-8a09-4b21-ac5a-5cea91f5dabd] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 64ms
+[14/03/2026 13:20:26] [INFO] [57df4577-1fcf-4a7a-b4ef-2cad01a15970] GET /api/v1/scim/admin/dashboard/stats 200 77ms
+[14/03/2026 13:20:26] [INFO] [6c5e26cf-a51c-460c-bc67-50c21853c9eb] GET /api/v1/scim/admin/dashboard/stats 200 80ms
+[14/03/2026 13:20:26] [INFO] [2eb6d05d-6943-4a29-a344-eb1ae60b70a8] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 93ms
+[14/03/2026 13:20:54] [INFO] [2b6e1371-2d01-4252-b801-09007323aa91] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 34ms
+[14/03/2026 13:20:54] [INFO] [1e2aa243-4833-4d4e-a870-16f5a3c8935c] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 32ms
+[14/03/2026 13:22:24] [INFO] [cef873d7-f929-4a41-880d-da70d2234143] GET /api/v1/scim/admin/dashboard/stats 200 85ms
+[14/03/2026 13:22:24] [INFO] [b31f4d8e-d2f2-4535-ab66-f79ae6a5caeb] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 101ms
+[14/03/2026 13:22:24] [INFO] [ab653b56-816b-4a39-9934-da71fae5c282] GET /api/v1/scim/admin/dashboard/stats 200 189ms
+[14/03/2026 13:22:24] [INFO] [83904d7d-8b4c-4c02-943e-8a347b303fd3] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 201ms
+[14/03/2026 13:22:25] [INFO] [31a84dc9-3f1a-4a7a-bf12-66dff9a23e72] GET /api/v1/scim/admin/properties?page=1&limit=10 200 29ms
+[14/03/2026 13:22:25] [INFO] [3fbb178a-aa30-41fe-aa9e-e92cba79a292] GET /api/v1/scim/admin/properties?page=1&limit=10 200 90ms
+[14/03/2026 13:22:26] [INFO] [85eaf87c-396f-4d28-b470-a02a868e8b3d] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 32ms
+[14/03/2026 13:22:26] [INFO] [9cfdcd4b-1264-46c7-be3b-29b45f9d9c43] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 33ms
+[14/03/2026 13:23:13] [INFO] [9c1ee23a-be30-461c-a899-2e9e48916e89] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 13ms
+[14/03/2026 13:24:00] [INFO] [64724e30-1c79-4e34-8007-b945acac70fc] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 32ms
+[14/03/2026 13:26:31] [INFO] [f919864b-fdd8-44d0-b4c7-71d6f4d753ca] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 42ms
+[14/03/2026 13:26:35] [INFO] [4ce4fba5-6a17-4945-b7e9-dacdf386743c] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 9ms
+[14/03/2026 13:26:48] [INFO] [42e977e6-f07f-4d59-b76b-ac33e614c5bc] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 35ms
+[14/03/2026 13:26:54] [INFO] [6fa30d14-5017-4c3a-8815-33ee5a354af0] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 11ms
+[14/03/2026 13:26:58] [INFO] [44d28b25-5230-4778-82a3-e943588ef261] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 16ms
+[14/03/2026 13:27:00] [INFO] [ff02cc8e-9401-4104-b2a8-296197ea8274] GET /api/v1/scim/admin/users?page=1&limit=15 200 19ms
+[14/03/2026 13:27:00] [INFO] [acc8d7dc-3ddf-4910-9e2c-a0c4c5d16792] GET /api/v1/scim/admin/users?page=1&limit=15 200 47ms
+[14/03/2026 13:27:03] [INFO] [cb08f996-8643-4855-846b-194c2601d5cc] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 15ms
+[14/03/2026 13:27:03] [INFO] [be162e54-d632-45a0-9088-318841d5cb9d] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 18ms
+[14/03/2026 13:27:03] [INFO] [4276f6be-d710-40a8-a629-64f81d5f0070] GET /api/v1/scim/admin/properties?page=1&limit=10 200 37ms
+[14/03/2026 13:27:03] [INFO] [c03e8434-80f7-40a9-8218-5eca464bbfc2] GET /api/v1/scim/admin/properties?page=1&limit=10 200 41ms
+[14/03/2026 13:27:05] [INFO] [d47437e7-dbf4-44a1-81cd-255b3b4ba5cb] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 43ms
+[14/03/2026 13:27:05] [INFO] [d2c262b0-0976-4d08-a631-456e59bf1c3b] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 24ms
+[14/03/2026 13:28:17] [INFO] [004f5c56-2a1a-46aa-8ba1-04b41ec9c31c] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 20ms
+[14/03/2026 13:28:17] [INFO] [6c1737e1-60d3-4d4c-9341-6ce48ed470a3] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 23ms
+[14/03/2026 13:28:20] [INFO] [4c21e37e-4021-4fe7-84b4-65e48cb03c52] GET /api/v1/scim/admin/users?page=1&limit=15 200 12ms
+[14/03/2026 13:28:20] [INFO] [6434adca-83fe-42bf-bb25-0bdb6ee3785e] GET /api/v1/scim/admin/users?page=1&limit=15 200 21ms
+[14/03/2026 13:28:25] [INFO] [950b203f-547f-4e15-aa53-a124e5a26fea] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 44ms
+[14/03/2026 13:28:25] [INFO] [51bfc7cb-cbc9-4d89-b5d5-772bb0ec42de] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 44ms
+[14/03/2026 13:28:27] [INFO] [a246fdc1-c73c-4b2e-95d0-af0c9764eb42] GET /api/v1/scim/admin/users?page=1&limit=15 200 14ms
+[14/03/2026 13:28:27] [INFO] [02513136-5596-4380-9299-dc03b01d6228] GET /api/v1/scim/admin/users?page=1&limit=15 200 18ms
+[14/03/2026 13:28:57] [INFO] [96a56eaf-1751-42b1-a1f1-24e78c13b201] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 74ms
+[14/03/2026 13:28:57] [INFO] [a44d268a-61c4-42ce-a394-c04bcc93e750] GET /api/v1/scim/admin/dashboard/stats 200 87ms
+[14/03/2026 13:28:57] [INFO] [ed82c874-a7b2-4c0f-bf8a-e8928c7132e7] GET /api/v1/scim/admin/dashboard/stats 200 70ms
+[14/03/2026 13:28:57] [INFO] [a3ad1e6a-d19b-4622-90ad-e6b15c11e25f] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 94ms
+[14/03/2026 13:29:50] [INFO] [973103df-bf85-430f-b5c1-61f8f19e05cd] GET /api/v1/scim/admin/properties?page=1&limit=10 200 28ms
+[14/03/2026 13:29:51] [INFO] [5c4d3573-9620-45f9-9d0a-c9a6f1b8e23d] GET /api/v1/scim/admin/properties?page=1&limit=10 200 88ms
+[14/03/2026 13:30:23] [INFO] [f019036d-b063-4ce2-bbd7-f43a53543e73] GET /api/v1/scim/admin/messages?page=1&limit=50 200 34ms
+[14/03/2026 13:30:23] [INFO] [919239b5-5933-4a93-9f1f-a1825da96c1a] GET /api/v1/scim/admin/messages?page=1&limit=50 200 24ms
+[14/03/2026 13:33:02] [INFO] [08370191-10c7-4c87-990e-39456d82dfae] GET /api/v1/scim/admin/users?page=1&limit=15 200 31ms
+[14/03/2026 13:33:02] [INFO] [03133264-969c-4fa8-be8e-b4b0e3d6dde9] GET /api/v1/scim/admin/users?page=1&limit=15 200 18ms
+[14/03/2026 13:33:03] [INFO] [1de1cba0-29bc-4f34-976c-0f3b993933b9] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 13ms
+[14/03/2026 13:33:03] [INFO] [992b37dd-150d-49d2-85b0-dd0e73cf5ab8] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 25ms
+[14/03/2026 13:33:04] [INFO] [bab38135-03d6-4f5f-b79a-c51b6991f881] GET /api/v1/scim/admin/properties?page=1&limit=10 200 51ms
+[14/03/2026 13:33:04] [INFO] [298ac592-c6d3-48d4-b340-bc7c15365014] GET /api/v1/scim/admin/properties?page=1&limit=10 200 206ms
+[14/03/2026 13:33:05] [INFO] [5cf4fcd8-de21-4c98-82c9-22bf9e812d91] GET /api/v1/scim/admin/dashboard/stats 200 66ms
+[14/03/2026 13:33:05] [INFO] [3f579d09-83ea-4ff5-9fd2-d670d28e0e23] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 94ms
+[14/03/2026 13:33:05] [INFO] [f50e91ab-9dba-417c-ad1d-ae21a2951581] GET /api/v1/scim/admin/dashboard/stats 200 187ms
+[14/03/2026 13:33:05] [INFO] [71a431ba-8146-4a7f-ade2-75934ac39b66] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 151ms
+[14/03/2026 13:33:07] [INFO] [01d1e896-a78e-4980-aa5a-8f5fa3be19d8] GET /api/v1/scim/admin/properties?page=1&limit=10 200 38ms
+[14/03/2026 13:33:07] [INFO] [ebe4b384-8d1c-4e6f-bfb6-2598aa971e3c] GET /api/v1/scim/admin/properties?page=1&limit=10 200 128ms
+[14/03/2026 13:33:15] [INFO] [bc2325c9-79c8-4d1a-a25a-e350578533a3] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 15ms
+[14/03/2026 13:33:15] [INFO] [57bac9b4-7a9e-4d22-b946-d0e97a9f29fd] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 18ms
+[14/03/2026 13:33:29] [INFO] [089b33ae-d021-4e0e-8111-6f799729bb74] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 11ms
+[14/03/2026 13:33:30] [INFO] [80202fa3-0d75-4acd-9b76-13242c5aef5f] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 35ms
+[14/03/2026 13:33:30] [INFO] [24cd9c0c-6378-40c8-8995-b1936cb64a40] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 18ms
+[14/03/2026 13:33:31] [INFO] [59e936a0-0677-495a-ab7f-df9d33d471c0] PUT /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 14ms
+[14/03/2026 13:33:43] [INFO] [5bb0db5f-170b-4c8d-8dc8-301c22f10dc5] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 76ms
+[14/03/2026 13:33:43] [INFO] [9affc455-2bea-450f-ad98-1ea413f94a5e] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 56ms
+[14/03/2026 13:33:47] [INFO] [bbb87867-66f7-4e23-a0c0-884f92730add] GET /api/v1/scim/admin/users?page=2&limit=10&role=user 200 21ms
+[14/03/2026 13:33:49] [INFO] [7d24d1c2-4722-47a8-a3da-d58e1423fb35] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 17ms
+[14/03/2026 13:33:57] [INFO] [071c33f3-5771-4e6e-b9da-879437cdabc7] GET /api/v1/scim/admin/users?page=1&limit=10&role=admin 200 16ms
+[14/03/2026 13:34:01] [INFO] [5b11b135-71b0-4e3f-a9e8-52c85d34ab81] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 12ms
+[14/03/2026 13:34:14] [INFO] [3e71bc04-62a3-4b99-a7b9-0c3211a0bc1c] DELETE /api/v1/scim/admin/users/69aa48db9f68989087a84140 200 56ms
+[14/03/2026 13:34:16] [INFO] [b38a82f5-3b34-4f61-ac65-e3b9c4b862a5] DELETE /api/v1/scim/admin/users/69aa45248717d193dfc32296 200 10ms
+[14/03/2026 13:34:19] [INFO] [b8d8ce20-0726-47a5-aceb-a74fb1c69d1a] DELETE /api/v1/scim/admin/users/69aa439ccd19f220682f3e61 200 10ms
+[14/03/2026 13:34:22] [INFO] [8e741f71-64be-4964-b6a1-7803eda5e907] DELETE /api/v1/scim/admin/users/69aa41b63912235cbe055531 200 10ms
+[14/03/2026 13:34:26] [INFO] [369cab98-a60d-4dd8-8704-44b742494f32] GET /api/v1/scim/admin/users?page=2&limit=10&role=user 200 6ms
+[14/03/2026 13:34:28] [INFO] [035cfd7f-10a7-4e91-9fd0-2f5a76dff2aa] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 10ms
+[14/03/2026 13:34:31] [INFO] [3c27b3fc-b365-4a2d-90db-e0330a05ff4e] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 11ms
+[14/03/2026 13:34:32] [INFO] [8adbff3b-466b-406f-add7-32bb4b6ba81c] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 9ms
+[14/03/2026 13:34:34] [INFO] [32e6efed-192a-497a-8add-afdc8f22d09c] GET /api/v1/scim/message/unread 200 18ms
+[14/03/2026 13:34:34] [INFO] [c73d321e-b6f2-43d8-8abb-e11228059b74] GET /api/v1/scim/users/profile 200 16ms
+[14/03/2026 13:34:34] [INFO] [519dfa11-9818-4046-8964-7fab6ecedbeb] GET /api/v1/scim/message/inbox?page=1&limit=10 200 38ms
+[14/03/2026 13:34:34] [INFO] [e44081ae-d734-49a1-93ad-6dbd7ee89d8a] GET /api/v1/scim/favoris 200 39ms
+[14/03/2026 13:34:34] [INFO] [48ed2d3e-e8b7-4a08-b5a5-81870d1d66a4] GET /api/v1/scim/users/profile 200 24ms
+[14/03/2026 13:34:34] [INFO] [ad522bb8-f621-4f51-8f49-5f1fa5329dc6] GET /api/v1/scim/message/unread 200 44ms
+[14/03/2026 13:34:34] [INFO] [b3c8f538-45fc-42b2-b77e-08b2c75050ac] GET /api/v1/scim/favoris 200 42ms
+[14/03/2026 13:34:34] [INFO] [333594b3-26a5-41b6-952e-85a61fb8596f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 50ms
+[14/03/2026 13:34:34] [INFO] [fe1d667f-b801-477f-8d8c-98e04501f494] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 29ms
+[14/03/2026 13:34:34] [INFO] [222ecae9-11c3-4e53-80e1-03cd684ce41f] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 25ms
+[14/03/2026 13:34:40] [INFO] [887b8bb4-32a2-464d-b838-9152775f31be] GET /api/v1/scim/admin/users?page=2&limit=10&role=user 200 9ms
+[14/03/2026 13:34:43] [INFO] [b8ea564c-0778-49fe-b571-b5ad52164545] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 11ms
+[14/03/2026 13:34:45] [INFO] [cdc88dc7-b7f5-4434-9e3f-9c8a57725fb5] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 13ms
+[14/03/2026 13:34:45] [INFO] [4705dad4-1e84-4992-8f96-1b3d01cbb5b4] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 40ms
+[14/03/2026 13:34:48] [INFO] [78a5cc3b-ad2d-40b4-b5da-19f10142da32] GET /api/v1/scim/admin/messages?page=1&limit=50 200 22ms
+[14/03/2026 13:34:48] [INFO] [93a842d1-06e9-4416-b72a-6879f13fa861] GET /api/v1/scim/admin/messages?page=1&limit=50 200 31ms
+[14/03/2026 13:34:55] [INFO] [cfc1d3ba-0e7e-45e8-b2b1-d183c6e2d3ab] PUT /api/v1/scim/admin/messages/69a6fc356a1d8b92106e32af/status 200 30ms
+[14/03/2026 13:35:02] [INFO] [44a54bf5-1c96-4fe4-866c-0f43ea0ecf3a] GET /api/v1/scim/admin/analytics/users 200 34ms
+[14/03/2026 13:35:02] [INFO] [a5d367c5-1591-4a44-b0bd-cdbf7aa72bd7] GET /api/v1/scim/admin/analytics/revenue 200 33ms
+[14/03/2026 13:35:02] [INFO] [a24c2811-2cbf-45c8-abcf-7f8a359cf8f4] GET /api/v1/scim/admin/analytics/properties 200 48ms
+[14/03/2026 13:35:03] [INFO] [a1995dd8-ac57-4636-a7e1-ccebf6400242] GET /api/v1/scim/admin/analytics/revenue 200 30ms
+[14/03/2026 13:35:03] [INFO] [6bf8e272-a38c-456e-9880-526a2832c636] GET /api/v1/scim/admin/analytics/users 200 35ms
+[14/03/2026 13:35:03] [INFO] [2ec53627-e48a-4efe-9e3a-65dec8a1078f] GET /api/v1/scim/admin/analytics/properties 200 49ms
+[14/03/2026 13:35:11] [INFO] [5a63d576-ec65-4e70-8681-73141efff332] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 37ms
+[14/03/2026 13:35:11] [INFO] [4038b202-8b51-4093-ad84-51bf94932e0b] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 26ms
+[14/03/2026 13:35:14] [INFO] [9345140a-0b7b-421e-8899-2f77a98cd940] PUT /api/v1/scim/admin/messages/69aa48df9f68989087a841bd/status 200 8ms
+[14/03/2026 13:35:18] [INFO] [dc15e25a-8eaa-4374-a535-e0ddc6dfd376] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 18ms
+[14/03/2026 13:35:18] [INFO] [31c2f05e-d53c-4c24-83f7-6acfcc82617a] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 15ms
+[14/03/2026 13:35:19] [INFO] [8918278c-4a92-4403-bf80-1ef739521d75] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 23ms
+[14/03/2026 13:35:19] [INFO] [4702e326-6b9a-470b-b04a-e7b4c322bcc4] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 20ms
+[14/03/2026 13:35:20] [INFO] [9faa9151-bec2-46d9-99c8-b6275ba2455d] PUT /api/v1/scim/admin/messages/69aa48df9f68989087a841bd/status 200 9ms
+[14/03/2026 13:35:21] [INFO] [7622248c-a126-422b-b950-8ec72d785faa] PUT /api/v1/scim/admin/messages/69aa48df9f68989087a841bd/status 200 6ms
+[14/03/2026 13:35:22] [INFO] [db4166b4-ee8b-4cb7-9784-58d30e592fdb] PUT /api/v1/scim/admin/messages/69aa48df9f68989087a841bd/status 200 6ms
+[14/03/2026 13:35:23] [INFO] [c9d6b917-b717-4441-b499-a5e8c447ea4f] PUT /api/v1/scim/admin/messages/69aa48df9f68989087a841bd/status 200 7ms
+[14/03/2026 13:35:26] [INFO] [8f0673e8-6c83-4054-8aac-622d47586bd9] DELETE /api/v1/scim/admin/messages/69aa48df9f68989087a841bd 200 19ms
+[14/03/2026 13:35:28] [INFO] [36d0aa51-7779-4b02-bb12-31465a288592] GET /api/v1/scim/admin/messages?page=2&limit=10&lu=false 200 19ms
+[14/03/2026 13:35:29] [INFO] [aea4b198-9e73-4a3b-b9c4-48aaef258331] GET /api/v1/scim/admin/messages?page=3&limit=10&lu=false 200 15ms
+[14/03/2026 13:35:30] [INFO] [58a95bea-3d33-4813-9815-3a2fb0ecccb7] GET /api/v1/scim/admin/messages?page=4&limit=10&lu=false 200 24ms
+[14/03/2026 13:35:33] [INFO] [dba11d72-0d9d-4d5d-a820-446586028bde] GET /api/v1/scim/admin/messages?page=3&limit=10&lu=false 200 17ms
+[14/03/2026 13:36:18] [INFO] [02a27479-f2c2-4193-a173-8080fc74df11] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 18ms
+[14/03/2026 13:36:18] [INFO] [86d9e84f-3f33-4bc4-91bb-d02f9b1218ae] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 30ms
+[14/03/2026 13:36:21] [INFO] [7f20bd03-8c74-447c-b14f-1cacb8cd70f5] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 16ms
+[14/03/2026 13:36:24] [INFO] [6b7aa7f1-cf48-4259-95ea-62bb38f3259b] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 13ms
+[14/03/2026 13:36:25] [INFO] [33bdcb5e-e44c-484f-881e-ee461c715e4a] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 12ms
+[14/03/2026 13:36:27] [INFO] [0a4dfeb2-fb37-4f2a-9a9d-6833644a61b8] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 17ms
+[14/03/2026 13:36:27] [INFO] [d3694bc4-31e0-4768-b3ad-616746c0b2ad] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 12ms
+[14/03/2026 13:36:29] [INFO] [09d6be2d-6c3f-480a-b4f5-5fdf3ed2fac3] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=rejected 200 12ms
+[14/03/2026 13:36:31] [INFO] [d767a9f7-401d-491a-8dd7-7c365cf7a651] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=approved 200 17ms
+[14/03/2026 13:36:34] [INFO] [e670a6fa-4e8d-4d9b-b824-d9841222e728] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 14ms
+[14/03/2026 13:36:56] [INFO] [09601afa-302c-4184-bb33-c1751a8fef30] PUT /api/v1/scim/admin/property-submissions/69aa28a7b95c28ad1f0c781b 200 9ms
+[14/03/2026 13:36:57] [INFO] [6b3a6f33-23ec-4928-a802-a45818204ca2] PUT /api/v1/scim/admin/property-submissions/69aa28a7b95c28ad1f0c781b 200 10ms
+[14/03/2026 13:36:57] [INFO] [a426363d-11a5-455e-8acb-8945a3f1bb90] PUT /api/v1/scim/admin/property-submissions/69aa28a7b95c28ad1f0c781b 200 15ms
+[14/03/2026 13:37:09] [INFO] [b6f6d06e-ff7a-465e-93be-9586c8b2e417] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 19ms
+[14/03/2026 13:37:09] [INFO] [f8a4fe3e-7921-4959-850d-382a0fe9b173] GET /api/v1/scim/admin/users?page=1&limit=10&role=user 200 20ms
+[14/03/2026 13:37:13] [INFO] [1a2f366c-2a89-4395-8e5f-aa70800b943b] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 22ms
+[14/03/2026 13:37:13] [INFO] [15c75932-0839-4a52-abf6-e6dcc7819405] GET /api/v1/scim/admin/messages?page=1&limit=10&lu=false 200 36ms
+[14/03/2026 13:37:15] [INFO] [ca400138-4ac6-44d7-8cd3-ab8b0f83ea99] GET /api/v1/scim/admin/analytics/users 200 70ms
+[14/03/2026 13:37:15] [INFO] [491dfca9-3bb8-47ae-8a64-ea7c221de0b5] GET /api/v1/scim/admin/analytics/properties 200 141ms
+[14/03/2026 13:37:15] [INFO] [ede63e70-ea35-48b5-85ac-6e75a5d6d118] GET /api/v1/scim/admin/analytics/revenue 200 97ms
+[14/03/2026 13:37:15] [INFO] [bbb15a80-a543-4ef2-8cea-f6938d92ca1d] GET /api/v1/scim/admin/analytics/users 200 82ms
+[14/03/2026 13:37:15] [INFO] [cb962288-362e-472c-978e-dd78f925cc6b] GET /api/v1/scim/admin/analytics/revenue 200 35ms
+[14/03/2026 13:37:15] [INFO] [6955a988-f124-4f95-a961-d205a7f3c790] GET /api/v1/scim/admin/analytics/properties 200 85ms
+[14/03/2026 13:37:17] [INFO] [5f50ebf3-53dd-4433-8fc5-9f76738b34e4] GET /api/v1/scim/admin/settings 200 14ms
+[14/03/2026 13:37:17] [INFO] [769ec377-498a-453e-81c7-34cfe1358cf3] GET /api/v1/scim/admin/settings 200 8ms
+[14/03/2026 13:37:21] [INFO] [74e197c3-6d53-4354-bac3-85677faca3ab] GET /api/v1/scim/admin/dashboard/stats 200 66ms
+[14/03/2026 13:37:21] [INFO] [59f2a198-33ee-4a3e-bfae-e60c3e46d89a] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 70ms
+[14/03/2026 13:37:21] [INFO] [3a1c0952-5ee8-451a-8d88-77daa5e3a37e] GET /api/v1/scim/admin/dashboard/stats 200 88ms
+[14/03/2026 13:37:21] [INFO] [ed347153-8ef6-4193-a39b-577abc0c0fac] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 109ms
+[14/03/2026 13:38:04] [INFO] [f223e463-b9d6-466e-8523-f611a4448ece] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 35ms
+[14/03/2026 13:38:04] [INFO] [05645ff6-e87e-48c1-a4d9-8aaf56b3f324] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 28ms
+[14/03/2026 13:38:05] [INFO] [20cbb305-f6d2-4b44-ac72-687d773584cd] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 45ms
+[14/03/2026 13:38:05] [INFO] [7d4300b5-f913-4b43-9aac-7f02356af0b6] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 28ms
+[14/03/2026 13:38:11] [INFO] [50877143-c62c-457e-8740-771e4a2e4fb1] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 24ms
+[14/03/2026 13:38:11] [INFO] [08351486-00b8-4f58-9fbd-a2a0827638d9] GET /api/v1/scim/admin/property-submissions?page=1&limit=10&status=pending 200 24ms
+[14/03/2026 13:38:12] [INFO] [2e5efd1f-f8c0-446b-a02b-76bd04ff0ecf] GET /api/v1/scim/admin/properties?page=1&limit=10&status=active 200 34ms
+[14/03/2026 13:38:12] [INFO] [f319628c-b633-4dde-b4ff-c8f777b0b1de] GET /api/v1/scim/admin/properties?page=1&limit=10&status=active 200 27ms
+[14/03/2026 13:38:14] [INFO] [912bcdf8-248c-4e22-b1d6-724593b9cf7a] GET /api/v1/scim/admin/dashboard/stats 200 69ms
+[14/03/2026 13:38:15] [INFO] [9bc42162-2363-4a1e-adc8-a4127527ef89] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 115ms
+[14/03/2026 13:38:15] [INFO] [74fcc6af-5686-4298-b1d5-3f236cdd5e7b] GET /api/v1/scim/admin/dashboard/stats 200 169ms
+[14/03/2026 13:38:15] [INFO] [8d97fde8-7461-419b-9691-c7776348f45c] GET /api/v1/scim/admin/reservations?page=1&limit=50 200 99ms
+[14/03/2026 13:38:16] [INFO] [effa09f8-9226-4126-b011-baf5aeb6dc38] GET /api/v1/scim/admin/dashboard/stats 200 60ms
+[14/03/2026 13:38:16] [INFO] [4ffbc25e-40a3-4eb4-ab3e-9e90434d084a] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 91ms
+[14/03/2026 13:38:17] [INFO] [5cafdaf9-e674-4403-8080-6fb00df6bf1f] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 81ms
+[14/03/2026 13:38:17] [INFO] [9c5b1577-727d-4958-a589-8f687ca0a471] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 100ms
+[14/03/2026 13:38:23] [INFO] [83d7f9a7-97f7-4c49-8682-ee6422c6c22c] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 30ms
+[14/03/2026 13:38:24] [INFO] [feb6828a-59f9-4cba-93fc-3810fc884555] GET /api/v1/scim/admin/reservations?page=1&limit=20 200 24ms
+[14/03/2026 13:38:39] [INFO] [7a49b7d5-d971-4cf9-82a4-55f4d95ea44f] GET /api/v1/scim/admin/dashboard/stats 200 73ms
+[14/03/2026 13:38:39] [INFO] [7e32fb15-f1eb-4747-a75b-5cf9060c63f1] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 112ms
+[14/03/2026 13:38:39] [INFO] [811597c4-bddd-4ff2-bf3e-27d447be9123] GET /api/v1/scim/admin/dashboard/stats 200 85ms
+[14/03/2026 13:38:39] [INFO] [7c0cba43-e971-4e3c-a03c-8c5d7c5cb863] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 91ms
+[14/03/2026 13:38:45] [INFO] [6d338f64-8601-4e8f-8218-d844fa7b4908] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 16ms
+[14/03/2026 13:38:45] [INFO] [4ec061ca-d300-460b-9aa8-d2843cb60697] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 14ms
+[14/03/2026 13:38:46] [INFO] [509fe3cf-a399-434d-ac78-5f0450227339] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 27ms
+[14/03/2026 13:38:46] [INFO] [34a7243e-9347-470c-beea-2e9b1312007c] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 67ms
+[14/03/2026 13:38:46] [INFO] [bc2b0f22-10d8-403a-9c54-16ebccf6127f] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 34ms
+[14/03/2026 13:38:46] [INFO] [b33b45c3-b206-4175-9056-717a15125737] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 71ms
+[14/03/2026 13:38:53] [INFO] [196c4cd3-0eaf-40da-96e4-10d75a391637] GET /api/v1/scim/admin/dashboard/stats 200 82ms
+[14/03/2026 13:38:53] [INFO] [807b1f31-5a3a-4ca4-bea0-7566e0027c46] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 113ms
+[14/03/2026 13:38:53] [INFO] [0b8353e5-e8f8-4669-b3dc-c8bf8d7f66dc] GET /api/v1/scim/admin/dashboard/stats 200 100ms
+[14/03/2026 13:38:53] [INFO] [3835aa81-78a6-42a9-81fe-77f09e6a595d] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 86ms
+[14/03/2026 13:46:23] [INFO] [5b7c416b-3e7a-4acf-8c75-e821c6dbce2c] GET /api/v1/scim/admin/dashboard/stats 200 67ms
+[14/03/2026 13:46:23] [INFO] [42ff402a-ffa8-45b2-a555-b1f19d3cd4d8] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 93ms
+[14/03/2026 13:47:54] [INFO] [5dc5a354-65d7-4461-a89e-1afbbada2e59] GET /api/v1/scim/admin/messages?page=1&limit=5&lu=false 200 34ms
+[14/03/2026 13:47:54] [INFO] [b5041dae-9e82-4fa1-9aca-831cf43382e6] GET /api/v1/scim/admin/messages?page=1&limit=5&lu=false 200 29ms
+[14/03/2026 13:47:56] [INFO] [d54cc0db-5b0d-4aa9-ad11-cc25aa17b5a0] GET /api/v1/scim/admin/dashboard/stats 200 58ms
+[14/03/2026 13:47:56] [INFO] [016ce093-50e4-45e6-a9c4-29a4a240407a] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 61ms
+[14/03/2026 13:47:56] [INFO] [957000f9-14b4-41bc-aa9b-a0a9cabf9d3a] GET /api/v1/scim/admin/dashboard/stats 200 68ms
+[14/03/2026 13:47:56] [INFO] [4b5e2931-3d1a-48c0-a50e-a17ef7c7ef07] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 90ms
+[14/03/2026 13:48:05] [INFO] [479ee9f4-8a0a-4fb5-a3a5-7570f420d2dc] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 19ms
+[14/03/2026 13:48:05] [INFO] [4c148d56-69ea-464b-b76b-4b0e8ce3174c] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 111ms
+[14/03/2026 13:48:07] [INFO] [7746bb3a-5cda-4767-800d-57150e2bd012] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 17ms
+[14/03/2026 13:48:14] [INFO] [3c197221-5369-45d5-a1ab-f566be6b079e] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 20ms
+[14/03/2026 13:48:15] [INFO] [dab47f14-de92-4302-99f7-261aa7247bb4] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 13ms
+[14/03/2026 13:48:16] [INFO] [81cca188-c030-4ea6-b124-0b7e438a7e21] PUT /api/v1/scim/admin/properties/69b54e135d59af1ad87563d8/status 200 36ms
+[14/03/2026 13:48:17] [INFO] [7c6a8e22-15e9-4dab-8dea-a324b91eb325] GET /api/v1/scim/property?limit=1000 200 14ms
+[14/03/2026 13:48:18] [INFO] [a6e15489-e65d-4d3b-bf9d-c6c257d5d045] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 15ms
+[14/03/2026 13:48:19] [INFO] [cf552b93-06b6-4109-8342-d6397c4bc79e] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 22ms
+[14/03/2026 13:48:21] [INFO] [35f09fbd-0d08-4bc2-902e-27e6b8e63d66] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 13ms
+[14/03/2026 13:48:23] [INFO] [6aefd1da-d068-44ea-a81f-32d37e71e9f1] PUT /api/v1/scim/admin/properties/69b54e135d59af1ad87563d8/status 200 54ms
+[14/03/2026 13:48:23] [INFO] [2465ef62-ade1-46fc-bcd1-0abcc46b8395] GET /api/v1/scim/property?limit=1000 200 11ms
+[14/03/2026 13:48:24] [INFO] [9f2eb745-f92a-48ea-b2cf-5ef2816c1ced] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 19ms
+[14/03/2026 13:48:24] [INFO] [b7269ca6-3876-4abf-9469-32ad009677be] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 24ms
+[14/03/2026 13:48:52] [INFO] [3207c1ec-0700-46d4-a68d-6199be285d2c] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 13ms
+[14/03/2026 13:48:53] [INFO] [87ddd9a0-009b-4f4d-8e1d-4f4dcc221a66] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 18ms
+[14/03/2026 13:48:54] [INFO] [5d971316-07d2-4f74-9d3f-8ad15cf3335e] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 15ms
+[14/03/2026 13:48:55] [INFO] [1ad07a54-7cb6-49e6-9b32-518c1abfdcc5] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 16ms
+[14/03/2026 13:51:33] [INFO] [d2226f66-0ecc-40fd-99cb-c907435eb020] GET /api/v1/scim/admin/dashboard/stats 200 80ms
+[14/03/2026 13:51:33] [INFO] [ddb0c0b6-ff4b-4752-acc9-7c9fd15edcb3] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 92ms
+[14/03/2026 13:51:33] [INFO] [69cac29a-ea11-4565-8ff1-a622aa80d16b] GET /api/v1/scim/admin/dashboard/stats 200 129ms
+[14/03/2026 13:51:33] [INFO] [b318ac04-660f-4aa0-bd12-24c8a7e5a5ab] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 157ms
+[14/03/2026 13:52:37] [INFO] [e97421d6-1438-479c-b9e2-d064eab0290e] GET /api/v1/scim/admin/dashboard/stats 200 53ms
+[14/03/2026 13:52:37] [INFO] [0d23a7aa-dcd3-495a-83c6-e15d2ed80b53] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 75ms
+[14/03/2026 13:52:37] [INFO] [f815d17d-0c7c-4c55-8915-d58a7a6b4ff8] GET /api/v1/scim/admin/dashboard/stats 200 84ms
+[14/03/2026 13:52:37] [INFO] [f3415627-9fea-4675-a351-de70029205e1] GET /api/v1/scim/admin/reservations?page=1&limit=10 200 135ms
+[14/03/2026 13:57:17] [INFO] [015667db-18a5-4b68-ad21-e110118ceb5b] GET /api/v1/scim/admin/dashboard/stats 200 76ms
+[14/03/2026 13:57:17] [INFO] [2d39de36-b241-4c8a-90a4-bc7b14e8a094] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 152ms
+[14/03/2026 13:57:17] [INFO] [4ba6a90f-2029-4d33-b6f8-63b97adcf5a2] GET /api/v1/scim/admin/dashboard/stats 200 251ms
+[14/03/2026 13:57:17] [INFO] [37142c9a-ddb2-4855-8808-1500dbde0b01] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 126ms
+[14/03/2026 13:59:21] [INFO] [6dbcda3d-92e5-467a-b117-3f27e05283d1] GET /api/v1/scim/message/unread 200 19ms
+[14/03/2026 13:59:21] [INFO] [f2c88baf-7446-4486-bc6b-49cc2541c457] GET /api/v1/scim/message/inbox?page=1&limit=10 200 40ms
+[14/03/2026 13:59:21] [INFO] [691bbce9-5428-415b-b6ce-8bd8c5c4c778] GET /api/v1/scim/favoris 200 15ms
+[14/03/2026 13:59:21] [INFO] [b3953edc-2a40-49ff-a53e-59cb43f83983] GET /api/v1/scim/users/profile 200 21ms
+[14/03/2026 13:59:21] [INFO] [3aef6dac-4ff1-46cb-abfe-27641f862a17] GET /api/v1/scim/message/unread 200 25ms
+[14/03/2026 13:59:21] [INFO] [10625b53-4ea5-4b41-83b9-16ed83d8722b] GET /api/v1/scim/favoris 200 34ms
+[14/03/2026 13:59:21] [INFO] [e25b5731-a8e5-469c-830d-2a41e110065f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 49ms
+[14/03/2026 13:59:21] [INFO] [b64f8c7f-462e-4814-b498-8a1b5da07189] GET /api/v1/scim/users/profile 200 8ms
+[14/03/2026 13:59:21] [INFO] [20fa5388-eafb-432c-a2ac-c912b952e420] GET /api/v1/scim/admin/dashboard/stats 200 75ms
+[14/03/2026 13:59:21] [INFO] [6d1a2bd2-ab4a-4455-bee1-0740b18f1909] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 127ms
+[14/03/2026 13:59:21] [INFO] [a905de11-b7e4-4452-b07b-91e712794709] GET /api/v1/scim/message/unread 200 126ms
+[14/03/2026 13:59:21] [INFO] [f584b688-bded-4b95-9a08-1af79401e50a] GET /api/v1/scim/admin/dashboard/stats 200 169ms
+[14/03/2026 13:59:21] [INFO] [48f0e54d-14f4-4bd1-95f9-290e596b1804] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 87ms
+[14/03/2026 13:59:22] [INFO] [542f9810-0c31-4af7-9b18-d51066c8001a] GET /api/v1/scim/users/profile 200 25ms
+[14/03/2026 13:59:22] [INFO] [1286b497-685e-4832-a46b-7d5caade7632] GET /api/v1/scim/message/inbox?page=1&limit=10 200 67ms
+[14/03/2026 13:59:22] [INFO] [f7cc4701-fc9d-4507-b552-ec596a9894e7] GET /api/v1/scim/message/unread 200 74ms
+[14/03/2026 13:59:22] [INFO] [6e4297ab-2e0c-4ffb-b6b3-538fc4dd8daa] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 99ms
+[14/03/2026 13:59:22] [INFO] [a87d4406-9ad4-439e-94f6-eed1a60a8095] GET /api/v1/scim/users/profile 200 31ms
+[14/03/2026 13:59:22] [INFO] [be104d1e-04f0-435b-ae42-f4d7b0b7a321] GET /api/v1/scim/favoris 200 109ms
+[14/03/2026 13:59:22] [INFO] [2b258c8f-76b1-4178-88d7-0cd5b3ebbfa0] GET /api/v1/scim/message/inbox?page=1&limit=10 200 74ms
+[14/03/2026 13:59:22] [INFO] [16d18b4a-8f0d-47e2-8a4c-814cb152afab] GET /api/v1/scim/message/unread 200 56ms
+[14/03/2026 13:59:22] [INFO] [a8708d85-ae60-41b8-93ca-4a11c384a874] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 77ms
+[14/03/2026 13:59:22] [INFO] [83950379-4c67-47d5-bb04-6c9d79a34816] GET /api/v1/scim/favoris 200 78ms
+[14/03/2026 13:59:23] [INFO] [ee340335-8525-415e-93b9-5b605afa3d9e] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 27ms
+[14/03/2026 13:59:23] [INFO] [00bf033b-9630-48cd-af78-b140d495bcac] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 52ms
+[14/03/2026 14:01:58] [INFO] [58273b73-ca9c-424d-ab73-e3ec30ea4884] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 25ms
+[14/03/2026 14:01:58] [INFO] [2e040c7e-a9e3-4d91-b4e5-79171fa23dd1] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 30ms
+[14/03/2026 14:02:01] [INFO] [df968526-8265-486c-96b2-d400a270ce52] GET /api/v1/scim/admin/dashboard/stats 200 45ms
+[14/03/2026 14:02:01] [INFO] [3d00fcd7-9dbc-4d0b-8790-059bfd48c6b8] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 49ms
+[14/03/2026 14:02:01] [INFO] [b2d53c81-088a-4570-9ce7-04ee9e0229b4] GET /api/v1/scim/admin/dashboard/stats 200 55ms
+[14/03/2026 14:02:01] [INFO] [88077f3d-6179-4b87-9bb2-9eb2a146609a] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 77ms
+[14/03/2026 14:07:22] [INFO] [29ce78c5-c147-44cf-8079-6458e05bcb45] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 25ms
+[14/03/2026 14:07:22] [INFO] [7477a0c0-ee7c-40b7-8fc3-d57189694214] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 24ms
+[14/03/2026 14:07:24] [INFO] [a252360f-ed2e-4f76-9ca9-b1def8a52a87] GET /api/v1/scim/admin/dashboard/stats 200 43ms
+[14/03/2026 14:07:24] [INFO] [a2866817-c3d8-4f83-a062-718cb33fa839] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 56ms
+[14/03/2026 14:07:24] [INFO] [bbd7e4be-9261-4216-8c39-ef9b3dc4a276] GET /api/v1/scim/admin/dashboard/stats 200 54ms
+[14/03/2026 14:07:24] [INFO] [072537e0-5ff9-4fc8-9dd0-8247aca57e27] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 58ms
+[14/03/2026 14:07:53] [INFO] [1aa13773-90bc-4ec5-8762-ac5f515bae99] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 36ms
+[14/03/2026 14:07:53] [INFO] [3ba7898f-618c-4943-ada6-999ef35329b3] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 28ms
+[14/03/2026 14:07:57] [INFO] [80f53f5e-982a-4bee-ba83-92605232aafd] GET /api/v1/scim/admin/reservations?page=1&limit=1000 200 21ms
+[14/03/2026 14:11:24] [INFO] [ebda3322-5501-4dc7-99c1-00bc5063eab5] GET /api/v1/scim/admin/dashboard/stats 200 51ms
+[14/03/2026 14:11:24] [INFO] [a6c3494d-e006-4e9a-a001-0f2a319eb60b] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 66ms
+[14/03/2026 14:11:24] [INFO] [271e31e9-af06-4a35-8f16-333328f55af3] GET /api/v1/scim/admin/dashboard/stats 200 71ms
+[14/03/2026 14:11:24] [INFO] [84f6cb48-ee8c-44c8-ba08-62c5fe4e1a24] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 55ms
+[14/03/2026 14:14:29] [INFO] [5298ab41-a74f-4690-9019-4646273a12fd] GET /api/v1/scim/admin/dashboard/stats 200 73ms
+[14/03/2026 14:14:29] [INFO] [bb06dcbd-b74f-4e01-a4e7-7796fd533a53] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 118ms
+[14/03/2026 14:14:45] [INFO] [ec9f8a98-4b7b-47eb-b719-5d9ad6e5c438] GET /api/v1/scim/admin/dashboard/stats 200 152ms
+[14/03/2026 14:14:45] [INFO] [c023cc2b-683c-45ff-89ce-cc3d6ce5d79b] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 199ms
+[14/03/2026 14:15:03] [INFO] [4c1a083b-89da-496d-b9e1-dd0f5c63b80a] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 24ms
+[14/03/2026 14:15:03] [INFO] [9a9680c9-0a14-4caf-9e4d-98633d3929db] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 14ms
+[14/03/2026 14:15:03] [INFO] [8f403206-547b-49b9-8e40-f94604336f9e] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252/user-note 200 16ms
+[14/03/2026 14:15:03] [INFO] [f11e31d3-9c11-47d0-8785-8ea07354fe44] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/visit 200 36ms
+[14/03/2026 14:15:06] [INFO] [3837fc4c-2c04-4109-9143-aff4a4f7ba48] GET /api/v1/scim/admin/dashboard/stats 200 55ms
+[14/03/2026 14:15:06] [INFO] [76c1cdb8-c531-4338-87d2-b7f38d1ee0b8] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 117ms
+[14/03/2026 14:15:06] [INFO] [95986b7b-236f-4982-bc9c-8cb4bd60bacb] GET /api/v1/scim/admin/dashboard/stats 200 70ms
+[14/03/2026 14:15:06] [INFO] [e5c3b970-8731-43e9-aac4-4b2b77489b76] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 38ms
+[14/03/2026 14:15:52] [INFO] [fe8f9c34-2e3a-45ad-ab36-04be1812da9c] POST /api/v1/scim/reservation 200 152ms
+[14/03/2026 14:16:02] [INFO] [7767a6cb-eb31-40c6-bf59-8329ae50d821] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 78ms
+[14/03/2026 14:16:02] [INFO] [cfb96be6-1a5e-44b7-a87d-4f663465b8ce] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 52ms
+[14/03/2026 14:16:03] [INFO] [2cd1925c-8742-4b75-befc-aa55e80d54c7] GET /api/v1/scim/admin/dashboard/stats 200 47ms
+[14/03/2026 14:16:03] [INFO] [1137531e-faff-4db3-85cc-cbc0ace3e5ae] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 68ms
+[14/03/2026 14:16:03] [INFO] [e23c54a6-a548-40cc-85b6-9e3cb9c5afbd] GET /api/v1/scim/admin/dashboard/stats 200 86ms
+[14/03/2026 14:16:03] [INFO] [64c7d258-8428-4f38-8b3f-36c73d9dcb72] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 61ms
+[14/03/2026 14:16:15] [INFO] [5fec1a5b-345f-4d28-8f27-90134a7429b8] PATCH /api/v1/scim/reservation/69b55f882c9ca8aafc6900b7/confirm 200 35ms
+[14/03/2026 14:16:21] [INFO] [d4814998-d2cf-4727-97fa-4a4238700733] GET /api/v1/scim/admin/dashboard/stats 200 67ms
+[14/03/2026 14:16:21] [INFO] [0938fcac-ed5b-450f-90b8-1c5fc031e546] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 78ms
+[14/03/2026 14:16:45] [INFO] [c0ea8573-c8a9-4e53-ad28-71a3d5f0e70f] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 17ms
+[14/03/2026 14:16:45] [INFO] [72e5096d-7397-4d89-bce4-5069fd44fbe7] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 25ms
+[14/03/2026 14:16:49] [INFO] [80e517e6-7236-4443-aaa5-ba0acfb9e536] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 14ms
+[14/03/2026 14:16:50] [INFO] [78364c5f-bffd-4bbb-8f9b-c125203210b9] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 15ms
+[14/03/2026 14:16:51] [INFO] [dfcf2194-7deb-43ac-b683-c3ec53794b56] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 15ms
+[14/03/2026 14:16:52] [INFO] [b1b74543-3704-42f3-84b8-6f1de07bc51d] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 26ms
+[14/03/2026 14:16:52] [INFO] [0500f6ac-d61e-4c1e-bc6e-7e274bbbd7ee] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 83ms
+[14/03/2026 14:16:55] [INFO] [59681ddd-535f-4664-bb9b-ac8ae320c309] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 9ms
+[14/03/2026 14:16:55] [INFO] [9fd580a2-9d10-456f-a9c5-5adb577e8173] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 25ms
+[14/03/2026 14:16:57] [INFO] [1eea7c0b-da92-40d6-87ec-8e32b7b59322] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 83ms
+[14/03/2026 14:16:57] [INFO] [26abbea2-74e8-4dbc-92a7-616a332ceac2] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 67ms
+[14/03/2026 14:16:59] [INFO] [6fb94c37-0734-410e-98be-7ca7b7413729] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 19ms
+[14/03/2026 14:16:59] [INFO] [f47bc9e1-7f4a-4487-add7-cf3621bd2b48] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 30ms
+[14/03/2026 14:16:59] [INFO] [11429079-650d-411c-95ff-f3e0dc91eb60] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 29ms
+[14/03/2026 14:16:59] [INFO] [54508743-026d-48bc-8dcf-ac82594c0316] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 37ms
+[14/03/2026 14:18:52] [INFO] [a4836361-c557-4c2a-9c40-9ae52273cc8c] GET /api/v1/scim/admin/properties?page=2&limit=5&status=active 200 20ms
+[14/03/2026 14:18:56] [INFO] [4e0098ab-e767-4656-a186-7f9f26d3d205] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 15ms
+[14/03/2026 14:19:00] [INFO] [2ca24d9b-9579-4cb6-87f0-713491861ee5] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 12ms
+[14/03/2026 14:19:01] [INFO] [2c1904ec-1542-4dc7-89cd-77b3d9333cb4] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 13ms
+[14/03/2026 14:19:14] [INFO] [5d5ae68d-e33b-4c30-aa19-2b20eb4543d2] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 15ms
+[14/03/2026 14:19:14] [INFO] [3480a94a-273b-4d46-ba4e-90651c68cea8] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 44ms
+[14/03/2026 14:19:37] [INFO] [3470a8e0-77d2-45a8-aa2b-4a284f020041] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 25ms
+[14/03/2026 14:19:37] [INFO] [02128526-ed4c-4e70-88af-292c474dc50f] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 45ms
+[14/03/2026 14:19:46] [INFO] [09dac049-d550-4d76-80ec-4acb60096e1d] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 20ms
+[14/03/2026 14:19:46] [INFO] [28339cb5-fc0f-4920-b9d4-b8684d684f7f] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 9ms
+[14/03/2026 14:19:48] [INFO] [b72e8aef-e258-46c0-b442-12768b432166] GET /api/v1/scim/admin/messages?page=1&limit=5&lu=false 200 20ms
+[14/03/2026 14:19:48] [INFO] [b984e265-6c72-4aa8-9dad-6171757a5c5d] GET /api/v1/scim/admin/messages?page=1&limit=5&lu=false 200 17ms
+[14/03/2026 14:19:48] [INFO] [82a2a958-2a30-44e5-8794-2206b83bc0d5] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 20ms
+[14/03/2026 14:19:48] [INFO] [0e61a180-5fb9-46ad-8151-a3c238197ca4] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 16ms
+[14/03/2026 14:19:51] [INFO] [8652394c-3a84-42aa-85b6-b978d31d69d2] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 18ms
+[14/03/2026 14:19:51] [INFO] [c601198c-929b-45cd-858b-f7111dfe7ea3] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 34ms
+[14/03/2026 14:19:52] [INFO] [60bd02be-2efd-483c-8283-78a3a5813d4f] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 21ms
+[14/03/2026 14:19:52] [INFO] [1fba7246-fbdf-4d78-bb25-c6ba8f8a1a63] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 21ms
+[14/03/2026 14:19:55] [INFO] [179c6f2c-881b-4a9b-8454-db6745c58825] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 62ms
+[14/03/2026 14:19:55] [INFO] [345d97a4-f8c3-4771-b9b3-ea2f1fb22683] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 14ms
+[14/03/2026 14:19:57] [INFO] [0111a909-7ea0-4a4f-8989-075a4e49a153] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 24ms
+[14/03/2026 14:19:57] [INFO] [e063821f-eb00-4bd8-a67a-6af941f97a18] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 32ms
+[14/03/2026 14:20:01] [INFO] [6d8c83b7-19d5-4896-88a7-9a613e048a09] GET /api/v1/scim/admin/dashboard/stats 200 49ms
+[14/03/2026 14:20:01] [INFO] [7bff2072-4ffe-4ea7-973c-ff9de64d62e0] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 62ms
+[14/03/2026 14:20:01] [INFO] [a7cc52bf-1745-4ed1-bcf5-09e458e8fb90] GET /api/v1/scim/admin/dashboard/stats 200 68ms
+[14/03/2026 14:20:01] [INFO] [a4b073dc-fdcf-48c1-9f4a-4c35a29d4b4c] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 57ms
+[14/03/2026 14:23:13] [INFO] [78fbb0bc-4c17-4a76-afc5-2e504b00f11c] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 12ms
+[14/03/2026 14:23:13] [INFO] [ec61c23a-70ec-4632-a942-5fea4b4493c6] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 17ms
+[14/03/2026 14:23:19] [INFO] [e2d73fc0-db02-44dc-8224-f4e2177bb5c6] GET /api/v1/scim/admin/users?page=1&limit=5&role=admin 200 9ms
+[14/03/2026 14:23:22] [INFO] [b7073ca4-0051-4544-bce3-be8abfbb6e04] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 8ms
+[14/03/2026 14:23:24] [INFO] [f86fa9ca-cd9c-4b66-a136-a5016eccd0fb] GET /api/v1/scim/admin/users?page=2&limit=5&role=user 200 7ms
+[14/03/2026 14:23:26] [INFO] [be1ec87f-bab0-468b-9858-e8e44e59e71f] GET /api/v1/scim/admin/users?page=1&limit=5&role=user 200 7ms
+[14/03/2026 14:23:31] [INFO] [8dbd4f78-e513-42b3-8d4f-4aa61b71927a] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 43ms
+[14/03/2026 14:23:31] [INFO] [ddd68a14-0f9a-4a64-86da-d5b23bedd6e6] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 73ms
+[14/03/2026 14:23:48] [INFO] [a69e0fa7-72fc-4c02-b91f-ef4220ed1bbc] GET /api/v1/scim/admin/properties?page=2&limit=5&status=active 200 15ms
+[14/03/2026 14:23:52] [INFO] [cee02333-2814-48c7-92e8-c624aeb71b60] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 18ms
+[14/03/2026 14:23:55] [INFO] [89db5b95-f65a-41af-a362-fa1496d6516b] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 25ms
+[14/03/2026 14:23:58] [INFO] [a51bb93e-c779-4275-8b7a-c1e8e6547d25] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 14ms
+[14/03/2026 14:24:21] [INFO] [17c2a0d5-ef15-4a32-bae7-d13ec1c9e760] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 22ms
+[14/03/2026 14:24:21] [INFO] [3b01ef97-3862-4fe9-a088-86381f9436a6] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 42ms
+[14/03/2026 14:24:27] [INFO] [019470bb-b762-4c08-829f-a57510c39d02] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 20ms
+[14/03/2026 14:24:28] [INFO] [e48e0b8c-2bdb-43e9-a67e-c09c87adb3ae] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 12ms
+[14/03/2026 14:24:29] [INFO] [85762b1a-4349-42c3-b141-210a886c66de] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 23ms
+[14/03/2026 14:24:29] [INFO] [e430c026-5be8-409c-96b5-5e2f73aab89f] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 23ms
+[14/03/2026 14:24:32] [INFO] [e1c199f8-de2e-4906-8063-09f0e4e38143] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 27ms
+[14/03/2026 14:24:32] [INFO] [5948ad07-9a33-49e7-81d1-c60ba99d42b4] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 28ms
+[14/03/2026 14:24:44] [INFO] [09e8750f-e718-401c-9eaf-0067deddf4bd] GET /api/v1/scim/message/inbox?page=1&limit=10 200 14ms
+[14/03/2026 14:24:44] [INFO] [1dc4c013-6516-4163-a077-d74ad4bb951c] GET /api/v1/scim/message/unread 200 12ms
+[14/03/2026 14:24:44] [INFO] [9dd54a10-b47c-4886-970b-ca18c91a6784] GET /api/v1/scim/users/profile 200 10ms
+[14/03/2026 14:24:44] [INFO] [988c5322-2361-4207-8ea5-943f6102412c] GET /api/v1/scim/favoris 200 28ms
+[14/03/2026 14:24:44] [INFO] [31cbb32a-42f6-4aa6-bdf1-d0076e976819] GET /api/v1/scim/message/inbox?page=1&limit=10 200 39ms
+[14/03/2026 14:24:44] [INFO] [29eb9844-7be3-4f76-aaf6-1b4a5a90e3d9] GET /api/v1/scim/users/profile 200 17ms
+[14/03/2026 14:24:44] [INFO] [08615803-0729-41ac-ac3a-b97bfa3971d0] GET /api/v1/scim/message/unread 200 38ms
+[14/03/2026 14:24:44] [INFO] [55786584-2652-48a8-a344-55a44213a523] GET /api/v1/scim/favoris 200 28ms
+[14/03/2026 14:24:44] [INFO] [0f27a4d8-7364-4aa4-b20b-891893ffbb10] GET /api/v1/scim/message/unread 200 9ms
+[14/03/2026 14:24:44] [INFO] [2ebee204-2d45-44e3-84a7-15b3f5b86566] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 43ms
+[14/03/2026 14:24:44] [INFO] [50d76127-a329-43b4-ab65-7d31c980b85d] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 34ms
+[14/03/2026 14:26:46] [INFO] [d1a10d7a-b02d-412b-a267-01da19514232] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 23ms
+[14/03/2026 14:27:16] [INFO] [807204f3-f5f9-4785-8ee4-9241433d3f3c] GET /api/v1/scim/message/inbox?page=1&limit=10 200 31ms
+[14/03/2026 14:27:16] [INFO] [59ab1c10-8a2d-4a40-94d0-d57803d37727] GET /api/v1/scim/users/profile 200 21ms
+[14/03/2026 14:27:16] [INFO] [4e2b0228-0d44-4ee5-a872-a6a8ce7deca4] GET /api/v1/scim/message/unread 200 44ms
+[14/03/2026 14:27:16] [INFO] [faf6d37f-47bf-4eed-b529-15216a113679] GET /api/v1/scim/favoris 200 38ms
+[14/03/2026 14:27:16] [INFO] [16202b89-6ee5-4d05-b395-5c34f54877a6] GET /api/v1/scim/users/profile 200 16ms
+[14/03/2026 14:27:16] [INFO] [2bc5940e-498c-4d67-a25b-ad4933758d79] GET /api/v1/scim/message/inbox?page=1&limit=10 200 33ms
+[14/03/2026 14:27:16] [INFO] [802b4cc7-6b67-4ee9-b095-13b8eaea5e41] GET /api/v1/scim/message/unread 200 34ms
+[14/03/2026 14:27:16] [INFO] [6ee27e0f-f8ff-4cb3-82ab-fee966a55f11] GET /api/v1/scim/favoris 200 40ms
+[14/03/2026 14:27:16] [INFO] [351cee75-c956-4c65-8211-2505c0517926] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 20ms
+[14/03/2026 14:27:16] [INFO] [d85d849e-7618-4599-a6cb-64b31aa95074] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 28ms
+[14/03/2026 14:27:16] [INFO] [4d55f3b0-46c6-47fc-92fa-22a04b1f59a8] GET /api/v1/scim/message/unread 200 19ms
+[14/03/2026 14:27:19] [INFO] [15ed04d0-8b45-41d1-ae99-ba73c38e2a78] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 22ms
+[14/03/2026 14:27:19] [INFO] [25ee1253-5335-45a0-92f0-838bbff42c2b] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 33ms
+[14/03/2026 14:27:54] [INFO] [90b1ccc6-6692-4b45-beda-a882721ec73e] GET /api/v1/scim/admin/messages 200 23ms
+[14/03/2026 14:27:55] [INFO] [4302e079-3d18-401b-9ec5-0759e4534750] GET /api/v1/scim/admin/messages 200 25ms
+[14/03/2026 14:28:02] [INFO] [0ac612fd-c7af-4dca-a501-818b19c09733] GET /api/v1/scim/admin/messages 200 20ms
+[14/03/2026 14:28:37] [INFO] [57669439-d20b-4fe0-b6f4-c96c56f96d20] GET /api/v1/scim/admin/settings 200 5ms
+[14/03/2026 14:28:37] [INFO] [727e4443-8f5b-4daa-a02a-af1cbe1b5e28] GET /api/v1/scim/admin/settings 200 7ms
+[14/03/2026 14:29:14] [INFO] [917fda7c-ed1a-449f-b210-7208697c6da3] GET /api/v1/scim/users/profile 200 27ms
+[14/03/2026 14:29:14] [INFO] [c46e2a27-634a-4eb6-8d34-b9ea1df82559] GET /api/v1/scim/message/inbox?page=1&limit=10 200 42ms
+[14/03/2026 14:29:14] [INFO] [35254c06-2b22-494e-bf6a-0ad414934f5f] GET /api/v1/scim/message/unread 200 48ms
+[14/03/2026 14:29:14] [INFO] [3d417bc0-7eb8-4188-bd85-fd93907a7a29] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 116ms
+[14/03/2026 14:29:14] [INFO] [0aaa7a75-8fd9-4ef0-9ec3-91ad273b130f] GET /api/v1/scim/favoris 200 81ms
+[14/03/2026 14:29:14] [INFO] [58cfb066-ebde-402e-b69e-7a01d9c58215] GET /api/v1/scim/users/profile 200 34ms
+[14/03/2026 14:29:14] [INFO] [e0770c51-e792-48da-bd4a-d2f4ed5c3311] GET /api/v1/scim/message/unread 200 62ms
+[14/03/2026 14:29:14] [INFO] [f2324337-211b-4903-a7af-c410048c83cc] GET /api/v1/scim/message/inbox?page=1&limit=10 200 76ms
+[14/03/2026 14:29:14] [INFO] [12a5fb71-216a-4fd8-91a7-a218c40acee0] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 76ms
+[14/03/2026 14:29:14] [INFO] [162520f1-9a44-473b-8a71-5f1ac0711970] GET /api/v1/scim/favoris 200 50ms
+[14/03/2026 14:29:14] [INFO] [6cb01620-89ba-4382-9ce7-519a0650f7f2] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 51ms
+[14/03/2026 14:29:14] [INFO] [71327118-4ee4-4b32-be58-e9aeb15104ce] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 130ms
+[14/03/2026 14:29:16] [INFO] [506d380e-fb5a-4238-8499-9b03e3c2773d] GET /api/v1/scim/property?page=1&limit=6 200 38ms
+[14/03/2026 14:29:16] [INFO] [0fa1382b-83b8-437d-84f8-9385b4b87128] GET /api/v1/scim/property?page=1&limit=6 200 25ms
+[14/03/2026 14:29:16] [INFO] [fe585627-dce0-4639-99b2-b8fb19fa0370] GET /api/v1/scim/property?page=1&limit=6 200 22ms
+[14/03/2026 14:29:37] [INFO] [f2928cbc-83fb-41d4-a4d2-7122082d73e8] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 72ms
+[14/03/2026 14:29:37] [INFO] [4299b7b0-26a1-475e-925e-3548f530bfd9] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 31ms
+[14/03/2026 14:29:37] [INFO] [43198e50-d48b-4843-9b7e-98ef5ccd22dd] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 15ms
+[14/03/2026 14:29:38] [INFO] [8667747f-3829-4a52-8c4e-31edd34fbc7b] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 72ms
+[14/03/2026 14:29:39] [INFO] [6023d85e-2949-49f3-8777-18d1fcbb8a4d] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 24ms
+[14/03/2026 14:29:39] [INFO] [bc6e1d71-b9da-4165-a174-5cafcbefc154] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 26ms
+[14/03/2026 14:29:43] [INFO] [19d77931-0e23-4ede-bca1-d9836afa4472] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 49ms
+[14/03/2026 14:29:44] [INFO] [1a0828bb-fecf-4a81-8cd1-8e9b14952a9b] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 32ms
+[14/03/2026 14:29:45] [INFO] [7ab905c8-93c0-4c02-bf55-ccf498f21cf1] GET /api/v1/scim/admin/dashboard/stats 200 46ms
+[14/03/2026 14:29:45] [INFO] [af5c2858-8936-4f95-b448-81b30a364a4b] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 57ms
+[14/03/2026 14:29:45] [INFO] [e2cd05d6-a13b-45e9-89aa-8d6e441aa999] GET /api/v1/scim/admin/dashboard/stats 200 58ms
+[14/03/2026 14:29:45] [INFO] [a4d49f5e-7904-4754-b12f-80e682ac6c66] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 40ms
+[14/03/2026 14:33:13] [INFO] [5fe01c2e-4727-435e-92a8-fe753e4c18ed] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 24ms
+[14/03/2026 14:33:13] [INFO] [474b5a73-b4aa-4cb8-9dd5-47cf08d07caf] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 43ms
+[14/03/2026 14:33:21] [INFO] [057a25b8-ed05-47cd-878b-4da8d47c7594] GET /api/v1/scim/admin/reservations?page=1&limit=5&status=confirmee 200 21ms
+[14/03/2026 14:33:25] [INFO] [c373256c-e617-4054-bf77-2828b1ecfee8] GET /api/v1/scim/admin/reservations?page=1&limit=5&status=annulee 200 20ms
+[14/03/2026 14:34:13] [INFO] [f2d82ee8-cd7d-4168-8589-58baa3c28d32] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 19ms
+[14/03/2026 14:34:13] [INFO] [b5270bbc-2c6a-4ab2-a391-76e45110cfdd] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 16ms
+[14/03/2026 14:34:14] [INFO] [847e48bd-4752-4396-b8ac-c89501479ae5] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 45ms
+[14/03/2026 14:34:14] [INFO] [5097d20b-1f1c-42de-85d3-c1288e690362] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 35ms
+[14/03/2026 14:34:25] [INFO] [00dbba2b-ba2d-4077-8255-67c8e73d26b2] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 15ms
+[14/03/2026 14:34:25] [INFO] [50e0feaf-baed-4b3f-8707-73c04a6f8fa0] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 16ms
+[14/03/2026 14:34:38] [INFO] [599de573-80dd-438c-98b2-562db59af514] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 16ms
+[14/03/2026 14:34:38] [INFO] [0588bc41-bad9-4950-af3b-7e9f5e4c9a02] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 24ms
+[14/03/2026 14:35:51] [INFO] [8c30980b-c956-4e81-b189-b6970c9e6ef6] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 34ms
+[14/03/2026 14:35:51] [INFO] [81c4ffcf-97d1-4167-aa2b-066b3ff8b2cb] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 36ms
+[14/03/2026 14:35:52] [INFO] [91d74f38-3e5c-439e-bc99-23949d905f53] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 17ms
+[14/03/2026 14:35:52] [INFO] [c695c19a-159b-45a3-8a9c-737fe04bab34] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 29ms
+[14/03/2026 14:35:55] [INFO] [de5bc41f-04c4-4536-bf16-9adcb9a27821] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 19ms
+[14/03/2026 14:35:55] [INFO] [b4ada3b5-c465-41f5-b733-80b4917de78a] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 30ms
+[14/03/2026 14:35:58] [INFO] [5b958b86-ba07-43d4-a76a-a69cd505dbda] GET /api/v1/scim/admin/dashboard/stats 200 44ms
+[14/03/2026 14:35:58] [INFO] [6ef89244-d8eb-4cf2-a227-6a9361dbe660] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 53ms
+[14/03/2026 14:35:58] [INFO] [c34618b0-ef05-40cf-9300-828a23c3e1d4] GET /api/v1/scim/admin/dashboard/stats 200 50ms
+[14/03/2026 14:35:58] [INFO] [30562ef7-969e-4fe9-9fc0-14b69f3e1919] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 52ms
+[14/03/2026 14:41:13] [INFO] [b55c3367-e427-4be9-871a-d60f9135a711] GET /api/v1/scim/admin/dashboard/stats 200 53ms
+[14/03/2026 14:41:13] [INFO] [ddca6430-6c80-4858-af04-5d1256504764] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 58ms
+[14/03/2026 14:41:44] [INFO] [446097d0-af46-41eb-abe9-a5e04ae80146] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 53ms
+[14/03/2026 14:41:44] [INFO] [81fe3293-9e62-48e5-a15e-57182d78c461] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 35ms
+[14/03/2026 14:41:46] [INFO] [daac66db-2a78-4815-bd63-0e6313bdfaf4] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 21ms
+[14/03/2026 14:41:46] [INFO] [3e55ab6a-53e2-4e1e-bf12-9b2c350dabb5] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 26ms
+[14/03/2026 14:41:47] [INFO] [9ba24430-ec17-42c9-af15-07befb83a516] GET /api/v1/scim/admin/dashboard/stats 200 51ms
+[14/03/2026 14:41:47] [INFO] [8ca002c5-184a-43ca-bdeb-bdd14361110f] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 59ms
+[14/03/2026 14:41:47] [INFO] [8d780834-7728-403e-b9bb-6e6cdc2e6622] GET /api/v1/scim/admin/dashboard/stats 200 99ms
+[14/03/2026 14:41:47] [INFO] [6d42b406-8059-48ba-91a4-87c9ffd9b76d] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 154ms
+[14/03/2026 14:42:04] [INFO] [a839ab5b-2edd-4fc7-87d6-fc0c6fdc8d2a] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 40ms
+[14/03/2026 14:42:04] [INFO] [68a7f688-23e7-4c37-a8b7-99bf1b9a4eda] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 30ms
+[14/03/2026 14:42:05] [INFO] [1c632685-e791-4988-a233-1e7ff2b50879] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 30ms
+[14/03/2026 14:42:05] [INFO] [5d1c0c48-a029-4ad3-83bc-544791440e4c] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 37ms
+[14/03/2026 14:42:05] [INFO] [50bc433f-9315-4d31-a770-4aba148a4bab] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 19ms
+[14/03/2026 14:42:05] [INFO] [11390095-5ff4-4802-b9c5-4ab7d578b894] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 23ms
+[14/03/2026 14:42:09] [INFO] [89f35151-0784-4bb0-8823-357e592a783a] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 21ms
+[14/03/2026 14:42:09] [INFO] [87846b2f-0d4c-4835-ac56-0e2265a840b0] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 14ms
+[14/03/2026 14:44:20] [INFO] [68e0b061-69cf-45de-b59a-af4d426c9693] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 11ms
+[14/03/2026 14:45:24] [INFO] [b3ee11ce-8396-42b2-9658-cd1e0ebd11e2] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 24ms
+[14/03/2026 14:45:24] [INFO] [f913070b-89f8-4a52-acb3-1ea13febeae1] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 42ms
+[14/03/2026 14:45:25] [INFO] [dc09619f-d3cb-4c44-8920-937bb8f21378] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 28ms
+[14/03/2026 14:45:25] [INFO] [0d001564-4715-45da-aae9-5ba4b7b3df92] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 70ms
+[14/03/2026 14:45:25] [INFO] [4f75d17b-628d-49ee-b823-98e94e95bbe5] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 50ms
+[14/03/2026 14:45:25] [INFO] [96dfb488-b330-4d58-af48-fb4474e517ec] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 112ms
+[14/03/2026 14:45:25] [INFO] [a65f25db-ff47-4660-852b-5d3c2e86f15f] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 112ms
+[14/03/2026 14:45:25] [INFO] [0c0b4f63-8198-475a-8561-12da98a067f4] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 30ms
+[14/03/2026 14:45:25] [INFO] [874b8773-096e-48ed-af65-0d74a48bd77b] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 155ms
+[14/03/2026 14:45:25] [INFO] [42fc70d8-c115-4a16-9ebc-5e51e8ee385e] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 66ms
+[14/03/2026 14:45:28] [INFO] [3c7dc72c-70fb-427c-a919-242a0bf8015c] GET /api/v1/scim/admin/dashboard/stats 200 57ms
+[14/03/2026 14:45:28] [INFO] [a1dd6463-95d0-42c1-ac4e-030191b6af4c] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 111ms
+[14/03/2026 14:45:28] [INFO] [19489b20-8db5-4f0d-86af-c5cbf12e1df1] GET /api/v1/scim/admin/dashboard/stats 200 70ms
+[14/03/2026 14:45:28] [INFO] [b5d2cb3e-aebe-4de3-9e34-315e7c3b0f61] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 41ms
+[14/03/2026 14:45:30] [INFO] [f3d49c9b-b98e-4ac0-a5b2-48268eca568b] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 26ms
+[14/03/2026 14:45:30] [INFO] [781e13ce-0dc8-497a-afbe-b7d402984be8] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 28ms
+[14/03/2026 14:45:31] [INFO] [e96e7676-68b3-4129-ba29-74c21fc67654] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 46ms
+[14/03/2026 14:45:31] [INFO] [7dbf433f-992b-49d2-9268-a6692a946dc1] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 22ms
+[14/03/2026 14:45:33] [INFO] [26c49e54-4490-42ca-9a13-8138105d89b9] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 16ms
+[14/03/2026 14:45:33] [INFO] [b2603752-fa31-422b-81df-06286ebf7592] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 23ms
+[14/03/2026 14:46:48] [INFO] [c26fe952-fe04-4a57-a6cb-c3b5fb9391f2] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 35ms
+[14/03/2026 14:46:51] [INFO] [7ee1b958-81e6-4228-8914-f8299780a6b9] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 25ms
+[14/03/2026 14:46:51] [INFO] [1e287300-bc9c-49bd-ae00-677b21bba9d9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 37ms
+[14/03/2026 14:46:51] [INFO] [3cfe284e-1a9c-4596-9e96-f66471bf6794] GET /api/v1/scim/message/unread 200 41ms
+[14/03/2026 14:46:51] [INFO] [ebd88680-bf7c-434a-ac4e-02ef4b5b32de] GET /api/v1/scim/favoris 200 52ms
+[14/03/2026 14:46:51] [INFO] [732620ab-76c3-4516-801a-0cc140837bde] GET /api/v1/scim/message/inbox?page=1&limit=10 200 32ms
+[14/03/2026 14:46:51] [INFO] [8409dce2-70c4-4e1c-ae00-9e072ee02358] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 65ms
+[14/03/2026 14:46:51] [INFO] [8a36ab57-1165-47c2-8099-8d3462a93c9b] GET /api/v1/scim/message/unread 200 8ms
+[14/03/2026 14:46:51] [INFO] [a7247d3d-bce7-4727-a0a5-9da0eab3ab16] GET /api/v1/scim/message/unread 200 7ms
+[14/03/2026 14:46:51] [INFO] [2f4bcba8-16b8-4724-bae9-c1cb5b351109] GET /api/v1/scim/property?page=1&limit=6 200 22ms
+[14/03/2026 14:46:51] [INFO] [fd0065b4-afba-4fcc-94f6-185eefc1ebc8] GET /api/v1/scim/message/inbox?page=1&limit=10 200 28ms
+[14/03/2026 14:46:51] [INFO] [73d188ed-14c0-4919-8f34-647e4cea4d7b] GET /api/v1/scim/message/unread 200 20ms
+[14/03/2026 14:46:51] [INFO] [cdf06ae2-e4d2-4247-8a13-8ef7abfa6945] GET /api/v1/scim/favoris 200 70ms
+[14/03/2026 14:46:51] [INFO] [4145cd14-b420-4709-837d-5c53e6f7e4ea] GET /api/v1/scim/property?page=1&limit=6 200 91ms
+[14/03/2026 14:46:51] [INFO] [f36af55f-e8bd-41f1-80c4-1649c2c44aef] GET /api/v1/scim/message/unread 200 107ms
+[14/03/2026 14:46:51] [INFO] [16776822-0412-4432-90f1-6f04f40b93e9] GET /api/v1/scim/message/inbox?page=1&limit=10 200 115ms
+[14/03/2026 14:47:05] [INFO] [526ea5fa-6ff4-4321-bbe6-1c16c32ebdd4] PUT /api/v1/scim/property/69b54e135d59af1ad87563d8 200 58ms
+[14/03/2026 14:47:05] [INFO] [2a8c4508-b1b2-452c-9fe7-c40b647dc054] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 26ms
+[14/03/2026 14:47:05] [INFO] [4f05baec-8ede-4c87-bd48-45c442342d5a] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 103ms
+[14/03/2026 14:47:05] [INFO] [ab58cdb2-bc61-49d2-bfc8-fbd708b96d24] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 143ms
+[14/03/2026 14:47:05] [INFO] [c1e0b39d-1a8c-4591-a118-c99be67f2b50] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 61ms
+[14/03/2026 14:47:05] [INFO] [a0e5efe5-132f-4eac-8931-749df9ab051a] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 71ms
+[14/03/2026 14:47:05] [INFO] [d5ec7814-3dda-4a8f-8871-9b36ffc72a7e] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 200ms
+[14/03/2026 14:47:05] [INFO] [6ba5f312-3ec3-4a5f-aadb-3eb37e95a60c] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 29ms
+[14/03/2026 14:47:05] [INFO] [70bff5c3-dc54-4973-be32-02e9efab66f0] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 64ms
+[14/03/2026 14:47:05] [INFO] [44ae2512-90ad-4f40-841a-48b1dc6d3ca5] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 119ms
+[14/03/2026 14:47:05] [INFO] [7b818797-26af-472b-8444-3e14a490cd50] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 125ms
+[14/03/2026 14:47:05] [INFO] [dddbeb92-b4eb-4487-845a-7f7398c41e19] GET /api/v1/scim/property?limit=1000 200 15ms
+[14/03/2026 14:47:13] [INFO] [ca2f2015-7552-4b43-abfe-1aa18b9f1c1c] GET /api/v1/scim/admin/dashboard/stats 200 83ms
+[14/03/2026 14:47:13] [INFO] [51d2f79f-821b-43a3-a2ca-7cbd0be08879] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 110ms
+[14/03/2026 14:47:13] [INFO] [6967faf7-ed7e-423e-b598-54d668f97892] GET /api/v1/scim/admin/dashboard/stats 200 140ms
+[14/03/2026 14:47:13] [INFO] [088d5b60-51e0-47e1-aeb3-27cda0102485] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 192ms
+[14/03/2026 14:47:15] [INFO] [18d95998-1bf8-4dad-84cc-b22e6e728629] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 28ms
+[14/03/2026 14:47:15] [INFO] [eb782075-50be-4194-81e2-abc35a2badef] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 21ms
+[14/03/2026 14:49:03] [INFO] [dc5d2c83-a0ae-44ac-8287-a21a08b5e0fe] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 17ms
+[14/03/2026 14:49:03] [INFO] [37c75835-faf8-4840-875d-9bf7ea6f6109] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 19ms
+[14/03/2026 14:49:09] [INFO] [e8a59e6b-2f46-440a-ac2b-4b6458836e27] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 25ms
+[14/03/2026 14:49:10] [INFO] [b2ab824c-067c-41c5-bbce-324e7c144b64] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 28ms
+[14/03/2026 14:49:13] [INFO] [c8fd0e52-8f3a-4bb8-a1c4-35563d37b90c] DELETE /api/v1/scim/admin/property-submissions/69b548df5d59af1ad8755a5a 200 17ms
+[14/03/2026 14:49:16] [INFO] [95e0d531-7874-4796-a6c4-60f8407925c9] DELETE /api/v1/scim/admin/property-submissions/69aa28a7b95c28ad1f0c781b 200 11ms
+[14/03/2026 14:49:18] [INFO] [5833e907-727c-424d-81b1-ecaf95e1028b] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 6ms
+[14/03/2026 14:49:19] [INFO] [04c40ca5-2f85-46ab-bb47-54aa9c80b53f] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 6ms
+[14/03/2026 14:49:20] [INFO] [3083e621-2db5-485f-a3b8-17ac0bfbdc35] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 5ms
+[14/03/2026 14:51:04] [INFO] [c1cee8a6-13b5-4321-b238-019562a2a391] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 37ms
+[14/03/2026 14:51:04] [INFO] [b19ecec7-c0c9-4ac5-b812-3a5b8daf24d0] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 33ms
+[14/03/2026 14:51:06] [INFO] [ed025ed1-99f9-44ff-bd71-4d19563c7754] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 19ms
+[14/03/2026 14:51:06] [INFO] [e72b5d08-2304-4f90-9033-a9fb5afe290e] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 25ms
+[14/03/2026 14:51:34] [INFO] [9ea62756-7af2-4ddc-995d-471d3355b9a0] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244 200 54ms
+[14/03/2026 14:51:34] [INFO] [9b052e28-a055-4516-a51b-e855b0ebf025] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244 200 48ms
+[14/03/2026 14:51:53] [INFO] [c318d9ba-8064-4dfa-b6aa-d45386b20547] PUT /api/v1/scim/property/69a6fc356a1d8b92106e3244 200 29ms
+[14/03/2026 14:51:53] [INFO] [997c8f25-4453-4987-89bc-e361910fb718] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244/user-note 200 25ms
+[14/03/2026 14:51:53] [INFO] [e8d6a5ff-75bd-4c81-bf04-fc6cd5839ff0] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244 200 45ms
+[14/03/2026 14:51:53] [INFO] [cc7f32ae-e5ce-4649-a077-0d7d1428c201] POST /api/v1/scim/property/69a6fc356a1d8b92106e3244/visit 200 90ms
+[14/03/2026 14:51:53] [INFO] [75678d83-586b-4a74-ae52-7049dc492e3d] POST /api/v1/scim/property/69a6fc356a1d8b92106e3244/visit 200 109ms
+[14/03/2026 14:51:53] [INFO] [3e1e0411-5835-47d9-832d-d855205781ab] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244/user-note 200 70ms
+[14/03/2026 14:51:53] [INFO] [dbfefba7-0af5-4a8c-a236-971772c9638a] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244 200 161ms
+[14/03/2026 14:51:54] [INFO] [628c6d19-3664-4797-adf3-29d00d6f31ce] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244/user-note 200 41ms
+[14/03/2026 14:51:54] [INFO] [21bae192-4156-4216-9c57-bb4bb6204898] POST /api/v1/scim/property/69a6fc356a1d8b92106e3244/visit 200 61ms
+[14/03/2026 14:51:54] [INFO] [30c7cc13-fbad-4952-b400-ec21de5b97d9] POST /api/v1/scim/property/69a6fc356a1d8b92106e3244/visit 200 79ms
+[14/03/2026 14:51:54] [INFO] [4b35b778-79a1-404e-ad63-f713b7e01eac] GET /api/v1/scim/property/69a6fc356a1d8b92106e3244/user-note 200 38ms
+[14/03/2026 14:51:54] [INFO] [2905d901-d9bc-48e8-8f6e-9d632d8362c2] GET /api/v1/scim/property?limit=1000 200 15ms
+[14/03/2026 14:52:34] [INFO] [e4da1ca3-c95e-4f3a-9b05-bd32e3a3aa39] GET /api/v1/scim/admin/dashboard/stats 200 66ms
+[14/03/2026 14:52:34] [INFO] [a6ec8529-3134-47a5-bd8c-a3dd7983147f] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 83ms
+[14/03/2026 14:52:34] [INFO] [31f9d5bb-2c09-4e8e-b371-75c14a771b04] GET /api/v1/scim/admin/dashboard/stats 200 86ms
+[14/03/2026 14:52:34] [INFO] [6028c1d0-ce62-46a4-a6cc-ce4c130de675] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 74ms
+[14/03/2026 14:53:15] [INFO] [e832488c-39dc-4ac9-8040-7fbd71fdbd20] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 31ms
+[14/03/2026 14:53:15] [INFO] [76b17555-dc9e-4b9b-ae0e-69b050852181] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 42ms
+[14/03/2026 14:53:22] [INFO] [c33dd6ef-681d-4ebb-b42c-8bfdab54e76f] GET /api/v1/scim/admin/reservations?page=2&limit=5 200 21ms
+[14/03/2026 15:05:25] [INFO] [4dce1a22-b6de-4d10-ab97-e1fe6a4084e4] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 9ms
+[14/03/2026 15:05:25] [INFO] [acf06982-57d5-44a3-8bd0-d0aa4cfb19cf] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 16ms
+[14/03/2026 15:05:27] [INFO] [d70180fd-c3ec-4f9f-a53f-55f9c9de5dd8] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 8ms
+[14/03/2026 15:05:28] [INFO] [fadef1b2-547d-4307-9b40-54ab0a02d2ec] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 7ms
+[14/03/2026 15:05:29] [INFO] [c14afbab-bde7-45f6-a720-9638a835a54c] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 7ms
+[14/03/2026 15:05:30] [INFO] [29e5ba04-94ee-4c20-a15e-e4460b4eb1d9] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 10ms
+[14/03/2026 15:05:30] [INFO] [8ca03d21-bcf4-486b-8962-c2b499df6303] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 6ms
+[14/03/2026 15:05:31] [INFO] [ae62cf8b-b02a-4e89-8df0-2958dec8e09a] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 6ms
+[14/03/2026 15:05:32] [INFO] [641b4a84-5807-44fe-9e82-7ebf71380822] GET /api/v1/scim/admin/dashboard/stats 200 68ms
+[14/03/2026 15:05:32] [INFO] [96f32fd0-d1bc-47f6-8846-ebd461d908f2] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 85ms
+[14/03/2026 15:05:32] [INFO] [8b95f804-56eb-45f2-8e71-a8f741957ac6] GET /api/v1/scim/admin/dashboard/stats 200 118ms
+[14/03/2026 15:05:32] [INFO] [255536a9-888c-41c9-8643-d7e154d3a4e2] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 122ms
+[14/03/2026 16:10:53] [INFO] [0a9c695a-3593-4b65-8dca-88374fb05045] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 70ms
+[14/03/2026 16:10:53] [INFO] [8441860f-603f-4a27-85eb-fed0ef504969] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 67ms
+[14/03/2026 21:06:34] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[14/03/2026 21:07:33] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[15/03/2026 06:18:09] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[15/03/2026 06:19:02] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[15/03/2026 06:19:52] [INFO] [b58e4063-87e5-46cd-a297-f60c60abc4ec] GET /api/v1/scim/users/profile 200 16ms
+[15/03/2026 06:19:52] [INFO] [3b44eeb6-4e66-4066-8beb-18b78f89ee8e] GET /api/v1/scim/message/inbox?page=1&limit=10 200 39ms
+[15/03/2026 06:19:52] [INFO] [d3010f8c-dff9-46ab-b864-1d66d5d5193d] GET /api/v1/scim/favoris 200 32ms
+[15/03/2026 06:19:52] [INFO] [0ff70dfc-de32-4444-bf5d-556078124746] GET /api/v1/scim/message/unread 200 36ms
+[15/03/2026 06:19:52] [INFO] [31489429-d115-488d-9e50-b8af2b2b19c5] GET /api/v1/scim/users/profile 200 22ms
+[15/03/2026 06:19:52] [INFO] [54dc0353-3f6b-444c-a05c-6bd64103d9bd] GET /api/v1/scim/message/unread 200 33ms
+[15/03/2026 06:19:52] [INFO] [dc422eed-512c-48d1-bc8e-a7dfbf3ae766] GET /api/v1/scim/favoris 200 43ms
+[15/03/2026 06:19:52] [INFO] [09b00190-ee62-486b-88a0-b52fe70072b1] GET /api/v1/scim/message/inbox?page=1&limit=10 200 44ms
+[15/03/2026 06:19:52] [INFO] [41cbceca-631f-4124-ad79-77c280bc56ba] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 30ms
+[15/03/2026 06:19:52] [INFO] [5719d145-94f2-4513-b364-d457c9ed4021] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 36ms
+[15/03/2026 06:19:52] [INFO] [03edfabc-b8d4-4da0-bc6d-e6ec187a29af] GET /api/v1/scim/message/unread 200 17ms
+[15/03/2026 11:50:41] [INFO] [b246a258-ad26-4542-ac0f-d77be8f75797] GET /api/v1/scim/message/unread 200 18ms
+[15/03/2026 11:50:41] [INFO] [321fcf13-d9c7-4b07-87d6-6b90fd1ab8b3] GET /api/v1/scim/message/inbox?page=1&limit=10 200 31ms
+[15/03/2026 11:50:41] [INFO] [cf0f4e25-a720-45c9-91d8-82e96baee900] GET /api/v1/scim/favoris 200 21ms
+[15/03/2026 11:50:41] [INFO] [db3a3d67-ee9c-4763-94cb-2141f86949cf] GET /api/v1/scim/users/profile 200 20ms
+[15/03/2026 11:50:41] [INFO] [17fb68a7-9136-4e71-b701-2b63820a13bf] GET /api/v1/scim/users/profile 200 17ms
+[15/03/2026 11:50:41] [INFO] [25384cb2-b385-46ea-9cd8-b4221ef42a28] GET /api/v1/scim/favoris 200 30ms
+[15/03/2026 11:50:41] [INFO] [19e515f8-df29-46e9-89a7-a4ccca3cb678] GET /api/v1/scim/message/unread 200 31ms
+[15/03/2026 11:50:41] [INFO] [0653f320-dbc0-49ad-bf5b-d32f5de16ea8] GET /api/v1/scim/message/inbox?page=1&limit=10 200 36ms
+[15/03/2026 11:50:41] [INFO] [02456622-68d3-4613-b5a2-8b95fd62cf3a] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 35ms
+[15/03/2026 11:50:41] [INFO] [5e615ed1-cf9c-4730-bced-a3a23ab4062f] GET /api/v1/scim/message/unread 200 29ms
+[15/03/2026 11:50:41] [INFO] [f6ff88ce-7406-4264-bcab-f494481f5caf] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 75ms
+[16/03/2026 14:49:49] [INFO] [7d9ed256-bf8d-42f8-a476-cba868fe96ff] GET /api/v1/scim/users/profile 200 16ms
+[16/03/2026 14:49:49] [INFO] [e2ebc749-6e1a-4ef7-a107-ae0b33f1e9bd] GET /api/v1/scim/message/unread 200 28ms
+[16/03/2026 14:49:49] [INFO] [5775b545-0f8a-4288-a919-e289ca9a9cb2] GET /api/v1/scim/favoris 200 21ms
+[16/03/2026 14:49:49] [INFO] [8f5623f7-8cce-4ecb-8433-4cf14f68482b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 40ms
+[16/03/2026 14:49:49] [INFO] [b233a795-3a71-4343-99b1-b587bd31cab5] GET /api/v1/scim/users/profile 200 15ms
+[16/03/2026 14:49:49] [INFO] [8ac3f796-9acf-43a7-b750-d78cfbeae858] GET /api/v1/scim/favoris 200 26ms
+[16/03/2026 14:49:49] [INFO] [44d9d916-9c75-4f3f-8ee5-0958270906aa] GET /api/v1/scim/message/unread 200 29ms
+[16/03/2026 14:49:49] [INFO] [e241705a-85c7-49fe-a280-60e94971ad05] GET /api/v1/scim/message/inbox?page=1&limit=10 200 28ms
+[16/03/2026 14:49:49] [INFO] [9954241f-16d7-4e16-8339-0024ff8b2c22] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 42ms
+[16/03/2026 14:49:49] [INFO] [e0c548ee-0d90-4736-aa64-c64efb179359] GET /api/v1/scim/message/unread 200 42ms
+[16/03/2026 14:49:49] [INFO] [b80d4345-ba98-4b49-a5e2-9cdad45de415] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 75ms
+[16/03/2026 14:50:07] [INFO] [94852704-cec5-46c1-b32a-455c5bc094d9] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 18ms
+[16/03/2026 14:50:33] [INFO] [0029ce9b-997f-4e6d-9b4d-e83f17d1ab18] GET /api/v1/scim/admin/properties?page=2&limit=5&status=inactive 200 49ms
+[16/03/2026 14:50:43] [INFO] [d94119c3-0b0c-470c-a2c6-3f90854fb8e3] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 27ms
+[16/03/2026 14:50:43] [INFO] [4cc45674-3c1f-42a5-9052-c61f524f3604] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 21ms
+[16/03/2026 14:50:47] [INFO] [1205814d-e4a2-4457-a9ca-c4269dc536be] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=approved 200 59ms
+[16/03/2026 14:50:49] [INFO] [3d97b579-17c9-484a-be00-7dfd998c62e7] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=rejected 200 104ms
+[16/03/2026 14:50:51] [INFO] [984f74ab-1c2c-490c-b7e9-99d2f2fcda48] GET /api/v1/scim/admin/property-submissions?page=1&limit=5&status=pending 200 12ms
+[16/03/2026 14:50:53] [INFO] [d5c38195-45bd-47e3-a726-cbee158a97c4] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 57ms
+[16/03/2026 14:50:53] [INFO] [bba459d7-6c4a-40a5-bca0-bdf72bd3939e] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 63ms
+[16/03/2026 14:50:55] [INFO] [8d3253bf-0a0e-41f3-bc10-ffd4725ef6ed] GET /api/v1/scim/admin/properties?page=1&limit=5&status=inactive 200 91ms
+[16/03/2026 14:50:58] [INFO] [42e8539e-56a7-43d8-b373-b491cb523df8] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 79ms
+[16/03/2026 14:51:03] [INFO] [39a6ec1a-c52d-4c54-9549-519b39629a62] GET /api/v1/scim/admin/dashboard/stats 200 107ms
+[16/03/2026 14:51:04] [INFO] [4fac24fd-abde-43df-a8b4-da1fce0c5918] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 119ms
+[16/03/2026 14:51:04] [INFO] [659f2f3c-36cd-498f-b496-fe11ace50c60] GET /api/v1/scim/admin/dashboard/stats 200 87ms
+[16/03/2026 14:51:04] [INFO] [710169d4-883f-402d-b2cd-dc34e7618810] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 106ms
+[16/03/2026 14:51:33] [INFO] [6848cf9e-a38e-496d-8faf-05cfa567ac4e] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 46ms
+[16/03/2026 14:51:33] [INFO] [dc788985-46f0-46e4-84d4-822e80b7b170] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 22ms
+[16/03/2026 14:51:33] [INFO] [0d6fef7f-b657-44aa-bfda-bafe0723842d] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 15ms
+[16/03/2026 14:51:33] [INFO] [cdbc342d-cb9a-48de-9f60-33e0c0d514d6] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 38ms
+[16/03/2026 14:51:45] [INFO] [2c7555bf-aaca-491e-937c-662c6a3af48e] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/rate 200 53ms
+[16/03/2026 14:51:45] [INFO] [3c86aab0-2281-43dd-835a-4a0ca9d30382] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 79ms
+[16/03/2026 14:51:45] [INFO] [c668a365-217c-43b1-ac96-d900fe438b23] GET /api/v1/scim/property/69b54e135d59af1ad87563d8/user-note 200 46ms
+[16/03/2026 14:51:45] [INFO] [bded146b-e6f6-4371-a03f-dd77a510b0e7] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/visit 200 67ms
+[16/03/2026 14:51:58] [INFO] [3bccacb4-a1c3-4f51-abd2-7b70d96aacc0] GET /api/v1/scim/property?page=1&limit=6 200 37ms
+[16/03/2026 14:51:58] [INFO] [37f670e9-9278-45c1-9034-c4ffa7a5fd3a] GET /api/v1/scim/property?page=1&limit=6 200 147ms
+[16/03/2026 14:51:58] [INFO] [e0c11c5d-8d09-4f88-bd75-d1d3b7cce192] GET /api/v1/scim/property?page=1&limit=6 200 89ms
+[16/03/2026 14:55:45] [INFO] [1bf43c12-b7c7-4eac-9737-fb13db783405] GET /api/v1/scim/users/profile 200 12ms
+[16/03/2026 14:55:45] [INFO] [9fc9a076-ed7e-4f9a-abd1-b0aedbe45196] GET /api/v1/scim/message/inbox?page=1&limit=10 200 30ms
+[16/03/2026 14:55:45] [INFO] [45834a45-c8e0-4e3c-a1f6-f2053ed2ac69] GET /api/v1/scim/message/unread 200 30ms
+[16/03/2026 14:55:45] [INFO] [3585caf3-7d7c-4268-9075-f6799eeffaf4] GET /api/v1/scim/favoris 200 29ms
+[16/03/2026 14:55:45] [INFO] [3349596f-dcf5-4840-bc36-15deae783883] GET /api/v1/scim/users/profile 200 49ms
+[16/03/2026 14:55:45] [INFO] [eb3f356f-5778-4922-8835-4086da2d9b50] GET /api/v1/scim/message/inbox?page=1&limit=10 200 71ms
+[16/03/2026 14:55:45] [INFO] [dd45a540-364f-4db5-adf3-31db765066a3] GET /api/v1/scim/message/unread 200 72ms
+[16/03/2026 14:55:45] [INFO] [f9ca3097-9cf6-4435-b88f-92da1068a664] GET /api/v1/scim/favoris 200 76ms
+[16/03/2026 14:55:45] [INFO] [33f8b59e-ead5-47c4-9a81-30e644d322e5] GET /api/v1/scim/message/unread 200 44ms
+[16/03/2026 14:57:08] [INFO] [e301c3a0-3442-40e2-bffa-bb242a0514e5] GET /api/v1/scim/users/stats 200 18ms
+[16/03/2026 14:57:08] [INFO] [617d5a0b-7a09-4fdd-9057-6086e967ba6b] GET /api/v1/scim/users/stats 200 14ms
+[16/03/2026 14:58:03] [INFO] [0f9b183a-4f8d-4ead-8fe3-f69c24e3fb54] GET /api/v1/scim/property?page=1&limit=6 200 26ms
+[16/03/2026 14:58:03] [INFO] [0653f5c3-4b18-4596-8e3b-2d1a9a8b4d3b] GET /api/v1/scim/property?page=1&limit=6 200 29ms
+[16/03/2026 14:58:03] [INFO] [78375f08-e104-4a0d-b441-29558b8480ac] GET /api/v1/scim/property?page=1&limit=6 200 34ms
+[16/03/2026 14:58:13] [INFO] [43ba4a9b-3848-4598-a684-60e26dbcc65e] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 21ms
+[16/03/2026 14:58:13] [INFO] [56ebb496-f215-4619-aa04-8a1916c87972] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 21ms
+[16/03/2026 14:58:13] [INFO] [e19fffb8-4ab4-4e1a-a213-c9d52d662d25] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 136ms
+[16/03/2026 14:58:13] [INFO] [e5f47768-b38b-4d0c-a762-15b12857d4c0] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 18ms
+[16/03/2026 19:53:05] [INFO] [07c415c7-abb1-490f-9a76-f72bcc574694] GET /api/v1/scim/users/profile 200 36ms
+[16/03/2026 19:53:05] [INFO] [7b027034-e348-4191-bcb6-6dcbb9566ab5] GET /api/v1/scim/message/unread 200 93ms
+[16/03/2026 19:53:05] [INFO] [4f15625b-2f80-4201-a2c9-b998e4bfd659] GET /api/v1/scim/favoris 200 97ms
+[16/03/2026 19:53:05] [INFO] [9c190189-dd74-4630-bc89-f3aaef324b7f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 118ms
+[16/03/2026 19:53:05] [INFO] [7acf44a0-d19a-496d-b282-c73ac5302665] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 210ms
+[16/03/2026 19:53:05] [INFO] [78bbd619-a237-42e7-a0c2-7f8d2761a222] GET /api/v1/scim/users/profile 200 68ms
+[16/03/2026 19:53:05] [INFO] [a3cf59cf-1e4f-4b34-bbf7-6fb54f37cee3] GET /api/v1/scim/favoris 200 50ms
+[16/03/2026 19:53:05] [INFO] [7539df65-ef68-40e1-a1e8-bdbf11a8a4b0] GET /api/v1/scim/message/inbox?page=1&limit=10 200 52ms
+[16/03/2026 19:53:05] [INFO] [aa5d579e-e3a6-46c9-ab46-ae57448c5b01] GET /api/v1/scim/message/unread 200 69ms
+[16/03/2026 19:53:05] [INFO] [96df83c2-8a05-4d48-b199-002fd2b0d5da] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 58ms
+[16/03/2026 19:53:05] [INFO] [65710cf4-e161-4915-abc4-4d7dc901d2c3] GET /api/v1/scim/message/unread 200 60ms
+[16/03/2026 19:53:05] [INFO] [60a90069-0eb1-4887-a60c-fdb1c0bc9f01] GET /api/v1/scim/property?page=1&categorie=Maison&sortBy=date-desc 200 66ms
+[16/03/2026 19:53:12] [INFO] [93ef1489-b9d5-4d9b-91e7-bdc5b0840edc] POST /api/v1/scim/property/69a6fc346a1d8b92106e3235/rate 200 21ms
+[16/03/2026 19:53:12] [INFO] [ccca9ca1-78a9-437e-9a40-b9e35047c089] GET /api/v1/scim/property/69a6fc346a1d8b92106e3235 200 17ms
+[16/03/2026 19:53:17] [INFO] [e00954ee-8d6c-4f48-b867-1d35f909bd1a] POST /api/v1/scim/property/69a6fc346a1d8b92106e3235/rate 200 19ms
+[16/03/2026 19:53:17] [INFO] [e7219491-1741-44c7-b875-b523f1de1f08] GET /api/v1/scim/property/69a6fc346a1d8b92106e3235 200 14ms
+[16/03/2026 19:53:21] [INFO] [c0f47bf6-ac54-40f4-8b9d-faa0c8c4aee5] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 14ms
+[16/03/2026 19:53:21] [INFO] [711b19f8-162c-4969-ab84-6ef1c90e0493] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 19ms
+[16/03/2026 19:53:23] [INFO] [5e836c85-d7d3-4582-8cc0-929a5d22a1d5] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 15ms
+[16/03/2026 19:53:23] [INFO] [37f76753-6404-4442-861f-bc6edb9d8dc6] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 9ms
+[16/03/2026 19:53:27] [INFO] [58f22c77-7420-405c-b453-65e536f81c52] GET /api/v1/scim/property?page=1&limit=6 200 31ms
+[16/03/2026 19:53:27] [INFO] [4e0391a0-9608-43d3-ade4-bdff07c63718] GET /api/v1/scim/property?page=1&limit=6 200 21ms
+[16/03/2026 19:53:27] [INFO] [0092a7bd-1b37-421c-8931-7efaabcd163f] GET /api/v1/scim/property?page=1&limit=6 200 18ms
+[16/03/2026 19:53:59] [INFO] [8b811c82-a7a2-4531-a909-3c770977d384] GET /api/v1/scim/property?page=1&categorie=Commercial&sortBy=date-desc 200 16ms
+[16/03/2026 19:53:59] [INFO] [2012fd3a-f8ef-45bc-9f95-5f9bc9e1882e] GET /api/v1/scim/property?page=1&categorie=Commercial&sortBy=date-desc 200 23ms
+[16/03/2026 19:53:59] [INFO] [0f27818a-d299-42f4-b11e-e953c13fa51d] GET /api/v1/scim/property?page=1&categorie=Commercial&sortBy=date-desc 200 25ms
+[16/03/2026 19:53:59] [INFO] [01507427-02d4-4e1e-8c8c-1d98803f0165] GET /api/v1/scim/property?page=1&categorie=Commercial&sortBy=date-desc 200 15ms
+[16/03/2026 19:54:18] [INFO] [f6ccf8dd-5c38-4535-a03e-e44ff3e07819] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 70ms
+[16/03/2026 19:54:19] [INFO] [ad9a982e-a7d3-449b-99ff-163a7e833f50] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 49ms
+[16/03/2026 19:54:19] [INFO] [af27fcf7-4e45-4334-868a-db31ec579a90] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 105ms
+[16/03/2026 19:54:19] [INFO] [ede84114-e3d4-47a0-97f9-86a4a10dc9d1] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 55ms
+[16/03/2026 19:54:19] [INFO] [48b95b4e-7850-452e-8537-18d367f58516] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 215ms
+[16/03/2026 19:54:19] [INFO] [7a140476-1c01-4acf-9461-6114ea174ccf] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 159ms
+[16/03/2026 19:55:20] [INFO] [faff17cd-24fb-465d-ad33-b1a715f5b803] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/rate 200 20ms
+[16/03/2026 19:55:20] [INFO] [872f63c4-2046-4b64-a569-5a6a846b77da] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 11ms
+[16/03/2026 19:55:20] [INFO] [ab183dad-9321-4a4b-8bf1-3d709087a524] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 18ms
+[16/03/2026 19:55:20] [INFO] [52b1f379-5145-43d6-84a8-9e5613d3ad99] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 30ms
+[17/03/2026 06:14:43] [INFO] [f9af3627-90f1-4636-bc5a-f35521ee638f] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 35ms
+[17/03/2026 06:14:43] [INFO] [84c97bfc-2857-491a-adae-78158e58613b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 60ms
+[17/03/2026 06:14:43] [INFO] [e0fa8a6f-1a93-4b0c-bdd2-48e26c9ca999] GET /api/v1/scim/users/profile 200 33ms
+[17/03/2026 06:14:43] [INFO] [9c00a70c-98f4-4dd9-90df-f07cc41c5b98] GET /api/v1/scim/message/unread 200 57ms
+[17/03/2026 06:14:43] [INFO] [f3ec5b4a-f632-4992-8bbb-b86fb3d7a41e] GET /api/v1/scim/favoris 200 57ms
+[17/03/2026 06:14:43] [INFO] [66b3466c-35e8-447f-97ea-23f31dcc901a] GET /api/v1/scim/users/profile 200 38ms
+[17/03/2026 06:14:43] [INFO] [6c02069d-6ff9-4ffb-8a0a-223ab4633f9f] GET /api/v1/scim/message/unread 200 66ms
+[17/03/2026 06:14:43] [INFO] [fde36843-7703-4302-9833-9d8942808be3] GET /api/v1/scim/message/inbox?page=1&limit=10 200 73ms
+[17/03/2026 06:14:43] [INFO] [fcef520d-980f-4645-850c-78a94eb7f988] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 89ms
+[17/03/2026 06:14:43] [INFO] [43ad9534-d0d9-49e7-8ce6-d7b840f78e73] GET /api/v1/scim/favoris 200 54ms
+[17/03/2026 06:14:43] [INFO] [a78ba98d-4083-43ba-978a-6dc41e7fe5f3] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 11ms
+[17/03/2026 06:14:43] [INFO] [027246a3-f3a8-4936-a562-d7e0115c0f48] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 58ms
+[17/03/2026 06:14:43] [INFO] [23fc56e2-3d9c-43e0-9e65-b2b523bd8727] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 37ms
+[17/03/2026 06:14:43] [INFO] [fc6bf655-ff87-4b48-8174-bc7a888ea5e2] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 76ms
+[17/03/2026 06:14:43] [INFO] [a0cdd393-23ac-4cd4-897e-477ee24376cb] GET /api/v1/scim/message/unread 200 7ms
+[17/03/2026 06:19:17] [INFO] [dbc45dc5-5233-4fa0-8d28-ed9b8f8fd6d4] GET /api/v1/scim/property?page=1&limit=6 200 66ms
+[17/03/2026 06:22:04] [INFO] [5effda66-be24-4774-bb7f-fb162f751181] GET /api/v1/scim/property?page=1&limit=6 200 14ms
+[17/03/2026 06:22:41] [INFO] [59bac92d-a792-4019-8b40-a9d910fe5f19] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 21ms
+[17/03/2026 06:22:41] [INFO] [8ed9029b-6dd2-4850-bcbb-33f8f5ae9eb2] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 13ms
+[17/03/2026 06:22:46] [INFO] [78d612ca-1ab7-418f-b4f9-197d11d83f2f] POST /api/v1/scim/property/69a6fc356a1d8b92106e323d/rate 200 17ms
+[17/03/2026 06:22:46] [INFO] [943123f9-77e2-4caf-9657-7118f8074fd0] GET /api/v1/scim/property/69a6fc356a1d8b92106e323d 200 18ms
+[17/03/2026 06:22:49] [INFO] [8f4cb791-2c10-44df-8532-6e377a167f6d] POST /api/v1/scim/property/69aa28cdb95c28ad1f0c7866/rate 200 14ms
+[17/03/2026 06:22:49] [INFO] [5fed9c63-5379-4b72-bb66-b271fc83387d] GET /api/v1/scim/property/69aa28cdb95c28ad1f0c7866 200 15ms
+[17/03/2026 06:22:52] [INFO] [e1e26b1b-2004-4007-813d-7d9c110572e6] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/rate 200 18ms
+[17/03/2026 06:22:52] [INFO] [a490415f-747e-440e-9ac0-7aac3a3d0951] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 23ms
+[17/03/2026 06:22:57] [INFO] [53cde5f9-e1c8-4992-a34a-ad89cb4bab71] POST /api/v1/scim/property/69aa28cdb95c28ad1f0c7866/rate 200 15ms
+[17/03/2026 06:22:57] [INFO] [51fb2f17-5a71-4068-b551-726a8bbb69da] GET /api/v1/scim/property/69aa28cdb95c28ad1f0c7866 200 13ms
+[17/03/2026 06:23:01] [INFO] [d43f1a02-dbd2-49a4-b936-7534f3358de1] POST /api/v1/scim/property/69a6fc356a1d8b92106e3252/rate 200 16ms
+[17/03/2026 06:23:01] [INFO] [e9deceba-8992-4e84-9483-f3581ed579a9] GET /api/v1/scim/property/69a6fc356a1d8b92106e3252 200 10ms
+[17/03/2026 06:23:10] [INFO] [e176f02c-899c-431f-abeb-0419eb95240f] POST /api/v1/scim/property/69b54e135d59af1ad87563d8/rate 200 14ms
+[17/03/2026 06:23:10] [INFO] [d8458420-9195-425a-ba77-de214a7aaf97] GET /api/v1/scim/property/69b54e135d59af1ad87563d8 200 11ms
+[17/03/2026 06:24:58] [INFO] [9e6648bb-9e00-47c8-88f3-24cbbfad61b2] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 96ms
+[17/03/2026 06:24:58] [INFO] [1dda5620-8fd4-49ea-8185-07cf0937be5e] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 47ms
+[17/03/2026 06:24:58] [INFO] [5c0fd163-3e24-4b44-bb9b-13074384cd2d] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 23ms
+[17/03/2026 06:24:59] [INFO] [6c9f449f-ef96-444a-aa56-b87f03d6e914] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 102ms
+[17/03/2026 06:25:20] [INFO] [b98fce0d-000a-41c4-bc2a-9afaaac93210] GET /api/v1/scim/property?page=1&sortBy=date-asc 200 27ms
+[17/03/2026 06:25:20] [INFO] [9971b1a4-399b-45a2-b4a3-17770da7ed38] GET /api/v1/scim/property?page=1&sortBy=date-asc 200 21ms
+[17/03/2026 06:25:24] [INFO] [136e914d-53a9-49cb-8353-c7ec6cbd4e57] GET /api/v1/scim/property?page=1&sortBy=rating-desc 200 22ms
+[17/03/2026 06:25:24] [INFO] [3d495368-20a1-4918-a4ee-5b4f44c0f0f1] GET /api/v1/scim/property?page=1&sortBy=rating-desc 200 21ms
+[17/03/2026 06:25:31] [INFO] [5f913ea2-a151-4cfd-8f50-464e26177622] GET /api/v1/scim/property?page=1&sortBy=surface-desc 200 121ms
+[17/03/2026 06:25:31] [INFO] [6f7fbee0-c935-43ff-ad2a-c9cd1f79fb3d] GET /api/v1/scim/property?page=1&sortBy=surface-desc 200 21ms
+[17/03/2026 06:25:37] [INFO] [0e5d14ba-1ee1-44b4-8996-5d270f0855fc] GET /api/v1/scim/property?page=1&sortBy=price-asc 200 29ms
+[17/03/2026 06:25:37] [INFO] [c758ea12-c02c-42d6-9209-8960c19cb4d2] GET /api/v1/scim/property?page=1&sortBy=price-asc 200 19ms
+[17/03/2026 06:25:43] [INFO] [2f47ec78-9e85-49c0-a01c-f7537b072355] GET /api/v1/scim/property?page=1&sortBy=price-desc 200 33ms
+[17/03/2026 06:25:43] [INFO] [229ade42-46f5-4bc8-b20a-6195a234e7ce] GET /api/v1/scim/property?page=1&sortBy=price-desc 200 22ms
+[17/03/2026 06:40:18] [INFO] [c5adb3b4-b61b-43f6-82a4-c34398041abb] POST /api/v1/scim/property/submissions 200 80ms
+[17/03/2026 06:42:30] [INFO] [8751d08e-0a14-44eb-8e71-f29c79bc4e5f] GET /api/v1/scim/message/inbox?page=1&limit=10 200 51ms
+[17/03/2026 06:42:30] [INFO] [db698101-0566-4376-bf49-ab55b0ddc8c2] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 72ms
+[17/03/2026 06:42:30] [INFO] [e3fb271a-c162-4215-a4a0-f6382274a96b] GET /api/v1/scim/message/unread 200 63ms
+[17/03/2026 06:42:30] [INFO] [328eff5f-9aac-490a-9515-2b822176b18a] GET /api/v1/scim/favoris 200 86ms
+[17/03/2026 06:42:30] [INFO] [e0388010-cdb2-4489-a250-1b6144532138] GET /api/v1/scim/users/profile 200 37ms
+[17/03/2026 06:42:30] [INFO] [033bbe04-048d-4b75-a5c1-afa65337c6b1] GET /api/v1/scim/message/unread 200 47ms
+[17/03/2026 06:42:30] [INFO] [65e29619-1938-43ce-ad31-c452d6d43fb1] GET /api/v1/scim/message/inbox?page=1&limit=10 200 93ms
+[17/03/2026 06:42:30] [INFO] [943ad10f-d22a-487e-a4fd-90d48e4dceb5] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b 200 135ms
+[17/03/2026 06:42:30] [INFO] [4e8fbc67-aea0-468c-bcdb-ac5e145f2e19] GET /api/v1/scim/users/profile 200 35ms
+[17/03/2026 06:42:30] [INFO] [6d2d7588-9c13-4535-aabb-cddca74c9249] GET /api/v1/scim/favoris 200 47ms
+[17/03/2026 06:42:31] [INFO] [ec77494e-94fb-4cb0-a238-d4fc7e188eb8] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 18ms
+[17/03/2026 06:42:31] [INFO] [5b70ceec-2c31-44de-a867-e296886f642b] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 63ms
+[17/03/2026 06:42:31] [INFO] [d37b55d3-9d01-43c2-ab6d-c04491003413] GET /api/v1/scim/message/unread 200 9ms
+[17/03/2026 06:42:31] [INFO] [ead4f4e2-8812-4eab-9c84-f674ddf6c377] GET /api/v1/scim/message/inbox?page=1&limit=10 200 19ms
+[17/03/2026 06:42:31] [INFO] [742951d7-25c6-4c25-b328-6b00f7df8e12] GET /api/v1/scim/favoris 200 57ms
+[17/03/2026 06:42:31] [INFO] [9bb89196-3264-433b-83ba-6b23d5a82eac] POST /api/v1/scim/property/69a6fc356a1d8b92106e324b/visit 200 68ms
+[17/03/2026 06:42:31] [INFO] [1c8672e0-7f57-44a8-bc44-c53d69e8a825] GET /api/v1/scim/users/profile 200 13ms
+[17/03/2026 06:42:31] [INFO] [6a907ec7-feb8-47f0-bb56-b59750b063ca] GET /api/v1/scim/users/profile 200 39ms
+[17/03/2026 06:42:31] [INFO] [7c4271b2-f8fe-4a67-b7ed-93866e3a6b1b] GET /api/v1/scim/message/inbox?page=1&limit=10 200 60ms
+[17/03/2026 06:42:31] [INFO] [7bb038c7-9178-446f-804b-5ae94830fc2b] GET /api/v1/scim/message/unread 200 61ms
+[17/03/2026 06:42:31] [INFO] [ee738237-f10c-4ea4-b58c-a9f5a9076fa4] GET /api/v1/scim/favoris 200 108ms
+[17/03/2026 06:42:32] [INFO] [5c860108-46e2-4596-bb64-63fc94f6c8e8] GET /api/v1/scim/property/69a6fc356a1d8b92106e324b/user-note 200 143ms
+[17/03/2026 06:42:32] [INFO] [a356add6-0ba8-4423-9cf6-1a2897bda385] GET /api/v1/scim/message/unread 200 143ms
+[17/03/2026 06:42:41] [INFO] [331a15ba-9e50-43ca-83b7-f0cece3957ed] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 32ms
+[17/03/2026 06:42:41] [INFO] [b95c4d8c-da7c-4858-8602-15a4b41330a2] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 28ms
+[17/03/2026 06:42:41] [INFO] [138988ba-d5ed-4b57-a41d-bfe06ab6afa0] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 21ms
+[17/03/2026 06:42:43] [INFO] [4cc8a057-620c-49e0-8720-2990f254fc34] GET /api/v1/scim/property?page=1&sortBy=date-desc 200 137ms
+[20/03/2026 04:20:35] [INFO] Email service configure avec Resend API
+[20/03/2026 04:20:38] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 04:20:39] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 04:28:23] [INFO] Email service configure avec Resend API
+[20/03/2026 04:28:27] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 07:02:02] [INFO] Email service configure avec Resend API
+[20/03/2026 07:02:07] [INFO] NotificationService initialized
+[20/03/2026 07:02:07] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 07:02:21] [INFO] [cabe92b5-583b-4a2d-8d9c-7d877d8e13cc] HEAD /api/v1/spiritemeraude/product 200 47ms
+[20/03/2026 09:05:35] [INFO] Email service configure avec Resend API
+[20/03/2026 09:05:41] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 09:05:47] [INFO] Email service configure avec Resend API
+[20/03/2026 09:05:51] [INFO] NotificationService initialized
+[20/03/2026 09:05:51] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:05:53] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 09:06:25] [INFO] Email service configure avec Resend API
+[20/03/2026 09:06:29] [INFO] NotificationService initialized
+[20/03/2026 09:06:29] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:06:49] [INFO] [2d4a8caf-bc0c-42bd-b428-06ea3ff70315] GET /health/ready 200 9ms
+[20/03/2026 09:06:49] [INFO] [29fcaab0-5ccb-4f7f-8516-d155edda5cc2] GET /health/ready 200 1ms
+[20/03/2026 09:06:49] [INFO] [913fa1ae-bc2f-4a4d-a857-df8b14411a10] GET /api/v1/lastreet/admin 200 25ms
+[20/03/2026 09:06:50] [INFO] [c2e4c319-3027-4595-a34b-f9c2798e4830] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:50] [INFO] [675d7091-351f-416b-8978-03a81b2ce6e0] GET /api/v1/lastreet/categories 200 144ms
+[20/03/2026 09:06:50] [INFO] [75f68ac6-08e6-47fe-ac38-533426f0b076] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:50] [INFO] [6c379b13-ce32-4d1b-9232-b6e9220a8926] GET /health/ready 200 1ms
+[20/03/2026 09:06:50] [INFO] [416dc335-23f1-4e26-b6e4-200a2a6b839f] GET /api/v1/lastreet/professionals 200 69ms
+[20/03/2026 09:06:50] [INFO] [b38ff41f-cb7b-4210-93d0-cf6304ee1761] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:50] [INFO] [f72c053c-b00d-4a70-8047-216c95b6db7c] GET /health/ready 200 1ms
+[20/03/2026 09:06:50] [INFO] [2f59fb6c-0474-42e8-b375-595f2d1df2d0] GET /health/ready 200 1ms
+[20/03/2026 09:06:50] [INFO] [c1a37c7d-a218-46af-ba86-2830fa2c7722] GET /api/v1/lastreet/reports 200 2ms
+[20/03/2026 09:06:50] [INFO] [0a1b87df-5eec-4942-99bd-ca7507f54e17] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:50] [INFO] [fd6bd6fa-1b29-4f93-80f1-b77bfe6ef936] GET /api/v1/mediadl/batches 200 60ms
+[20/03/2026 09:06:50] [INFO] [8853a80b-821c-4d5d-934e-1f6b3f4ecc42] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:51] [INFO] [67bd2e81-28d2-45df-9a6c-a09e4352ad1f] GET /health/ready 200 1ms
+[20/03/2026 09:06:51] [INFO] [1ddf76ac-ed50-45f9-bd1f-98bc2bbc9653] GET /api/v1/mediadl/downloads 200 2ms
+[20/03/2026 09:06:51] [INFO] [b716916f-327b-42ae-9554-0bdf3abb2b26] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:51] [INFO] [95b20dd7-c545-4259-9ee3-7522ee07fbe8] GET /health/ready 200 1ms
+[20/03/2026 09:06:51] [INFO] [781c63bf-156a-4a8a-b536-ccf7d84cdc7e] GET /api/v1/mediadl/presets 200 23ms
+[20/03/2026 09:06:51] [INFO] [e39b1694-a696-487b-98cb-1ddd1fc68f28] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:51] [INFO] [d9cbc3bd-f1f1-4c12-99b6-4ced3c7fa416] GET /health/ready 200 1ms
+[20/03/2026 09:06:51] [INFO] [491d1db3-8469-4246-8c74-b90d6a37b4ba] GET /api/v1/scim/admin 200 2ms
+[20/03/2026 09:06:51] [INFO] [033a717d-a17c-4194-a223-ae9c5172979f] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:52] [INFO] [21301219-9a51-4c87-b32e-eaad2aa535a0] GET /health/ready 200 1ms
+[20/03/2026 09:06:52] [INFO] [58ccc658-fca8-4b39-b03b-871b58929476] GET /api/v1/scim/favoris 200 1ms
+[20/03/2026 09:06:52] [INFO] [60a76b9d-52c2-42c9-a81b-05552021448f] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:52] [INFO] [7ba76c10-fef2-43a9-8e27-10a2ac2004f8] GET /health/ready 200 1ms
+[20/03/2026 09:06:52] [INFO] [87c6f733-5d77-42b7-8840-fcdfb8555b6d] GET /api/v1/scim/message 200 2ms
+[20/03/2026 09:06:52] [INFO] [63c224c5-142e-45aa-920e-109036f2598c] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:53] [INFO] [17497795-f57b-4f01-848e-394529be6cd2] GET /health/ready 200 1ms
+[20/03/2026 09:06:53] [INFO] [602c0fe1-1d7d-4fa4-8672-003835e277ae] GET /api/v1/scim/property 200 258ms
+[20/03/2026 09:06:53] [INFO] [f95b0333-72ea-4f99-963a-6885de3c2799] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:53] [INFO] [84986c8c-48bb-4e8b-a6a4-a131ae2c2c3b] GET /health/ready 200 2ms
+[20/03/2026 09:06:53] [INFO] [770b23e2-e578-4d4a-a21f-0a0977fcac7b] GET /api/v1/scim/reservation 200 2ms
+[20/03/2026 09:06:53] [INFO] [e6990220-9a69-4b32-9017-4d7b366cf230] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:53] [INFO] [2d64edb3-6c99-495c-9500-04225595634b] GET /health/ready 200 1ms
+[20/03/2026 09:06:54] [INFO] [cc662eed-3371-47ff-9934-afaa54354276] GET /api/v1/scim/users 200 1ms
+[20/03/2026 09:06:54] [INFO] [afdef4f2-c36a-4ea0-9335-af194b3a008c] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:54] [INFO] [52752f8e-f04e-47dd-8f49-aee7026cba4b] GET /health/ready 200 0ms
+[20/03/2026 09:06:54] [INFO] [2ea36f3a-8fc7-44e9-a8ae-0d18fac35ac0] GET /api/v1/shoppro/categories 200 1ms
+[20/03/2026 09:06:54] [INFO] [c1df411a-1bd6-46ab-8f8b-cfcff5f8087b] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:54] [INFO] [d36aed64-2379-4612-9827-44366870ee0f] GET /health/ready 200 1ms
+[20/03/2026 09:06:54] [INFO] [7cc61017-d888-436d-acec-774cdbda1cdf] GET /api/v1/shoppro/clients 200 1ms
+[20/03/2026 09:06:54] [INFO] [61d3e17c-4b0d-46d3-9cd3-f1613a2d5ccf] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:54] [INFO] [97edbed8-d0fb-4361-888a-36cdd9e2cb59] GET /health/ready 200 1ms
+[20/03/2026 09:06:54] [INFO] [e1e960ab-e3ee-4965-a4bd-b1cf3cfb4500] GET /api/v1/shoppro/commandes 200 2ms
+[20/03/2026 09:06:54] [INFO] [5f42d429-ef53-467a-b226-b4c1f82b7dd2] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:55] [INFO] [91865e61-2dbe-4bf3-9e71-24208167746f] GET /health/ready 200 1ms
+[20/03/2026 09:06:55] [INFO] [43493573-9404-4fb6-bf35-688fa2aad4e0] GET /api/v1/shoppro/produits 200 1ms
+[20/03/2026 09:06:55] [INFO] [a7e4c0c3-5b7e-4444-b7e7-fc0d01380b5a] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:55] [INFO] [090c6082-ffb1-4c70-ad2f-1818409f9921] GET /health/ready 200 1ms
+[20/03/2026 09:06:55] [INFO] [b565145b-7ff4-40e0-b4fa-639690743cf7] GET /api/v1/skillforge/categories 200 22ms
+[20/03/2026 09:06:55] [INFO] [216045e3-04ba-47cb-97cd-189138b1346e] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:55] [INFO] [b590daef-a836-409a-a50b-4a90d195ebf0] GET /health/ready 200 1ms
+[20/03/2026 09:06:55] [INFO] [80d2099d-35e4-4513-8138-7d89cc830362] GET /api/v1/skillforge/courses 200 17ms
+[20/03/2026 09:06:55] [INFO] [faf85e9c-1315-4f60-b29d-b6bccad44345] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:56] [INFO] [5fa94918-79b2-4995-bdc9-b296fbb79e9e] GET /health/ready 200 1ms
+[20/03/2026 09:06:56] [INFO] [cf98e25b-c1df-45b1-9edd-14e7502f47cb] GET /api/v1/skillforge/ebooks 200 75ms
+[20/03/2026 09:06:56] [INFO] [6d8b7087-1312-45c8-be4c-3fe07bae0af0] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:06:56] [INFO] [65a3ac45-2dc9-4426-93a7-0212d5ca8468] GET /health/ready 200 1ms
+[20/03/2026 09:06:56] [INFO] [c344375e-8ef6-4329-a97b-ded1cad10e9e] GET /api/v1/skillforge/orders 200 22ms
+[20/03/2026 09:06:56] [INFO] [bb020eb1-53a9-4744-97d4-5f1ada25973d] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:56] [INFO] [e3d2afdb-fdf6-4ce8-b476-82745f8bb7a6] GET /health/ready 200 1ms
+[20/03/2026 09:06:56] [INFO] [cc79f986-5624-4faa-afa5-d7e5322fe71f] GET /api/v1/skillforge/reviews 200 26ms
+[20/03/2026 09:06:56] [INFO] [8d17fc5c-d9cf-4b1e-b81b-a108ce8e7e2d] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:56] [INFO] [3f975fc6-9dcc-4ca0-bd45-6ae87a4f7829] GET /health/ready 200 1ms
+[20/03/2026 09:06:56] [INFO] [0b4c8739-b345-4a3e-a311-580df3b8e6ef] GET /health/ready 200 1ms
+[20/03/2026 09:06:56] [INFO] [7f7822f5-3f98-4caa-9aab-3de421f7d3a6] GET /api/v1/spiritemeraude/atelier 200 28ms
+[20/03/2026 09:06:56] [INFO] [bedf1db7-3a0b-40d9-8d72-4e6faf123980] GET /api/v1/skillforge/students 200 28ms
+[20/03/2026 09:06:57] [INFO] [b5ab2e15-4aa5-48b6-a61f-929eac8ca52f] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:57] [INFO] [94db440a-02b6-456c-b699-a8b846d75689] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:57] [INFO] [27645fd6-8dd3-4c53-9d43-8f25d3647214] GET /health/ready 200 1ms
+[20/03/2026 09:06:57] [INFO] [7b4b4cbb-5411-405f-82d3-293ff23bc4cb] GET /api/v1/spiritemeraude/contact 200 2ms
+[20/03/2026 09:06:57] [INFO] [81cf39fc-4dda-469a-b3cc-4eb5f663893c] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:57] [INFO] [d4d45879-0d2b-4773-9083-8e8e9698d022] GET /health/ready 200 1ms
+[20/03/2026 09:06:57] [INFO] [14db2c4b-1e62-4273-980c-394abf916889] GET /health/ready 200 1ms
+[20/03/2026 09:06:58] [INFO] [b965fd4a-0dd1-4f70-9a69-f909ecf3f67c] GET /api/v1/spiritemeraude/gallery 200 6ms
+[20/03/2026 09:06:58] [INFO] [a5dffc96-80ed-4366-b250-bac21da23f72] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:58] [INFO] [296242f4-140c-41c6-a15a-ece665ed9a40] GET /api/v1/spiritemeraude/formation 200 83ms
+[20/03/2026 09:06:58] [INFO] [ba705275-48c0-4542-a2c0-81baffb4ac75] POST /api/v1/user/login 200 0ms
+[20/03/2026 09:06:58] [INFO] [3841414c-3a8b-4996-b4a9-2e78a111d917] GET /health/ready 200 1ms
+[20/03/2026 09:06:58] [INFO] [9a7275d9-7c66-4b43-b4db-0dee8062ac9b] GET /api/v1/spiritemeraude/impact 200 5ms
+[20/03/2026 09:06:58] [INFO] [f448f7a9-491b-4b51-b697-79a5c102481d] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:06:59] [INFO] [3f0fbaf0-3b41-44bd-9d7f-9e8448d306e1] GET /health/ready 200 1ms
+[20/03/2026 09:06:59] [INFO] [d0a634b1-9083-485f-b3ef-787fba62b60a] GET /api/v1/spiritemeraude/product 200 32ms
+[20/03/2026 09:06:59] [INFO] [2834c537-89a3-4ff3-a672-3fb1d081c632] POST /api/v1/user/login 200 0ms
+[20/03/2026 09:06:59] [INFO] [efcfeb2d-b183-40c5-8d4a-7aa865daf9d5] GET /health/ready 200 1ms
+[20/03/2026 09:06:59] [INFO] [f3eebb9f-a94e-4a41-92c8-1232e442f6e7] GET /api/v1/testguru/items 200 1ms
+[20/03/2026 09:06:59] [INFO] [38b1fbfc-1042-4297-93c2-f5e9bd50c85a] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:09:59] [INFO] NotificationService initialized
+[20/03/2026 09:09:56] [INFO] Email service configure avec Resend API
+[20/03/2026 09:09:59] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:10:51] [INFO] Email service configure avec Resend API
+[20/03/2026 09:10:55] [INFO] NotificationService initialized
+[20/03/2026 09:10:55] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:11:01] [INFO] Email service configure avec Resend API
+[20/03/2026 09:11:04] [INFO] NotificationService initialized
+[20/03/2026 09:11:04] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:11:12] [INFO] Email service configure avec Resend API
+[20/03/2026 09:11:15] [INFO] NotificationService initialized
+[20/03/2026 09:11:15] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:12:22] [INFO] Email service configure avec Resend API
+[20/03/2026 09:12:28] [INFO] NotificationService initialized
+[20/03/2026 09:12:28] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:13:28] [INFO] Email service configure avec Resend API
+[20/03/2026 09:13:32] [INFO] NotificationService initialized
+[20/03/2026 09:13:32] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:15:49] [INFO] Email service configure avec Resend API
+[20/03/2026 09:15:53] [INFO] NotificationService initialized
+[20/03/2026 09:15:53] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:16:02] [INFO] Email service configure avec Resend API
+[20/03/2026 09:16:07] [INFO] NotificationService initialized
+[20/03/2026 09:16:07] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:16:28] [INFO] Email service configure avec Resend API
+[20/03/2026 09:16:32] [INFO] NotificationService initialized
+[20/03/2026 09:16:32] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:17:03] [INFO] NotificationService initialized
+[20/03/2026 09:16:59] [INFO] Email service configure avec Resend API
+[20/03/2026 09:17:03] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:17:35] [INFO] Email service configure avec Resend API
+[20/03/2026 09:17:37] [INFO] NotificationService initialized
+[20/03/2026 09:17:38] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:18:42] [INFO] Email service configure avec Resend API
+[20/03/2026 09:18:46] [INFO] NotificationService initialized
+[20/03/2026 09:18:46] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:22:38] [INFO] NotificationService initialized
+[20/03/2026 09:22:31] [INFO] Email service configure avec Resend API
+[20/03/2026 09:22:38] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:22:58] [INFO] Email service configure avec Resend API
+[20/03/2026 09:23:04] [INFO] NotificationService initialized
+[20/03/2026 09:23:05] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:23:28] [INFO] [443f5327-51f1-4103-9c79-59223d6f24f5] GET /api/v1/belela/annonce 200 113ms
+[20/03/2026 09:23:50] [INFO] Email service configure avec Resend API
+[20/03/2026 09:23:55] [INFO] NotificationService initialized
+[20/03/2026 09:23:55] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:24:48] [INFO] NotificationService initialized
+[20/03/2026 09:24:45] [INFO] Email service configure avec Resend API
+[20/03/2026 09:24:49] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:25:10] [INFO] Email service configure avec Resend API
+[20/03/2026 09:25:17] [INFO] NotificationService initialized
+[20/03/2026 09:25:18] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:25:45] [INFO] Email service configure avec Resend API
+[20/03/2026 09:25:51] [INFO] NotificationService initialized
+[20/03/2026 09:25:51] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:27:09] [INFO] Email service configure avec Resend API
+[20/03/2026 09:27:16] [INFO] NotificationService initialized
+[20/03/2026 09:27:16] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:27:41] [INFO] Email service configure avec Resend API
+[20/03/2026 09:27:44] [INFO] NotificationService initialized
+[20/03/2026 09:27:45] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:27:54] [INFO] Email service configure avec Resend API
+[20/03/2026 09:27:59] [INFO] NotificationService initialized
+[20/03/2026 09:27:59] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:41:33] [INFO] Email service configure avec Resend API
+[20/03/2026 09:41:39] [INFO] NotificationService initialized
+[20/03/2026 09:41:39] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:41:57] [INFO] Email service configure avec Resend API
+[20/03/2026 09:42:01] [INFO] NotificationService initialized
+[20/03/2026 09:42:01] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:42:03] [INFO] [6e4c02bd-edd9-4693-808c-d8b4bc6a0976] GET /api/v1/skillforge/categories 200 263ms
+[20/03/2026 09:42:04] [INFO] [b6dfc271-37c2-42e2-8360-c1f6d3ce67ff] POST /api/v1/user/login 200 235ms
+[20/03/2026 09:42:05] [INFO] [5064ad1e-a295-47ba-8f74-39b73dfd6bef] GET /api/v1/skillforge/courses 200 93ms
+[20/03/2026 09:42:05] [INFO] [15ecbb90-3d91-4c01-8d63-d3be7499bfe1] POST /api/v1/user/login 200 27ms
+[20/03/2026 09:42:06] [INFO] [14077a1f-178e-4480-9b87-672735f6cce4] GET /api/v1/skillforge/ebooks 200 32ms
+[20/03/2026 09:42:06] [INFO] [e109b784-2887-4f4f-8b3e-8e85bb01fec4] POST /api/v1/user/login 200 28ms
+[20/03/2026 09:42:06] [INFO] [33657b6f-2c59-4550-93c4-1c428fd30bf4] GET /api/v1/skillforge/export 200 2ms
+[20/03/2026 09:42:06] [INFO] [03d9e401-3cd2-4785-a1c7-095c569d514a] POST /api/v1/user/login 200 4ms
+[20/03/2026 09:42:07] [INFO] [bb941a22-b63d-44a3-a19c-c3a645e2d06a] GET /api/v1/skillforge/orders 200 24ms
+[20/03/2026 09:42:07] [INFO] [4095ecc9-9562-457b-9f7d-164d16e47a91] POST /api/v1/user/login 200 3ms
+[20/03/2026 09:42:07] [INFO] [84a7a942-bf45-4c3d-964e-e94ece83b95f] GET /api/v1/skillforge/payment 200 3ms
+[20/03/2026 09:42:07] [INFO] [003a4f9a-a53a-43be-809b-ab71fcdbaaac] POST /api/v1/user/login 200 15ms
+[20/03/2026 09:42:08] [INFO] [b9ff2560-49ee-4d31-b817-215cbeb30336] GET /api/v1/skillforge/reviews 200 19ms
+[20/03/2026 09:42:08] [INFO] [6911d623-1770-40d4-8487-65962a623c73] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:42:08] [INFO] [1dafb86f-9f3c-4d36-87c1-bed1e4b90b4f] GET /api/v1/skillforge/students 200 27ms
+[20/03/2026 09:42:08] [INFO] [fca5a9ce-d69e-408b-80ef-53e020b2c6d2] POST /api/v1/user/login 200 9ms
+[20/03/2026 09:42:08] [INFO] [510eca1e-5062-4f67-ad5b-49c32ae4b2ed] GET /api/v1/spiritemeraude/atelier 200 24ms
+[20/03/2026 09:42:08] [INFO] [2b050711-8f9e-49b0-9027-74bc434a2998] POST /api/v1/user/login 200 12ms
+[20/03/2026 09:42:09] [INFO] [fc32a1aa-a9c7-4ee6-85e0-c46c4f292e84] GET /api/v1/spiritemeraude/contact 200 17ms
+[20/03/2026 09:42:09] [INFO] [b0d6ab75-d494-4f83-9c63-a7d66bcd4dc8] POST /api/v1/user/login 200 18ms
+[20/03/2026 09:42:09] [INFO] [d81249ad-b83d-4e61-941a-4a7de25ae463] GET /api/v1/spiritemeraude/formation 200 18ms
+[20/03/2026 09:42:09] [INFO] [8af49d30-5c91-4b84-80de-11479b899f12] POST /api/v1/user/login 200 13ms
+[20/03/2026 09:42:09] [INFO] [c11797f9-feb8-4cc6-b65d-599fcac86131] GET /api/v1/spiritemeraude/gallery 200 15ms
+[20/03/2026 09:42:09] [INFO] [65d4d58e-8199-4efd-8dba-8a36acd6388f] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:42:09] [INFO] [b4005bcc-1260-49ee-9ffe-7d3f9be8cb22] GET /api/v1/spiritemeraude/impact 200 14ms
+[20/03/2026 09:42:09] [INFO] [77a96c8e-cc89-49fe-994d-23fc3b3963d6] POST /api/v1/user/login 200 9ms
+[20/03/2026 09:42:10] [INFO] [b1024a3b-8797-4d22-92f1-990124e67a93] GET /api/v1/spiritemeraude/product 200 30ms
+[20/03/2026 09:42:10] [INFO] [b788f92c-7671-46b0-b8ec-8a16e48b6928] POST /api/v1/user/login 200 11ms
+[20/03/2026 09:42:13] [INFO] Email service configure avec Resend API
+[20/03/2026 09:42:17] [INFO] NotificationService initialized
+[20/03/2026 09:42:17] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:43:05] [INFO] Email service configure avec Resend API
+[20/03/2026 09:43:09] [INFO] NotificationService initialized
+[20/03/2026 09:43:09] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:43:09] [INFO] [6e33aff8-25ce-4eda-9d54-7ea8cf73f729] GET /api/v1/skillforge/courses 200 39ms
+[20/03/2026 09:43:09] [INFO] [8e1a5608-18bd-4fa8-9d7c-2f77cca2fec8] GET /api/v1/skillforge/categories 200 111ms
+[20/03/2026 09:43:10] [INFO] [6b63af7e-31db-4730-9b02-d1f2e1767876] POST /api/v1/user/login 200 7ms
+[20/03/2026 09:43:10] [INFO] [1ef8a047-05c1-465e-be4d-b1ba0f66a4aa] POST /api/v1/user/login 200 65ms
+[20/03/2026 09:43:10] [INFO] [1da93930-71bf-4cef-96ae-db5b94c5b3bd] GET /api/v1/skillforge/export 200 2ms
+[20/03/2026 09:43:10] [INFO] [037cd38d-31d8-4b24-aee8-dd4b265925f1] GET /api/v1/skillforge/ebooks 200 14ms
+[20/03/2026 09:43:10] [INFO] [e336df9e-8f0b-43a4-80f7-913253a8f6f7] POST /api/v1/user/login 200 6ms
+[20/03/2026 09:43:10] [INFO] [d59ec90e-285c-467b-96fb-f1f5130f6612] POST /api/v1/user/login 200 4ms
+[20/03/2026 09:43:11] [INFO] [b8f7cc42-21a1-41ff-ade9-ce0870f1e5e9] GET /api/v1/skillforge/payment 200 2ms
+[20/03/2026 09:43:11] [INFO] [2f733de0-545e-40dd-9a48-8ff3625ada6a] GET /api/v1/skillforge/orders 200 39ms
+[20/03/2026 09:43:11] [INFO] [d7b17ae3-76a3-42d6-ac30-8b9459af0163] POST /api/v1/user/login 200 3ms
+[20/03/2026 09:43:11] [INFO] [bfd01978-bcd2-4289-85ce-89da1862c4f4] POST /api/v1/user/login 200 19ms
+[20/03/2026 09:43:11] [INFO] [a187a5cf-8dda-41b2-85a3-3f432c632b05] GET /api/v1/skillforge/reviews 200 16ms
+[20/03/2026 09:43:11] [INFO] [f3ba5c75-5bb1-4ec8-9864-8148803fc5dc] POST /api/v1/user/login 200 6ms
+[20/03/2026 09:43:11] [INFO] [c4bdc7fd-6713-4c88-96a5-20189a113421] GET /api/v1/skillforge/students 200 32ms
+[20/03/2026 09:43:11] [INFO] [115f89c9-4936-47fe-a619-2a9490e1e604] POST /api/v1/user/login 200 7ms
+[20/03/2026 09:43:11] [INFO] [a95e9b13-78af-4203-aad3-697a17c1ba82] GET /api/v1/spiritemeraude/atelier 200 17ms
+[20/03/2026 09:43:11] [INFO] [4af45fed-3d25-4ed9-b538-75dd0721d9a7] GET /api/v1/spiritemeraude/contact 200 3ms
+[20/03/2026 09:43:11] [INFO] [fc5c3f22-326f-49af-8191-8e1f1770b558] POST /api/v1/user/login 200 28ms
+[20/03/2026 09:43:11] [INFO] [37db7664-867d-4bc3-a802-749b4c25e436] POST /api/v1/user/login 200 20ms
+[20/03/2026 09:43:12] [INFO] [f39bc409-a91d-4d2f-85ab-82fe66a5e493] GET /api/v1/spiritemeraude/formation 200 9ms
+[20/03/2026 09:43:12] [INFO] [e092a3fb-667d-432f-b246-41b3d6caf77e] POST /api/v1/user/login 200 5ms
+[20/03/2026 09:43:12] [INFO] [0edf4318-9bcd-49b3-89cf-6494a88e4e10] GET /api/v1/spiritemeraude/gallery 200 13ms
+[20/03/2026 09:43:12] [INFO] [a0e271b4-d375-4282-ac73-4157ee202034] POST /api/v1/user/login 200 12ms
+[20/03/2026 09:43:12] [INFO] [98526580-540b-451c-ac02-d379d80a5bd5] GET /api/v1/spiritemeraude/impact 200 6ms
+[20/03/2026 09:43:12] [INFO] [b204dd6b-58e6-43b5-b336-aa86003e6f72] POST /api/v1/user/login 200 7ms
+[20/03/2026 09:43:12] [INFO] [d2690075-cb1c-437c-8294-18175744d6da] GET /api/v1/spiritemeraude/product 200 17ms
+[20/03/2026 09:43:12] [INFO] [884d0990-8bc9-464a-a723-04f897b027ea] POST /api/v1/user/login 200 5ms
+[20/03/2026 09:43:15] [INFO] Email service configure avec Resend API
+[20/03/2026 09:43:17] [INFO] NotificationService initialized
+[20/03/2026 09:43:17] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:43:22] [INFO] [d792d882-3e0c-4e15-b5d3-90757c90fbf8] GET /api/v1/belela/annonce 200 64ms
+[20/03/2026 09:43:22] [INFO] [cfed1103-62df-44a0-ada0-b9654ddea2f0] POST /api/v1/user/login 200 5ms
+[20/03/2026 09:43:54] [INFO] Email service configure avec Resend API
+[20/03/2026 09:43:57] [INFO] NotificationService initialized
+[20/03/2026 09:43:58] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:44:28] [INFO] Email service configure avec Resend API
+[20/03/2026 09:44:31] [INFO] NotificationService initialized
+[20/03/2026 09:44:31] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:44:55] [INFO] Email service configure avec Resend API
+[20/03/2026 09:44:58] [INFO] NotificationService initialized
+[20/03/2026 09:44:58] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:45:03] [INFO] [598fd667-b9ff-4c7d-9008-e972951d75b3] GET /api/v1/belela/annonce 200 75ms
+[20/03/2026 09:45:03] [INFO] [c50cf2dd-9daf-4220-96a6-7a6cb78dfd8c] POST /api/v1/user/login 200 4ms
+[20/03/2026 09:45:37] [INFO] Email service configure avec Resend API
+[20/03/2026 09:45:40] [INFO] NotificationService initialized
+[20/03/2026 09:45:40] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:46:00] [INFO] [aeada1d5-a5d3-4999-83e5-1ac43681ab42] GET /health 200 8ms
+[20/03/2026 09:46:56] [INFO] Email service configure avec Resend API
+[20/03/2026 09:46:59] [INFO] NotificationService initialized
+[20/03/2026 09:46:59] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:47:41] [INFO] NotificationService initialized
+[20/03/2026 09:47:39] [INFO] Email service configure avec Resend API
+[20/03/2026 09:47:41] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:48:32] [INFO] NotificationService initialized
+[20/03/2026 09:48:30] [INFO] Email service configure avec Resend API
+[20/03/2026 09:48:33] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:49:06] [INFO] NotificationService initialized
+[20/03/2026 09:49:03] [INFO] Email service configure avec Resend API
+[20/03/2026 09:49:06] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:50:06] [INFO] Email service configure avec Resend API
+[20/03/2026 09:50:13] [INFO] NotificationService initialized
+[20/03/2026 09:50:13] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:50:06] [INFO] Email service configure avec Resend API
+[20/03/2026 09:50:13] [INFO] NotificationService initialized
+[20/03/2026 09:50:14] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:50:07] [INFO] Email service configure avec Resend API
+[20/03/2026 09:50:15] [INFO] NotificationService initialized
+[20/03/2026 09:50:15] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:50:43] [INFO] Email service configure avec Resend API
+[20/03/2026 09:50:56] [INFO] NotificationService initialized
+[20/03/2026 09:50:56] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:50:43] [INFO] Email service configure avec Resend API
+[20/03/2026 09:50:56] [INFO] NotificationService initialized
+[20/03/2026 09:50:57] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:51:19] [INFO] Email service configure avec Resend API
+[20/03/2026 09:51:31] [INFO] NotificationService initialized
+[20/03/2026 09:51:31] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:51:26] [INFO] Email service configure avec Resend API
+[20/03/2026 09:51:39] [INFO] NotificationService initialized
+[20/03/2026 09:51:39] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:51:43] [INFO] Email service configure avec Resend API
+[20/03/2026 09:51:47] [INFO] NotificationService initialized
+[20/03/2026 09:51:48] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:52:56] [INFO] Email service configure avec Resend API
+[20/03/2026 09:52:59] [INFO] NotificationService initialized
+[20/03/2026 09:52:59] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:55:06] [INFO] Email service configure avec Resend API
+[20/03/2026 09:55:09] [INFO] NotificationService initialized
+[20/03/2026 09:55:09] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:56:02] [INFO] Email service configure avec Resend API
+[20/03/2026 09:56:04] [INFO] NotificationService initialized
+[20/03/2026 09:56:05] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:56:28] [INFO] [0ae43868-0520-4d15-b23c-f739ecac9979] GET / 200 31ms
+[20/03/2026 09:56:28] [INFO] [6cc54072-f403-4679-bde8-f1fbcd8244be] GET / 200 30ms
+[20/03/2026 09:56:49] [INFO] Email service configure avec Resend API
+[20/03/2026 09:56:54] [INFO] NotificationService initialized
+[20/03/2026 09:56:55] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:57:15] [INFO] Email service configure avec Resend API
+[20/03/2026 09:57:19] [INFO] NotificationService initialized
+[20/03/2026 09:57:19] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:57:49] [INFO] Email service configure avec Resend API
+[20/03/2026 09:57:52] [INFO] NotificationService initialized
+[20/03/2026 09:57:52] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:58:34] [INFO] Email service configure avec Resend API
+[20/03/2026 09:58:38] [INFO] NotificationService initialized
+[20/03/2026 09:58:38] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:58:53] [INFO] [1967151b-0b1a-4a69-b959-8069d2f0eb00] GET /api/v1/belela/annonce 200 64ms
+[20/03/2026 09:58:54] [INFO] [b1929cf2-f7ee-47e4-8ae0-f1dd525afa08] POST /api/v1/user/login 200 6ms
+[20/03/2026 09:58:54] [INFO] [a2ef959e-6344-4e10-aa3c-b3b6ed5538e3] GET /api/v1/belela/post 200 12ms
+[20/03/2026 09:58:54] [INFO] [6cf31e9e-a4d2-40fd-bcda-aae615291f2f] POST /api/v1/user/login 200 3ms
+[20/03/2026 09:58:57] [INFO] Email service configure avec Resend API
+[20/03/2026 09:59:01] [INFO] NotificationService initialized
+[20/03/2026 09:59:01] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:59:08] [INFO] [fb4bb74f-2ac8-49c7-9c38-fa85981f4665] GET /api/v1/belela/annonce 200 10ms
+[20/03/2026 09:59:08] [INFO] [02929206-4860-4a25-8341-29cdf62d3f1a] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:59:09] [INFO] [08eff66b-f0a3-43da-b9df-17d165bf21db] GET /api/v1/belela/post 200 8ms
+[20/03/2026 09:59:09] [INFO] [a48ce2ff-1b89-4b2f-bff6-8e877218fa6e] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:59:11] [INFO] Email service configure avec Resend API
+[20/03/2026 09:59:17] [INFO] NotificationService initialized
+[20/03/2026 09:59:17] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:59:31] [INFO] [8878a0f3-fe14-4998-b339-34dccea0c8be] GET /api/v1/belela/annonce 200 9ms
+[20/03/2026 09:59:31] [INFO] [c9d316e5-8143-4b33-8cb3-cbbc2381736c] POST /api/v1/user/login 200 2ms
+[20/03/2026 09:59:31] [INFO] [fa539986-165e-40ee-9752-fbd71a3fd567] GET /api/v1/belela/post 200 7ms
+[20/03/2026 09:59:31] [INFO] [ec37fbd1-b714-4c92-8dd4-f701c5f2f410] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:59:34] [INFO] Email service configure avec Resend API
+[20/03/2026 09:59:38] [INFO] NotificationService initialized
+[20/03/2026 09:59:38] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 09:59:58] [INFO] [e0e5fd3b-c2c6-4798-973f-61e95e152b1f] GET /api/v1/belela/annonce 200 13ms
+[20/03/2026 09:59:58] [INFO] [89565fdc-20f8-4b20-8b46-1e330d68c39f] POST /api/v1/user/login 200 1ms
+[20/03/2026 09:59:59] [INFO] [3554494e-4fd8-4a84-a5e1-b6388778c290] GET /api/v1/belela/post 200 5ms
+[20/03/2026 09:59:59] [INFO] [b9d2c803-c91e-4c14-baf2-2c18d0155753] POST /api/v1/user/login 200 2ms
+[20/03/2026 10:00:02] [INFO] Email service configure avec Resend API
+[20/03/2026 10:00:10] [INFO] NotificationService initialized
+[20/03/2026 10:00:10] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 10:00:13] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com
+[20/03/2026 10:00:42] [INFO] [b6700eaf-3913-47c1-81bd-a80030a3ad18] GET /api/v1/belela/annonce 200 9ms
+[20/03/2026 10:00:42] [INFO] [0de81f59-6c2e-421e-ad61-19f27695a15e] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:43] [INFO] [aa8cc026-d41c-4389-9c24-5d4b6dcc5313] GET /api/v1/belela/post 200 7ms
+[20/03/2026 10:00:43] [INFO] [53a013d2-1efa-4048-b48b-0fd1b8c3d279] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:43] [INFO] [178e8a3b-1720-498f-a064-0d0e9fabecc4] GET /api/v1/lastreet/admin 200 2ms
+[20/03/2026 10:00:43] [INFO] [2baa9894-056e-4adb-bec8-acf35f439759] POST /api/v1/user/login 200 2ms
+[20/03/2026 10:00:44] [INFO] [130aada9-2dd8-4b6d-bc3c-3759f677bf7b] GET /api/v1/lastreet/categories 200 33ms
+[20/03/2026 10:00:44] [INFO] [c3462101-4ad7-4f29-8117-c2efa5c8dfba] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:45] [INFO] [9178e194-903f-42fc-a9a4-a7e5c413dec1] GET /api/v1/lastreet/professionals 200 36ms
+[20/03/2026 10:00:45] [INFO] [21e0ac68-f11e-4a39-b1d4-e1348cae7991] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:45] [INFO] [517f7c2a-3426-4d03-93fa-9fcbad758eea] GET /api/v1/lastreet/reports 200 2ms
+[20/03/2026 10:00:45] [INFO] [1b27b686-3d17-436e-a869-aacf5f1c2786] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:46] [INFO] [3073bca4-ec61-49d4-b18d-36521e56aaf8] GET /api/v1/mediadl/batches 200 32ms
+[20/03/2026 10:00:46] [INFO] [d0248aff-202c-4314-a5e6-37f82d516fc2] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:47] [INFO] [1f4338dd-1d2e-4e18-bc0a-f08cccae2a2c] GET /api/v1/mediadl/downloads 200 1ms
+[20/03/2026 10:00:47] [INFO] [f1b11444-5a84-4966-bb5d-e713d5d6c1a1] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:48] [INFO] [245f2cfe-7398-4c94-9e84-9a3351f2c25b] GET /api/v1/mediadl/presets 200 24ms
+[20/03/2026 10:00:48] [INFO] [190a87bd-76c3-4ec5-9d8e-945321ff4497] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:49] [INFO] [8c694ac5-de75-4a60-acf9-b569fb64b1f8] GET /api/v1/scim/admin 200 1ms
+[20/03/2026 10:00:49] [INFO] [1ae91f02-f938-490b-ab30-c5e658b50c2d] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:50] [INFO] [4a8fcb8b-e7de-4f59-b973-82d1f9dd7fa6] GET /api/v1/scim/favoris 200 1ms
+[20/03/2026 10:00:50] [INFO] [a3b3c4bb-2634-4f3f-97d9-7ca28b8dec4b] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:51] [INFO] [8b1fc675-3c74-4726-9abd-8a5362ab916e] GET /api/v1/scim/message 200 2ms
+[20/03/2026 10:00:51] [INFO] [4e5237d3-e436-4050-8e23-06ab492727e4] POST /api/v1/user/login 200 2ms
+[20/03/2026 10:00:44] [INFO] Email service configure avec Resend API
+[20/03/2026 10:00:51] [INFO] NotificationService initialized
+[20/03/2026 10:00:51] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 10:00:52] [INFO] [d02f512b-7367-45ad-886f-cc02d1fb3d7e] GET /api/v1/scim/property 200 69ms
+[20/03/2026 10:00:52] [INFO] [f5a307a5-3187-4af9-87b4-64a55909c746] POST /api/v1/user/login 200 2ms
+[20/03/2026 10:00:59] [INFO] [fb0aa55e-f600-4b55-916a-450a5410db7c] GET /api/v1/scim/reservation 200 2ms
+[20/03/2026 10:00:59] [INFO] [4b5f94b4-eacc-4a6f-9ce7-8d3adad8aee1] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:00:59] [INFO] [104f2510-e577-464c-a5a7-a09cd0947cec] GET /api/v1/scim/users 200 1ms
+[20/03/2026 10:00:59] [INFO] [54d7d914-54d3-4cdd-8348-f707c947caf0] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:00] [INFO] [958954a7-ad7f-43c2-8384-011c453f4bfa] GET /api/v1/skillforge/categories 200 17ms
+[20/03/2026 10:01:00] [INFO] [308b6e50-f738-4a5b-bbe2-a025cc96082b] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:00] [INFO] [ceff25f1-06d5-4734-8f33-1a660b9a0c83] GET /api/v1/skillforge/courses 200 9ms
+[20/03/2026 10:01:00] [INFO] [8b6c23cd-08b2-4d5d-aaf4-4c1c0c059ac4] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:01] [INFO] [5a04fb15-401d-4116-8432-a12227ae0c33] GET /api/v1/skillforge/ebooks 200 10ms
+[20/03/2026 10:01:01] [INFO] [01594bad-ab2b-4a36-94c8-9d7f98511e4b] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:01] [INFO] [052af449-e705-40d3-adf2-7c521e85410a] GET /api/v1/skillforge/export 200 1ms
+[20/03/2026 10:01:01] [INFO] [8166390c-a80b-4e44-99fe-f813eb4285ae] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:02] [INFO] [25a3cf87-eb1a-4a79-9c7d-2b3bb9cd64b8] GET /api/v1/skillforge/orders 200 10ms
+[20/03/2026 10:01:02] [INFO] [7e8d8fdd-af33-4066-98d1-6754a8a0a2c1] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:02] [INFO] [71328302-b7bb-45fb-96d9-b131ec036dda] GET /api/v1/skillforge/payment 200 1ms
+[20/03/2026 10:01:02] [INFO] [7beb5a08-f7b7-4d32-bd38-14d51a23f026] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:03] [INFO] [09d16385-f8c5-4cc2-bad1-cf89fefae78f] GET /api/v1/skillforge/reviews 200 14ms
+[20/03/2026 10:01:03] [INFO] [f954c992-15c9-4e68-81c0-5214a347cc00] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:03] [INFO] [6f71026d-9c39-4039-a8fe-0e3eeffaf973] GET /api/v1/skillforge/students 200 14ms
+[20/03/2026 10:01:03] [INFO] [7b145b23-87bb-4b1f-a4c6-d29612a6ecbd] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:04] [INFO] [90d615c1-9672-4fa7-8d79-1ce416f1548e] GET /api/v1/spiritemeraude/atelier 200 17ms
+[20/03/2026 10:01:04] [INFO] [1f5cb074-3a3c-41ef-95a6-85dcbfadb87d] POST /api/v1/user/login 200 0ms
+[20/03/2026 10:01:04] [INFO] [77caa104-d3f7-47f0-a574-9b8eb45af34f] GET /api/v1/spiritemeraude/contact 200 1ms
+[20/03/2026 10:01:04] [INFO] [989907ab-f751-4438-8038-4adf0ddfcde6] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:05] [INFO] [f1d74233-f6d7-49e7-81d0-0070029b3750] GET /api/v1/spiritemeraude/formation 200 16ms
+[20/03/2026 10:01:05] [INFO] [656182d8-39c5-4697-8d12-c25dd74fddef] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:05] [INFO] [133de00f-be8b-4a41-ac95-93c389fca4de] GET /api/v1/spiritemeraude/gallery 200 11ms
+[20/03/2026 10:01:05] [INFO] [1192cca3-3a68-4db5-add0-a791a7b6bffc] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:06] [INFO] [f7dac846-28d4-40a6-8aab-4096779d7b49] GET /api/v1/spiritemeraude/impact 200 11ms
+[20/03/2026 10:01:06] [INFO] [e7b1a386-1619-41d3-a7c3-23219aebf30a] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:06] [INFO] [23c6a495-414c-4648-8d9d-fbde21ed223b] GET /api/v1/spiritemeraude/product 200 14ms
+[20/03/2026 10:01:06] [INFO] [e455d740-62a4-4029-a75a-1a45b7ed48ab] POST /api/v1/user/login 200 1ms
+[20/03/2026 10:01:08] [INFO] Email service configure avec Resend API
+[20/03/2026 10:01:11] [INFO] NotificationService initialized
+[20/03/2026 10:01:11] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[20/03/2026 10:47:56] [INFO] Email envoye via Resend a mayalachristgottlieb@gmail.com

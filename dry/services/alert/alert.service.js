@@ -75,6 +75,55 @@ const buildFingerprint = (parts) => {
   return createHash('sha1').update(raw).digest('hex').slice(0, 16);
 };
 
+const extractCodeSnippet = (sourceLine) => {
+  if (!sourceLine || sourceLine === 'N/A') return null;
+
+  try {
+    // Format attendu: "filename.js:line:col" ou "path/filename.js:line:col"
+    const match = sourceLine.match(/(.*?):(\d+):(\d+)/);
+    if (!match) return null;
+
+    let filePath = match[1];
+    const lineNum = parseInt(match[2], 10);
+    if (isNaN(lineNum)) return null;
+
+    // Tentative de resolution du chemin absolu si ce n'est pas dejà le cas
+    if (!require('path').isAbsolute(filePath)) {
+      filePath = require('path').resolve(process.cwd(), filePath);
+    }
+
+    // Protection: Ne lire que les fichiers dans le dossier du projet
+    if (!filePath.startsWith(process.cwd()) && !filePath.includes('dry')) {
+       return null;
+    }
+
+    const fs = require('fs');
+    if (!fs.existsSync(filePath)) return null;
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    const lines = content.split('\n');
+    
+    const start = Math.max(0, lineNum - 4);
+    const end = Math.min(lines.length, lineNum + 3);
+    
+    const snippet = lines.slice(start, end).map((line, idx) => {
+      const currentLineNum = start + idx + 1;
+      const isErrorLine = currentLineNum === lineNum;
+      const prefix = isErrorLine ? '>>> ' : '    ';
+      return `${String(currentLineNum).padStart(4)} | ${prefix}${line.replace(/\r/g, '')}`;
+    }).join('\n');
+
+    return {
+      file: require('path').basename(filePath),
+      path: filePath.replace(process.cwd(), '.'),
+      line: lineNum,
+      code: snippet
+    };
+  } catch (err) {
+    return null;
+  }
+};
+
 const extractErrorDetails = (rawError) => {
   if (!rawError) return null;
   if (typeof rawError === 'string') {
@@ -104,6 +153,16 @@ const extractErrorDetails = (rawError) => {
     ? rawError.stack.split('\n').slice(0, alertMaxStackLines).join('\n')
     : undefined;
 
+  let source = 'N/A';
+  if (stack) {
+    const lines = stack.split('\n');
+    const firstRelevant = lines.find(l => l.includes('/') || l.includes('\\')) || lines[1];
+    if (firstRelevant) {
+      const match = firstRelevant.match(/([a-zA-Z0-9._-]+\.[a-z0-9]+:\d+:\d+)/);
+      source = match ? match[1] : firstRelevant.trim().replace(/^at\s+/, '');
+    }
+  }
+
   const responseData = rawError.response?.data !== undefined
     ? sanitizeValue(rawError.response.data)
     : undefined;
@@ -118,9 +177,15 @@ const extractErrorDetails = (rawError) => {
     hostname: rawError.hostname,
     address: rawError.address,
     port: rawError.port,
+    source,
     stack,
     responseData,
   };
+
+  const snippet = extractCodeSnippet(source);
+  if (snippet) {
+    details.snippet = snippet;
+  }
 
   if (rawError.cause) {
     details.cause = extractErrorDetails(rawError.cause);
@@ -135,41 +200,51 @@ const inferProbableCause = (errorDetails) => {
   const code = String(errorDetails?.code || '').toUpperCase();
   const message = String(errorDetails?.message || '').toLowerCase();
   const status = Number(errorDetails?.status || 0);
+  const name = String(errorDetails?.name || '');
 
   if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
-    return 'Resolution DNS impossible (hote introuvable).';
+    return 'Resolution DNS impossible. Verifiez l\'URL du service externe ou la connexion internet du serveur.';
   }
   if (code === 'ECONNREFUSED') {
-    return 'Connexion refusee par le service distant (service arrete ou port ferme).';
+    return 'Connexion refusee par le service distant. Le service est probablement arrete ou le port est bloque.';
   }
   if (code === 'ETIMEDOUT' || code === 'ESOCKETTIMEDOUT' || code.includes('TIMEOUT')) {
-    return 'Timeout reseau (latence elevee ou service distant non repondant).';
+    return 'La requete a mis trop de temps a repondre (Timeout). Reseau instable ou service distant sature.';
   }
   if (code === 'ENETUNREACH' || code === 'EHOSTUNREACH') {
-    return 'Reseau injoignable depuis le serveur.';
+    return 'Reseau ou hote injoignable. Probleme de routage ou de pare-feu sur le serveur.';
   }
   if (code === 'ECONNRESET' || code === 'EPIPE') {
-    return 'Connexion interrompue brutalement par le service distant.';
+    return 'La connexion a ete interrompue brutalement par le destinataire (Crash ou restart du service distant).';
   }
   if (status === 401 || status === 403) {
-    return 'Authentification ou autorisation invalide (cle API/token/permissions).';
+    return 'Authentification ou permissions invalides. Verifiez les cles API ou le token de session.';
   }
   if (status === 429) {
-    return 'Limite de debit atteinte chez le fournisseur externe.';
+    return 'Trop de requetes (Rate limit). Le fournisseur externe vous a bloque temporairement.';
   }
   if (status >= 500 && status <= 599) {
-    return 'Erreur interne du service externe contacte.';
+    return 'Erreur interne chez le fournisseur externe. Le probleme vient de chez eux.';
+  }
+  if (name === 'ValidationError') {
+    return 'Donnees envoyees non conformes au schema de la base de donnees (Erreur de validation).';
+  }
+  if (name === 'CastError') {
+    return 'Format d\'identifiant (ID) incorrect pour la base de donnees.';
   }
   if (message.includes('fetch failed')) {
-    return 'Echec fetch: verifier connectivite sortante, DNS et pare-feu.';
+    return 'Echec de la requete sortante (fetch). Verifiez la configuration proxy et DNS.';
   }
   if (message.includes('mongo') && (message.includes('serverselection') || message.includes('connect'))) {
-    return 'Connexion MongoDB impossible ou instable.';
+    return 'Impossible de se connecter a la base de donnees MongoDB. Verifiez si l\'instance est en ligne.';
   }
   if (message.includes('jwt_secret')) {
-    return 'Configuration manquante ou invalide (JWT_SECRET).';
+    return 'Secret JWT manquant ou invalide dans la configuration (.env).';
   }
-  return 'Cause technique a verifier dans les details de la stack et du contexte.';
+  if (message.includes('cors')) {
+    return 'Requete bloquee par la politique CORS (Origine non autorisee).';
+  }
+  return 'Cause technique a determiner. Consultez les details de la stack trace pour plus de precision.';
 };
 
 const normalizeAlertPayload = (payload = {}) => {
@@ -180,6 +255,19 @@ const normalizeAlertPayload = (payload = {}) => {
     environment: payload.environment || config.NODE_ENV || process.env.NODE_ENV || 'unknown',
     pid: payload.pid || process.pid,
   };
+
+  // Ajout du statut de santé si disponible (sans bloquer)
+  try {
+    const mongoose = require('mongoose');
+    normalized.health = {
+      database: mongoose.connection.readyState === 1 ? 'UP' : 'DOWN',
+      memory: {
+        rss: `${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB`,
+        heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`
+      },
+      uptime: Math.round(process.uptime())
+    };
+  } catch (e) {}
 
   const extracted = payload.errorDetails || extractErrorDetails(payload.error);
   if (extracted) {
@@ -309,79 +397,107 @@ const buildText = (payload) => {
 
 const buildEmailHtml = (payload) => {
   const meta = eventMeta(payload.event);
-  const rows = [
-    { label: 'Evenement', value: payload.event || 'ALERT' },
-    { label: 'Statut', value: payload.status || 'UNKNOWN' },
-    { label: 'HTTP', value: payload.http || 'N/A' },
-    { label: 'URL', value: payload.url || 'N/A' },
-    { label: 'Serveur', value: payload.server || 'N/A' },
-    { label: 'Environnement', value: payload.environment || 'N/A' },
-    { label: 'PID', value: payload.pid || 'N/A' },
-    { label: 'Tenant', value: payload.tenant || 'N/A' },
-    { label: 'RequestId', value: payload.requestId || payload.request?.id || 'N/A' },
-    { label: 'Downtime (s)', value: payload.downtimeSeconds ?? 'N/A' },
-    { label: 'Downtime (humain)', value: payload.downtimeHuman || 'N/A' },
-    { label: 'Debut panne', value: payload.downtimeStart || 'N/A' },
-    { label: 'Fin panne', value: payload.downtimeEnd || 'N/A' },
-    { label: 'Date / heure', value: formatDateTime(payload.timestamp) },
+  const err = payload.errorDetails || {};
+  
+  const mainRows = [
+    { label: '📌 Evenement', value: payload.event || 'ALERT' },
+    { label: '🌐 URL / Route', value: `<code>${payload.http || payload.url || 'N/A'}</code>` },
+    { label: '👤 Tenant / Client', value: payload.tenant || 'N/A' },
+    { label: '🕒 Date & Heure', value: formatDateTime(payload.timestamp) },
   ];
-  if (payload.error) rows.push({ label: 'Erreur', value: payload.error });
-  if (payload.fingerprint) rows.push({ label: 'Fingerprint', value: payload.fingerprint });
-  if (payload.causeProbable) rows.push({ label: 'Cause probable', value: payload.causeProbable });
-  if (payload.summaryWindow) rows.push({ label: 'Fenetre resume', value: payload.summaryWindow });
-  if (payload.summaryCount !== undefined) rows.push({ label: 'Nombre d incidents', value: payload.summaryCount });
-  if (payload.summaryLines && payload.summaryLines.length) {
-    rows.push({ label: 'Details', value: payload.summaryLines.join(' | ') });
+
+  if (payload.health) {
+    mainRows.push({ 
+      label: '🏥 Santé Système', 
+      value: `DB: <b style="color:${payload.health.database === 'UP' ? '#2e7d32' : '#d32f2f'};">${payload.health.database}</b> | Mem: ${payload.health.memory.rss} | Up: ${payload.health.uptime}s` 
+    });
   }
 
-  const rowsHtml = rows
-    .map((r) => `<tr><td style="padding:6px 10px;font-weight:600;">${r.label}</td><td style="padding:6px 10px;">${r.value}</td></tr>`)
+  const techRows = [
+    { label: '📂 Source Precis', value: `<b style="color:#d32f2f;">${err.source || 'Inconnue'}</b>` },
+    { label: '❌ Erreur', value: `<code>${err.name || 'Error'}: ${err.message || payload.error || 'N/A'}</code>` },
+    { label: '💡 Cause Probable', value: `<i style="color:#1976d2;">${payload.causeProbable || 'N/A'}</i>` },
+    { label: '🆔 Request ID', value: `<code>${payload.requestId || 'N/A'}</code>` },
+  ];
+
+  const envRows = [
+    { label: '🖥️ Serveur', value: payload.server || 'N/A' },
+    { label: '🌿 Environnement', value: payload.environment || 'N/A' },
+  ];
+
+  const renderRows = (rows) => rows
+    .map((r) => `<tr><td style="padding:10px; border-bottom:1px solid #eee; width:160px; color:#666; font-size:13px;">${r.label}</td><td style="padding:10px; border-bottom:1px solid #eee; font-size:14px; word-break:break-all;">${r.value}</td></tr>`)
     .join('');
 
   const requestBlock = payload.request
-    ? `<h3 style="margin:16px 0 6px 0;">Contexte requete</h3><pre style="background:#fafafa;border:1px solid #eee;padding:10px;white-space:pre-wrap;word-break:break-word;">${truncate(JSON.stringify(payload.request, null, 2), 5000)}</pre>`
+    ? `
+    <div style="margin-top:25px;">
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">📥 Contexte de la Requete</h3>
+      <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:4px; padding:12px; font-family:monospace; font-size:12px; overflow-x:auto;">
+        <pre style="margin:0; white-space:pre-wrap;">${truncate(JSON.stringify(payload.request, null, 2), 5000)}</pre>
+      </div>
+    </div>`
     : '';
 
-  const errorDetailsBlock = payload.errorDetails
-    ? `<h3 style="margin:16px 0 6px 0;">Details techniques</h3><pre style="background:#111;color:#f6f6f6;padding:10px;white-space:pre-wrap;word-break:break-word;">${truncate(JSON.stringify(payload.errorDetails, null, 2), 7000)}</pre>`
+  const stackBlock = err.stack
+    ? `
+    <div style="margin-top:25px;">
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">🔍 Stack Trace</h3>
+      <div style="background:#212529; color:#f8f9fa; border-radius:4px; padding:12px; font-family:monospace; font-size:11px; overflow-x:auto; line-height:1.5;">
+        <pre style="margin:0; white-space:pre-wrap;">${truncate(err.stack, 7000)}</pre>
+      </div>
+    </div>`
     : '';
 
-  const deliveryBlock = payload.delivery
-    ? `<h3 style="margin:16px 0 6px 0;">Statut des canaux</h3><pre style="background:#fafafa;border:1px solid #eee;padding:10px;white-space:pre-wrap;word-break:break-word;">${truncate(JSON.stringify(payload.delivery, null, 2), 4000)}</pre>`
+  const codeSnippetBlock = err.snippet
+    ? `
+    <div style="margin-top:25px;">
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">💻 Extrait du Code (Précision Chirurgicale)</h3>
+      <div style="margin-bottom:5px; font-size:12px; color:#666;">Fichier: <code>${err.snippet.path}</code> (Ligne ${err.snippet.line})</div>
+      <div style="background:#1e1e1e; color:#dcdcaa; border-radius:4px; padding:12px; font-family:'Consolas', 'Monaco', monospace; font-size:12px; overflow-x:auto; border-left:4px solid #d32f2f;">
+        <pre style="margin:0; white-space:pre-wrap;">${err.snippet.code}</pre>
+      </div>
+    </div>`
     : '';
 
-  const intro =
-    meta.tone === 'ok'
-      ? 'Le serveur est a nouveau disponible. Tout est revenu a la normale.'
-      : meta.tone === 'summary'
-        ? 'Voici un resume des incidents detectes par le monitoring DRY.'
-        : 'Une anomalie a ete detectee par le monitoring DRY.';
-
-  const actions =
-    meta.tone === 'alert'
-      ? `
-  <p style="margin:12px 0 0 0;">
-    Actions recommandees:
-    <br/>1) Verifie que le serveur repond: <code>${payload.url || ''}</code>
-    <br/>2) Verifie les logs du serveur (Render / PM2)
-    <br/>3) Si c'est une erreur reseau, verifie DNS et connectivite
-  </p>`
-      : '';
+  const actions = meta.tone === 'alert'
+    ? `
+    <div style="margin-top:25px; padding:15px; background:#fff3e0; border-left:4px solid #ff9800; border-radius:4px;">
+      <h4 style="margin:0 0 8px 0; color:#e65100;">🛠️ Actions Recommandees</h4>
+      <ul style="margin:0; padding-left:20px; font-size:14px; color:#5d4037;">
+        <li>Verifier si le service est accessible via <code>${payload.url || 'le lien direct'}</code></li>
+        <li>Consulter les logs de production (Render/PM2) pour plus de contexte</li>
+        <li>Verifier l'etat de la base de donnees et des services tiers connectes</li>
+        <li>Le serveur tentera de redemarrer automatiquement s'il s'agit d'un crash fatal ("Autonome").</li>
+      </ul>
+    </div>`
+    : '';
 
   return `
-<div style="font-family: Arial, sans-serif; color: #222;">
-  <div style="padding:10px 14px; background:${meta.bg}; border-left:6px solid ${meta.color}; margin-bottom:12px;">
-    <div style="font-size:12px; letter-spacing:0.5px; color:${meta.color}; font-weight:700;">${meta.label}</div>
-    <h2 style="margin:4px 0 0 0; color:${meta.color};">${meta.title}</h2>
+<div style="max-width:800px; margin:0 auto; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#333; line-height:1.6;">
+  <div style="background:${meta.bg}; padding:25px; border-radius:8px 8px 0 0; border-left:8px solid ${meta.color};">
+    <div style="text-transform:uppercase; font-size:12px; font-weight:bold; color:${meta.color}; margin-bottom:5px; letter-spacing:1px;">${meta.label}</div>
+    <h1 style="margin:0; font-size:24px; color:${meta.color};">${meta.title}</h1>
   </div>
-  <p style="margin:0 0 12px 0;">${intro}</p>
-  <table style="border-collapse: collapse; border: 1px solid #ddd; width:100%; max-width:720px;">
-    ${rowsHtml}
-  </table>
-  ${requestBlock}
-  ${errorDetailsBlock}
-  ${deliveryBlock}
-  ${actions}
+  
+  <div style="padding:25px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px; background:#fff;">
+    <p style="margin-top:0; font-size:15px;">Une anomalie a ete detectee par le monitoring <b>DRY API</b>.</p>
+    
+    <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+      ${renderRows(mainRows)}
+      ${renderRows(techRows)}
+      ${renderRows(envRows)}
+    </table>
+
+    ${codeSnippetBlock}
+    ${requestBlock}
+    ${stackBlock}
+    ${actions}
+    
+    <div style="margin-top:30px; text-align:center; color:#999; font-size:11px; border-top:1px solid #eee; padding-top:15px;">
+      Systeme de Monitoring DRY API • Genere automatiquement le ${formatDateTime(new Date().toISOString())}
+    </div>
+  </div>
 </div>`;
 };
 

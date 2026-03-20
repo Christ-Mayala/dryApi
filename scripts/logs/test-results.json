@@ -1,37 +1,313 @@
-✔ CRUD admin (auto) (3379.3886ms)
-✔ CRUD categories (auto) (3758.2479ms)
-✔ CRUD professionals (auto) (4464.0157ms)
-✔ CRUD reports (auto) (2950.7565ms)
-✔ CRUD batches (smoke) (3507.7924ms)
-✔ CRUD downloads (smoke) (2587.3936ms)
-✔ CRUD presets (smoke) (2385.0178ms)
-✔ CRUD admin (auto) (1933.3378ms)
-✔ CRUD favoris (auto) (1894.7009ms)
-✔ CRUD message (auto) (2150.5339ms)
-✔ CRUD property (auto) (2605.6879ms)
-✔ CRUD reservation (auto) (2123.4139ms)
-✔ CRUD users (auto) (1852.6802ms)
-✔ CRUD categories (smoke) (1906.0738ms)
-✔ CRUD clients (smoke) (2080.8547ms)
-✔ CRUD commandes (smoke) (2158.4637ms)
-✔ CRUD produits (smoke) (1962.2898ms)
-✔ CRUD categories (smoke) (2315.6733ms)
-✔ CRUD courses (smoke) (2356.251ms)
-✔ CRUD ebooks (smoke) (3086.9196ms)
-✔ CRUD orders (smoke) (2438.4006ms)
-✔ CRUD reviews (smoke) (2561.4721ms)
-✔ CRUD students (smoke) (2584.2959ms)
-✔ CRUD atelier (auto) (2171.8799ms)
-✔ CRUD contact (auto) (1903.4357ms)
-✔ CRUD formation (auto) (2361.9737ms)
-✔ CRUD gallery (auto) (2248.7499ms)
-✔ CRUD impact (auto) (2258.9418ms)
-✔ CRUD product (auto) (2542.0298ms)
-ℹ tests 29
+✖ CRUD annonce (auto) (248.5752ms)
+✖ CRUD post (auto) (297.364ms)
+✖ CRUD admin (auto) (293.7471ms)
+✖ CRUD categories (auto) (271.6134ms)
+✖ CRUD professionals (auto) (215.8949ms)
+✖ CRUD reports (auto) (275.2783ms)
+✖ CRUD batches (auto) (201.527ms)
+✖ CRUD downloads (auto) (195.5395ms)
+✖ CRUD presets (auto) (193.73ms)
+✖ CRUD admin (auto) (215.3556ms)
+✖ CRUD favoris (auto) (230.3711ms)
+✖ CRUD message (auto) (256.7415ms)
+✖ CRUD property (auto) (220.5704ms)
+✖ CRUD reservation (auto) (205.0854ms)
+✖ CRUD users (auto) (216.2581ms)
+✔ CRUD categories (smoke) (13402.0658ms)
+✔ CRUD clients (smoke) (5784.019ms)
+✔ CRUD commandes (smoke) (4850.0331ms)
+✔ CRUD produits (smoke) (5866.8231ms)
+✔ CRUD categories (auto) (577.6968ms)
+✔ CRUD courses (auto) (407.321ms)
+✔ CRUD ebooks (auto) (205.3968ms)
+✔ CRUD export (auto) (118.9664ms)
+✔ CRUD orders (auto) (160.0542ms)
+✔ CRUD payment (auto) (138.5149ms)
+✔ CRUD reviews (auto) (135.647ms)
+✔ CRUD students (auto) (185.6733ms)
+✔ CRUD atelier (auto) (210.507ms)
+✔ CRUD contact (auto) (214.0725ms)
+✔ CRUD formation (auto) (275.3089ms)
+✔ CRUD gallery (auto) (194.6563ms)
+✔ CRUD impact (auto) (204.4834ms)
+✔ CRUD product (auto) (213.6705ms)
+ℹ tests 33
 ℹ suites 0
-ℹ pass 29
-ℹ fail 0
+ℹ pass 18
+ℹ fail 15
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 30792.1094
+ℹ duration_ms 16907.406
+
+✖ failing tests:
+
+test at tests\Belela\annonce.test.js:24:1
+✖ CRUD annonce (auto) (248.5752ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\Belela\post.test.js:24:1
+✖ CRUD post (auto) (297.364ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\LaStreet\admin.test.js:24:1
+✖ CRUD admin (auto) (293.7471ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\LaStreet\categories.test.js:24:1
+✖ CRUD categories (auto) (271.6134ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\LaStreet\professionals.test.js:24:1
+✖ CRUD professionals (auto) (215.8949ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\LaStreet\reports.test.js:24:1
+✖ CRUD reports (auto) (275.2783ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\MediaDL\batches.test.js:24:1
+✖ CRUD batches (auto) (201.527ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\MediaDL\downloads.test.js:24:1
+✖ CRUD downloads (auto) (195.5395ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\MediaDL\presets.test.js:24:1
+✖ CRUD presets (auto) (193.73ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\admin.test.js:24:1
+✖ CRUD admin (auto) (215.3556ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\favoris.test.js:24:1
+✖ CRUD favoris (auto) (230.3711ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\message.test.js:24:1
+✖ CRUD message (auto) (256.7415ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\property.test.js:24:1
+✖ CRUD property (auto) (220.5704ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\reservation.test.js:24:1
+✖ CRUD reservation (auto) (205.0854ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
+
+test at tests\SCIM\users.test.js:24:1
+✖ CRUD users (auto) (216.2581ms)
+  [TypeError: fetch failed] {
+    [cause]: AggregateError [ECONNREFUSED]: 
+        at internalConnectMultiple (node:net:1142:49)
+        at afterConnectMultiple (node:net:1723:7) {
+      code: 'ECONNREFUSED',
+      [errors]: [
+        Error: connect ECONNREFUSED ::1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16),
+        Error: connect ECONNREFUSED 127.0.0.1:5000
+            at createConnectionError (node:net:1686:14)
+            at afterConnectMultiple (node:net:1716:16)
+      ]
+    }
+  }
