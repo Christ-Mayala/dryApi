@@ -45,6 +45,10 @@ const ProfessionalSchema = new mongoose.Schema(
 
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },
+    
+    isPremium: { type: Boolean, default: false, index: true },
+    premiumUntil: { type: Date },
+
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },

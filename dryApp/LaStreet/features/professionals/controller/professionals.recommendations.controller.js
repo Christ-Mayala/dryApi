@@ -19,7 +19,7 @@ module.exports = asyncHandler(async (req, res) => {
   const items = await Professional.find(query)
     .populate('categoryId', 'name')
     .populate('tradeId', 'name category')
-    .sort({ availabilityStatus: 1, rating: -1, ratingCount: -1, createdAt: -1 })
+    .sort({ isPremium: -1, availabilityStatus: 1, rating: -1, ratingCount: -1, createdAt: -1 })
     .limit(limit);
 
   return sendResponse(res, items, 'Recommandations');

@@ -21,14 +21,32 @@ module.exports = asyncHandler(async (req, res) => {
   const updates = {};
   if (body.name) updates.name = String(body.name).trim();
   if (body.telephone) updates.telephone = String(body.telephone).trim();
-  if (body.whatsapp !== undefined) updates.whatsapp = String(body.whatsapp) === 'true' || body.whatsapp === true;
   if (body.pays) updates.pays = String(body.pays).trim();
   if (body.ville) updates.ville = String(body.ville).trim();
   if (body.quartier !== undefined) updates.quartier = String(body.quartier || '').trim();
+  
+  if (body.categoryId) updates.categoryId = body.categoryId;
+  if (body.tradeId) updates.tradeId = body.tradeId;
+
   if (body.experienceRange) updates.experienceRange = body.experienceRange;
   if (body.description !== undefined) updates.description = String(body.description || '').trim();
   if (body.hoursAvailable !== undefined) updates.hoursAvailable = String(body.hoursAvailable || '').trim();
-  if (body.preferredContact) updates.preferredContact = body.preferredContact;
+  
+  if (body.preferredContact) {
+    updates.preferredContact = body.preferredContact;
+    // Sync whatsapp boolean if contact preference includes it
+    if (body.preferredContact === 'whatsapp' || body.preferredContact === 'both') {
+      updates.whatsapp = true;
+    } else if (body.preferredContact === 'call') {
+      updates.whatsapp = false;
+    }
+  }
+
+  // Handle explicit whatsapp toggle if provided (overrides sync)
+  if (body.whatsapp !== undefined) {
+    updates.whatsapp = String(body.whatsapp) === 'true' || body.whatsapp === true;
+  }
+
   if (body.availabilityStatus) updates.availabilityStatus = body.availabilityStatus;
 
   if (body.daysAvailable !== undefined) {

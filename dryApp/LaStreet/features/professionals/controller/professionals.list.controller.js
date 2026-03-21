@@ -30,7 +30,7 @@ module.exports = asyncHandler(async (req, res) => {
     Professional.find(query)
       .populate('categoryId', 'name')
       .populate('tradeId', 'name category')
-      .sort({ createdAt: -1 })
+      .sort({ isPremium: -1, createdAt: -1 })
       .limit(limit)
       .skip(skip),
     Professional.countDocuments(query),

@@ -150,25 +150,11 @@ router.get('/recommendations', cache(600), recommendations);
 
 
 
-router.get('/:id', validateId, cache('professionals:get'), getProfessional);
-
-
-
 // Routes utilisateur avec validation et audit
-
-
-
-
-
 router.get('/me', protect, withAudit('GET_MY_PROFESSIONAL'), getMyProfessional);
+router.patch('/me', protect, withAudit('UPDATE_MY_PROFESSIONAL'), proUpload, invalidateCache(), updateMyProfessional);
 
-
-
-
-
-
-
-router.patch('/me', protect, withAudit('UPDATE_MY_PROFESSIONAL'), proUpload, validateLaStreet.professional.update, invalidateCache(), updateMyProfessional);
+router.get('/:id', validateId, cache('professionals:get'), getProfessional);
 
 
 
@@ -184,7 +170,7 @@ router.post('/:id/rate', protect, validateId, withAudit('RATE_PROFESSIONAL'), ra
 
 
 
-router.post('/', protect, withAudit('CREATE_PROFESSIONAL'), proUpload, validateLaStreet.professional.create, invalidateCache(), createProfessional);
+router.post('/', protect, withAudit('CREATE_PROFESSIONAL'), proUpload, invalidateCache(), createProfessional);
 
 
 

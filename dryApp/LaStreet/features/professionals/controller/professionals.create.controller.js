@@ -39,7 +39,7 @@ module.exports = asyncHandler(async (req, res) => {
 
   const filesObj = req.files && typeof req.files === 'object' ? req.files : {};
   const profileArr = Array.isArray(filesObj.profileImage) ? filesObj.profileImage : [];
-  const realArr = Array.isArray(filesObj.images) ? filesObj.images : [];
+  const realArr = Array.isArray(filesObj.gallery) ? filesObj.gallery : [];
 
   if (!profileArr.length) throw new Error('Photo de profil requise');
 
@@ -68,6 +68,8 @@ module.exports = asyncHandler(async (req, res) => {
     preferredContact: preferredContact || 'both',
     profileImage: profileImage?.url ? profileImage : { url: '', public_id: '' },
     images,
+    isPremium: req.user.isPremium || false,
+    premiumUntil: req.user.premiumUntil || undefined,
     createdBy: req.user._id,
   });
 

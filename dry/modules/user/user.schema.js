@@ -3,15 +3,22 @@ const bcrypt = require('bcryptjs');
 const config = require('../../../config/database');
 
 const UserSchema = new mongoose.Schema({
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: [true, 'Un nom est obligatoire'] },
     nom: { type: String, trim: true },
-    email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
-    password: {
-        type: String,
-        required: function() { return !this.googleId && !this.facebookId; },
-        select: false
-    },
-    role: { type: String, default: 'user' },
+    email: { type: String, required: [true, 'Un email est obligatoire'], unique: true, lowercase: true, trim: true },
+    // password: {
+    //     type: String,
+    //     required: function() { return !this.googleId && !this.facebookId; },
+    //     select: false
+    // },
+    password: { type: String, select: false },
+    role: { type: String, enum: ['user', 'admin', 'client', 'prestataire', 'professional'], default: 'user' },
+    // subtype: null = chercheur de pros | 'prestataire' = peut répondre aux leads
+    subtype: { type: String, enum: [null, 'prestataire'], default: null },
+    isPremium: { type: Boolean, default: false },
+    premiumUntil: { type: Date },
+    premiumPlan: { type: String, enum: ['starter', 'standard', 'premium'], default: null },
+
 
     googleId: { type: String, unique: true, sparse: true, select: false },
     facebookId: { type: String, unique: true, sparse: true, select: false },
@@ -64,7 +71,9 @@ const UserSchema = new mongoose.Schema({
             delete ret.deletedAt;
             delete ret.loginAttempts;
             delete ret.lockUntil;
+            // Ne pas supprimer isPremium et premiumUntil car ils sont utiles au front
             return ret;
+
         },
     },
 });

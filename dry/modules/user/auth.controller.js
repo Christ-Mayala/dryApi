@@ -70,6 +70,11 @@ exports.register = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email: payload.email });
     if (userExists) throw new Error('Cet email est déjà utilisé');
 
+    // Auto-assign subtype: les 'professional' sont automatiquement prestataires
+    if (payload.role === 'professional' || payload.role === 'prestataire') {
+        payload.subtype = 'prestataire';
+    }
+
     const user = await User.create(payload);
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
@@ -213,3 +218,26 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     sendResponse(res, { message: 'Mot de passe réinitialisé avec succès' }, 'Succès');
 });
 
+// --- CHANGE PASSWORD ---
+exports.changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const User = req.getModel('User');
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+        throw new Error('Utilisateur introuvable');
+    }
+
+    // Vérif password actuel
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+        throw new Error('Mot de passe actuel incorrect');
+    }
+
+    // Maj password
+    user.password = newPassword;
+    user.passwordChangedAt = Date.now();
+    await user.save();
+
+    sendResponse(res, null, 'Mot de passe mis à jour avec succès');
+});
