@@ -128,6 +128,7 @@ const listReports = require('../controller/admin.reports.list.controller');
 const decideReport = require('../controller/admin.reports.decision.controller');
 
 const broadcastEmail = require('../controller/admin.email.broadcast.controller');
+const grantPremium = require('../controller/admin.premium.grant.controller');
 
 router.use(protect);
 router.use(authorize('admin'));
@@ -211,6 +212,15 @@ router.patch('/users/:id/status', withAudit('ADMIN_UPDATE_USER_STATUS'), updateU
 
 
 router.post('/users/:id/email', withAudit('ADMIN_SEND_USER_EMAIL'), sendUserEmail);
+
+
+
+
+
+
+
+
+router.post('/users/:id/grant-premium', withAudit('ADMIN_GRANT_PREMIUM'), grantPremium);
 
 
 

@@ -75,6 +75,12 @@ exports.register = asyncHandler(async (req, res) => {
         payload.subtype = 'prestataire';
     }
 
+    // ⭐ OFFRE DE LANCEMENT: 7 jours Premium gratuits pour tous les nouveaux comptes
+    payload.isPremium = true;
+    payload.premiumPlan = 'starter';
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    payload.premiumUntil = new Date(Date.now() + sevenDaysMs);
+
     const user = await User.create(payload);
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
