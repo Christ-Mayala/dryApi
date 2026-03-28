@@ -12940,3 +12940,45 @@
 [28/03/2026 08:29:37] [INFO] [22e1fa2e-21ac-4dfa-91d7-bbe2f596ee9f] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 223ms
 [28/03/2026 08:29:43] [INFO] [23e9c897-7cf6-4ba1-a822-8d86764792f6] GET /api/v1/scim/admin/messages 200 43ms
 [28/03/2026 08:29:43] [INFO] [539e6b47-aef8-48da-9bcb-6db70669ced6] GET /api/v1/scim/admin/messages 200 47ms
+[28/03/2026 08:45:31] [INFO] Email service configure avec Resend API
+[28/03/2026 08:45:35] [INFO] NotificationService initialized
+[28/03/2026 08:45:35] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[28/03/2026 08:45:49] [INFO] [5d418286-2fc4-41e1-aa7c-6e17f328586b] GET /api/v1/scim/users/profile 200 162ms
+[28/03/2026 08:45:49] [INFO] [e9c0df73-5da6-4942-b74f-cdb352aaf28c] GET /api/v1/scim/favoris 200 212ms
+[28/03/2026 08:45:49] [INFO] [fafc09ca-d802-400f-ac93-7eeefa3855a9] GET /api/v1/scim/message/unread 200 426ms
+[28/03/2026 08:45:49] [INFO] [7e84a640-815f-4a4b-8af2-a566151e4695] GET /api/v1/scim/users/profile 200 274ms
+[28/03/2026 08:45:50] [INFO] [70041701-d65e-41fb-8a88-5807c73a19a8] GET /api/v1/scim/message/inbox?page=1&limit=10 200 886ms
+[28/03/2026 08:45:50] [INFO] [2c67dd0a-6618-4229-9fbc-037a7121fa39] GET /api/v1/scim/favoris 200 435ms
+[28/03/2026 08:45:50] [INFO] [d7eb448c-9280-4e9e-a672-d52d06420c71] GET /api/v1/scim/message/unread 200 219ms
+[28/03/2026 08:45:50] [INFO] [df62971e-a115-4910-a0e3-464c815d0ca5] GET /api/v1/scim/message/inbox?page=1&limit=10 200 148ms
+[28/03/2026 08:45:50] [INFO] [0d0dc877-6a15-4792-8813-a1285ee643ad] GET /api/v1/scim/message/unread 200 118ms
+[28/03/2026 08:45:50] [INFO] [36258a29-5259-4271-b139-f6ebf6700383] GET /api/v1/scim/admin/messages 200 475ms
+[28/03/2026 08:45:50] [INFO] [6ebb9f4a-e918-4593-a84b-d244cc8ef997] GET /api/v1/scim/admin/messages 200 160ms
+[28/03/2026 08:45:52] [INFO] [a4d76e42-e9a3-4790-953f-d42b7a84ff5c] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 32ms
+[28/03/2026 08:45:52] [INFO] [0710130f-9798-48a5-a91b-b28717731a6f] GET /api/v1/scim/admin/properties?page=1&limit=5&status=active 200 108ms
+[28/03/2026 08:45:54] [INFO] [84e0d2fb-ac52-4ff3-b03d-e462bee4e5ca] GET /api/v1/scim/admin/dashboard/stats 200 149ms
+[28/03/2026 08:45:54] [INFO] [b7a8fa0b-df86-4e5b-9c8a-8d22641bc77e] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 242ms
+[28/03/2026 08:45:54] [INFO] [bccc715c-b0e0-4caf-a206-392a722572b7] GET /api/v1/scim/admin/dashboard/stats 200 257ms
+[28/03/2026 08:45:54] [INFO] [505ab6a7-ce7e-4967-8d2d-96b989d44e72] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 235ms
+[28/03/2026 08:45:57] [INFO] [56b4588e-27e9-42cd-9214-44c1f83dd32b] POST /api/v1/scim/users/logout 200 49ms
+[28/03/2026 08:45:57] [INFO] [199c7e55-4c82-48b8-b79a-2778240ca2db] GET /api/v1/scim/users/profile 200 42ms
+[28/03/2026 08:45:57] [INFO] [4a7ed329-9d1b-46eb-816b-299625b4184f] POST /api/v1/scim/users/refresh-token 200 9ms
+[28/03/2026 08:45:58] [INFO] [e88e35ec-a8d6-4988-b3f5-9d7048851db8] GET /api/v1/scim/property?page=1&limit=6 200 25ms
+[28/03/2026 08:45:58] [INFO] [7c539c8d-d700-4cf2-ad9a-ee74228bac73] GET /api/v1/scim/property?page=1&limit=6 200 52ms
+[28/03/2026 08:45:59] [INFO] [51c3f514-6c0b-4926-b0be-69cff56e75b8] GET /api/v1/scim/property?page=1&limit=6 200 33ms
+[28/03/2026 08:46:22] [INFO] [1aa82391-2f80-4f65-9e79-609fc91df2d2] POST /api/v1/scim/users/login 200 488ms
+[28/03/2026 08:46:22] [INFO] [a0b5d339-74be-4cd8-96d3-2faa5d268371] GET /api/v1/scim/users/profile 200 10ms
+[28/03/2026 08:46:22] [INFO] [1d880a5b-f0da-4d04-a93c-7d0a634776d5] GET /api/v1/scim/message/unread 200 65ms
+[28/03/2026 08:46:22] [INFO] [7433e511-c372-41b8-9804-848c440b3717] GET /api/v1/scim/message/inbox?page=1&limit=10 200 97ms
+[28/03/2026 08:46:22] [INFO] [89d88826-7d3d-4dea-80a4-29cd7cb2780a] GET /api/v1/scim/favoris 200 95ms
+[28/03/2026 08:46:22] [INFO] [9c7a7eb3-cf22-4484-aabd-ae11476de983] GET /api/v1/scim/message/unread 200 14ms
+[28/03/2026 08:46:23] [INFO] [1e0a81ce-fe65-4158-86a3-5aaa25760596] GET /api/v1/scim/admin/dashboard/stats 200 95ms
+[28/03/2026 08:46:23] [INFO] [b6a8476f-552f-4b06-a5c7-58fe97d69ef8] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 114ms
+[28/03/2026 08:46:23] [INFO] [c0dbe4a8-84fd-464b-9b35-9f956145e8d5] GET /api/v1/scim/admin/dashboard/stats 200 247ms
+[28/03/2026 08:46:23] [INFO] [b3d2c893-1600-4f11-81c3-476d2747aecf] GET /api/v1/scim/admin/reservations?page=1&limit=5 200 110ms
+[28/03/2026 08:51:28] [INFO] Email service configure avec Resend API
+[28/03/2026 08:51:33] [INFO] NotificationService initialized
+[28/03/2026 08:51:34] [INFO] SCIM reminder scheduler started (*/1 * * * *)
+[28/03/2026 08:54:05] [INFO] Email service configure avec Resend API
+[28/03/2026 08:54:08] [INFO] NotificationService initialized
+[28/03/2026 08:54:08] [INFO] SCIM reminder scheduler started (*/1 * * * *)
