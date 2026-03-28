@@ -19,7 +19,7 @@ module.exports = asyncHandler(async (req, res) => {
         } catch (_) {}
     }
 
-    res.clearCookie('rt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax' });
-    res.clearCookie('jwt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax' });
+    res.clearCookie('rt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+    res.clearCookie('jwt', { httpOnly: true, secure: config.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
     return sendResponse(res, null, 'Déconnexion réussie.');
 });
