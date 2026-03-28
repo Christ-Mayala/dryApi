@@ -174,3 +174,4 @@
 [24/03/2026 15:00:31] [WARN] Reservation notification non envoyee (RSV-20260324-F54B5)
 [24/03/2026 20:43:33] [WARN] Reservation notification non envoyee (RSV-20260324-F54B5)
 [25/03/2026 06:29:11] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN
+[28/03/2026 09:53:00] [WARN] [monitor] status=DEGRADED db=DOWN redis=DOWN

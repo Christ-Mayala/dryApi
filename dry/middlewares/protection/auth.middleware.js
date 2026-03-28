@@ -4,13 +4,14 @@ const { verifyToken } = require('../../utils/auth/jwt.util');
 const sendResponse = require('../../utils/http/response');
 
 const getTokenFromRequest = (req, allowQuery = false) => {
-    // 1. Chercher dans les cookies (HttpOnly) en priorité
-    if (req.cookies && req.cookies.jwt) {
-        return req.cookies.jwt;
-    }
-    // 2. Fallback sur le header Authorization (Bearer token)
+    // 1. Chercher dans le header Authorization (Bearer token) en priorité
+    // C'est le plus fiable car il est envoyé explicitement par le frontend (Dual-mode)
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         return req.headers.authorization.split(' ')[1];
+    }
+    // 2. Fallback sur les cookies (HttpOnly)
+    if (req.cookies && req.cookies.jwt) {
+        return req.cookies.jwt;
     }
     // 3. Fallback sur la query (si explicitement autorisé)
     if (allowQuery && req.query && typeof req.query.token === 'string') {

@@ -3,7 +3,7 @@ const config = require('../../../config/database');
 const refreshCookieOptions = () => ({
     httpOnly: true,
     secure: config.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
     maxAge: 30 * 24 * 60 * 60 * 1000,
 });
@@ -11,7 +11,7 @@ const refreshCookieOptions = () => ({
 const accessTokenCookieOptions = () => ({
     httpOnly: true,
     secure: config.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (or match your JWT expiry)
 });
