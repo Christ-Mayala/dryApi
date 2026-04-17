@@ -84,7 +84,7 @@ class EmailService {
       const filePath = path.join(this.templateDir, filename);
       if (!fs.existsSync(filePath)) return null;
       return fs.readFileSync(filePath, 'utf8');
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -92,7 +92,7 @@ class EmailService {
   renderTemplate(raw, vars = {}) {
     let out = raw || '';
     Object.keys(vars).forEach((key) => {
-      const value = vars[key] == null ? '' : String(vars[key]);
+      const value = vars[key] === null || vars[key] === undefined ? '' : String(vars[key]);
       out = out.replace(new RegExp(`{{${key}}}`, 'g'), value);
     });
     return out;

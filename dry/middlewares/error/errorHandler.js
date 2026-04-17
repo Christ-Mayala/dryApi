@@ -125,7 +125,7 @@ const dispatchApiErrorAlert = (err, req, rid, safeMessage) => {
     });
 };
 
-const errorHandler = async (err, req, res, next) => {
+const errorHandler = async (err, req, res, _next) => {
     const route = `${req.method} ${req.originalUrl}`;
     const stack = err?.stack || err?.message || String(err);
     const rid = req.requestId || req.headers['x-request-id'] || 'no-request-id';

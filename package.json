@@ -1,31 +1,70 @@
 {
-  "name": "dry.v01",
+  "name": "dry-api-framework",
   "version": "1.0.0",
-  "description": "",
+  "description": "Framework Node.js multi-tenant pour generer et operer des APIs metier securisees, documentees et testables.",
   "main": "server.js",
+  "type": "commonjs",
+  "author": "Cyberfusion",
+  "license": "ISC",
+  "keywords": [
+    "dry",
+    "framework",
+    "nodejs",
+    "express",
+    "multi-tenant",
+    "mongoose",
+    "swagger",
+    "api"
+  ],
   "scripts": {
-    "test": "node scripts/tests/test-runner.js",
-    "test:smoke": "set SERVER_URL=http://localhost:5000&& node --test \"tests/**/*.test.js\"",
+    "prepare": "husky",
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "nodemon --ignore dryApp --ignore tests --ignore logs server.js",
+    "status": "node scripts/system/status.js",
     "seed": "node scripts/seed/seed-all.js",
-    "purge": "node dry/scripts/purgeDeleted.js",
-    "killport": "for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :5000') do taskkill /PID %a /F",
+    "purge": "node dry/scripts/maintenance/purgeDeleted.js",
+    "killport": "node scripts/dev/kill-port.js 5000",
     "swagger:generate": "node scripts/swagger/simple-swagger-generate.js",
     "swagger:reset": "node scripts/swagger/complete-swagger-reset.js",
     "create-app": "node scripts/generator/create-app.js",
-    "test:crud": "node scripts/tests/generate-tests-crud.js && node scripts/tests/test-runner.js",
-    "docs:build": "npm run swagger:reset && echo 'Documentation: http://localhost:5000/api-docs'",
+    "docs:build": "npm run swagger:reset",
     "client:gen": "node scripts/clients/generate-frontend-client.js",
     "postman:generate": "node scripts/swagger/generate-postman-collection.js",
     "backup:mongo": "node scripts/maintenance/backup-mongo.js",
     "monitor:health": "node scripts/maintenance/monitor-health.js",
-    "monitor:health:watch": "node scripts/maintenance/monitor-health-runner.js"
+    "monitor:health:watch": "node scripts/maintenance/monitor-health-runner.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write README.md .github/workflows/ci.yml .prettierrc.json eslint.config.js package.json server.js config/**/*.js dry/bootstrap/**/*.js dry/middlewares/cache/cache.middleware.js scripts/dev/**/*.js scripts/tests/**/*.js tests/unit/**/*.js docs/01_GETTING_STARTED.md docs/03_ARCHITECTURE.md docs/04_TESTING_GUIDE.md docs/07_COMMANDS_REFERENCE.md docs/08_KERNEL_BOUNDARIES.md docs/09_PRODUCT_SCOPE.md",
+    "format:check": "prettier --check README.md .github/workflows/ci.yml .prettierrc.json eslint.config.js package.json server.js config/**/*.js dry/bootstrap/**/*.js dry/middlewares/cache/cache.middleware.js scripts/dev/**/*.js scripts/tests/**/*.js tests/unit/**/*.js docs/01_GETTING_STARTED.md docs/03_ARCHITECTURE.md docs/04_TESTING_GUIDE.md docs/07_COMMANDS_REFERENCE.md docs/08_KERNEL_BOUNDARIES.md docs/09_PRODUCT_SCOPE.md",
+    "test": "node scripts/tests/test-runner.js --suite integration",
+    "test:all": "node scripts/tests/test-runner.js --suite all",
+    "test:unit": "node scripts/tests/test-runner.js --suite unit",
+    "test:integration": "node scripts/tests/run-integration.js",
+    "test:e2e": "node scripts/tests/test-runner.js --suite e2e",
+    "test:smoke": "node scripts/tests/smoke-runner.js",
+    "test:crud": "node scripts/tests/generate-tests-crud.js && node scripts/tests/test-runner.js --suite integration",
+    "coverage": "c8 --reporter=text --reporter=lcov --include=\"dry/**/*.js\" --include=\"config/**/*.js\" node scripts/tests/test-runner.js --suite unit",
+    "ci:check": "npm run lint && npm run format:check && npm run test:unit && npm run test:integration && npm run test:smoke"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "nodemonConfig": {
+    "watch": [
+      "dry",
+      "config",
+      "server.js",
+      ".env"
+    ],
+    "ignore": [
+      "dryApp",
+      "tests",
+      "scripts",
+      "logs",
+      "*.md",
+      "*.test.js"
+    ],
+    "ext": "js,json",
+    "delay": 2500
+  },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
     "axios": "^1.13.5",
@@ -65,6 +104,22 @@
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "c8": "^10.1.3",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.5.3"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

@@ -14,7 +14,7 @@ const startPurgeScheduler = () => {
         async () => {
             try {
                 await purgeDeletedAcrossApps({ days });
-            } catch (_) {}
+            } catch {}
         },
         { scheduled: true },
     );

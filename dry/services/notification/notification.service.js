@@ -39,7 +39,7 @@ class NotificationService {
     });
   }
 
-  handleConnection(socket) {
+  handleConnection(_socket) {
     // Méthode à surcharger ou étendre si besoin
   }
 

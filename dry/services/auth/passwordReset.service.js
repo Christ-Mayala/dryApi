@@ -77,7 +77,7 @@ class PasswordResetService {
       let User;
       try {
         User = getModel(tenantId, 'User');
-      } catch (error) {
+      } catch {
         User = db.model('User', UserSchema);
       }
 
@@ -170,7 +170,7 @@ class PasswordResetService {
       let User;
       try {
         User = getModel(tenantId, 'User');
-      } catch (error) {
+      } catch {
         User = db.model('User', UserSchema);
       }
 
@@ -237,7 +237,7 @@ class PasswordResetService {
       let User;
       try {
         User = getModel(tenantId, 'User');
-      } catch (error) {
+      } catch {
         User = db.model('User', UserSchema);
       }
 
@@ -300,7 +300,7 @@ class PasswordResetService {
       let User;
       try {
         User = getModel(tenantId, 'User');
-      } catch (error) {
+      } catch {
         User = db.model('User', UserSchema);
       }
 

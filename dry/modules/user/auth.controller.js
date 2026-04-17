@@ -76,12 +76,14 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     // ⭐ OFFRE DE LANCEMENT: 7 jours Premium gratuits pour tous les nouveaux comptes
-    payload.isPremium = true;
-    payload.premiumPlan = 'starter';
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-    payload.premiumUntil = new Date(Date.now() + sevenDaysMs);
+    payload.isPremium = payload.isPremium === true;
+    if (!payload.isPremium) {
+        payload.premiumPlan = null;
+        payload.premiumUntil = null;
+    }
 
     const user = await User.create(payload);
+    const token = generateToken(user._id);
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
     if (shouldSend && user?.email) {
@@ -94,7 +96,8 @@ exports.register = asyncHandler(async (req, res) => {
             })
         ).catch(() => {});
     }
-    sendResponse(res, user, 'Inscription réussie');
+    const userData = user.toObject();
+    sendResponse(res, { ...userData, token, user: userData }, 'Inscription réussie');
 });
 
 // --- GET ME (Profil) --- 

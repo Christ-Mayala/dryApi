@@ -34,7 +34,7 @@ const truncate = (value, max = alertMaxValueLength) => {
 const safeJsonParse = (text) => {
   try {
     return JSON.parse(text);
-  } catch (_) {
+  } catch {
     return null;
   }
 };
@@ -45,7 +45,7 @@ const isSensitiveKey = (key) => {
 };
 
 const sanitizeValue = (value, depth = 0) => {
-  if (value == null) return value;
+  if (value === null || value === undefined) return value;
   if (depth > 5) return '[MAX_DEPTH_REACHED]';
 
   if (typeof value === 'string') return truncate(value);
@@ -119,7 +119,7 @@ const extractCodeSnippet = (sourceLine) => {
       line: lineNum,
       code: snippet
     };
-  } catch (err) {
+  } catch {
     return null;
   }
 };
@@ -267,7 +267,7 @@ const normalizeAlertPayload = (payload = {}) => {
       },
       uptime: Math.round(process.uptime())
     };
-  } catch (e) {}
+  } catch {}
 
   const extracted = payload.errorDetails || extractErrorDetails(payload.error);
   if (extracted) {
@@ -371,7 +371,7 @@ const formatDateTime = (value) => {
       dateStyle: 'full',
       timeStyle: 'medium',
     }).format(d);
-  } catch (e) {
+  } catch {
     return value || new Date().toISOString();
   }
 };

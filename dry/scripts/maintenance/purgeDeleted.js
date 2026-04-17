@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const logger = require('../../utils/logging/logger');
 const config = require('../../../config/database');
+const { connectCluster } = require('../../config/connection/dbConnection');
 
 // Configuration depuis les variables d'environnement
 const PURGE_ENABLED = config.PURGE_ENABLED === 'true';
@@ -12,6 +13,9 @@ const PURGE_CRON = config.PURGE_CRON || '0 3 * * *'; // Par défaut à 3h du mat
  * Exécute automatiquement selon le cron configuré
  */
 const purgeDeletedData = async () => {
+  // S'assurer de la connexion DB si lancé en standalone
+  await connectCluster();
+
   if (!PURGE_ENABLED) {
     logger('Purge désactivée (PURGE_ENABLED=false)', 'info');
     return;
@@ -36,10 +40,20 @@ const purgeDeletedData = async () => {
   }
 };
 
-// Démarrer le cron si activé
-if (PURGE_ENABLED) {
+// Démarrer le cron si activé (seulement si importé)
+if (PURGE_ENABLED && require.main !== module) {
   cron.schedule(PURGE_CRON, purgeDeletedData);
   logger(`🕐 Purge automatique configurée: ${PURGE_CRON}`, 'info');
+}
+
+// Exécution directe si lancé via CLI
+if (require.main === module) {
+  purgeDeletedData().then(() => {
+    process.exit(0);
+  }).catch((err) => {
+    logger(`❌ Erreur fatale: ${err.message}`, 'error');
+    process.exit(1);
+  });
 }
 
 // Export pour utilisation manuelle

@@ -1,7 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-const { generateToken } = require('../../utils/auth/jwt.util');
-const sendResponse = require('../../utils/http/response');
+const { signToken } = require('../../utils/auth/jwt.util');
 const router = express.Router();
 
 // Callback pour gérer l'authentification réussie
@@ -12,7 +11,7 @@ const socialLoginCallback = (req, res) => {
     }
 
     // Générer un token JWT pour l'utilisateur
-    const token = generateToken(req.user._id);
+    const token = signToken(req.user._id);
     
     // Rediriger vers le frontend avec le token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

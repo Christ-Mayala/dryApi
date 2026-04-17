@@ -37,7 +37,6 @@ const auditLogger = (actionName) => async (req, res, next) => {
     if (!req.user) return next();
 
     const userAgent = req.headers['user-agent'] || 'unknown';
-    const origin = req.headers.origin || req.headers.referer || 'unknown';
 
     // On prépare un listener sur "finish" pour connaître le status HTTP réel.
     const start = Date.now();

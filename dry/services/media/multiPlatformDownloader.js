@@ -8,7 +8,7 @@ const ytdl = require('ytdl-core');
 const config = require('../../../config/database');
 
 let ytdlp = null;
-try { ytdlp = require('yt-dlp-exec'); } catch (_) {}
+try { ytdlp = require('yt-dlp-exec'); } catch {}
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36';
 const sanitize = (v, fb = 'media') => (v || fb).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80) || fb;

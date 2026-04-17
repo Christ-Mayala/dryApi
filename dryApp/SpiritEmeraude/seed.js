@@ -7,13 +7,19 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   const Atelier = getModel(appName, 'Atelier', atelierSchema);
   const atelierDocs = [
   {
-    "label": "Exemple atelier 1"
+    "label": "Exemple atelier 1",
+    "name": "Atelier Poterie",
+    "description": "Découverte de la poterie traditionnelle"
   },
   {
-    "label": "Exemple atelier 2"
+    "label": "Exemple atelier 2",
+    "name": "Atelier Peinture",
+    "description": "Expression libre sur toile"
   },
   {
-    "label": "Exemple atelier 3"
+    "label": "Exemple atelier 3",
+    "name": "Atelier Cuisine",
+    "description": "Apprendre à cuisiner local"
   }
 ];
   const atelierCreated = await Atelier.insertMany(atelierDocs);

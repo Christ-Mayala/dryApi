@@ -1,71 +1,98 @@
-# 🚀 Démarrage Rapide (L'Expérience Google-Style)
+# Demarrage rapide
 
-Bienvenue sur le framework **DRY API**. Ce document est ton point d'entrée pour installer un environnement de production en quelques minutes.
+Ce guide te permet de lancer DRY API localement, creer une app, verifier les endpoints critiques et ouvrir Swagger en moins de 10 minutes.
 
----
+## Prerequis
 
-## 📋 Prérequis Système
+- Node.js 20+
+- MongoDB 6+ ou 7+
+- npm
 
-Assure-toi que ton environnement respecte ces standards de fiabilité :
-- **Node.js** : v20.x (LTS) recommandé.
-- **MongoDB** : v6.0+ (Local ou Atlas).
-- **RAM** : 512MB minimum (Le kernel est optimisé pour les processeurs à 1 cœur).
+## 1. Installer
 
----
+```bash
+npm install
+```
 
-## 🛠️ Installation Chirurgicale
+## 2. Configurer l'environnement
 
-1.  **Clonage du Repository**
-    ```bash
-    git clone <votre-repo-url>
-    cd dryApi
-    ```
+Partir du modele fourni:
 
-2.  **Installation des Dépendances**
-    ```bash
-    npm install
-    # Note: Si tu es sur Windows et que tu as des erreurs de build, installe 'windows-build-tools'.
-    ```
+```bash
+cp .env.example .env
+```
 
-3.  **Configuration Environnementale**
-    Ne commence pas sans un fichier `.env` solide. Copie l'exemple :
-    ```bash
-    cp .env.exemple .env
-    ```
-    **Clés critiques à configurer :**
-    - `MONGO_URI` : L'URL de ta base principale (utilisée pour l'admin global).
-    - `JWT_SECRET` : Une chaîne de 64 caractères aléatoires (Sécurité maximale).
-    - `RESEND_API_KEY` : Pour recevoir les alertes de crash par mail.
+Variables minimales a renseigner:
 
----
+- `MONGO_URI`
+- `JWT_SECRET`
+- `SESSION_SECRET`
 
-## ▶️ Lancement & Modes
+Regle simple:
 
-### ⚡ Mode Développement (Agile)
-Utilisé pour coder en temps réel. Le serveur redémarre à chaque modification.
+- ne jamais committer un vrai `.env`
+- utiliser des secrets differents entre local, preview et production
+
+## 3. Lancer le serveur
+
 ```bash
 npm run dev
 ```
 
-### 💎 Mode Production (Robuste)
-Utilise les optimisations du Kernel (HSTS, Cache durci, Compression).
+Le serveur demarre par defaut sur `http://localhost:5000`.
+
+## 4. Verifier le socle
+
+Endpoints a tester:
+
+- `GET /health/ready`
+- `GET /`
+- `GET /api-docs`
+
+Exemples:
+
 ```bash
-npm start
+curl http://localhost:5000/health/ready
+curl http://localhost:5000/
 ```
 
----
+## 5. Creer une nouvelle app
 
-## ✅ Vérification de Santé (Health Check)
+```bash
+npm run create-app
+```
 
-Une fois le serveur lancé sur le port **5000**, effectue ces trois tests :
+Le generateur te cree la base d'une app dans `dryApp/<NomApp>/`.
 
-1.  **Status Ping** : `GET http://localhost:5000/` 
-    - *Résultat attendu* : JSON avec `status: UP`.
-2.  **Documentation Native** : [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
-    - *Résultat attendu* : Interface Swagger chargée.
-3.  **Logs de Démarrage** : Vérifie dans ton terminal qu'aucune erreur `DATABASE_CONNECTION_ERROR` n'apparaît.
+## 6. Tester une route
 
----
+Une fois une app montee, les routes suivent ce format:
 
-## ⏭️ Prochaine Étape
-Maintenant que ton moteur tourne, passe au **[Guide du Développeur](./02_DEVELOPER_GUIDE.md)** pour créer ta première application multi-tenant.
+```text
+/api/v1/<app>/<feature>
+```
+
+Exemple:
+
+```bash
+curl http://localhost:5000/api/v1/scim/reservation
+```
+
+## 7. Ouvrir Swagger
+
+[http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+
+## 8. Lancer les checks utiles
+
+```bash
+npm run lint
+npm run test:unit
+npm run test:integration
+npm run test:smoke
+```
+
+## Suite logique
+
+- [Guide developpeur](./02_DEVELOPER_GUIDE.md)
+- [Architecture](./03_ARCHITECTURE.md)
+- [Conventions kernel vs app](./08_KERNEL_BOUNDARIES.md)

@@ -127,7 +127,7 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     const Model = req.getModel(modelName, schema);
     const qb = queryBuilder(Model, populateFields);
     await qb(req, res, async () => {
-      let results = req.queryResults;
+      const results = req.queryResults;
       if (transformOutput && results.data) {
         results.data = await Promise.all(results.data.map(doc => transformOutput({ req, doc })));
       }

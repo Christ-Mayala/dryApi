@@ -17,7 +17,7 @@ const purgeTenant = async ({ appName, cutoffDate }) => {
                 $or: [{ status: 'deleted' }, { deleted: true }, { isDeleted: true }],
             });
             deleted += result?.deletedCount || 0;
-        } catch (_) {}
+        } catch {}
     }
 
     return { appName, collections: collections.length, deleted };

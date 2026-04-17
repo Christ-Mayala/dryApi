@@ -19,7 +19,7 @@ const setCsrfToken = asyncHandler((req, res, next) => {
         // On l'expose aussi dans `res.locals` pour les réponses API
         res.locals.csrfToken = req.csrfToken();
         next();
-    } catch (error) {
+    } catch {
         // Si CSRF n'est pas initialisé, on continue sans token
         next();
     }

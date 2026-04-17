@@ -33,7 +33,7 @@ const resolveUserFromToken = async (req, res, token) => {
         }
 
         return true;
-    } catch (error) {
+    } catch {
         return sendResponse(res, null, 'Non autorise, token invalide', false);
     }
 };

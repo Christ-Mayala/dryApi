@@ -1,4 +1,4 @@
-﻿const path = require('path');
+const path = require('path');
 
 module.exports = async ({ appName, getModel, logSeed }) => {
   let count = 0;
@@ -14,14 +14,24 @@ module.exports = async ({ appName, getModel, logSeed }) => {
     { key: 'currency', value: 'XAF' },
     { key: 'language', value: 'fr' },
   ];
-  const settingsCreated = await SystemSettings.insertMany(settingsDocs);
-  count += settingsCreated.length;
+  
+  const settingsIds = [];
+  for (const doc of settingsDocs) {
+    const updated = await SystemSettings.findOneAndUpdate(
+      { key: doc.key },
+      doc,
+      { upsert: true, new: true }
+    );
+    settingsIds.push(updated._id);
+    count++;
+  }
+
   await logSeed({
     appName,
     feature: 'admin',
     modelName: 'SystemSettings',
     schemaPath: path.join(__dirname, 'features', 'admin', 'model', 'systemSettings.schema.js'),
-    ids: settingsCreated.map((d) => d._id),
+    ids: settingsIds,
   });
 
   // ===== Users (modele central) =====

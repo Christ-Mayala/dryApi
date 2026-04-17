@@ -31,7 +31,7 @@ class AirtelProvider extends BaseProvider {
     }
   }
 
-  async initPayment({ amount, currency = 'XAF', transactionId, customerPhone, description }) {
+  async initPayment({ amount, currency = 'XAF', transactionId, customerPhone, description: _description }) {
     try {
       if (!customerPhone) {
         throw new Error('Numéro de téléphone requis pour Airtel Money');

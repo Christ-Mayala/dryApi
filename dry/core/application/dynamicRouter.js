@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const logger = require('../../../utils/logging/logger');
 const config = require('../../../config/database');
 
 const loadRoutes = (app) => {
@@ -16,8 +15,6 @@ const loadRoutes = (app) => {
     const dryModulesPath = path.join(__dirname, '../../../modules');
     if (fs.existsSync(dryModulesPath)) {
         fs.readdirSync(dryModulesPath).forEach(moduleName => {
-            const routesPath = path.join(dryModulesPath, moduleName, `${moduleName.toLowerCase()}.routes.js`); // user.routes.js
-            
             // On cherche n'importe quel fichier finissant par .routes.js
             const files = fs.readdirSync(path.join(dryModulesPath, moduleName)).filter(f => f.endsWith('.routes.js'));
             

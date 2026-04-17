@@ -13,7 +13,7 @@ class BasePaymentProvider {
      * Initialise un paiement
      * @param {Object} params { amount, currency, transactionId, customerEmail, description }
      */
-    async initPayment(params) {
+    async initPayment(_params) {
         throw new Error('Method initPayment() must be implemented');
     }
 
@@ -21,7 +21,7 @@ class BasePaymentProvider {
      * Vérifie le statut d'un paiement
      * @param {String} transactionId 
      */
-    async verifyPayment(transactionId) {
+    async verifyPayment(_transactionId) {
         throw new Error('Method verifyPayment() must be implemented');
     }
 

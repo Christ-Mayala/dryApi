@@ -2,7 +2,7 @@ const slugify = require('slugify');
 const mongoose = require('mongoose');
 const LogSchema = require('../../modules/log/log.schema');
 
-module.exports = function (schema, options) {
+module.exports = function (schema, _options) {
     // ---------------------------------------------------------
     // 1. Definition des champs standards DRY
     // ---------------------------------------------------------

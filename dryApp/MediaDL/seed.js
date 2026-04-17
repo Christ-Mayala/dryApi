@@ -1,9 +1,12 @@
 const path = require('path');
+const mongoose = require('mongoose');
 
 module.exports = async ({ appName, getModel, logSeed }) => {
   let count = 0;
   
+  const dummyUser = new mongoose.Types.ObjectId();
   const features = ['downloads', 'batches', 'presets'];
+  
   for (const featureName of features) {
     try {
       const schema = require(`./features/${featureName}/model/${featureName}.schema`);
@@ -13,9 +16,29 @@ module.exports = async ({ appName, getModel, logSeed }) => {
       const docs = [];
       for (let i = 1; i <= 3; i++) {
         const doc = { label: `Exemple ${featureName} ${i}` };
-        // On ajoute quelques champs par defaut selon la feature
-        if (featureName === 'downloads') doc.url = 'http://example.com/video';
-        if (featureName === 'batches') doc.total = 10;
+        
+        if (featureName === 'downloads') {
+          doc.url = `http://example.com/video_${i}`;
+          doc.platform = 'youtube';
+          doc.requestedBy = dummyUser;
+        }
+        
+        if (featureName === 'batches') {
+          doc.status = 'pending';
+          doc.sourceType = 'url';
+          doc.startedAt = new Date();
+          doc.finishedAt = new Date();
+          doc.completed = 0;
+          doc.failed = 0;
+        }
+        
+        if (featureName === 'presets') {
+          doc.qualityMode = 'high';
+          doc.maxHeight = 1080;
+          doc.downloadDir = '/downloads';
+          doc.concurrent = 2;
+        }
+        
         docs.push(doc);
       }
       

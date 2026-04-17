@@ -1,0 +1,15 @@
+dryApp
+dryApp/*
+dryApp/**
+tests
+tests/*
+tests/**
+scripts/backups
+scripts/backups/*
+scripts/backups/**
+**/*.md
+**/*.test.js
+.git
+node_modules
+logs
+*.log

@@ -1,69 +1,120 @@
-# 🏗️ Architecture & Concepts (Niveau Expert)
+# Architecture
 
-Ce document décortique le fonctionnement interne du framework DRY. Comprendre ces concepts est essentiel pour ne pas "subir" l'architecture mais la maîtriser pour bâtir des systèmes complexes.
+DRY repose sur une separation nette entre le noyau technique et les applications metier.
 
----
+## 1. Separation des responsabilites
 
-## 1. La Séparations des Responsabilités : Kernel vs Business
+### Kernel: `dry/`
 
-L'architecture est scindée en deux couches hermétiques :
+Le kernel contient le framework commun:
 
-### 🛡️ Le Kernel (`dry/`)
-C'est le "Cœur" du système. On n'y touche **JAMAIS** pour du code métier. Il contient :
-- **Services Globaux** : Alertes (Resend), Uploads (Cloudinary), Notifications (Socket.io).
-- **Middlewares Core** : Identification du tenant, Protection Auth, Audit, Cache.
-- **Factories** : `crudFactory` et `routerFactory`.
-- **Infrastructure** : Connexion MongoDB, gestion des erreurs chirurgicales.
+- bootstrap HTTP et process
+- connexion base de donnees
+- middlewares de securite, auth, validation, audit
+- factories CRUD et routeurs
+- cache, documentation, monitoring, notifications
 
-### 💼 Le Business Layer (`dryApp/`)
-C'est ton espace de travail. Ici, tu définis la valeur de ton application :
-- **Apps (Tenants)** : Chaque dossier est un client isolé.
-- **Features** : Chaque dossier est un module métier (ex: `product`, `order`).
-- **Modèles** : Définis par des Schémas Mongoose simples.
+Regle:
 
----
+- on n'ajoute pas de logique metier specifique client dans `dry/`
 
-## 2. Le Moteur Multi-Tenant Dynamique 🏢
+### Business layer: `dryApp/`
 
-L'un des plus grands atouts de DRY est sa capacité à gérer des bases de données multiples avec un seul code source.
+Chaque dossier dans `dryApp/` represente une application cliente.
 
-### Comment se fait la commutation ?
-Lorsqu'une requête arrive, le middleware `tenantContext` (dans `dry/middlewares/context`) analyse l'URL. 
-Si l'URL contient `spiritemeraude`, le système :
-1. Récupère la configuration de base de données spécifique à ce client.
-2. Utilise `modelFactory` pour "linker" tes schémas à cette base précise.
-3. Injecte cette connexion dans `req.getModel()`.
+On y place:
 
-> [!IMPORTANT]
-> Ne fais jamais `const MyModel = mongoose.model(...)`. 
-> Utilise toujours `const Model = req.getModel(...)` pour garantir que tu parles à la bonne base de données du bon client.
+- les features metier
+- les schemas et controllers propres a l'app
+- les routes specifiques au tenant
 
----
+Regle:
 
-## 3. Le Plugin DRY (L'ADN de tes données) 🔌
+- une app peut configurer ou etendre le comportement framework
+- elle ne doit pas modifier le coeur du kernel pour un besoin metier local
 
-Chaque modèle dans DRY reçoit automatiquement un "ADN" technique via un plugin Mongoose global. 
-Cela signifie que même si tu ne les définis pas, tes objets auront toujours :
+## 2. Flux d'une requete
 
-- **`status`** : `active`, `inactive`, `deleted`, `banned`.
-- **`slug`** : Une version textuelle "URL-friendly" générée depuis ton champ `label`.
-- **Soft Delete** : La donnée n'est jamais supprimée de `MongoDB`. Elle passe juste en `status: deleted` et disparait des API via des filtres globaux.
-- **Audit Trace** : `createdBy` et `updatedBy` stockent automatiquement l'ID de l'utilisateur ayant fait l'action.
+```mermaid
+flowchart LR
+  A["HTTP request"] --> B["Express app bootstrap"]
+  B --> C["Security + CORS + session + request id"]
+  C --> D["Bootloader DRY"]
+  D --> E["Tenant app router in dryApp/<app>"]
+  E --> F["req.getModel(app, schema)"]
+  F --> G["Middleware chain auth/validation/cache/audit"]
+  G --> H["Controller or CRUD factory"]
+  H --> I["Response helper / error handler"]
+```
 
----
+## 3. Multi-tenant runtime
 
-## 4. La Puissance des Factories 🏭
+Le serveur demarre une seule fois, puis monte plusieurs apps sous:
 
-Pourquoi écrire 100 lignes quand 5 suffisent ?
+```text
+/api/v1/<app>
+```
 
-- **`routerFactory`** : Un robot qui assemble les middlewares (auth, cache, audit, validation) et les branche sur les handlers CRUD.
-- **`crudFactory`** : Une usine qui génère les fonctions de contrôleur en gérant de base :
-  - La pagination intelligente via `queryBuilder`.
-  - Le tri dynamique.
-  - La gestion des erreurs 404 automatique.
+Exemples:
 
----
+- `/api/v1/scim/...`
+- `/api/v1/skillforge/...`
+- `/api/v1/mediadl/...`
 
-## 🚀 Résumé pour le Développeur
-Tu fournis le **Schéma** (quoi stocker) et le **Routeur** (comment sécuriser). 
-DRY s'occupe de la **Base de données**, de la **Sécurité**, du **Cache** et du **Monitoring**.
+La base technique est partagee, mais chaque app obtient sa propre connexion logique via `getTenantDB()` et ses modeles via `req.getModel(...)`.
+
+## 4. Bootstrap serveur
+
+Le point d'entree `server.js` orchestre maintenant des modules specialises:
+
+- `dry/bootstrap/http.js`
+- `dry/bootstrap/routes.js`
+- `dry/bootstrap/socket.js`
+- `dry/bootstrap/process-handlers.js`
+- `dry/bootstrap/health-monitor.js`
+
+But:
+
+- un bootstrap lisible
+- moins de couplage
+- des tests unitaires plus simples
+
+## 5. Configuration centralisee
+
+La configuration applicative est resolue et validee dans `config/database.js`.
+
+Le serveur refuse maintenant de demarrer si des variables critiques sont absentes ou trop faibles, notamment:
+
+- `MONGO_URI`
+- `JWT_SECRET`
+- `SESSION_SECRET`
+
+## 6. Core obligatoire vs modules optionnels
+
+Core obligatoire:
+
+- Express
+- MongoDB
+- auth JWT
+- factories CRUD
+- documentation Swagger
+- gestion d'erreurs
+
+Modules optionnels:
+
+- Redis
+- Cloudinary
+- Stripe
+- Socket.IO
+- OAuth providers
+- outils media
+
+Cette distinction aide a garder le framework comprehensible et a eviter un noyau trop large.
+
+## 7. Regles de maintenabilite
+
+- toute logique transverse va dans `dry/`
+- toute logique metier specifique va dans `dryApp/`
+- toute nouvelle variable d'environnement doit etre declaree et validee de facon centralisee
+- toute nouvelle feature doit avoir au minimum un test d'integration
+- toute evolution du noyau doit viser une couverture unitaire

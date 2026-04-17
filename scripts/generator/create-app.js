@@ -224,7 +224,12 @@ const parseField = (field) => {
   const raw = field.trim();
   if (!raw) return null;
   const parts = raw.split(':').map((p) => p.trim());
-  return { name: parts[0], type: parts[1] || 'String' };
+  return { 
+    name: parts[0], 
+    type: parts[1] || 'String',
+    required: parts.includes('required'),
+    unique: parts.includes('unique')
+  };
 };
 
 const toSwaggerType = (type) => {
@@ -331,11 +336,11 @@ const createFile = (filePath, content) => {
 };
 
 const templates = {
-  model: (modelName, fields) => {
+  model: (modelName, fields, relations = []) => {
     const parsedFields = fields
       .map(parseField)
       .filter(Boolean)
-      .map(({ name, type }) => {
+      .map(({ name, type, required, unique }) => {
         const base = {
           String: 'String',
           Number: 'Number',
@@ -343,6 +348,8 @@ const templates = {
           Date: 'Date',
           Array: 'Array',
           ObjectId: 'mongoose.Schema.Types.ObjectId',
+          Mixed: 'mongoose.Schema.Types.Mixed',
+          Map: 'Map',
         };
 
         const mongooseType = base[type] || 'String';
@@ -352,8 +359,17 @@ const templates = {
           parts.push('default: false');
         } else if (type === 'Array') {
           parts.push('default: []');
-        } else {
+        }
+
+        if (required) {
           parts.push('required: true');
+        } else {
+          // Si pas explicitement requis, on le met à false par défaut pour plus de flexibilité
+          parts.push('required: false');
+        }
+
+        if (unique) {
+          parts.push('unique: true');
         }
 
         if (mongooseType === 'String') {
@@ -361,7 +377,7 @@ const templates = {
         }
         if (name.toLowerCase().includes('email')) {
           parts.push('lowercase: true');
-          parts.push('unique: true');
+          if (!unique) parts.push('unique: true');
         }
         if (name.toLowerCase().includes('password')) {
           parts.push('minlength: 6');
@@ -371,14 +387,31 @@ const templates = {
         return { name, line: `  ${name}: { ${parts.join(', ')} }` };
       });
 
+    // Ajouter les relations
+    const relationLines = [];
+    relations.forEach(rel => {
+      if (rel.from === modelName || rel.to === modelName) {
+        // Si c'est un manyToOne ou oneToOne, on ajoute un champ ID sur la table source
+        if (rel.from === modelName && (rel.type === 'manyToOne' || rel.type === 'oneToOne')) {
+          const fieldName = rel.to.toLowerCase() + 'Id';
+          relationLines.push(`  ${fieldName}: { type: mongoose.Schema.Types.ObjectId, ref: '${rel.to}', required: true }`);
+        }
+        // Si c'est un manyToMany, on ajoute un tableau d'IDs (ici on le met arbitrairement sur 'from')
+        if (rel.from === modelName && rel.type === 'manyToMany') {
+          const fieldName = rel.to.toLowerCase() + 'Ids';
+          relationLines.push(`  ${fieldName}: [{ type: mongoose.Schema.Types.ObjectId, ref: '${rel.to}' }]`);
+        }
+      }
+    });
+
     const hasLabel = parsedFields.some((f) => f.name.toLowerCase() === 'label');
     const schemaLines = parsedFields.map((f) => f.line);
     if (!hasLabel) {
-      // Label explicite (utilise pour le slug DRY)
       schemaLines.push(`  label: { type: String, trim: true }`);
     }
-
-    const schemaFields = schemaLines.join(',\n');
+    
+    const allLines = [...schemaLines, ...relationLines];
+    const schemaFields = allLines.join(',\n');
 
     return `const mongoose = require('mongoose');\n\nconst ${modelName}Schema = new mongoose.Schema({\n${schemaFields}\n}, {\n  timestamps: true\n});\n\n// Indexes pour performance et requetes frequentes\n${modelName}Schema.index({ createdAt: -1 });\n${modelName}Schema.index({ status: 1 });\n\n// Note: DRY ajoute automatiquement slug/status/deletedAt/createdBy/updatedBy via le plugin global\n\nmodule.exports = ${modelName}Schema;\n`;
   },
@@ -573,7 +606,7 @@ const ${appKey}Schemas = {`;
     features.forEach(({ name, model, fields }) => {
       const parsed = (fields || []).map(parseField).filter(Boolean);
       const hasLabel = parsed.some((f) => f.name.toLowerCase() === 'label');
-      const lines = parsed.map(({ name: fname, type }) => {
+      const lines = parsed.map(({ name: fname, type, required }) => {
         const lower = fname.toLowerCase();
         let joi = 'Joi.string()';
         if (type === 'Number') joi = 'Joi.number()';
@@ -582,7 +615,9 @@ const ${appKey}Schemas = {`;
         if (type === 'Array') joi = 'Joi.array()';
         if (lower.includes('email')) joi = 'commonSchemas.email';
         if (lower.includes('password')) joi = 'commonSchemas.password';
-        return `      ${fname}: ${joi}.required(),`;
+        
+        const isRequired = required || (type !== 'Boolean' && type !== 'Array' && lower !== 'label');
+        return `      ${fname}: ${joi}${isRequired ? '.required()' : '.optional()'},`;
       });
 
       if (!hasLabel) {
@@ -966,8 +1001,9 @@ curl -X DELETE "$BASE_URL/ID_ICI" \\
 
 const createFeature = async (appPath, feature, appName, options = {}) => {
   const featurePath = path.join(appPath, 'features', feature.name);
+  const relations = options.addons?.relations || [];
 
-  createFile(path.join(featurePath, 'model', `${feature.name}.schema.js`), templates.model(feature.model, feature.fields));
+  createFile(path.join(featurePath, 'model', `${feature.name}.schema.js`), templates.model(feature.model, feature.fields, relations));
 
   const actions = ['getAll', 'create', 'getById', 'update', 'delete'];
   actions.forEach((action) => {
@@ -1134,7 +1170,7 @@ const createApp = async (config) => {
       const featureStep = Math.floor((i / features.length) * 4) + 2;
       
       renderProgress(featureStep, totalSteps, '🗄️  Feature: ' + feature.name + ' (' + (i + 1) + '/' + features.length + ')');
-      await createFeature(appPath, feature, safeName, { ultraPro: !!ultraPro });
+      await createFeature(appPath, feature, safeName, { ultraPro: !!ultraPro, addons: addons });
 
       // Tests de base auto-générés
       const testPath = path.join(projectRoot, 'tests', safeName, feature.name + '.test.js');
@@ -1615,6 +1651,10 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { createApp };
-
-module.exports = { createApp }; 
+module.exports = {
+  createApp,
+  PROFESSIONAL_TEMPLATES,
+  safeAppName,
+  toPascal,
+  toCamel,
+}; 

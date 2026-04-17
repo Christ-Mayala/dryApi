@@ -1,8 +1,5 @@
 const { Parser } = require('json2csv');
 const ExcelJS = require('exceljs');
-const fs = require('fs');
-const path = require('path');
-
 class ExportService {
   /**
    * Convertit des données JSON en CSV

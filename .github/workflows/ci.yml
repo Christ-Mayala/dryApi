@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    env:
+      NODE_ENV: test
+      PORT_TEST: 5001
+      SERVER_URL_TEST: http://127.0.0.1:5001
+      MONGO_URI_TEST: mongodb://127.0.0.1:27017/dryapi_test
+      JWT_SECRET_TEST: test_secret_key_that_is_long_enough_for_ci
+      SESSION_SECRET_TEST: test_session_secret_that_is_long_enough_for_ci
+      REDIS_ENABLED_TEST: false
+      EMAIL_PROVIDER_TEST: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:unit
+      - run: node server.js &
+      - run: node scripts/tests/wait-for-url.js http://127.0.0.1:5001/health/ready 30000
+      - run: npm run test:integration
+      - run: npm run test:smoke

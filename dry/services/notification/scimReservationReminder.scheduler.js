@@ -80,7 +80,7 @@ const processReservationReminder = async ({ reservation, Message, adminUser }) =
                 contenu: lines.join('\n'),
             });
         }
-    } catch (_) {}
+    } catch {}
 
     let report = null;
     try {
@@ -91,7 +91,7 @@ const processReservationReminder = async ({ reservation, Message, adminUser }) =
             visitDate,
             stage: 'reminder',
         });
-    } catch (_) {}
+    } catch {}
 
     reservation.support = reservation.support || {};
     reservation.support.reminderSentAt = now;

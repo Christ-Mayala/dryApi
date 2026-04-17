@@ -5,4 +5,9 @@ server/public
 vite.config.ts.*
 *.tar.gz
 .env
+.env.local
+.env.*.local
 frontend-mediadl/
+coverage/
+logs/*.log
+logs/*.json
