@@ -17,7 +17,7 @@
     "api"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky || exit 0",
     "start": "node server.js",
     "dev": "nodemon --ignore dryApp --ignore tests --ignore logs server.js",
     "status": "node scripts/system/status.js",
