@@ -1,14 +1,9 @@
 const asyncHandler = require('express-async-handler');
-const { signToken } = require('../../utils/auth/jwt.util');
+const { signAccessToken, signRefreshToken, verifyToken } = require('../../utils/auth/jwt.util');
 const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
 const config = require('../../../config/database');
-
-// Génération Token
-const generateToken = (id) => {
-    return signToken(id);
-};
 
 // --- LOGIN ---
 exports.login = asyncHandler(async (req, res) => {
@@ -43,7 +38,8 @@ exports.login = asyncHandler(async (req, res) => {
         { $set: { loginAttempts: 0, lastLogin: Date.now(), lastIp: req.ip }, $unset: { lockUntil: 1 } }
     );
 
-    const token = generateToken(user._id);
+    const token = signAccessToken(user._id);
+    const refreshToken = signRefreshToken(user._id);
     
     // Nettoyage user pour réponse
     const userData = user.toObject();
@@ -51,7 +47,7 @@ exports.login = asyncHandler(async (req, res) => {
     delete userData.lockUntil;
     delete userData.loginAttempts;
 
-    sendResponse(res, { token, user: userData }, 'Connexion réussie');  
+    sendResponse(res, { token, refreshToken, user: userData }, 'Connexion réussie');  
 });
 
 // --- REGISTER ---
@@ -76,14 +72,14 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     // ⭐ OFFRE DE LANCEMENT: 7 jours Premium gratuits pour tous les nouveaux comptes
-    payload.isPremium = payload.isPremium === true;
-    if (!payload.isPremium) {
-        payload.premiumPlan = null;
-        payload.premiumUntil = null;
-    }
+    // On force le mode Premium pour 7 jours à l'inscription
+    payload.isPremium = true;
+    payload.premiumPlan = 'starter';
+    payload.premiumUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const user = await User.create(payload);
-    const token = generateToken(user._id);
+    const token = signAccessToken(user._id);
+    const refreshToken = signRefreshToken(user._id);
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
     if (shouldSend && user?.email) {
@@ -97,7 +93,28 @@ exports.register = asyncHandler(async (req, res) => {
         ).catch(() => {});
     }
     const userData = user.toObject();
-    sendResponse(res, { ...userData, token, user: userData }, 'Inscription réussie');
+    sendResponse(res, { ...userData, token, refreshToken, user: userData }, 'Inscription réussie');
+});
+
+// --- REFRESH TOKEN ---
+exports.refresh = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) throw new Error('Refresh token manquant');
+
+    try {
+        const decoded = verifyToken(refreshToken);
+        const User = req.getModel('User');
+        const user = await User.findById(decoded.id);
+
+        if (!user) throw new Error('Utilisateur introuvable');
+
+        const newToken = signAccessToken(user._id);
+        const newRefreshToken = signRefreshToken(user._id);
+
+        sendResponse(res, { token: newToken, refreshToken: newRefreshToken }, 'Token rafraîchi');
+    } catch (error) {
+        throw new Error('Refresh token invalide ou expiré');
+    }
 });
 
 // --- GET ME (Profil) --- 

@@ -109,6 +109,7 @@ const express = require('express');
 const router = express.Router();
 
 const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { cache, invalidateCache } = require('../../../../../dry/middlewares/cache/cache.middleware');
 
 const listCategories = require('../controller/categories.list.controller');
 const createCategory = require('../controller/categories.create.controller');
@@ -119,12 +120,12 @@ const createTrade = require('../controller/trades.create.controller');
 const updateTrade = require('../controller/trades.update.controller');
 const deleteTrade = require('../controller/trades.delete.controller');
 
-router.get('/', listCategories);
-router.post('/', protect, authorize('admin'), createCategory); 
-router.put('/:id', protect, authorize('admin'), updateCategory); 
-router.delete('/:id', protect, authorize('admin'), deleteCategory); 
-router.post('/trades', protect, authorize('admin'), createTrade); 
-router.put('/trades/:id', protect, authorize('admin'), updateTrade); 
-router.delete('/trades/:id', protect, authorize('admin'), deleteTrade);
+router.get('/', cache(3600), listCategories);
+router.post('/', protect, authorize('admin'), invalidateCache(), createCategory); 
+router.put('/:id', protect, authorize('admin'), invalidateCache(), updateCategory); 
+router.delete('/:id', protect, authorize('admin'), invalidateCache(), deleteCategory); 
+router.post('/trades', protect, authorize('admin'), invalidateCache(), createTrade); 
+router.put('/trades/:id', protect, authorize('admin'), invalidateCache(), updateTrade); 
+router.delete('/trades/:id', protect, authorize('admin'), invalidateCache(), deleteTrade);
  
 module.exports = router;

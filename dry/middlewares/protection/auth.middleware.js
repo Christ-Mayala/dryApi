@@ -27,20 +27,28 @@ const resolveUserFromToken = async (req, res, token) => {
 
         req.user = await User.findById(decoded.id).select('-password');
 
-        if (!req.user) return sendResponse(res, null, 'Utilisateur introuvable', false);
+        if (!req.user) return sendResponse(res, null, 'Utilisateur introuvable', false, undefined, 401);
+        
+        // 🔥 NOUVEAU : Auto-expiration du mode Premium
+        if (req.user.isPremium && req.user.premiumUntil && req.user.premiumUntil < new Date()) {
+            req.user.isPremium = false;
+            req.user.premiumPlan = null;
+            await req.user.save();
+        }
+
         if (req.user.status === 'deleted' || req.user.status === 'banned') {
-            return sendResponse(res, null, 'Compte desactive', false);
+            return sendResponse(res, null, 'Compte desactive', false, undefined, 403);
         }
 
         return true;
     } catch {
-        return sendResponse(res, null, 'Non autorise, token invalide', false);
+        return sendResponse(res, null, 'Non autorise, token invalide', false, undefined, 401);
     }
 };
 
 const protect = asyncHandler(async (req, res, next) => {
     const token = getTokenFromRequest(req, false);
-    if (!token) return sendResponse(res, null, 'Non autorise, aucun token fourni', false);
+    if (!token) return sendResponse(res, null, 'Non autorise, aucun token fourni', false, undefined, 401);
 
     const ok = await resolveUserFromToken(req, res, token);
     if (ok === true) next();

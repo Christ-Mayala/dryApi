@@ -1,8 +1,12 @@
 const jwt = require('jsonwebtoken');
 const config = require('../../../config/database');
 
-const signToken = (id) => {
-  return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE });
+const signAccessToken = (id) => {
+  return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE || '1h' });
+};
+
+const signRefreshToken = (id) => {
+  return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: '30d' });
 };
 
 const verifyToken = (token) => {
@@ -15,4 +19,4 @@ const verifyToken = (token) => {
   }
 };
 
-module.exports = { signToken, verifyToken };
+module.exports = { signAccessToken, signRefreshToken, verifyToken };

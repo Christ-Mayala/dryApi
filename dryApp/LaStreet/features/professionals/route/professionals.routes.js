@@ -129,32 +129,14 @@ const proUpload = upload.fields([
 ]);
 
 // Routes publiques avec cache
-
-
-
-
-
-router.get('/', cache('professionals:list'), listProfessionals);
-
-
-
-
-
-
-
+router.get('/', cache(600), listProfessionals);
 router.get('/recommendations', cache(600), recommendations);
-
-
-
-
-
-
 
 // Routes utilisateur avec validation et audit
 router.get('/me', protect, withAudit('GET_MY_PROFESSIONAL'), getMyProfessional);
 router.patch('/me', protect, withAudit('UPDATE_MY_PROFESSIONAL'), proUpload, invalidateCache(), updateMyProfessional);
 
-router.get('/:id', validateId, cache('professionals:get'), getProfessional);
+router.get('/:id', validateId, cache(600), getProfessional);
 
 
 

@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const session = require('express-session');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -73,6 +74,8 @@ const createApp = () => {
   const allowedOrigins = getAllowedOrigins();
 
   app.set('trust proxy', 1);
+
+  app.use(compression());
 
   app.use(
     session({
