@@ -104,18 +104,38 @@ class EmailService {
 
   resolveAppUrl(tenantId) {
     const raw = config.FRONTEND_URL || 'http://localhost:4200';
-    if (!tenantId) return raw.split(',')[0].trim();
-
     const origins = raw.split(',').map(o => o.trim());
-    if (origins.length <= 1) return raw;
+    
+    if (!tenantId || origins.length <= 1) return origins[0];
 
     const tid = String(tenantId).toLowerCase().replace(/[^a-z0-9]/g, '');
     
-    // Essayer de trouver une URL qui contient le nom du tenant
-    const match = origins.find(o => o.toLowerCase().includes(tid));
-    if (match) return match;
+    let bestMatch = null;
+    let highestScore = -1;
 
-    // Fallback : première URL de la liste
+    for (const url of origins) {
+      const normalizedUrl = url.toLowerCase().replace(/[^a-z0-9]/g, '');
+      let score = 0;
+
+      // Priorité 1 : Le nom complet est présent (ex: "lastreet" dans "la-street")
+      if (normalizedUrl.includes(tid)) {
+        score += 100;
+      } 
+      // Priorité 2 : Correspondance partielle sur le début (ex: "spirit" pour "spiritemeraude")
+      else if (normalizedUrl.includes(tid.substring(0, 6))) {
+        score += 50;
+      }
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = url;
+      }
+    }
+
+    if (bestMatch && highestScore > 0) {
+      return bestMatch;
+    }
+
     return origins[0];
   }
 
