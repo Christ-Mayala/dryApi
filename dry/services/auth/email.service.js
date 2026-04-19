@@ -56,6 +56,10 @@ class EmailService {
               pass: testAccount.pass,
             },
           });
+        }).catch((err) => {
+          logger(`Echec creation compte test Ethereal: ${err.message}`, 'error');
+          this.provider = 'none';
+          return null;
         });
         this.provider = 'ethereal';
         logger('Email service configure avec Ethereal (developpement)', 'info');
@@ -300,6 +304,30 @@ class EmailService {
       APP_URL: appUrl,
       YEAR: new Date().getFullYear(),
     });
+  }
+
+  generateLeadNotificationTemplate(lead, professionalName, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'La STREET';
+    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    
+    return `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #eab308;">Nouvelle opportunité sur ${appName} !</h2>
+        <p>Bonjour <strong>${professionalName}</strong>,</p>
+        <p>Un nouveau lead correspondant à votre expertise vient d'être publié :</p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Service demandé :</strong> ${lead.serviceType}</p>
+          <p><strong>Localisation :</strong> ${lead.location || 'Non précisée'}</p>
+          <p><strong>Description :</strong> ${(lead.description || '').substring(0, 100)}...</p>
+        </div>
+        <p>Connectez-vous dès maintenant pour consulter les détails et débloquer cette mission.</p>
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${appUrl}/leads" style="background: #eab308; color: black; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; text-transform: uppercase; font-size: 14px;">Voir l'opportunité</a>
+        </div>
+        <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #888; text-align: center;">&copy; ${new Date().getFullYear()} ${appName}. Tous droits réservés.</p>
+      </div>
+    `;
   }
 
   generateAgenceCreatedTemplate(userName, agenceName, link, tenantId) {

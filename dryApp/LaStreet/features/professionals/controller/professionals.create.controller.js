@@ -57,6 +57,7 @@ module.exports = asyncHandler(async (req, res) => {
     quartier: quartier ? String(quartier).trim() : undefined,
     categoryId,
     tradeId,
+    tradeIds: Array.isArray(req.body.tradeIds) ? req.body.tradeIds : [tradeId].filter(Boolean),
     experienceRange: experienceRange || '0-1',
     description: description ? String(description).trim() : '',
     daysAvailable: Array.isArray(daysAvailable)

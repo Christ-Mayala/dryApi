@@ -14,7 +14,8 @@ const ProfessionalSchema = new mongoose.Schema(
     quartier: { type: String, trim: true, index: true },
 
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'TradeCategory', required: true, index: true },
-    tradeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trade', required: true, index: true },
+    tradeIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trade', index: true }],
+    tradeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trade', index: true }, // Gardé pour compatibilité
 
     experienceRange: { type: String, enum: ['0-1', '2-5', '5+'], default: '0-1' },
     description: { type: String, trim: true, maxlength: 300 },

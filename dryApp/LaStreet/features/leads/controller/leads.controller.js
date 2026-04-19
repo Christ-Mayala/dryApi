@@ -3,12 +3,17 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 const { getPagination } = require('../../../../../dry/utils/data/pagination');
 const LeadSchema = require('../model/lead.schema');
 const TradeSchema = require('../../categories/model/trade.schema');
+const ProfessionalSchema = require('../../professionals/model/professional.schema');
+const UserSchema = require('../../../../../dry/modules/user/user.schema');
+const emailService = require('../../../../../dry/services/auth/email.service');
 const LeadResponseSchema = require('../model/lead-response.schema.js');
 
 exports.createLead = asyncHandler(async (req, res) => {
   const { serviceType, description, location } = req.body;
   const Lead = req.getModel('Lead', LeadSchema);
   const Trade = req.getModel('Trade', TradeSchema);
+  const Professional = req.getModel('Professional', ProfessionalSchema);
+  const User = req.getModel('User', UserSchema);
 
   const tradeExists = await Trade.findOne({
     name: { $regex: new RegExp(`^${serviceType}$`, 'i') },
@@ -32,6 +37,36 @@ exports.createLead = asyncHandler(async (req, res) => {
     createdByRole,
     isPremiumCreator: req.user.isPremium === true,
   });
+
+  // --- NOTIFICATION DES PROFESSIONNELS PAR EMAIL ---
+  try {
+    // 1. Trouver les pros qui ont ce métier (tradeId ou tradeIds)
+    const pros = await Professional.find({
+      $or: [
+        { tradeId: tradeExists._id },
+        { tradeIds: tradeExists._id }
+      ],
+      approvalStatus: 'approved'
+    }).select('createdBy');
+
+    if (pros.length > 0) {
+      const userIds = pros.map(p => p.createdBy).filter(Boolean);
+      const users = await User.find({ _id: { $in: userIds } }).select('email name');
+
+      for (const user of users) {
+        if (user.email) {
+          const html = emailService.generateLeadNotificationTemplate(lead, user.name, req.appName);
+          emailService.sendGenericEmail({
+            email: user.email,
+            subject: `Nouvelle mission : ${lead.serviceType} à ${lead.location || 'votre ville'}`,
+            html
+          }).catch(e => console.error('Erreur envoi notification lead:', e.message));
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Erreur lors de la notification des pros:', err.message);
+  }
 
   return sendResponse(res, lead, 'Demande de service creee avec succes');
 });
