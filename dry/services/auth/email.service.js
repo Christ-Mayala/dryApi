@@ -102,6 +102,23 @@ class EmailService {
     return out;
   }
 
+  resolveAppUrl(tenantId) {
+    const raw = config.FRONTEND_URL || 'http://localhost:4200';
+    if (!tenantId) return raw.split(',')[0].trim();
+
+    const origins = raw.split(',').map(o => o.trim());
+    if (origins.length <= 1) return raw;
+
+    const tid = String(tenantId).toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    // Essayer de trouver une URL qui contient le nom du tenant
+    const match = origins.find(o => o.toLowerCase().includes(tid));
+    if (match) return match;
+
+    // Fallback : première URL de la liste
+    return origins[0];
+  }
+
   async sendViaResend(options) {
     const apiKey = config.RESEND_API_KEY;
     if (!apiKey) throw new Error('RESEND_API_KEY manquant');
@@ -256,7 +273,7 @@ class EmailService {
 
   generatePasswordResetTemplate(resetCode, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     const raw = this.loadTemplate('password-reset.html');
 
     if (!raw) {
@@ -274,7 +291,7 @@ class EmailService {
 
   generatePasswordResetConfirmationTemplate(tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     const raw = this.loadTemplate('password-reset-confirmation.html');
 
     if (!raw) {
@@ -291,7 +308,7 @@ class EmailService {
 
   generateWelcomeTemplate(name, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     const raw = this.loadTemplate('welcome.html');
 
     if (!raw) {
@@ -308,7 +325,7 @@ class EmailService {
 
   generateLeadNotificationTemplate(lead, professionalName, tenantId) {
     const appName = tenantId || config.APP_NAME || 'La STREET';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     
     return `
       <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
@@ -332,7 +349,7 @@ class EmailService {
 
   generateAgenceCreatedTemplate(userName, agenceName, link, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     const raw = this.loadTemplate('agence-created.html');
 
     if (!raw) {
@@ -351,7 +368,7 @@ class EmailService {
 
   generateNotificationTemplate(message, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = config.FRONTEND_URL || 'http://localhost:4200';
+    const appUrl = this.resolveAppUrl(tenantId);
     const raw = this.loadTemplate('notification.html');
 
     if (!raw) {
