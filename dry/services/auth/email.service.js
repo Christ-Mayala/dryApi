@@ -294,107 +294,51 @@ class EmailService {
   generatePasswordResetTemplate(resetCode, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
-    
-    return `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #3182ce; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 0;">${appName}</h1>
-          <div style="height: 4px; width: 50px; background: #3182ce; margin: 15px auto; border-radius: 2px;"></div>
-        </div>
-        
-        <h2 style="color: #2d3748; font-size: 20px; text-align: center; margin-bottom: 25px;">Réinitialisation de mot de passe</h2>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #4a5568; text-align: center;">
-          Vous avez demandé la réinitialisation de votre mot de passe. Utilisez le code sécurisé ci-dessous pour finaliser l'opération :
-        </p>
-        
-        <div style="background: #edf2f7; padding: 25px; border-radius: 12px; margin: 30px 0; text-align: center;">
-          <span style="font-family: monospace; font-size: 36px; font-weight: 900; color: #2c5282; letter-spacing: 8px;">${resetCode}</span>
-        </div>
-        
-        <p style="font-size: 14px; color: #718096; text-align: center; font-style: italic;">
-          Ce code est valable pendant 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail en toute sécurité.
-        </p>
-        
-        <div style="text-align: center; margin-top: 40px;">
-          <a href="${appUrl}/reset-password" style="background: #3182ce; color: #ffffff; padding: 14px 30px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; display: inline-block; transition: background 0.3s ease;">Changer mon mot de passe</a>
-        </div>
-        
-        <hr style="margin-top: 50px; border: 0; border-top: 1px solid #edf2f7;">
-        <p style="font-size: 11px; color: #a0aec0; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-          &copy; ${new Date().getFullYear()} ${appName} · Sécurité & Confidentialité
-        </p>
-      </div>
-    `;
+    const raw = this.loadTemplate('password-reset.html');
+
+    if (!raw) {
+      return `Code: ${resetCode}`;
+    }
+
+    return this.renderTemplate(raw, {
+      RESET_CODE: resetCode,
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    });
   }
 
   generatePasswordResetConfirmationTemplate(tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
+    const raw = this.loadTemplate('password-reset-confirmation.html');
 
-    return `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #38a169; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 0;">${appName}</h1>
-          <div style="height: 4px; width: 50px; background: #38a169; margin: 15px auto; border-radius: 2px;"></div>
-        </div>
-        
-        <div style="text-align: center; margin-bottom: 25px;">
-          <div style="background: #f0fff4; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-            <span style="color: #38a169; font-size: 32px;">✓</span>
-          </div>
-          <h2 style="color: #2d3748; font-size: 20px;">Mot de passe mis à jour !</h2>
-        </div>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #4a5568; text-align: center;">
-          Félicitations, votre mot de passe a été modifié avec succès. Votre compte est désormais sécurisé avec vos nouvelles informations.
-        </p>
-        
-        <div style="text-align: center; margin-top: 40px;">
-          <a href="${appUrl}/login" style="background: #38a169; color: #ffffff; padding: 14px 30px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; display: inline-block;">Se connecter maintenant</a>
-        </div>
-        
-        <hr style="margin-top: 50px; border: 0; border-top: 1px solid #edf2f7;">
-        <p style="font-size: 11px; color: #a0aec0; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-          &copy; ${new Date().getFullYear()} ${appName} · Protection du compte
-        </p>
-      </div>
-    `;
+    if (!raw) {
+      return 'Mot de passe réinitialisé avec succès';
+    }
+
+    return this.renderTemplate(raw, {
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    });
   }
 
   generateWelcomeTemplate(name, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
+    const raw = this.loadTemplate('welcome.html');
 
-    return `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #eab308; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 0;">${appName}</h1>
-          <div style="height: 4px; width: 50px; background: #eab308; margin: 15px auto; border-radius: 2px;"></div>
-        </div>
-        
-        <h2 style="color: #2d3748; font-size: 22px; text-align: center; margin-bottom: 25px;">Bienvenue parmi nous, ${name} !</h2>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #4a5568; text-align: center;">
-          Nous sommes ravis de vous compter parmi les membres de <strong>${appName}</strong>. Votre aventure commence ici !
-        </p>
-        
-        <div style="background: #fffdf2; border: 1px dashed #fef08a; padding: 25px; border-radius: 12px; margin: 30px 0;">
-          <p style="margin: 0; font-size: 15px; color: #854d0e; text-align: center; font-weight: 500;">
-            Explorez notre plateforme, découvrez de nouvelles opportunités et connectez-vous avec notre communauté.
-          </p>
-        </div>
-        
-        <div style="text-align: center; margin-top: 40px;">
-          <a href="${appUrl}/dashboard" style="background: #eab308; color: #000000; padding: 14px 30px; text-decoration: none; font-weight: 800; border-radius: 8px; font-size: 14px; display: inline-block; text-transform: uppercase;">Accéder à mon espace</a>
-        </div>
-        
-        <hr style="margin-top: 50px; border: 0; border-top: 1px solid #edf2f7;">
-        <p style="font-size: 11px; color: #a0aec0; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-          &copy; ${new Date().getFullYear()} ${appName} · Bienvenue dans l'aventure
-        </p>
-      </div>
-    `;
+    if (!raw) {
+      return `Bienvenue ${name}`;
+    }
+
+    return this.renderTemplate(raw, {
+      NAME: name,
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    });
   }
 
   generateLeadNotificationTemplate(lead, professionalName, tenantId) {
