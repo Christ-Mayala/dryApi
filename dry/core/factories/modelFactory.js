@@ -29,11 +29,24 @@ const getModel = (appName, modelName, schema = null) => {
     }
 
     if (modelName === 'User' && !schema) {
-        // [FIX] Cloner le schéma pour éviter la duplication des plugins sur l'instance partagée
-        schema = UserSchema.clone();
+        // Ensure UserSchema is a proper Mongoose Schema instance before cloning
+        if (typeof UserSchema.clone !== 'function') {
+            // If it's not, re-create it from its definition to ensure .clone() is available
+            const mongoose = require('mongoose');
+            const UserSchemaDefinition = require('../../modules/user/user.schema').obj;
+            schema = new mongoose.Schema(UserSchemaDefinition, UserSchema.options);
+        } else {
+            schema = UserSchema.clone();
+        }
     } else if (schema) {
-        // [FIX] Cloner le schéma pour l'isolation entre tenants
-        schema = schema.clone();
+        if (typeof schema.clone === 'function') {
+            schema = schema.clone();
+        } else if (schema.schema && typeof schema.schema.clone === 'function') {
+            // Cas où on a passé un modèle au lieu d'un schéma
+            schema = schema.schema.clone();
+        } else {
+            throw new Error(`Le paramètre schema fourni pour le modèle ${modelName} n'est pas un schéma Mongoose valide (.clone() manquant).`);
+        }
     }
 
     if (!schema) {

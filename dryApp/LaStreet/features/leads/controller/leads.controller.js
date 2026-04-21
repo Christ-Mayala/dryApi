@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { getPagination } = require('../../../../../dry/utils/data/pagination');
@@ -9,17 +10,20 @@ const emailService = require('../../../../../dry/services/auth/email.service');
 const LeadResponseSchema = require('../model/lead-response.schema.js');
 
 exports.createLead = asyncHandler(async (req, res) => {
-  const { serviceType, description, location } = req.body;
+  const { serviceType, description, location, urgency, estimatedPrice } = req.body;
   const Lead = req.getModel('Lead', LeadSchema);
   const Trade = req.getModel('Trade', TradeSchema);
   const Professional = req.getModel('Professional', ProfessionalSchema);
   const User = req.getModel('User', UserSchema);
 
+  const serviceTypeTrimmed = (serviceType || '').trim();
   const tradeExists = await Trade.findOne({
-    name: { $regex: new RegExp(`^${serviceType}$`, 'i') },
+    name: { $regex: new RegExp(`^${serviceTypeTrimmed}$`, 'i') },
   });
+
   if (!tradeExists) {
-    throw new Error(`Le type de service "${serviceType}" n'est pas reconnu.`);
+    console.error(`[Notification] Service non trouvé dans la base: "${serviceTypeTrimmed}"`);
+    throw new Error(`Le type de service "${serviceTypeTrimmed}" n'est pas reconnu.`);
   }
 
   let createdByRole = 'client';
@@ -29,10 +33,28 @@ exports.createLead = asyncHandler(async (req, res) => {
     createdByRole = 'professional';
   }
 
+  // --- LIMITATION GRATUITE (1 LEAD PAR MOIS) ---
+  if (!req.user.isPremium && req.user.role !== 'admin') {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const leadCount = await Lead.countDocuments({
+      userId: req.user._id,
+      createdAt: { $gte: startOfMonth }
+    });
+
+    if (leadCount >= 1) {
+      return sendResponse(res, null, 'Limite gratuite atteinte (1 lead par mois). Passez au Premium pour publier sans limites.', false);
+    }
+  }
+
   const lead = await Lead.create({
     serviceType,
     description,
     location,
+    urgency: urgency || 'flexible',
+    estimatedPrice,
     userId: req.user._id,
     createdByRole,
     isPremiumCreator: req.user.isPremium === true,
@@ -40,6 +62,8 @@ exports.createLead = asyncHandler(async (req, res) => {
 
   // --- NOTIFICATION DES PROFESSIONNELS PAR EMAIL ---
   try {
+    console.log(`[Notification] Début recherche pros pour tradeId: ${tradeExists._id} (${tradeExists.name})`);
+    
     // 1. Trouver les pros qui ont ce métier (tradeId ou tradeIds)
     const pros = await Professional.find({
       $or: [
@@ -47,28 +71,67 @@ exports.createLead = asyncHandler(async (req, res) => {
         { tradeIds: tradeExists._id }
       ],
       approvalStatus: 'approved'
-    }).select('createdBy');
+    }).select('createdBy name');
+
+    console.log(`[Notification] Pros approuvés trouvés pour ce métier: ${pros.length}`);
 
     if (pros.length > 0) {
-      const userIds = pros.map(p => p.createdBy).filter(Boolean);
-      const users = await User.find({ _id: { $in: userIds } }).select('email name');
+      const userIds = [...new Set(pros.map(p => p.createdBy).filter(Boolean).map(id => id.toString()))];
+      console.log(`[Notification] IDs utilisateurs uniques à notifier: ${userIds.join(', ')}`);
+      
+      const users = await User.find({ _id: { $in: userIds.map(id => new mongoose.Types.ObjectId(id)) } }).select('email name');
+      console.log(`[Notification] Utilisateurs trouvés en base: ${users.length}`);
+
+      const prosCount = users.length;
 
       for (const user of users) {
         if (user.email) {
-          const html = emailService.generateLeadNotificationTemplate(lead, user.name, req.appName);
+          console.log(`[Notification] Préparation email pour ${user.email}`);
+          const html = emailService.generateLeadNotificationTemplate(lead, user.name, req.appName, prosCount);
           emailService.sendGenericEmail({
             email: user.email,
-            subject: `Nouvelle mission : ${lead.serviceType} à ${lead.location || 'votre ville'}`,
+            subject: `Nouveau client dans votre zone : ${lead.serviceType} à ${lead.location || 'votre ville'}`,
             html
-          }).catch(e => console.error('Erreur envoi notification lead:', e.message));
+          })
+          .then(() => console.log(`[Notification] Email envoyé avec succès à ${user.email}`))
+          .catch(e => console.error(`[Notification] Erreur lors de l'envoi à ${user.email}:`, e.message));
+        } else {
+          console.warn(`[Notification] L'utilisateur ${user.name} (${user._id}) n'a pas d'adresse email.`);
         }
+      }
+    } else {
+      // Debug: Chercher même les non approuvés
+      const allProsForTrade = await Professional.find({
+        $or: [
+          { tradeId: tradeExists._id },
+          { tradeIds: tradeExists._id }
+        ]
+      });
+      console.log(`[Notification] Aucun pro approuvé. Total pros pour ce métier (tous statuts): ${allProsForTrade.length}`);
+      if (allProsForTrade.length > 0) {
+        console.log(`[Notification] Statuts des pros non notifiés: ${allProsForTrade.map(p => p.approvalStatus).join(', ')}`);
       }
     }
   } catch (err) {
-    console.error('Erreur lors de la notification des pros:', err.message);
+    console.error('[Notification] Erreur critique:', err);
   }
 
-  return sendResponse(res, lead, 'Demande de service creee avec succes');
+  // --- MATCHING AUTOMATIQUE (PHASE 3) ---
+  const recommendedPros = await Professional.find({
+    $or: [
+      { tradeId: tradeExists._id },
+      { tradeIds: tradeExists._id }
+    ],
+    approvalStatus: 'approved'
+  })
+  .sort({ isPremium: -1, rating: -1 })
+  .limit(3)
+  .select('name ville profileImage.url rating isPremium');
+
+  const leadData = lead.toObject();
+  leadData.recommendedPros = recommendedPros;
+
+  return sendResponse(res, leadData, 'Demande de service creee avec succes');
 });
 
 exports.getLeads = asyncHandler(async (req, res) => {
@@ -145,7 +208,8 @@ exports.getLeadById = asyncHandler(async (req, res) => {
 
   if (lead.userId._id.toString() === req.user._id.toString() || req.user.role === 'admin') {
     const responses = await LeadResponse.find({ leadId })
-      .populate('professionalId', 'name email telephone')
+      .populate('professionalId', 'name email telephone avatarUrl isPremium')
+      .sort({ createdAt: 1 })
       .lean();
     return sendResponse(res, { ...lead, responses, isOwner: true }, 'Details de la mission');
   }
@@ -327,4 +391,21 @@ exports.requestLeadUnlock = asyncHandler(async (req, res) => {
     unlockReq,
     "Votre demande de deblocage a ete envoyee et est en attente de verification."
   );
+});
+
+exports.deleteLead = asyncHandler(async (req, res) => {
+  const { leadId } = req.params;
+  const Lead = req.getModel('Lead', LeadSchema);
+
+  const lead = await Lead.findById(leadId);
+  if (!lead) throw new Error('Mission introuvable');
+
+  // Seul l'admin peut supprimer une mission
+  if (req.user.role !== 'admin') {
+    return sendResponse(res, null, 'Seul un administrateur peut supprimer une mission.', false);
+  }
+
+  await lead.deleteOne();
+
+  return sendResponse(res, null, 'Mission supprimee avec succes');
 });

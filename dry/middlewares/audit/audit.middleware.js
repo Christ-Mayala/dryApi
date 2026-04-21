@@ -1,4 +1,4 @@
-const AuditLogSchema = require('../../models/audit/AuditLog.model');
+const AuditLogSchema = require('../../models/audit/AuditLog.schema');
 
 const SENSITIVE_KEYS = new Set([
   'password',
@@ -62,9 +62,9 @@ const auditLogger = (actionName) => async (req, res, next) => {
 
       const AuditLog = req.getModel ? req.getModel('AuditLog', AuditLogSchema) : null;
       if (AuditLog && typeof AuditLog.create === 'function') {
-        AuditLog.create({
+        const logData = {
           action: mapAction(),
-          resourceType: req.baseUrl || req.path || 'unknown',
+          resourceType: req.originalUrl || req.baseUrl || req.path || 'unknown',
           resourceId: req.params?.id || undefined,
           userId: req.user?._id,
           userEmail: req.user?.email,
@@ -72,14 +72,17 @@ const auditLogger = (actionName) => async (req, res, next) => {
           ipAddress: req.ip,
           userAgent,
           details: {
+            method: req.method,
             body: sanitize(req.body),
             query: sanitize(req.query),
             statusCode,
             durationMs: duration,
           },
           status: statusCode >= 400 ? 'failure' : 'success',
-        }).catch((err) => {
-          console.error('Audit Log Error:', err.message);
+        };
+
+        AuditLog.create(logData).catch((err) => {
+          console.error('[AUDIT] ❌ Erreur création log:', err.message);
         });
       }
 

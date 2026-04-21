@@ -1,0 +1,26 @@
+<div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; border: 1px solid #eaeaea; padding: 30px; border-radius: 16px; color: #1a1a1a;">
+  <h2 style="color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 0;">Nouvelle demande de service</h2>
+  <p>Bonjour {{PROFESSIONAL_NAME}},</p>
+  <p>Une demande correspondant à vos compétences vient d'être publiée sur la plateforme :</p>
+  
+  <div style="background: #fafafa; padding: 20px; border-radius: 12px; margin: 24px 0; border-left: 4px solid #f5c518;">
+    <p style="margin: 8px 0;"><strong>Expertise :</strong> {{SERVICE_TYPE}}</p>
+    <p style="margin: 8px 0;"><strong>Secteur :</strong> {{LOCATION}}</p>
+    <p style="margin: 8px 0;"><strong>Disponibilité :</strong> <span style="color: #000; font-weight: 700;">{{URGENCY_LABEL}}</span></p>
+    <p style="margin: 8px 0;"><strong>Détails :</strong> {{DESCRIPTION}}</p>
+  </div>
+
+  <p style="font-weight: 700; color: #000;">Prenez connaissance de cette demande pour entrer en relation avec le client.</p>
+  
+  {{COMPETITION_TEXT}}
+
+  <div style="text-align: center; margin-top: 32px;">
+    <a href="{{LEAD_URL}}" style="background: #000; color: #f5c518; padding: 16px 32px; text-decoration: none; font-weight: 800; border-radius: 12px; text-transform: uppercase; font-size: 13px; display: inline-block; letter-spacing: 1px;">Consulter la demande</a>
+  </div>
+
+  <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eaeaea;">
+  <p style="font-size: 11px; color: #a1a1aa; text-align: center;">
+    &copy; {{YEAR}} {{APP_NAME}} • Plateforme développée par 
+    <a href="https://cyberfusion-group.vercel.app/" style="color: #a1a1aa; text-decoration: underline;">CyberFusion Group</a>
+  </p>
+</div>

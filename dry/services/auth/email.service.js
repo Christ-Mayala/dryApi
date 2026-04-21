@@ -95,11 +95,10 @@ class EmailService {
 
   renderTemplate(raw, vars = {}) {
     let out = raw || '';
-    Object.keys(vars).forEach((key) => {
-      const value = vars[key] === null || vars[key] === undefined ? '' : String(vars[key]);
-      out = out.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    return out.replace(/{{([^{}]+)}}/g, (match, key) => {
+      const value = vars[key];
+      return value === null || value === undefined ? match : String(value);
     });
-    return out;
   }
 
   resolveAppUrl(tenantId) {
@@ -213,9 +212,14 @@ class EmailService {
       const result = await transporter.sendMail(mailOptions);
 
       if (config.NODE_ENV === 'development' && result.messageId) {
-        logger(`Email envoye (preview): ${nodemailer.getTestMessageUrl(result)}`, 'info');
+        const previewUrl = nodemailer.getTestMessageUrl(result);
+        if (previewUrl) {
+          logger(`Email envoyé (preview): ${previewUrl}`, 'info');
+        } else {
+          logger(`Email envoyé à ${options.email}`, 'info');
+        }
       } else {
-        logger(`Email envoye a ${options.email}`, 'info');
+        logger(`Email envoyé à ${options.email}`, 'info');
       }
 
       return true;
@@ -341,28 +345,36 @@ class EmailService {
     });
   }
 
-  generateLeadNotificationTemplate(lead, professionalName, tenantId) {
+  generateLeadNotificationTemplate(lead, professionalName, tenantId, prosCount = 0) {
     const appName = tenantId || config.APP_NAME || 'La STREET';
     const appUrl = this.resolveAppUrl(tenantId);
+    const raw = this.loadTemplate('lead-notification.html');
     
-    return `
-      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-        <h2 style="color: #eab308;">Nouvelle opportunité sur ${appName} !</h2>
-        <p>Bonjour <strong>${professionalName}</strong>,</p>
-        <p>Un nouveau lead correspondant à votre expertise vient d'être publié :</p>
-        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Service demandé :</strong> ${lead.serviceType}</p>
-          <p><strong>Localisation :</strong> ${lead.location || 'Non précisée'}</p>
-          <p><strong>Description :</strong> ${(lead.description || '').substring(0, 100)}...</p>
-        </div>
-        <p>Connectez-vous dès maintenant pour consulter les détails et débloquer cette mission.</p>
-        <div style="text-align: center; margin-top: 30px;">
-          <a href="${appUrl}/leads" style="background: #eab308; color: black; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; text-transform: uppercase; font-size: 14px;">Voir l'opportunité</a>
-        </div>
-        <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #888; text-align: center;">&copy; ${new Date().getFullYear()} ${appName}. Tous droits réservés.</p>
-      </div>
-    `;
+    // Wording Urgence atténué pour les filtres anti-spam
+    let urgencyLabel = 'Planifié';
+    if (lead.urgency === 'aujourd-hui') urgencyLabel = 'Dès que possible';
+    if (lead.urgency === 'demain') urgencyLabel = 'Prochainement';
+
+    const competitionText = prosCount > 1 
+      ? `<p style="font-size: 13px; color: #64748b;">Note : Cette demande a été partagée avec <strong>${prosCount} professionnels</strong> qualifiés.</p>`
+      : `<p style="font-size: 13px; color: #64748b;">Note : Une réponse rapide vous permettra d'être mis en relation prioritairement.</p>`;
+
+    if (!raw) {
+      // Fallback au cas où le fichier template est manquant
+      return `<h2>Nouvelle demande de service</h2><p>Expertise demandée : ${lead.serviceType}</p>`;
+    }
+
+    return this.renderTemplate(raw, {
+      PROFESSIONAL_NAME: (professionalName || '').trim(),
+      SERVICE_TYPE: (lead.serviceType || '').trim(),
+      LOCATION: (lead.location || '').trim() || 'Congo',
+      URGENCY_LABEL: (urgencyLabel || '').trim(),
+      DESCRIPTION: (lead.description || '').trim().substring(0, 100) + '...',
+      COMPETITION_TEXT: (competitionText || '').trim(),
+      LEAD_URL: `${appUrl}/leads/${lead._id}`,
+      APP_NAME: appName,
+      YEAR: new Date().getFullYear()
+    });
   }
 
   generateAgenceCreatedTemplate(userName, agenceName, link, tenantId) {
@@ -399,6 +411,34 @@ class EmailService {
       APP_URL: appUrl,
       YEAR: new Date().getFullYear(),
     });
+  }
+
+  generateAdminDirectEmailTemplate(message, name, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'La STREET';
+    const appUrl = this.resolveAppUrl(tenantId);
+    const raw = this.loadTemplate('admin-direct-email.html');
+
+    const vars = {
+      MESSAGE: message,
+      NAME: name || 'Client',
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: new Date().getFullYear(),
+    };
+
+    if (!raw) {
+      // Fallback au cas où le template admin serait absent
+      return this.generateNotificationTemplate(message, tenantId);
+    }
+
+    // On permet aussi de remplacer des variables à l'intérieur du message lui-même
+    // ex: si l'admin écrit "Bonjour {name}" dans son message
+    let renderedMessage = message;
+    renderedMessage = renderedMessage.replace(/\{name\}/g, vars.NAME);
+    renderedMessage = renderedMessage.replace(/\{app_name\}/g, vars.APP_NAME);
+    vars.MESSAGE = renderedMessage;
+
+    return this.renderTemplate(raw, vars);
   }
 
   async verifyConfiguration() {

@@ -17,6 +17,11 @@ const LeadSchema = new mongoose.Schema(
     estimatedPrice: { type: Number },
     unlockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     isPremiumCreator: { type: Boolean, default: false },
+    urgency: {
+      type: String,
+      enum: ['aujourd-hui', 'demain', 'flexible'],
+      default: 'flexible'
+    },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true, versionKey: false },

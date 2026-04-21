@@ -12,5 +12,6 @@ router.get('/:leadId', protect, leadsController.getLeadById);
 router.post('/respond', protect, leadsController.respondToLead);
 router.post('/assign', protect, leadsController.assignLead);
 router.post('/unlock', protect, upload.single('proofImage'), leadsController.requestLeadUnlock);
+router.delete('/:leadId', protect, leadsController.deleteLead);
 
 module.exports = router;

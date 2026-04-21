@@ -44,17 +44,9 @@ module.exports = asyncHandler(async (req, res) => {
     email: { $exists: true, $ne: '' },
     includeDeleted: true,
   })
-    .select('email')
+    .select('email name nom')
     .limit(limit)
     .lean();
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-      <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
-      <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
-      <p style="color:#666;font-size:12px">Message envoyé depuis l'administration La STREET.</p>
-    </div>
-  `.trim();
 
   let attempted = 0;
   let sent = 0;
@@ -65,6 +57,9 @@ module.exports = asyncHandler(async (req, res) => {
     if (!email) continue;
 
     attempted += 1;
+
+    const name = r.name || r.nom || 'Client';
+    const html = emailService.generateAdminDirectEmailTemplate(message, name, req.appName);
 
     // eslint-disable-next-line no-await-in-loop
     const ok = await emailService.sendGenericEmail({ email, subject, html });

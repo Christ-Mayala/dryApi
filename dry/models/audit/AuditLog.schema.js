@@ -54,7 +54,8 @@ const AuditLogSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true,
-  versionKey: false
+  versionKey: false,
+  collection: 'auditlogs'
 });
 
 // Index pour les performances
