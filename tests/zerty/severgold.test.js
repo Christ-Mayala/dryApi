@@ -26,9 +26,9 @@ test('CRUD severgold (smoke)', async () => {
   if (!token) return; // pas d'admin => on saute les ecritures
 
   const payload = {
-  Mays: 'exemple_Mays',
-  label: `Exemple label ${Date.now()}`
-};
+    Mays: 'exemple_Mays',
+    label: `Exemple label ${Date.now()}`,
+  };
 
   const createRes = await fetch(BASE_URL + '/api/v1/' + APP + '/' + FEATURE, {
     method: 'POST',
