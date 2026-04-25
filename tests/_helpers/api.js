@@ -22,7 +22,7 @@ const ensureServer = async (baseUrl) => {
 };
 
 const safeJson = async (res) => {
-  const ct = res.headers?.get ? (res.headers.get('content-type') || '') : '';
+  const ct = res.headers?.get ? res.headers.get('content-type') || '' : '';
   if (!ct.includes('application/json')) {
     return null;
   }
