@@ -18,7 +18,9 @@ const strict = process.argv.includes('--strict');
 
 const suiteDirectories = {
   unit: path.join(ROOT, 'tests', 'unit'),
-  integration: path.join(ROOT, 'tests', 'integration'),
+  // Integration tests are generated per app under tests/<AppName>/... and may also live in tests/integration/.
+  // Point to tests/ root and filter out unit/e2e directories.
+  integration: path.join(ROOT, 'tests'),
   e2e: path.join(ROOT, 'tests', 'e2e'),
   all: path.join(ROOT, 'tests'),
 };
@@ -50,6 +52,10 @@ const collectTestFiles = (directory, files = []) => {
 const filterTestFiles = (files) => {
   return files.filter((file) => {
     if (suite === 'unit') return true;
+    if (suite === 'integration') {
+      if (file.includes('/tests/unit/')) return false;
+      if (file.includes('/tests/e2e/')) return false;
+    }
     if (appFilter && !file.toLowerCase().includes(`/${appFilter.toLowerCase()}/`)) return false;
     if (featureFilter && !file.toLowerCase().endsWith(`/${featureFilter.toLowerCase()}.test.js`))
       return false;
