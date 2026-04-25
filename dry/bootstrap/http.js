@@ -82,7 +82,13 @@ const createApp = () => {
       secret: config.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: config.NODE_ENV === 'production' },
+      // Passport OAuth (Google/Facebook) utilise la session pour stocker l'état.
+      // `sameSite: 'lax'` permet le retour de provider -> callback sur navigation top-level.
+      cookie: {
+        secure: config.NODE_ENV === 'production',
+        sameSite: 'lax',
+        httpOnly: true,
+      },
     })
   );
 

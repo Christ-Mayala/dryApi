@@ -86,6 +86,7 @@ npm run test:smoke
 - [Reference commandes](./docs/07_COMMANDS_REFERENCE.md)
 - [Conventions kernel vs app](./docs/08_KERNEL_BOUNDARIES.md)
 - [Scope produit et apps vitrine](./docs/09_PRODUCT_SCOPE.md)
+- [Auth Google/Facebook](./docs/10_SOCIAL_AUTH.md)
 
 ## Structure rapide
 

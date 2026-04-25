@@ -1,121 +1,209 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const mongoose = require('mongoose');
 
-// Importer le schéma User
-const UserSchema = require('../../modules/user/user.schema');
+const config = require('../../../config/database');
+const getModel = require('../factories/modelFactory');
 
-// Enregistrer le modèle User s'il ne l'est pas déjà
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const trimTrailingSlash = (value) => String(value || '').replace(/\/+$/, '');
+
+const isConfigured = (value) => Boolean(String(value || '').trim());
+
+const buildCallbackUrl = (overrideUrl, path) => {
+  const explicit = trimTrailingSlash(overrideUrl);
+  if (explicit) return explicit;
+  const base = trimTrailingSlash(config.SERVER_URL || 'http://127.0.0.1:5000');
+  return `${base}${path}`;
+};
+
+/**
+ * Social auth is mounted globally at `/api/auth/...` (see bootloader).
+ * App APIs are multi-tenant and use a tenant DB connection.
+ *
+ * We carry the tenant name via the Express session:
+ * - `/api/auth/google?app=SCIM` stores `req.session.oauthAppName = 'SCIM'`
+ * - The callback can then read it to create/link the user inside the SCIM tenant DB.
+ */
+const resolveTenantAppName = (req) => {
+  const appName = String(req?.query?.app || req?.session?.oauthAppName || '').trim();
+  return appName || null;
+};
+
+const createRandomPassword = () => Math.random().toString(36).slice(-12);
+
+const getDisplayName = (profile, email) => {
+  const fromProfile = String(profile?.displayName || '').trim();
+  if (fromProfile) return fromProfile;
+  const fromEmail = String(email || '').split('@')[0] || 'User';
+  return fromEmail;
+};
+
+const upsertGoogleUser = async (appName, profile) => {
+  const User = getModel(appName, 'User');
+
+  const email = profile?.emails?.[0]?.value;
+  if (!email) throw new Error("Google n'a pas fourni d'email pour ce compte.");
+
+  // 1) Provider link first
+  let user = await User.findOne({ googleId: profile.id }).select('+googleId');
+  if (user) return user;
+
+  // 2) Link by email if already registered
+  user = await User.findOne({ email });
+  if (user) {
+    user.googleId = profile.id;
+    await user.save();
+    return user;
+  }
+
+  // 3) Create tenant user
+  const displayName = getDisplayName(profile, email);
+  const newUser = await User.create({
+    googleId: profile.id,
+    name: displayName,
+    nom: displayName,
+    email,
+    avatarUrl: profile.photos?.[0]?.value,
+    password: createRandomPassword(),
+    role: 'user',
+  });
+
+  return newUser;
+};
+
+const upsertFacebookUser = async (appName, profile) => {
+  const User = getModel(appName, 'User');
+
+  // 1) Provider link first
+  let user = await User.findOne({ facebookId: profile.id }).select('+facebookId');
+  if (user) return user;
+
+  // Facebook may not always return email depending on app permissions/account.
+  const email = profile?.emails?.[0]?.value;
+  if (email) {
+    user = await User.findOne({ email });
+    if (user) {
+      user.facebookId = profile.id;
+      await user.save();
+      return user;
+    }
+  }
+
+  if (!email) {
+    throw new Error(
+      "Facebook n'a pas fourni d'email. Verifie que le scope 'email' est autorise et que le compte possede un email."
+    );
+  }
+
+  const displayName = getDisplayName(profile, email);
+  const newUser = await User.create({
+    facebookId: profile.id,
+    name: displayName,
+    nom: displayName,
+    email,
+    avatarUrl: profile.photos?.[0]?.value,
+    password: createRandomPassword(),
+    role: 'user',
+  });
+
+  return newUser;
+};
 
 const initialize = (app) => {
-    app.use(passport.initialize());
-    app.use(passport.session());
+  // JWT auth does not use passport sessions, but OAuth state + tenant transport uses express-session.
+  app.use(passport.initialize());
 
-    passport.serializeUser((user, done) => {
-        done(null, user.id);
-    });
+  // IMPORTANT:
+  // - Config comes from `config/database.js` (supports *_DEV / *_TEST / fallback).
+  // - Avoid placeholders like "YOUR_*" because providers return opaque errors.
 
-    passport.deserializeUser((id, done) => {
-        User.findById(id, (err, user) => {
-            done(err, user);
-        });
-    });
+  const googleClientId = config.GOOGLE_CLIENT_ID;
+  const googleClientSecret = config.GOOGLE_CLIENT_SECRET;
+  const googleCallbackUrl = buildCallbackUrl(config.GOOGLE_CALLBACK_URL, '/api/auth/google/callback');
 
-    // Stratégie Google
-    passport.use(new GoogleStrategy({
-            clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET',
-            callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback'
+  if (isConfigured(googleClientId) && isConfigured(googleClientSecret)) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: googleClientId,
+          clientSecret: googleClientSecret,
+          callbackURL: googleCallbackUrl,
+          state: true,
+          passReqToCallback: true,
         },
-        async (accessToken, refreshToken, profile, done) => {
-            try {
-                let user = await User.findOne({ googleId: profile.id });
-
-                if (user) {
-                    return done(null, user);
-                }
-
-                user = await User.findOne({ email: profile.emails[0].value });
-
-                if (user) {
-                    user.googleId = profile.id;
-                    await user.save();
-                    return done(null, user);
-                }
-
-                const newUser = new User({
-                    googleId: profile.id,
-                    name: profile.displayName,
-                    nom: profile.displayName,
-                    email: profile.emails[0].value,
-                    avatarUrl: profile.photos?.[0]?.value,
-                    emailVerified: true,
-                    isEmailVerified: true,
-                    password: Math.random().toString(36).slice(-8), // Mot de passe aléatoire
-                    role: 'user'
-                });
-
-                await newUser.save();
-                done(null, newUser);
-            } catch (err) {
-                done(err, false);
+        async (req, accessToken, refreshToken, profile, done) => {
+          try {
+            const appName = resolveTenantAppName(req);
+            if (!appName) {
+              return done(
+                new Error('Tenant manquant: utilise /api/auth/google?app=SCIM (ou autre).'),
+                false
+              );
             }
-        }
-    ));
 
-    // Stratégie Facebook
-    passport.use(new FacebookStrategy({
-            clientID: process.env.FACEBOOK_APP_ID || 'YOUR_FACEBOOK_APP_ID',
-            clientSecret: process.env.FACEBOOK_APP_SECRET || 'YOUR_FACEBOOK_APP_SECRET',
-            callbackURL: process.env.FACEBOOK_CALLBACK_URL || '/api/auth/facebook/callback',
-            profileFields: ['id', 'displayName', 'emails']
+            const user = await upsertGoogleUser(appName, profile);
+            return done(null, user);
+          } catch (err) {
+            return done(err, false);
+          }
+        }
+      )
+    );
+  } else {
+    console.warn(
+      '[passport] Google OAuth desactive: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET manquants.'
+    );
+  }
+
+  const facebookAppId = config.FACEBOOK_APP_ID;
+  const facebookAppSecret = config.FACEBOOK_APP_SECRET;
+  const facebookCallbackUrl = buildCallbackUrl(
+    config.FACEBOOK_CALLBACK_URL,
+    '/api/auth/facebook/callback'
+  );
+
+  if (isConfigured(facebookAppId) && isConfigured(facebookAppSecret)) {
+    passport.use(
+      new FacebookStrategy(
+        {
+          clientID: facebookAppId,
+          clientSecret: facebookAppSecret,
+          callbackURL: facebookCallbackUrl,
+          profileFields: ['id', 'displayName', 'emails', 'photos'],
+          state: true,
+          passReqToCallback: true,
         },
-        async (accessToken, refreshToken, profile, done) => {
-            try {
-                let user = await User.findOne({ facebookId: profile.id });
-
-                if (user) {
-                    return done(null, user);
-                }
-
-                if (profile.emails && profile.emails[0] && profile.emails[0].value) {
-                    user = await User.findOne({ email: profile.emails[0].value });
-
-                    if (user) {
-                        user.facebookId = profile.id;
-                        await user.save();
-                        return done(null, user);
-                    }
-                }
-
-                const newUser = new User({
-                    facebookId: profile.id,
-                    name: profile.displayName,
-                    nom: profile.displayName,
-                    email: profile.emails ? profile.emails[0].value : null,
-                    avatarUrl: profile.photos?.[0]?.value,
-                    emailVerified: true,
-                    isEmailVerified: true,
-                    password: Math.random().toString(36).slice(-8), // Mot de passe aléatoire
-                    role: 'user'
-                });
-
-                await newUser.save();
-                done(null, newUser);
-            } catch (err) {
-                done(err, false);
+        async (req, accessToken, refreshToken, profile, done) => {
+          try {
+            const appName = resolveTenantAppName(req);
+            if (!appName) {
+              return done(
+                new Error('Tenant manquant: utilise /api/auth/facebook?app=SCIM (ou autre).'),
+                false
+              );
             }
-        }
-    ));
 
-    console.log('Passport plugin initialized.');
+            const user = await upsertFacebookUser(appName, profile);
+            return done(null, user);
+          } catch (err) {
+            return done(err, false);
+          }
+        }
+      )
+    );
+  } else {
+    console.warn(
+      '[passport] Facebook OAuth desactive: FACEBOOK_APP_ID / FACEBOOK_APP_SECRET manquants.'
+    );
+  }
+
+  console.log('Passport plugin initialized.');
 };
 
 module.exports = {
-    initialize,
-    name: 'passport',
-    version: '1.0.0',
-    description: 'Passport.js authentication plugin for social logins'
+  initialize,
+  name: 'passport',
+  version: '1.2.0',
+  description: 'Passport.js authentication plugin for social logins (tenant-aware)',
 };
+

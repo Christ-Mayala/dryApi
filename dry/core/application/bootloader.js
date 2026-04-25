@@ -61,7 +61,10 @@ const bootstrapApps = (app) => {
   
   // Monter les routes d'authentification sociale globales (DRY)
   app.use('/api/auth', socialAuthRoutes);
-  console.log(`   ${C.GREEN}✅ social-auth`.padEnd(21) + ` → ${C.DIM}/api/auth/google, /api/auth/facebook${C.RESET}`);
+  console.log(
+    `   ${C.GREEN}✅ social-auth`.padEnd(21) +
+      ` → ${C.DIM}/api/auth/google?app=SCIM , /api/auth/facebook?app=SCIM${C.RESET}`
+  );
 
 
 
