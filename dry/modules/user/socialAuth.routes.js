@@ -6,20 +6,42 @@ const { refreshCookieOptions, accessTokenCookieOptions } = require('../../utils/
 
 const router = express.Router();
 
-const getFrontendUrl = () => config.FRONTEND_URL || 'http://localhost:3000';
+const getFrontendUrl = (req) => {
+  // 1. Priorité à l'URL stockée en session lors de l'initialisation
+  if (req?.session?.oauthRedirectUri) return req.session.oauthRedirectUri;
+
+  // 2. Sinon, essayer de trouver une URL spécifique à l'application dans la config
+  const appName = normalize(req?.session?.oauthAppName || req?.query?.app);
+  if (appName) {
+    const appFrontendUrl = process.env[`${appName.toUpperCase()}_FRONTEND_URL`];
+    if (appFrontendUrl) return appFrontendUrl;
+  }
+
+  // 3. Fallback sur la config globale
+  return config.FRONTEND_URL || 'http://localhost:3000';
+};
 
 const normalize = (value) => String(value ?? '').trim();
 
+const isUrlAllowed = (url) => {
+  if (!url) return false;
+  try {
+    const origin = new URL(url).origin;
+    const allowed = String(config.ALLOWED_ORIGINS || '').split(',').map(s => s.trim());
+    return allowed.includes(origin);
+  } catch (_) {
+    return false;
+  }
+};
+
 /**
  * Notes d'architecture (multi-tenant):
- * - Les routes applicatives (/api/v1/:app/...) utilisent des modÃ¨les liÃ©s Ã  la DB du tenant
- *   via `req.getModel()` (injectÃ© par le bootloader).
- * - Les routes sociales (/api/auth/...) sont montÃ©es globalement, donc on doit transporter
+ * - Les routes applicatives (/api/v1/:app/...) utilisent des modèles liés à la DB du tenant
+ *   via `req.getModel()` (injecté par le bootloader).
+ * - Les routes sociales (/api/auth/...) sont montées globalement, donc on doit transporter
  *   le tenant (nom du dossier dans `dryApp/`) sur toute la redirection OAuth.
  *
- * Ici on exige `?app=SCIM` (ou autre) Ã  l'init, puis on le stocke en session pour le callback.
- * Le plugin Passport lit `req.session.oauthAppName` (via `passReqToCallback`) pour crÃ©er/lier
- * l'utilisateur dans la DB du bon tenant.
+ * Ici on exige `?app=SCIM` (ou autre) à l'init, puis on le stocke en session pour le callback.
  */
 const persistOAuthContext = (req, provider) => {
   const appName = normalize(req?.query?.app);
@@ -28,6 +50,19 @@ const persistOAuthContext = (req, provider) => {
 
   req.session.oauthAppName = appName;
   req.session.oauthProvider = provider;
+
+  // Optionnel: On peut passer un redirect_uri spécifique depuis le front
+  const customRedirect = req.query.redirect_uri;
+  if (customRedirect && isUrlAllowed(customRedirect)) {
+    req.session.oauthRedirectUri = customRedirect;
+  } else {
+    // Sinon on essaie de déduire l'origine depuis le Referer pour le multi-tenant dynamique
+    const referer = req.headers.referer;
+    if (referer && isUrlAllowed(referer)) {
+      req.session.oauthRedirectUri = new URL(referer).origin;
+    }
+  }
+
   return { ok: true, appName };
 };
 
@@ -44,7 +79,7 @@ const handleProviderUnavailable = (req, res, provider) => {
     return res.status(503).json({ success: false, message, provider });
   }
 
-  const frontendUrl = getFrontendUrl();
+  const frontendUrl = getFrontendUrl(req);
   const url = new URL('/login', frontendUrl);
   url.searchParams.set('error', 'provider_not_configured');
   url.searchParams.set('provider', provider);
@@ -52,7 +87,7 @@ const handleProviderUnavailable = (req, res, provider) => {
 };
 
 const redirectToFrontendCallback = async (req, res, provider, appName) => {
-  const frontendUrl = getFrontendUrl();
+  const frontendUrl = getFrontendUrl(req);
 
   if (!req.user) {
     if (wantsJson(req)) {
@@ -109,6 +144,14 @@ const redirectToFrontendCallback = async (req, res, provider, appName) => {
   url.searchParams.set('refreshToken', refreshToken);
   url.searchParams.set('provider', provider);
   if (appName) url.searchParams.set('app', appName);
+  
+  // Nettoyage final de la session OAuth
+  if (req.session) {
+    delete req.session.oauthAppName;
+    delete req.session.oauthProvider;
+    delete req.session.oauthRedirectUri;
+  }
+
   return res.redirect(url.toString());
 };
 
@@ -120,7 +163,7 @@ router.get('/google', (req, res, next) => {
   if (!ok) {
     const message = "Parametre requis manquant: `app` (ex: /api/auth/google?app=SCIM).";
     if (wantsJson(req)) return res.status(400).json({ success: false, message, provider: 'google' });
-    const url = new URL('/login', getFrontendUrl());
+    const url = new URL('/login', getFrontendUrl(req));
     url.searchParams.set('error', 'missing_app');
     url.searchParams.set('provider', 'google');
     return res.redirect(url.toString());
@@ -143,7 +186,7 @@ router.get('/google/callback', (req, res, next) => {
           message: error.message || 'OAuth error',
         });
       }
-      const frontendUrl = getFrontendUrl();
+      const frontendUrl = getFrontendUrl(req);
       const url = new URL('/login', frontendUrl);
       url.searchParams.set('error', 'google');
       url.searchParams.set('message', error.message || 'OAuth error');
@@ -151,10 +194,6 @@ router.get('/google/callback', (req, res, next) => {
     }
     req.user = user;
     const appName = normalize(req?.session?.oauthAppName);
-    if (req.session) {
-      delete req.session.oauthAppName;
-      delete req.session.oauthProvider;
-    }
     return await redirectToFrontendCallback(req, res, 'google', appName || null);
   })(req, res, next);
 });
@@ -167,7 +206,7 @@ router.get('/facebook', (req, res, next) => {
   if (!ok) {
     const message = "Parametre requis manquant: `app` (ex: /api/auth/facebook?app=SCIM).";
     if (wantsJson(req)) return res.status(400).json({ success: false, message, provider: 'facebook' });
-    const url = new URL('/login', getFrontendUrl());
+    const url = new URL('/login', getFrontendUrl(req));
     url.searchParams.set('error', 'missing_app');
     url.searchParams.set('provider', 'facebook');
     return res.redirect(url.toString());
@@ -189,7 +228,7 @@ router.get('/facebook/callback', (req, res, next) => {
           message: error.message || 'OAuth error',
         });
       }
-      const frontendUrl = getFrontendUrl();
+      const frontendUrl = getFrontendUrl(req);
       const url = new URL('/login', frontendUrl);
       url.searchParams.set('error', 'facebook');
       url.searchParams.set('message', error.message || 'OAuth error');
@@ -197,10 +236,6 @@ router.get('/facebook/callback', (req, res, next) => {
     }
     req.user = user;
     const appName = normalize(req?.session?.oauthAppName);
-    if (req.session) {
-      delete req.session.oauthAppName;
-      delete req.session.oauthProvider;
-    }
     return await redirectToFrontendCallback(req, res, 'facebook', appName || null);
   })(req, res, next);
 });
