@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const config = require('../../../config/database');
 const { signAccessToken, signRefreshToken } = require('../../utils/auth/jwt.util');
+const { refreshCookieOptions, accessTokenCookieOptions } = require('../../utils/http/cookies');
 
 const router = express.Router();
 
@@ -50,7 +51,7 @@ const handleProviderUnavailable = (req, res, provider) => {
   return res.redirect(url.toString());
 };
 
-const redirectToFrontendCallback = (req, res, provider, appName) => {
+const redirectToFrontendCallback = async (req, res, provider, appName) => {
   const frontendUrl = getFrontendUrl();
 
   if (!req.user) {
@@ -68,11 +69,29 @@ const redirectToFrontendCallback = (req, res, provider, appName) => {
     return res.redirect(url.toString());
   }
 
-  // AlignÃ© avec `dry/modules/user/auth.controller.js` :
-  // - Access token pour authentifier les requÃªtes API
-  // - Refresh token pour rafraÃ®chir la session sans re-login
+  // Aligné avec `dry/modules/user/auth.controller.js` :
+  // - Access token pour authentifier les requêtes API
+  // - Refresh token pour rafraîchir la session sans re-login
   const token = signAccessToken(req.user._id);
   const refreshToken = signRefreshToken(req.user._id);
+
+  // Si on est dans un contexte multi-tenant (appName présent), on enregistre le RT dans la DB du tenant
+  if (appName && req.user && typeof req.user.save === 'function') {
+    try {
+      if (!req.user.refreshTokens) req.user.refreshTokens = [];
+      req.user.refreshTokens.push(refreshToken);
+      if (req.user.refreshTokens.length > 10) {
+        req.user.refreshTokens = req.user.refreshTokens.slice(-10);
+      }
+      await req.user.save();
+      
+      // On définit aussi les cookies pour le mode "cookie_managed" du frontend
+      res.cookie('rt', refreshToken, refreshCookieOptions());
+      res.cookie('jwt', token, accessTokenCookieOptions());
+    } catch (err) {
+      console.error('[OAuth] Erreur lors de la sauvegarde du refresh token:', err);
+    }
+  }
 
   if (wantsJson(req)) {
     return res.status(200).json({
@@ -115,7 +134,7 @@ router.get('/google', (req, res, next) => {
 
 router.get('/google/callback', (req, res, next) => {
   if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
-  return passport.authenticate('google', { session: false }, (error, user) => {
+  return passport.authenticate('google', { session: false }, async (error, user) => {
     if (error) {
       if (wantsJson(req)) {
         return res.status(401).json({
@@ -136,7 +155,7 @@ router.get('/google/callback', (req, res, next) => {
       delete req.session.oauthAppName;
       delete req.session.oauthProvider;
     }
-    return redirectToFrontendCallback(req, res, 'google', appName || null);
+    return await redirectToFrontendCallback(req, res, 'google', appName || null);
   })(req, res, next);
 });
 
@@ -161,7 +180,7 @@ router.get('/facebook', (req, res, next) => {
 
 router.get('/facebook/callback', (req, res, next) => {
   if (!isStrategyAvailable('facebook')) return handleProviderUnavailable(req, res, 'facebook');
-  return passport.authenticate('facebook', { session: false }, (error, user) => {
+  return passport.authenticate('facebook', { session: false }, async (error, user) => {
     if (error) {
       if (wantsJson(req)) {
         return res.status(401).json({
@@ -182,7 +201,7 @@ router.get('/facebook/callback', (req, res, next) => {
       delete req.session.oauthAppName;
       delete req.session.oauthProvider;
     }
-    return redirectToFrontendCallback(req, res, 'facebook', appName || null);
+    return await redirectToFrontendCallback(req, res, 'facebook', appName || null);
   })(req, res, next);
 });
 

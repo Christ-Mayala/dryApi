@@ -44,12 +44,12 @@ const upsertGoogleUser = async (appName, profile) => {
   const email = profile?.emails?.[0]?.value;
   if (!email) throw new Error("Google n'a pas fourni d'email pour ce compte.");
 
-  // 1) Provider link first
-  let user = await User.findOne({ googleId: profile.id }).select('+googleId');
+  // 1) Provider link first - Toujours selectionner refreshTokens pour la rotation de session
+  let user = await User.findOne({ googleId: profile.id }).select('+googleId +refreshTokens');
   if (user) return user;
 
   // 2) Link by email if already registered
-  user = await User.findOne({ email });
+  user = await User.findOne({ email }).select('+refreshTokens');
   if (user) {
     user.googleId = profile.id;
     await user.save();
@@ -74,14 +74,14 @@ const upsertGoogleUser = async (appName, profile) => {
 const upsertFacebookUser = async (appName, profile) => {
   const User = getModel(appName, 'User');
 
-  // 1) Provider link first
-  let user = await User.findOne({ facebookId: profile.id }).select('+facebookId');
+  // 1) Provider link first - Toujours selectionner refreshTokens pour la rotation de session
+  let user = await User.findOne({ facebookId: profile.id }).select('+facebookId +refreshTokens');
   if (user) return user;
 
   // Facebook may not always return email depending on app permissions/account.
   const email = profile?.emails?.[0]?.value;
   if (email) {
-    user = await User.findOne({ email });
+    user = await User.findOne({ email }).select('+refreshTokens');
     if (user) {
       user.facebookId = profile.id;
       await user.save();
