@@ -1,7 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
-const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
+const { signAccessToken, signRefreshToken, hashToken } = require('../../../../../dry/utils/auth/jwt');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -22,9 +21,10 @@ module.exports = asyncHandler(async (req, res) => {
 
     const token = signAccessToken(user._id);
     const rt = signRefreshToken(user._id);
+    const hashedRt = hashToken(rt);
 
     user.refreshTokens = user.refreshTokens || [];
-    user.refreshTokens.push(rt);
+    user.refreshTokens.push(hashedRt);
     if (user.refreshTokens.length > 10) {
         user.refreshTokens = user.refreshTokens.slice(-10);
     }

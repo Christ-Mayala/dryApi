@@ -1,7 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { verifyToken } = require('../../../../../dry/utils/auth/jwt');
-const config = require('../../../../../config/database');
+const { verifyToken, hashToken } = require('../../../../../dry/utils/auth/jwt');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -11,9 +10,10 @@ module.exports = asyncHandler(async (req, res) => {
     if (rt) {
         try {
             const decoded = verifyToken(rt);
+            const hashedRt = hashToken(rt);
             const user = await User.findById(decoded.id).select('+refreshTokens');
             if (user && Array.isArray(user.refreshTokens)) {
-                user.refreshTokens = user.refreshTokens.filter((t) => t !== rt);
+                user.refreshTokens = user.refreshTokens.filter((t) => t !== hashedRt);
                 await user.save();
             }
         } catch (_) {}

@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const { signAccessToken, signRefreshToken, verifyToken } = require('../../utils/auth/jwt.util');
+const { signAccessToken, signRefreshToken, verifyToken, hashToken } = require('../../utils/auth/jwt.util');
 const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
@@ -10,7 +10,7 @@ exports.login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const User = req.getModel('User'); // Modèle Dynamique
 
-    const user = await User.findOne({ email }).select('+password +loginAttempts +lockUntil');
+    const user = await User.findOne({ email }).select('+password +loginAttempts +lockUntil +refreshTokens');
 
     if (!user) {
         // Anti-timing attack
@@ -40,12 +40,22 @@ exports.login = asyncHandler(async (req, res) => {
 
     const token = signAccessToken(user._id);
     const refreshToken = signRefreshToken(user._id);
+    const hashedRt = hashToken(refreshToken);
+
+    // Stockage du RT haché
+    if (!user.refreshTokens) user.refreshTokens = [];
+    user.refreshTokens.push(hashedRt);
+    if (user.refreshTokens.length > 10) {
+        user.refreshTokens = user.refreshTokens.slice(-10);
+    }
+    await user.save();
     
     // Nettoyage user pour réponse
     const userData = user.toObject();
     delete userData.password;
     delete userData.lockUntil;
     delete userData.loginAttempts;
+    delete userData.refreshTokens;
 
     sendResponse(res, { token, refreshToken, user: userData }, 'Connexion réussie');  
 });
@@ -80,6 +90,11 @@ exports.register = asyncHandler(async (req, res) => {
     const user = await User.create(payload);
     const token = signAccessToken(user._id);
     const refreshToken = signRefreshToken(user._id);
+    const hashedRt = hashToken(refreshToken);
+
+    // Stockage du RT haché
+    user.refreshTokens = [hashedRt];
+    await user.save();
 
     const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
     if (shouldSend && user?.email) {
@@ -93,6 +108,7 @@ exports.register = asyncHandler(async (req, res) => {
         ).catch(() => {});
     }
     const userData = user.toObject();
+    delete userData.refreshTokens;
     sendResponse(res, { ...userData, token, refreshToken, user: userData }, 'Inscription réussie');
 });
 
@@ -103,17 +119,33 @@ exports.refresh = asyncHandler(async (req, res) => {
 
     try {
         const decoded = verifyToken(refreshToken);
+        const hashedRt = hashToken(refreshToken);
         const User = req.getModel('User');
-        const user = await User.findById(decoded.id);
+        const user = await User.findById(decoded.id).select('+refreshTokens');
 
         if (!user) throw new Error('Utilisateur introuvable');
 
+        // Vérification du RT haché dans la liste
+        if (!user.refreshTokens || !user.refreshTokens.includes(hashedRt)) {
+            throw new Error('Refresh token invalide ou révoqué');
+        }
+
+        // Rotation du token
+        user.refreshTokens = user.refreshTokens.filter(t => t !== hashedRt);
+
         const newToken = signAccessToken(user._id);
         const newRefreshToken = signRefreshToken(user._id);
+        const hashedNewRt = hashToken(newRefreshToken);
+
+        user.refreshTokens.push(hashedNewRt);
+        if (user.refreshTokens.length > 10) {
+            user.refreshTokens = user.refreshTokens.slice(-10);
+        }
+        await user.save();
 
         sendResponse(res, { token: newToken, refreshToken: newRefreshToken }, 'Token rafraîchi');
     } catch (error) {
-        throw new Error('Refresh token invalide ou expiré');
+        throw new Error(error.message || 'Refresh token invalide ou expiré');
     }
 });
 

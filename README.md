@@ -109,3 +109,174 @@ tests/         suites unit, integration et e2e
 ## Note securite
 
 Les secrets previously presents dans `.env` ont ete neutralises dans ce repo. Ils doivent etre regeneres avant tout usage reel en local, en preview ou en production.
+
+
+
+toolName: todo_write
+            
+status: success
+          
+Todos updated: 5 items
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\utils\auth\jwt.util.js
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\utils\auth\jwt.util.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.login.controller.js
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\utils\auth\jwt.js
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\utils\auth\jwt.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.login.controller.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.refresh.controller.js
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.refresh.controller.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.logout.controller.js
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dryApp\SCIM\features\users\controller\users.logout.controller.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\modules\user\socialAuth.routes.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\modules\user\auth.controller.js
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\modules\user\auth.controller.js
+          
+
+        
+            
+toolName: edit_file_search_replace
+            
+status: success
+          
+            
+filePath: d:\Alvine\dryApi\dry\modules\user\auth.controller.js
+          
+changes: undefined
+          
+
+        
+            
+toolName: todo_write
+            
+status: success
+          
+Todos updated: 5 itemsRequest limited, please try again later (4008)

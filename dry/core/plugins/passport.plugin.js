@@ -20,13 +20,29 @@ const buildCallbackUrl = (overrideUrl, path) => {
  * Social auth is mounted globally at `/api/auth/...` (see bootloader).
  * App APIs are multi-tenant and use a tenant DB connection.
  *
- * We carry the tenant name via the Express session:
- * - `/api/auth/google?app=SCIM` stores `req.session.oauthAppName = 'SCIM'`
- * - The callback can then read it to create/link the user inside the SCIM tenant DB.
+ * We transport the tenant name via the OAuth 'state' parameter (stateless).
+ * On callback, we parse it from `req.query.state`.
  */
 const resolveTenantAppName = (req) => {
-  const appName = String(req?.query?.app || req?.session?.oauthAppName || '').trim();
-  return appName || null;
+  // 1. Essayer de trouver dans le paramètre 'state' d'OAuth
+  if (req?.query?.state) {
+    try {
+      const state = JSON.parse(req.query.state);
+      if (state.app) return String(state.app).trim();
+    } catch (_) {
+      // Pas du JSON, peut être un state simple ou celui de Passport
+    }
+  }
+
+  // 2. Fallback sur les query params directs
+  const fromQuery = req?.query?.app;
+  if (fromQuery) return String(fromQuery).trim();
+
+  // 3. Fallback sur la session (legacy)
+  const fromSession = req?.session?.oauthAppName;
+  if (fromSession) return String(fromSession).trim();
+
+  return null;
 };
 
 const createRandomPassword = () => Math.random().toString(36).slice(-12);
@@ -128,7 +144,9 @@ const initialize = (app) => {
           clientID: googleClientId,
           clientSecret: googleClientSecret,
           callbackURL: googleCallbackUrl,
-          state: true,
+          // On désactive la gestion automatique du state par session de Passport 
+          // pour utiliser notre propre 'state' JSON stateless passé dans authenticate().
+          state: false, 
           passReqToCallback: true,
         },
         async (req, accessToken, refreshToken, profile, done) => {
@@ -170,7 +188,9 @@ const initialize = (app) => {
           clientSecret: facebookAppSecret,
           callbackURL: facebookCallbackUrl,
           profileFields: ['id', 'displayName', 'emails', 'photos'],
-          state: true,
+          // On désactive la gestion automatique du state par session de Passport 
+          // pour utiliser notre propre 'state' JSON stateless passé dans authenticate().
+          state: false,
           passReqToCallback: true,
         },
         async (req, accessToken, refreshToken, profile, done) => {

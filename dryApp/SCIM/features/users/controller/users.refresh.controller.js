@@ -1,7 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { signAccessToken, signRefreshToken, verifyToken } = require('../../../../../dry/utils/auth/jwt');
-const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
+const { signAccessToken, signRefreshToken, verifyToken, hashToken } = require('../../../../../dry/utils/auth/jwt');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -16,17 +15,19 @@ module.exports = asyncHandler(async (req, res) => {
         return sendResponse(res, null, 'Token expiré ou invalide.', false);
     }
 
+    const hashedRt = hashToken(rt);
     const user = await User.findById(decoded.id).select('+refreshTokens');
-    if (!user || !Array.isArray(user.refreshTokens) || !user.refreshTokens.includes(rt)) {
+    if (!user || !Array.isArray(user.refreshTokens) || !user.refreshTokens.includes(hashedRt)) {
         return sendResponse(res, null, 'Token invalide.', false);
     }
 
-    user.refreshTokens = user.refreshTokens.filter((t) => t !== rt);
+    user.refreshTokens = user.refreshTokens.filter((t) => t !== hashedRt);
 
     const newAccessToken = signAccessToken(user._id);
     const newRefreshToken = signRefreshToken(user._id);
+    const hashedNewRt = hashToken(newRefreshToken);
 
-    user.refreshTokens.push(newRefreshToken);
+    user.refreshTokens.push(hashedNewRt);
     if (user.refreshTokens.length > 10) {
         user.refreshTokens = user.refreshTokens.slice(-10);
     }
