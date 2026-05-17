@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { verifyToken, hashToken } = require('../../../../../dry/utils/auth/jwt');
+const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');

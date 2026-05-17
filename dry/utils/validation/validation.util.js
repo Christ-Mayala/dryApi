@@ -1,4 +1,4 @@
-﻿const Joi = require('joi');
+const Joi = require('joi');
 
 // SchÃ©mas de validation COMMUNS Ã  toutes les applications
 const commonSchemas = {
@@ -32,8 +32,11 @@ const commonSchemas = {
 
   // Nom
   name: Joi.string().min(2).max(100).required().messages({
-    'string.min': 'Le nom doit contenir au moins 2 caractÃ¨res',
-    'string.max': 'Le nom ne peut pas dÃ©passer 100 caractÃ¨res'
+    'string.base': 'Le nom doit être une chaîne de caractères',
+    'string.empty': 'Le nom est requis',
+    'string.min': 'Le nom doit contenir au moins 2 caractères',
+    'string.max': 'Le nom ne peut pas dépasser 100 caractères',
+    'any.required': 'Le nom est requis'
   }),
 
   // TÃ©lÃ©phone
@@ -96,16 +99,9 @@ const validate = (schema, source = 'body') => {
 
 // Validation des paramÃ¨tres ID
 const validateId = (req, res, next) => {
-  console.log('ðŸ” DEBUG - validateId:', {
-    id: req.params.id,
-    idLength: req.params.id?.length,
-    pattern: /^[0-9a-fA-F]{24}$/.test(req.params.id)
-  });
-
   const { error } = commonSchemas.paramId.validate(req.params.id);
 
   if (error) {
-    console.log('âŒ DEBUG - Validation error:', error);
     return res.status(400).json({
       success: false,
       message: 'ID invalide',
@@ -113,7 +109,6 @@ const validateId = (req, res, next) => {
     });
   }
 
-  console.log('âœ… DEBUG - ID validation passed');
   next();
 };
 

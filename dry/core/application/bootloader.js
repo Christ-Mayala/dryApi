@@ -16,6 +16,7 @@ const passportPlugin = require('../plugins/passport.plugin');
 
 // Routes d'authentification sociale (DRY)
 const socialAuthRoutes = require('../../modules/user/socialAuth.routes');
+const maintenanceMiddleware = require('../../middlewares/maintenance.middleware');
 
 // ANSI Colors
 const C = {
@@ -157,6 +158,9 @@ const bootstrapApps = (app) => {
       req.getModel = (modelName, schema) => getModel(appName, modelName, schema);
       next();
     });
+
+    // Appliquer le middleware de maintenance
+    appRouter.use(maintenanceMiddleware);
 
     console.log(`   ${C.GREEN}✅ Context:${C.RESET}  Middleware injecté`);
 

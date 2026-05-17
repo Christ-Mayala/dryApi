@@ -114,6 +114,7 @@ const { validateSCIM } = require('../../../validation/middleware');
 
 const getDashboardStats = require('../controller/admin.dashboardStats.controller');
 const getAllReservations = require('../controller/admin.reservations.list.controller');
+const updateReservationStatus = require('../controller/admin.reservations.updateStatus.controller');
 
 const getAllProperties = require('../controller/admin.properties.list.controller');
 const getPropertyById = require('../controller/admin.properties.get.controller');
@@ -160,6 +161,7 @@ router.get('/dashboard/stats', getDashboardStats);
 
 
 router.get('/reservations', getAllReservations);
+router.put('/reservations/:id/status', validateId, updateReservationStatus);
 
 
 
@@ -169,116 +171,25 @@ router.get('/reservations', getAllReservations);
 
 
 router.get('/properties', getAllProperties);
-
-
-
-
-
-
-
-router.get('/properties/:id', getPropertyById);
-
-
-
-
-
-
-
-router.put('/properties/:id/status', updatePropertyStatus);
-
-
-
-
-
-
-
-router.delete('/properties/:id', deleteProperty);
+router.get('/properties/:id', validateId, getPropertyById);
+router.put('/properties/:id/status', validateId, updatePropertyStatus);
+router.delete('/properties/:id', validateId, deleteProperty);
 router.get('/property-submissions', listPropertySubmissions);
 router.put('/property-submissions/:id', validateId, validateSCIM.property.submissionUpdate, updatePropertySubmission);
 router.put('/property-submissions/:id/status', validateId, validateSCIM.property.submissionReview, updatePropertySubmissionStatus);
 router.delete('/property-submissions/:id', validateId, deletePropertySubmission);
 
-
-
-
-
-
-
-
 router.get('/users', getAllUsers);
-
-
-
-
-
-
-
-router.get('/users/:id', getUserById);
-
-
-
-
-
-
-
-router.put('/users/:id', updateUser);
-
-
-
-
-
-
-
-router.put('/users/:id/role', updateUserRole);
-
-
-
-
-
-
-
-router.delete('/users/:id', deleteUser);
-
-
-
-
-
-
-
-router.patch('/users/:id/restore', restoreUser);
-
-
-
-
-
-
-
+router.get('/users/:id', validateId, getUserById);
+router.put('/users/:id', validateId, updateUser);
+router.put('/users/:id/role', validateId, updateUserRole);
+router.delete('/users/:id', validateId, deleteUser);
+router.patch('/users/:id/restore', validateId, restoreUser);
 
 router.get('/messages', getAllMessages);
-
-
-
-
-
-
-
-router.get('/messages/:id', getMessageById);
-
-
-
-
-
-
-
-router.put('/messages/:id/status', updateMessageStatus);
-
-
-
-
-
-
-
-router.delete('/messages/:id', deleteMessage);
+router.get('/messages/:id', validateId, getMessageById);
+router.put('/messages/:id/status', validateId, updateMessageStatus);
+router.delete('/messages/:id', validateId, deleteMessage);
 
 
 

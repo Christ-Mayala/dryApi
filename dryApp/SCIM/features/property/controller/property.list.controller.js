@@ -30,11 +30,18 @@ module.exports = asyncHandler(async (req, res) => {
     const { page, limit, skip } = getPagination(req.query, { defaultLimit: 10, maxLimit: 100 });
 
     const query = { isDeleted: false };
-    query.$and = [
-        {
-            $or: [{ status: 'active' }, { status: { $exists: false } }],
-        },
-    ];
+    
+    // Si un statut est fourni dans la requête (souvent depuis l'admin)
+    if (req.query.status && req.query.status !== 'all') {
+        query.status = req.query.status;
+    } else {
+        // Sinon, par défaut (pour le client public), on n'affiche que l'actif
+        query.$and = [
+            {
+                $or: [{ status: 'active' }, { status: { $exists: false } }],
+            },
+        ];
+    }
 
     const search = req.query.search;
     if (search) {

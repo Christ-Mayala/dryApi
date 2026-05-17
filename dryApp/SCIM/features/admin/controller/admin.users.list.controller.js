@@ -8,13 +8,24 @@ module.exports = asyncHandler(async (req, res) => {
     const { page, limit, skip } = getPagination(req.query, { defaultLimit: 10, maxLimit: 100 });
 
     const query = {};
-    if (req.query.role) query.role = req.query.role;
+    if (req.query.role && req.query.role !== 'all') query.role = req.query.role;
+    if (req.query.status && req.query.status !== 'all') query.status = req.query.status;
+    
     if (req.query.search) {
-        query.$or = [
-            { name: { $regex: req.query.search, $options: 'i' } },
-            { nom: { $regex: req.query.search, $options: 'i' } },
-            { email: { $regex: req.query.search, $options: 'i' } },
+        const searchRegex = { $regex: req.query.search, $options: 'i' };
+        const searchOr = [
+            { name: searchRegex },
+            { nom: searchRegex },
+            { email: searchRegex },
+            { telephone: searchRegex }
         ];
+
+        if (Object.keys(query).length > 0) {
+            query.$and = query.$and || [];
+            query.$and.push({ $or: searchOr });
+        } else {
+            query.$or = searchOr;
+        }
     }
 
     const [users, total] = await Promise.all([

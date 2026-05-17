@@ -1,4 +1,4 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const cloudinary = require('cloudinary').v2;
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { pickDefined } = require('../../../../../dry/utils/data/pick');

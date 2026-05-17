@@ -64,6 +64,18 @@ exports.login = asyncHandler(async (req, res) => {
 exports.register = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
 
+    // Vérifier si les inscriptions sont autorisées
+    const settingsSchema = require('../../../dryApp/SCIM/features/admin/model/systemSettings.schema.js');
+    const SystemSettings = req.getModel('SystemSettings', settingsSchema);
+    const allowRegistration = await SystemSettings.findOne({ key: 'allowRegistration' });
+
+    if (allowRegistration && allowRegistration.value === false) {
+        return res.status(403).json({
+            success: false,
+            message: 'Les inscriptions sont temporairement désactivées sur cette plateforme.',
+        });
+    }
+
     const payload = { ...req.body };
 
     if (!payload.name && payload.nom) {

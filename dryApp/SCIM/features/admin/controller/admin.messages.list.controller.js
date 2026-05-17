@@ -1,4 +1,4 @@
-﻿const asyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { getPagination } = require('../../../../../dry/utils/data/pagination');
 
@@ -11,7 +11,17 @@ module.exports = asyncHandler(async (req, res) => {
 
     const query = {};
     if (req.query.status === 'read') query.lu = true;
-    if (req.query.status === 'unread') query.lu = false;
+    else if (req.query.status === 'unread') query.lu = false;
+
+    if (req.query.search) {
+        const searchRegex = { $regex: req.query.search, $options: 'i' };
+        query.$or = [
+            { sujet: searchRegex },
+            { contenu: searchRegex },
+            { 'expediteur.name': searchRegex },
+            { 'expediteur.email': searchRegex }
+        ];
+    }
 
     const [messages, total] = await Promise.all([
         Message.find(query)

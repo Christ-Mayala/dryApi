@@ -2,6 +2,8 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 const os = require('os');
+const fs = require('fs');
+const path = require('path');
 const config = require('../../../config/database');
 
 const isCloudinaryConfigured = !!(config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET);
