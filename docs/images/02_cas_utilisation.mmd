@@ -1,0 +1,36 @@
+graph LR
+    subgraph Acteurs
+        Client[Client]
+        Agent[Agent/Administrateur]
+    end
+    
+    subgraph "Fonctionnalités Client"
+        UC1(Consulter les biens)
+        UC2(Rechercher avec filtres)
+        UC3(Effectuer une réservation)
+        UC4(Suivre ses demandes)
+        UC5(Gérer ses favoris)
+    end
+    
+    subgraph "Fonctionnalités Agent/Admin"
+        UC6(Gérer les biens immobiliers)
+        UC7(Traiter les réservations)
+        UC8(Gérer les utilisateurs)
+        UC9(Consulter le tableau de bord)
+        UC10(Superviser le système)
+    end
+    
+    Client --- UC1
+    Client --- UC2
+    Client --- UC3
+    Client --- UC4
+    Client --- UC5
+    
+    Agent --- UC6
+    Agent --- UC7
+    Agent --- UC8
+    Agent --- UC9
+    Agent --- UC10
+    
+    style Client fill:#4ade80,stroke:#22c55e
+    style Agent fill:#60a5fa,stroke:#3b82f6

@@ -23,7 +23,6 @@ const { printStartupBanner } = require('./dry/bootstrap/startup-banner');
 registerProcessHandlers();
 
 const { app, allowedOrigins } = createApp();
-registerApplicationRoutes(app);
 
 const server = http.createServer(app);
 createSocketServer(server, app, allowedOrigins);
@@ -31,6 +30,8 @@ createSocketServer(server, app, allowedOrigins);
 const startServer = async () => {
   await connectCluster();
   await redisService.connect();
+  
+  await registerApplicationRoutes(app);
 
   startPurgeScheduler();
   startHealthMonitor();

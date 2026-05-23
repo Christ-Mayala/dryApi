@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Agent as Agent
+    participant Frontend as Frontend
+    participant Cloudinary as Cloudinary
+    participant Backend as Backend
+    participant MongoDB as MongoDB
+    participant Clients as Clients
+
+    Agent->>Frontend: Sélection et upload d'image
+    Frontend->>Cloudinary: Envoi du fichier
+    Cloudinary-->>Frontend: URL de l'image optimisée
+    Frontend->>Backend: Envoi des données du bien
+    Backend->>MongoDB: Sauvegarde du bien
+    MongoDB-->>Backend: Confirmation
+    Backend->>Clients: Diffusion mise à jour catalogue (via Socket.io)

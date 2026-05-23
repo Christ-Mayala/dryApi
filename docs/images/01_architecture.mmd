@@ -1,0 +1,28 @@
+graph TB
+    subgraph "Couche Présentation"
+        Navigateur[Navigateur Client]
+    end
+    
+    subgraph "Couche Frontend"
+        Frontend[React + Vite + Tailwind CSS]
+    end
+    
+    subgraph "Couche Backend"
+        Backend[Node.js + Express.js]
+        Socket[Socket.io]
+    end
+    
+    subgraph "Couche Données"
+        MongoDB[(MongoDB Atlas)]
+    end
+    
+    subgraph "Services Externes"
+        Cloudinary[Cloudinary]
+    end
+    
+    Navigateur -->|HTTP/HTTPS| Frontend
+    Frontend -->|API REST| Backend
+    Backend -->|Communication directe| MongoDB
+    Backend -->|Notifications temps réel| Socket
+    Backend -->|Upload médias| Cloudinary
+    Socket -->|Notification temps réel| Frontend

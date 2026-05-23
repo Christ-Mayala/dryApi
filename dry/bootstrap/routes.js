@@ -49,7 +49,7 @@ const registerHealthRoutes = (app) => {
     const overview = await healthService.getSystemOverview();
     res.status(200).send(healthService.renderSystemStatusPage(overview));
   });
-
+ 
   // Nouveaux endpoints pour les actions système
   app.post('/system/actions/create-app', async (req, res) => {
     const { appName, template, addons } = req.body;
@@ -82,8 +82,8 @@ const registerDocumentationRoutes = (app) => {
   });
 };
 
-const registerApplicationRoutes = (app) => {
-  bootstrapApps(app);
+const registerApplicationRoutes = async (app) => {
+  await bootstrapApps(app);
   registerHealthRoutes(app);
   registerDocumentationRoutes(app);
 

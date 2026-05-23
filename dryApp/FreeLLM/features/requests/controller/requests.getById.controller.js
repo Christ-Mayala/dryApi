@@ -1,0 +1,13 @@
+const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const RequestsSchema = require('../model/requests.schema');
+
+module.exports = asyncHandler(async (req, res) => {
+  const Model = req.getModel('Requests', RequestsSchema);
+  const item = await Model.findById(req.params.id);
+  if (!item) {
+    res.status(404);
+    throw new Error('Requests non trouve');
+  }
+  return sendResponse(res, item, 'Requests recupere');
+});

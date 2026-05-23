@@ -31,7 +31,7 @@ const C = {
   MAGENTA: '\x1b[35m'
 };
 
-const bootstrapApps = (app) => {
+const bootstrapApps = async (app) => {
   console.log(`\n${C.BRIGHT}${C.CYAN}╔══════════════════════════════════════════════════════════════╗${C.RESET}`);
   console.log(`${C.BRIGHT}${C.CYAN}║      🚀 DÉMARRAGE DU SYSTÈME DRY - BOOTLOADER v3.5         ║${C.RESET}`);
   console.log(`${C.BRIGHT}${C.CYAN}╚══════════════════════════════════════════════════════════════╝${C.RESET}\n`);
@@ -39,7 +39,6 @@ const bootstrapApps = (app) => {
   // ==========================================
   // ÉTAPE -1 : PRÉ-CHARGEMENT DES SCHÉMAS GLOBAUX
   // ==========================================
-  // Nécessaire pour que les plugins (ex: Passport) puissent trouver les modèles (ex: User) à l'initialisation.
   const modelsPath = path.join(__dirname, '../../modules');
   fs.readdirSync(modelsPath).forEach((dir) => {
     const modelDir = path.join(modelsPath, dir);
@@ -60,14 +59,11 @@ const bootstrapApps = (app) => {
   console.log(`${C.DIM}────────────────────────────────────────────────────────────${C.RESET}`);
   console.log(`   ${C.GREEN}✅ ${passportPlugin.name.padEnd(15)}${C.RESET} → ${C.DIM}${passportPlugin.description}${C.RESET}`);
   
-  // Monter les routes d'authentification sociale globales (DRY)
   app.use('/api/auth', socialAuthRoutes);
   console.log(
     `   ${C.GREEN}✅ social-auth`.padEnd(21) +
       ` → ${C.DIM}/api/auth/google?app=SCIM , /api/auth/facebook?app=SCIM${C.RESET}`
   );
-
-
 
   // ==========================================
   // ÉTAPE 1 : CHARGEMENT DES MODULES NATIFS DRY
@@ -83,7 +79,6 @@ const bootstrapApps = (app) => {
       
       if (!fs.statSync(modulePath).isDirectory()) return;
 
-      // Afficher le module User comme étant géré par App
       if (moduleName.toLowerCase() === 'user') {
         console.log(`   ${C.CYAN}ℹ️  ${moduleName.padEnd(15)}${C.RESET} → ${C.DIM}Multi-Tenant (Injecté par App)${C.RESET}`);
         return;
@@ -104,8 +99,6 @@ const bootstrapApps = (app) => {
         }
       });
     });
-  } else {
-    console.warn(`${C.YELLOW}⚠️  Aucun module DRY natif trouvé dans dry/modules/${C.RESET}`);
   }
 
   // ==========================================
@@ -136,35 +129,30 @@ const bootstrapApps = (app) => {
   // ==========================================
   // ÉTAPE 3 : BOOTSTRAP DE CHAQUE APPLICATION
   // ==========================================
-  apps.forEach((appName) => {
+  for (const appName of apps) {
     console.log(`\n${C.BRIGHT}${C.MAGENTA}📱 APPLICATION: ${appName}${C.RESET}`);
     console.log(`${C.DIM}════════════════════════════════════════════════════════════${C.RESET}`);
 
-    // Initialiser la connexion DB spécifique
     try {
       getTenantDB(appName);
       console.log(`   ${C.GREEN}✅ Database:${C.RESET} ${appName}DB connectée`);
     } catch (error) {
       console.error(`   ${C.RED}❌ Erreur DB ${appName}:${C.RESET} ${error.message}`);
-      return;
+      continue;
     }
 
-    // Créer le routeur de l'application
     const appRouter = express.Router();
 
-    // Middleware de contexte
     appRouter.use((req, res, next) => {
       req.appName = appName;
       req.getModel = (modelName, schema) => getModel(appName, modelName, schema);
       next();
     });
 
-    // Appliquer le middleware de maintenance
     appRouter.use(maintenanceMiddleware);
 
     console.log(`   ${C.GREEN}✅ Context:${C.RESET}  Middleware injecté`);
 
-    // Auth + password reset par application
     console.log(`\n   ${C.BRIGHT}📦 MODULES NATIFS:${C.RESET}`);
     console.log(`   ${C.DIM}────────────────────────────────────────────────────────${C.RESET}`);
     
@@ -174,67 +162,88 @@ const bootstrapApps = (app) => {
     appRouter.use('/password-reset', passwordResetRoutes);
     console.log(`   ${C.GREEN}✅ password-reset${C.RESET} → ${C.DIM}/password-reset${C.RESET}`);
 
-    // Chargement des Features
     const featuresPath = path.join(dryAppPath, appName, 'features');
+    if (fs.existsSync(featuresPath)) {
+      const features = fs.readdirSync(featuresPath).filter(item => {
+        const itemPath = path.join(featuresPath, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
 
-    if (!fs.existsSync(featuresPath)) {
-      console.warn(`   ${C.YELLOW}⚠️  Aucune feature dans ${appName}/features/${C.RESET}`);
-      app.use(`/api/v1/${appName.toLowerCase()}`, appRouter);
-      return;
-    }
+      if (features.length > 0) {
+        console.log(`\n   ${C.BRIGHT}📂 FEATURES (${features.length}):${C.RESET}`);
+        console.log(`   ${C.DIM}────────────────────────────────────────────────────────${C.RESET}`);
 
-    const features = fs.readdirSync(featuresPath).filter(item => {
-      const itemPath = path.join(featuresPath, item);
-      return fs.statSync(itemPath).isDirectory();
-    });
+        for (const feature of features) {
+          let routeDir = path.join(featuresPath, feature, 'route');
+          if (!fs.existsSync(routeDir)) {
+            routeDir = path.join(featuresPath, feature, 'Route');
+          }
 
-    if (features.length === 0) {
-      console.warn(`   ${C.YELLOW}⚠️  Aucune feature détectée dans ${appName}/features/${C.RESET}`);
-    } else {
-      console.log(`\n   ${C.BRIGHT}📂 FEATURES (${features.length}):${C.RESET}`);
-      console.log(`   ${C.DIM}────────────────────────────────────────────────────────${C.RESET}`);
-    }
+          if (!fs.existsSync(routeDir)) {
+            console.warn(`   ${C.YELLOW}⚠️  ${feature.padEnd(20)} → Pas de dossier route/${C.RESET}`);
+            continue;
+          }
 
-    features.forEach((feature) => {
-      let routeDir = path.join(featuresPath, feature, 'route');
-      if (!fs.existsSync(routeDir)) {
-        routeDir = path.join(featuresPath, feature, 'Route');
-      }
+          const routeFiles = fs.readdirSync(routeDir).filter(f => f.endsWith('.routes.js'));
 
-      if (!fs.existsSync(routeDir)) {
-        console.warn(`   ${C.YELLOW}⚠️  ${feature.padEnd(20)} → Pas de dossier route/${C.RESET}`);
-        return;
-      }
+          if (routeFiles.length === 0) {
+            console.warn(`   ${C.YELLOW}⚠️  ${feature.padEnd(20)} → Aucun fichier .routes.js${C.RESET}`);
+            continue;
+          }
 
-      const routeFiles = fs.readdirSync(routeDir).filter(f => f.endsWith('.routes.js'));
-
-      if (routeFiles.length === 0) {
-        console.warn(`   ${C.YELLOW}⚠️  ${feature.padEnd(20)} → Aucun fichier .routes.js${C.RESET}`);
-        return;
-      }
-
-      routeFiles.forEach((file) => {
-        let routePath;
-        try {
-          routePath = path.join(routeDir, file);
-          const router = require(routePath);
-          appRouter.use(`/${feature.toLowerCase()}`, router);
-          console.log(`   ${C.GREEN}✅ ${feature.padEnd(20)}${C.RESET} → ${C.DIM}/${feature.toLowerCase()}${C.RESET}`);
-        } catch (error) {
-          console.error(`   ${C.RED}❌ ${feature.padEnd(20)} → Erreur: ${error.message}${C.RESET}`);
-          if (config.NODE_ENV === 'development') {
-            console.error(`      Chemin: ${routePath}`);
-            console.error(`      Stack: ${error.stack}`);
+          for (const file of routeFiles) {
+            let routePath;
+            try {
+              routePath = path.join(routeDir, file);
+              const router = require(routePath);
+              appRouter.use(`/${feature.toLowerCase()}`, router);
+              console.log(`   ${C.GREEN}✅ ${feature.padEnd(20)}${C.RESET} → ${C.DIM}/${feature.toLowerCase()}${C.RESET}`);
+            } catch (error) {
+              console.error(`   ${C.RED}❌ ${feature.padEnd(20)} → Erreur: ${error.message}${C.RESET}`);
+              if (config.NODE_ENV === 'development') {
+                console.error(`      Chemin: ${routePath}`);
+                console.error(`      Stack: ${error.stack}`);
+              }
+            }
           }
         }
-      });
-    });
+      }
+    }
+
+    const appIndexPath = path.join(dryAppPath, appName, 'index.js');
+    let initResult = null;
+    if (fs.existsSync(appIndexPath)) {
+      try {
+        const appModule = require(appIndexPath);
+        if (appModule.initFreeLLM || appModule.bootstrap) {
+          console.log(`\n   ${C.BRIGHT}🚀 Initialisation personnalisée:${C.RESET}`);
+          
+          const initFn = appModule.initFreeLLM || appModule.bootstrap;
+          initResult = await initFn(appName);
+          
+          if (appModule.mountFreeLLMRoutes || appModule.mountRoutes) {
+            const mountFn = appModule.mountFreeLLMRoutes || appModule.mountRoutes;
+            mountFn(app, appName, 
+              initResult.Models, initResult.ApiKeys, 
+              initResult.FallbackConfig, initResult.Requests, 
+              initResult.Settings, 
+              initResult.Conversations, initResult.ConversationMessages,
+              initResult.unifiedApiKey);
+          }
+        }
+      } catch (error) {
+        console.error(`   ${C.RED}❌ Erreur d'initialisation personnalisée:${C.RESET} ${error.message}`);
+        if (config.NODE_ENV === 'development') {
+          console.error(`      Stack: ${error.stack}`);
+        }
+      }
+    }
 
     const appEndpoint = `/api/v1/${appName.toLowerCase()}`;
     app.use(appEndpoint, appRouter);
     console.log(`\n   ${C.CYAN}🌐 Routes montées sur:${C.RESET} ${appEndpoint}`);
     console.log(`   ${C.DIM}════════════════════════════════════════════════════════════${C.RESET}`);
-  });
+  }
 
   console.log(`\n${C.BRIGHT}${C.GREEN}╔══════════════════════════════════════════════════════════════╗${C.RESET}`);
   console.log(`${C.BRIGHT}${C.GREEN}║           ✅ BOOTLOADER TERMINÉ AVEC SUCCÈS                 ║${C.RESET}`);

@@ -1,0 +1,13 @@
+const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+const FallbackConfigSchema = require('../model/fallbackConfig.schema');
+
+module.exports = asyncHandler(async (req, res) => {
+  const Model = req.getModel('FallbackConfig', FallbackConfigSchema);
+  const item = await Model.findById(req.params.id);
+  if (!item) {
+    res.status(404);
+    throw new Error('FallbackConfig non trouve');
+  }
+  return sendResponse(res, item, 'FallbackConfig recupere');
+});

@@ -1,0 +1,48 @@
+graph TB
+    subgraph "Parcours Client"
+        C_Début[Début]
+        C_Consultation[Consultation catalogue]
+        C_Filtres[Utilisation filtres]
+        C_Détail[Accès fiche détaillée]
+        C_Favoris[Ajout favoris]
+        C_Réservation[Soumission réservation]
+        C_Attente[Attente validation]
+        C_Notification[Réception notification]
+        C_Fin[Fin]
+        
+        C_Début --> C_Consultation
+        C_Consultation --> C_Filtres
+        C_Filtres --> C_Détail
+        C_Détail --> C_Favoris
+        C_Favoris --> C_Réservation
+        C_Réservation --> C_Attente
+        C_Attente --> C_Notification
+        C_Notification --> C_Fin
+    end
+    
+    subgraph "Parcours Agent"
+        A_Début[Début]
+        A_Connexion[Connexion tableau de bord]
+        A_Consultation[Consultation demandes en attente]
+        A_Vérification[Vérification disponibilité]
+        A_Décision{Validation ou rejet}
+        A_Valide[Confirmation]
+        A_Rejet[Annulation avec motif]
+        A_NotifClient[Notification client]
+        A_MiseAJour[Mise à jour statut]
+        A_Fin[Fin]
+        
+        A_Début --> A_Connexion
+        A_Connexion --> A_Consultation
+        A_Consultation --> A_Vérification
+        A_Vérification --> A_Décision
+        A_Décision -->|Valide| A_Valide
+        A_Décision -->|Rejette| A_Rejet
+        A_Valide --> A_NotifClient
+        A_Rejet --> A_NotifClient
+        A_NotifClient --> A_MiseAJour
+        A_MiseAJour --> A_Fin
+    end
+    
+    C_Réservation -.->|Point de synchronisation| A_Consultation
+    A_NotifClient -.->|Point de synchronisation| C_Notification

@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Agent as Agent
+    participant Backend as Backend (Node.js + Socket.io)
+    participant MongoDB as MongoDB
+    participant SocketRoom as "Socket.io Room (userId)"
+    participant Client as Client
+
+    Agent->>Backend: PUT /api/reservations/:id (changement statut)
+    Backend->>MongoDB: Mise à jour
+    MongoDB-->>Backend: Confirmation
+    Backend->>Backend: io.to(clientId).emit('reservationUpdated')
+    Backend->>SocketRoom: Événement reservationUpdated
+    SocketRoom->>Client: Notification en temps réel
+    Client->>Client: Mise à jour interface sans rechargement

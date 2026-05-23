@@ -1,0 +1,37 @@
+graph LR
+    subgraph Acteurs
+        Client[Client]
+        Agent[Agent/Administrateur]
+        Partenaire[Partenaires financiers]
+        Agence[Autres agences immobilières]
+    end
+    
+    subgraph "Évolutions futures"
+        UC11(Paiement en ligne)
+        UC12(Application mobile native)
+        UC13(Système de recommandation IA)
+        UC14(Mode hors ligne)
+        UC15(Module multi-tenant)
+        UC16(Connecteurs sites externes)
+        UC17(Interface solutions comptables)
+        UC18(Estimation automatisée)
+    end
+    
+    Client --- UC11
+    Client --- UC12
+    Client --- UC13
+    Client --- UC14
+    
+    Agent --- UC15
+    Agent --- UC16
+    Agent --- UC17
+    Agent --- UC18
+    
+    Partenaire --- UC11
+    Agence --- UC15
+    Agence --- UC16
+    
+    style Client fill:#4ade80,stroke:#22c55e
+    style Agent fill:#60a5fa,stroke:#3b82f6
+    style Partenaire fill:#f472b6,stroke:#ec4899
+    style Agence fill:#fbbf24,stroke:#f59e0b

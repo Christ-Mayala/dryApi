@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Client as Client
+    participant Frontend as Frontend (React)
+    participant Backend as Backend (Node.js/Express)
+    participant MongoDB as MongoDB
+    participant Agent as Agent
+
+    Client->>Frontend: Soumission du formulaire
+    Frontend->>Backend: POST /api/reservations
+    Backend->>Backend: Vérification authentification JWT
+    Backend->>MongoDB: Enregistrement de la réservation
+    MongoDB-->>Backend: Confirmation enregistrement
+    Backend->>Backend: Génération référence RSV-XXXX
+    Backend->>Client: Confirmation (via Socket.io)
+    Backend->>Agent: Notification (via Socket.io)
+    Agent->>Backend: Changement de statut
+    Backend->>MongoDB: Mise à jour statut
+    Backend->>Client: Notification de mise à jour

@@ -1,0 +1,31 @@
+flowchart TD
+    Start[Début]
+    RemplirFormulaire[Client remplit formulaire]
+    VérifierDisponibilité[Système vérifie disponibilité]
+    DécisionDispo{Disponible ?}
+    Enregistrement[Enregistrement demande]
+    Suggestion[Suggestion alternatives]
+    GénérationRéférence[Génération référence RSV-XXXX]
+    NotificationAgent[Notification agent]
+    AgentAnalyse[Agent analyse demande]
+    DécisionValide{Valide ?}
+    Confirmation[Confirmation]
+    Annulation[Annulation avec motif]
+    NotificationClient[Notification client]
+    Fin[Fin]
+
+    Start --> RemplirFormulaire
+    RemplirFormulaire --> VérifierDisponibilité
+    VérifierDisponibilité --> DécisionDispo
+    DécisionDispo -->|Oui| Enregistrement
+    DécisionDispo -->|Non| Suggestion
+    Suggestion --> RemplirFormulaire
+    Enregistrement --> GénérationRéférence
+    GénérationRéférence --> NotificationAgent
+    NotificationAgent --> AgentAnalyse
+    AgentAnalyse --> DécisionValide
+    DécisionValide -->|Oui| Confirmation
+    DécisionValide -->|Non| Annulation
+    Confirmation --> NotificationClient
+    Annulation --> NotificationClient
+    NotificationClient --> Fin

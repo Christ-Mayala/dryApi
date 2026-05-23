@@ -1,0 +1,48 @@
+erDiagram
+    USER ||--o{ RESERVATION : "a plusieurs"
+    USER ||--o{ FAVORITE : "a plusieurs"
+    PROPERTY ||--o{ RESERVATION : "a plusieurs"
+    PROPERTY ||--o{ FAVORITE : "est dans plusieurs"
+
+    USER {
+        ObjectId _id
+        String nom
+        String prenom
+        String email "unique"
+        String password "hashé"
+        String role "client/agent/admin"
+        String telephone
+        Date createdAt
+    }
+
+    PROPERTY {
+        ObjectId _id
+        String titre
+        String description
+        Number prix
+        Object localisation "adresse, coordonnées"
+        String type "appartement/maison/terrain"
+        String statut "disponible/réservé/vendu"
+        Array images "URLs Cloudinary"
+        Object caractéristiques "surface, pièces, chambres"
+        ObjectId createdBy "→ User"
+    }
+
+    RESERVATION {
+        ObjectId _id
+        String reference "RSV-XXXX"
+        ObjectId client "→ User"
+        ObjectId property "→ Property"
+        Date dateDebut
+        Date dateFin
+        String statut "en attente/confirmée/annulée"
+        Array historique "suivi des changements"
+        Date createdAt
+    }
+
+    FAVORITE {
+        ObjectId _id
+        ObjectId client "→ User"
+        ObjectId property "→ Property"
+        Date createdAt
+    }
