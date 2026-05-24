@@ -192,6 +192,40 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     let preferredModel;
     if (isAutoModel(requestedModel)) {
       preferredModel = getStickyModel(messages);
+      
+      // Si pas de sticky model → choisir le bon modèle selon la requête
+      if (!preferredModel) {
+        const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
+          .sort({ priority: 1 })
+          .lean();
+        
+        let candidateModels = [];
+        for (const entry of fallbackChain) {
+          const model = await ModelsModel.findById(entry.modelDbId).lean();
+          if (model && model.enabled) {
+            candidateModels.push({
+              ...entry,
+              model,
+            });
+          }
+        }
+        
+        if (tools || tool_choice) {
+          // Requête avec outils → trier d'abord par intelligenceRank, puis par ta priorité
+          candidateModels.sort((a, b) => {
+            const intelDiff = (a.model.intelligenceRank || 0) - (b.model.intelligenceRank || 0);
+            if (intelDiff !== 0) return intelDiff;
+            return (a.priority || 0) - (b.priority || 0);
+          });
+        } else {
+          // Requête sans outils → garder EXACTEMENT l'ordre de ta fallback chain
+          candidateModels.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+        }
+        
+        if (candidateModels.length > 0) {
+          preferredModel = candidateModels[0].model._id;
+        }
+      }
     } else if (requestedModel) {
       const enabled = await ModelsModel.findOne({ modelId: requestedModel, enabled: true, deletedAt: null }).lean();
       if (enabled) {
