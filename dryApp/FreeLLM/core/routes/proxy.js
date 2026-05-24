@@ -115,7 +115,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           created: 0,
           owned_by: 'freellmapi',
           name: 'Auto (router picks the best available model)',
-          context_window: null,
+          context_window: 10485760,
         },
         ...models.map(m => ({
           id: m.modelId,
