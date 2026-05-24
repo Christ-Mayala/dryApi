@@ -29,6 +29,24 @@ function toGeminiFinishReason(finishReason) {
   return 'stop';
 }
 
+function cleanJsonSchemaForGoogle(schema) {
+  if (!schema) return schema;
+  if (Array.isArray(schema)) {
+    return schema.map(item => cleanJsonSchemaForGoogle(item));
+  }
+  if (typeof schema === 'object') {
+    const cleaned = {};
+    for (const key of Object.keys(schema)) {
+      if (key === 'additionalProperties' || key === 'propertyNames' || key === 'const' || key === 'exclusiveMinimum' || key === 'exclusiveMaximum' || key === 'anyOf' || key === 'oneOf' || key === 'allOf') {
+        continue;
+      }
+      cleaned[key] = cleanJsonSchemaForGoogle(schema[key]);
+    }
+    return cleaned;
+  }
+  return schema;
+}
+
 function toGeminiTools(tools) {
   if (!tools || tools.length === 0) return undefined;
 
@@ -36,7 +54,7 @@ function toGeminiTools(tools) {
     functionDeclarations: tools.map(t => ({
       name: t.function.name,
       description: t.function.description,
-      parameters: t.function.parameters,
+      parameters: cleanJsonSchemaForGoogle(t.function.parameters),
     })),
   }];
 }
