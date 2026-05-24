@@ -199,10 +199,20 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           .sort({ priority: 1 })
           .lean();
         
+        // Récupérer tous les modèles en une seule requête pour optimiser
+        const modelDbIds = fallbackChain.map(entry => entry.modelDbId);
+        const allModels = await ModelsModel.find({ _id: { $in: modelDbIds }, enabled: true, deletedAt: null }).lean();
+        
+        // Créer un map pour accéder aux modèles rapidement
+        const modelMap = new Map();
+        for (const model of allModels) {
+          modelMap.set(String(model._id), model);
+        }
+        
         let candidateModels = [];
         for (const entry of fallbackChain) {
-          const model = await ModelsModel.findById(entry.modelDbId).lean();
-          if (model && model.enabled) {
+          const model = modelMap.get(String(entry.modelDbId));
+          if (model) {
             candidateModels.push({
               ...entry,
               model,
