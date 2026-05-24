@@ -11,6 +11,7 @@ const { createAnalyticsRouter } = require('./core/routes/analytics');
 const { createSettingsRouter } = require('./core/routes/settings');
 const { createHealthRouter } = require('./core/routes/health');
 const { createConversationsRouter } = require('./core/routes/conversations');
+const { createPDFRouter } = require('./core/routes/pdf');
 const authRoutes = require('../../dry/modules/user/auth.routes');
 const ModelsSchema = require('./features/models/model/models.schema');
 const ApiKeysSchema = require('./features/apiKeys/model/apiKeys.schema');
@@ -88,7 +89,11 @@ function mountFreeLLMRoutes(app, appName, User, Models, ApiKeys, FallbackConfig,
   const conversationsRouter = createConversationsRouter(Conversations, ConversationMessages);
   freeLLMRouter.use(`/api/conversations`, conversationsRouter);
   console.log('   ✅ /api/conversations → conversationsRouter');
-  
+
+  const pdfRouter = createPDFRouter();
+  freeLLMRouter.use(`/api/pdf`, pdfRouter);
+  console.log('   ✅ /api/pdf → pdfRouter');
+
   app.use(freeLLMRouter);
   
   console.log(`✅ FreeLLM routes mounted`);
