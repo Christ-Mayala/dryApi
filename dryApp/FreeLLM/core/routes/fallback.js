@@ -1,6 +1,6 @@
 const express = require('express');
-const router = express.Router();
 const { getAllPenalties } = require('../services/router');
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 
 function parseBudget(s) {
   const m = s.match(/~?([\d.]+)(?:-([\d.]+))?([MK])?/);
@@ -59,10 +59,12 @@ async function applyFallbackChain(FallbackConfigModel, entries) {
 }
 
 function createFallbackRouter(ModelsModel, FallbackConfigModel, ApiKeysModel, RequestsModel) {
+  const router = express.Router();
+  router.use(protect);
   router.get('/', async (req, res) => {
     const items = await FallbackConfigModel.find({ deletedAt: null })
       .sort({ priority: 1 })
-      .populate('modelDbId')
+      .populate({ path: 'modelDbId', strictPopulate: false })
       .lean();
 
     const keyCounts = await ApiKeysModel.aggregate([

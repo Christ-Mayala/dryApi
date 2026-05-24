@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // 1. Import des contrôleurs (login, register, profil)
-const { login, register, getMe, updateMe, changePassword, requestPasswordReset, verifyResetCode, resetPassword, refresh } = require('./auth.controller');
+const { login, register, getMe, updateMe, changePassword, requestPasswordReset, verifyResetCode, resetPassword, refresh, logout } = require('./auth.controller');
 
 
 const upload = require('../../services/cloudinary/cloudinary.service');
@@ -18,6 +18,7 @@ const { withAudit } = require('../../middlewares/audit');
 router.post('/login', authLimiter, login);
 router.post('/register', authLimiter, register);
 router.post('/refresh', refresh);
+router.post('/logout', protect, withAudit('LOGOUT'), logout);
 
 // Profil (protégé par JWT, utilisé par le frontend pour recharger la session)
 router.get('/profile', protect, withAudit('GET_PROFILE'), getMe);

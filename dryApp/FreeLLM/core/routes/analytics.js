@@ -1,4 +1,5 @@
 const express = require('express');
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 const router = express.Router();
 
 function getSinceTimestamp(range) {
@@ -15,11 +16,14 @@ function getSinceTimestamp(range) {
 }
 
 function createAnalyticsRouter(ModelsModel, RequestsModel) {
+  const router = express.Router();
+  router.use(protect);
+
   router.get('/summary', async (req, res) => {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since } }).lean();
+    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
     const stats = {
       total_requests: 0,
       success_count: 0,
@@ -55,7 +59,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since } }).lean();
+    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
     const modelsMap = new Map();
 
     for (const r of requests) {
@@ -100,7 +104,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since } }).lean();
+    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
     const platformMap = new Map();
 
     for (const r of requests) {
@@ -139,7 +143,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     const interval = req.query.interval || (range === '24h' ? 'hour' : 'day');
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since } }).sort({ createdAt: 1 }).lean();
+    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).sort({ createdAt: 1 }).lean();
     const timelineMap = new Map();
 
     for (const r of requests) {
@@ -179,7 +183,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since } }).lean();
+    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since }, userId: req.user._id }).lean();
     const categoryMap = new Map();
     const platformMap = new Map();
     const detailedMap = new Map();
@@ -230,7 +234,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since } })
+    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since }, userId: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();

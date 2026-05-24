@@ -1,7 +1,7 @@
 const express = require('express');
 const { encrypt, decrypt, maskKey } = require('../lib/crypto');
 const { getProvider, getAllProviders } = require('../providers/index');
-const router = express.Router();
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 
 const PLATFORMS = [
   'google', 'groq', 'cerebras', 'sambanova', 'nvidia', 'mistral',
@@ -10,8 +10,11 @@ const PLATFORMS = [
 ];
 
 function createKeysRouter(ApiKeysModel) {
+  const router = express.Router();
+  router.use(protect);
+  
   router.get('/', async (req, res) => {
-    const rows = await ApiKeysModel.find({ deletedAt: null }).sort({ createdAt: -1 }).lean();
+    const rows = await ApiKeysModel.find({ deletedAt: null, userId: req.user._id }).sort({ createdAt: -1 }).lean();
 
     const keys = [];
     for (const row of rows) {
@@ -50,6 +53,7 @@ function createKeysRouter(ApiKeysModel) {
     const { encrypted, iv, authTag } = encrypt(key);
 
     const doc = new ApiKeysModel({
+      userId: req.user._id,
       platform,
       label: label || 'Key ' + Date.now(),
       encryptedKey: encrypted,
@@ -72,8 +76,8 @@ function createKeysRouter(ApiKeysModel) {
   });
 
   router.delete('/:id', async (req, res) => {
-    const doc = await ApiKeysModel.findByIdAndUpdate(
-      req.params.id,
+    const doc = await ApiKeysModel.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
       { deletedAt: new Date() },
       { new: true }
     );
@@ -92,8 +96,8 @@ function createKeysRouter(ApiKeysModel) {
       return res.status(400).json({ error: { message: 'enabled must be a boolean' } });
     }
 
-    const doc = await ApiKeysModel.findByIdAndUpdate(
-      req.params.id,
+    const doc = await ApiKeysModel.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
       { enabled },
       { new: true }
     );

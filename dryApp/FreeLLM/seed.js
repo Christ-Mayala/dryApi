@@ -1,7 +1,16 @@
 const crypto = require('crypto');
 
-async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel) {
+async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, SystemSettingsModel) {
   console.log('Seeding FreeLLM data...');
+  
+  const existingAllowRegistration = await SystemSettingsModel.findOne({ key: 'allowRegistration' });
+  if (!existingAllowRegistration) {
+    await SystemSettingsModel.create({
+      key: 'allowRegistration',
+      value: true
+    });
+    console.log('allowRegistration initialized to true');
+  }
 
   const count = await ModelsModel.countDocuments({ deletedAt: null });
   console.log(`Current model count: ${count}`);
@@ -211,7 +220,6 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel) {
             priority: i + 1,
             enabled: true,
             deletedAt: null,
-            status: 'active',
           },
           $setOnInsert: {
             label: model.displayName,

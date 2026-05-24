@@ -224,10 +224,15 @@ const bootstrapApps = async (app) => {
           if (appModule.mountFreeLLMRoutes || appModule.mountRoutes) {
             const mountFn = appModule.mountFreeLLMRoutes || appModule.mountRoutes;
             mountFn(app, appName, 
-              initResult.Models, initResult.ApiKeys, 
-              initResult.FallbackConfig, initResult.Requests, 
-              initResult.Settings, 
-              initResult.Conversations, initResult.ConversationMessages,
+              initResult.User,
+              initResult.Models,
+              initResult.ApiKeys, 
+              initResult.FallbackConfig,
+              initResult.Requests, 
+              initResult.Settings,
+              initResult.SystemSettings,
+              initResult.Conversations,
+              initResult.ConversationMessages,
               initResult.unifiedApiKey);
           }
         }

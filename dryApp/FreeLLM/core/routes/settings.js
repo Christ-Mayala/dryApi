@@ -1,8 +1,10 @@
 const express = require('express');
-const router = express.Router();
 const crypto = require('crypto');
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 
 function createSettingsRouter(SettingsModel) {
+  const router = express.Router();
+  router.use(protect);
   router.get('/api-key', async (req, res) => {
     const doc = await SettingsModel.findOne({ key: 'unified_api_key', deletedAt: null }).lean();
     let apiKey;

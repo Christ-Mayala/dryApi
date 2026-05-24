@@ -178,6 +178,8 @@ exports.updateMe = asyncHandler(async (req, res) => {
     if (body.name !== undefined) updates.name = String(body.name || '').trim();
     if (body.nom !== undefined) updates.nom = String(body.nom || '').trim();
     if (body.telephone !== undefined) updates.telephone = String(body.telephone || '').trim();
+    if (body.email !== undefined) updates.email = String(body.email || '').trim();
+    if (body.password !== undefined) updates.password = body.password;
 
     if (req.file) {
         const url = req.file?.path || req.file?.secure_url || req.file?.url || '';
@@ -310,4 +312,11 @@ exports.changePassword = asyncHandler(async (req, res) => {
     await user.save();
 
     sendResponse(res, null, 'Mot de passe mis à jour avec succès');
+});
+
+// --- LOGOUT ---
+exports.logout = asyncHandler(async (req, res) => {
+    const User = req.getModel('User');
+    await User.findByIdAndUpdate(req.user._id, { $set: { refreshTokens: [] } });
+    sendResponse(res, null, 'Déconnexion réussie');
 });

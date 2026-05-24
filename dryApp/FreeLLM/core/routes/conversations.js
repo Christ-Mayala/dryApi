@@ -1,9 +1,12 @@
 const express = require('express');
-const router = express.Router();
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 
 function createConversationsRouter(ConversationsModel, ConversationMessagesModel) {
+  const router = express.Router();
+  router.use(protect);
+  
   router.get('/', async (req, res) => {
-    const convs = await ConversationsModel.find({ deletedAt: null })
+    const convs = await ConversationsModel.find({ deletedAt: null, userId: req.user._id })
       .sort({ updatedAt: -1 })
       .lean();
     
@@ -19,6 +22,7 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
   router.post('/', async (req, res) => {
     const { title } = req.body;
     const doc = new ConversationsModel({
+      userId: req.user._id,
       title: title || 'Nouvelle conversation'
     });
     await doc.save();
@@ -35,7 +39,8 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
   router.get('/:id/messages', async (req, res) => {
     const messages = await ConversationMessagesModel.find({ 
       conversationId: req.params.id, 
-      deletedAt: null 
+      deletedAt: null,
+      userId: req.user._id
     }).sort({ createdAt: 1 }).lean();
     
     const formattedMessages = messages.map(m => {
@@ -80,6 +85,7 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
     const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
     
     const doc = new ConversationMessagesModel({
+      userId: req.user._id,
       conversationId: id,
       role,
       content: contentStr,
@@ -90,7 +96,7 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
     });
     await doc.save();
     
-    await ConversationsModel.findByIdAndUpdate(id, { updatedAt: new Date() });
+    await ConversationsModel.findOneAndUpdate({ _id: id, userId: req.user._id }, { updatedAt: new Date() });
     
     res.json({ success: true });
   });
@@ -99,8 +105,8 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
     const { id } = req.params;
     const { title } = req.body;
     
-    const doc = await ConversationsModel.findByIdAndUpdate(
-      id,
+    const doc = await ConversationsModel.findOneAndUpdate(
+      { _id: id, userId: req.user._id },
       { 
         title: title || 'Nouvelle conversation',
         updatedAt: new Date()
@@ -122,8 +128,8 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
   });
 
   router.delete('/:id', async (req, res) => {
-    await ConversationsModel.findByIdAndUpdate(
-      req.params.id,
+    await ConversationsModel.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
       { deletedAt: new Date() }
     );
     res.json({ success: true });

@@ -3,7 +3,6 @@ const express = require('express');
 const { routeRequest, recordRateLimitHit, recordSuccess } = require('../services/router.js');
 const { recordRequest, recordTokens, setCooldown } = require('../services/ratelimit.js');
 
-const router = express.Router();
 
 const AUTO_MODEL_ID = 'auto';
 
@@ -83,9 +82,10 @@ function isRetryableError(err) {
     || msg.includes('401') || msg.includes('403') || msg.includes('unauthorized') || msg.includes('forbidden');
 }
 
-async function logRequest(RequestsModel, platform, modelId, status, inputTokens, outputTokens, latencyMs, error) {
+async function logRequest(RequestsModel, userId, platform, modelId, status, inputTokens, outputTokens, latencyMs, error) {
   try {
     await RequestsModel.create({
+      userId,
       platform: platform,
       modelId: modelId,
       status: status,
@@ -100,6 +100,7 @@ async function logRequest(RequestsModel, platform, modelId, status, inputTokens,
 }
 
 function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel, RequestsModel, unifiedApiKey) {
+  const router = express.Router();
   router.get('/models', async (req, res) => {
     const models = await ModelsModel.find({ enabled: true, deletedAt: null })
       .sort({ intelligenceRank: 1 })
@@ -131,10 +132,33 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
   router.post('/chat/completions', async (req, res) => {
     const start = Date.now();
 
+    let userId = null;
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
-    if (!token || !timingSafeStringEqual(token, unifiedApiKey)) {
+    const User = req.getModel('User');
+
+    if (token && timingSafeStringEqual(token, unifiedApiKey)) {
+      const admin = await User.findOne({ role: 'admin' }).lean();
+      userId = admin ? admin._id : null;
+      if (!userId) {
+        const firstUser = await User.findOne().lean();
+        userId = firstUser ? firstUser._id : null;
+      }
+    } else if (token) {
+      try {
+        const { verifyToken } = require('../../../../dry/utils/auth/jwt.util');
+        const decoded = verifyToken(token);
+        userId = decoded.id;
+      } catch (err) {
+        res.status(401).json({
+          error: { message: 'Invalid API key or JWT token', type: 'authentication_error' },
+        });
+        return;
+      }
+    }
+
+    if (!userId) {
       res.status(401).json({
-        error: { message: 'Invalid API key', type: 'authentication_error' },
+        error: { message: 'Authentication required', type: 'authentication_error' },
       });
       return;
     }
@@ -254,7 +278,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokens + totalOutputTokens);
             recordSuccess(route.modelDbId);
             setStickyModel(messages, route.modelDbId);
-            await logRequest(RequestsModel, route.platform, route.modelId, 'success', estimatedInputTokens, totalOutputTokens, Date.now() - start, null);
+            await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', estimatedInputTokens, totalOutputTokens, Date.now() - start, null);
             return;
           } catch (streamErr) {
             if (streamStarted) {
@@ -262,7 +286,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               const payload = { error: { message: "Provider error (" + route.displayName + "): stream interrupted", type: 'stream_error' } };
               try { res.write('data: ' + JSON.stringify(payload) + '\n\n'); } catch { /* socket gone */ }
               try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
-              await logRequest(RequestsModel, route.platform, route.modelId, 'error', estimatedInputTokens, totalOutputTokens, Date.now() - start, streamErr.message);
+              await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokens, totalOutputTokens, Date.now() - start, streamErr.message);
               return;
             }
             throw streamErr;
@@ -284,16 +308,20 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
           await logRequest(
             RequestsModel,
-            route.platform, route.modelId, 'success',
+            userId,
+            route.platform,
+            route.modelId,
+            'success',
             result.usage?.prompt_tokens || 0,
             result.usage?.completion_tokens || 0,
-            Date.now() - start, null,
+            Date.now() - start,
+            null
           );
           return;
         }
       } catch (err) {
         const latency = Date.now() - start;
-        await logRequest(RequestsModel, route.platform, route.modelId, 'error', estimatedInputTokens, 0, latency, err.message);
+        await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokens, 0, latency, err.message);
 
         if (isRetryableError(err)) {
           const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
@@ -305,10 +333,12 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           continue;
         }
 
+        console.error('[Proxy] Provider error:', err.message, err.response?.data);
         res.status(502).json({
           error: {
             message: "Provider error (" + route.displayName + "): " + err.message,
             type: 'provider_error',
+            details: err.response?.data || null
           },
         });
         return;

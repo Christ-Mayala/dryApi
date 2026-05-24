@@ -1,11 +1,13 @@
 const express = require('express');
-const router = express.Router();
 const { hasProvider } = require('../providers');
 const { checkKeyHealth, checkAllKeys } = require('../services/health');
+const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
 
 function createHealthRouter(ModelsModel, ApiKeysModel) {
+  const router = express.Router();
+  router.use(protect);
   router.get('/', async (req, res) => {
-    const keys = await ApiKeysModel.find({ deletedAt: null }).sort({ platform: 1, createdAt: -1 }).lean();
+    const keys = await ApiKeysModel.find({ deletedAt: null, userId: req.user._id }).sort({ platform: 1, createdAt: -1 }).lean();
     const platforms = {};
     for (const k of keys) {
       if (!platforms[k.platform]) {
@@ -47,12 +49,19 @@ function createHealthRouter(ModelsModel, ApiKeysModel) {
 
   router.post('/check/:keyId', async (req, res) => {
     const keyId = req.params.keyId;
+    const key = await ApiKeysModel.findOne({ _id: keyId, userId: req.user._id });
+    if (!key) {
+      return res.status(404).json({ error: { message: 'Key not found' } });
+    }
     const status = await checkKeyHealth(keyId, ApiKeysModel);
     res.json({ keyId, status });
   });
 
   router.post('/check-all', async (req, res) => {
-    await checkAllKeys(ApiKeysModel);
+    const keys = await ApiKeysModel.find({ enabled: true, deletedAt: null, userId: req.user._id }).lean();
+    for (const key of keys) {
+      await checkKeyHealth(key._id, ApiKeysModel);
+    }
     res.json({ success: true });
   });
 
