@@ -104,7 +104,7 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
   // Apply dynamic penalties: sort by (base priority + penalty)
   const sortedChain = fallbackChain.map(entry => ({
     ...entry,
-    effectivePriority: entry.priority + getPenalty(entry.modelDbId),
+    effectivePriority: (entry.priority ?? 0) + getPenalty(entry.modelDbId),
   })).sort((a, b) => a.effectivePriority - b.effectivePriority);
 
   // Sticky session: move preferred model to front of chain
