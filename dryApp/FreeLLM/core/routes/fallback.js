@@ -149,8 +149,32 @@ function createFallbackRouter(ModelsModel, FallbackConfigModel, ApiKeysModel, Re
       let models;
       if (preset === 'budget') {
         models = await ModelsModel.find({ deletedAt: null, enabled: true }).sort({ intelligenceRank: 1 }).lean();
-        const budgetOrder = ['~120M', '~50-100M', '~30M', '~18-45M', '~18M', '~15M', '~12M', '~6M', '~5-10M', '~4M'];
-        models.sort((a, b) => budgetOrder.indexOf(a.monthlyTokenBudget) - budgetOrder.indexOf(b.monthlyTokenBudget));
+        const budgetOrder = [
+          { label: '~120M', value: 120000000 },
+          { label: '~50-100M', value: 75000000 },
+          { label: '~30M', value: 30000000 },
+          { label: '~18-45M', value: 31500000 },
+          { label: '~18M', value: 18000000 },
+          { label: '~15M', value: 15000000 },
+          { label: '~12M', value: 12000000 },
+          { label: '~6M', value: 6000000 },
+          { label: '~5-10M', value: 7500000 },
+          { label: '~4M', value: 4000000 },
+        ];
+
+        const getBudgetNumericValue = (budgetString) => {
+          const match = budgetString.match(/([\d.]+)([MK])?/);
+          if (!match) return Infinity; // Mettre les budgets non reconnus à la fin
+          const value = parseFloat(match[1]);
+          const unit = match[2] ? (match[2] === 'M' ? 1000000 : 1000) : 1;
+          return value * unit;
+        };
+
+        models.sort((a, b) => {
+          const valA = getBudgetNumericValue(a.monthlyTokenBudget);
+          const valB = getBudgetNumericValue(b.monthlyTokenBudget);
+          return valA - valB;
+        });
       } else {
         models = await ModelsModel.find({ deletedAt: null, enabled: true }).sort(sort).lean();
       }

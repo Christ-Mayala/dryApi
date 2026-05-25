@@ -12,10 +12,13 @@ function isAutoModel(modelId) {
 
 // Fonction pour tronquer les messages selon la limite du modèle
 function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 1000) {
-  const targetInputTokens = contextWindow - maxTokens;
+  // MARGE DE SÉCURITÉ TRÈS IMPORTANTE : 30% de marge + estimation plus conservative
+  const SAFETY_MARGIN = 0.30; // 30% de marge de sécurité
+  const targetInputTokens = Math.floor((contextWindow - maxTokens) * (1 - SAFETY_MARGIN));
+  
   if (targetInputTokens <= 0) return messages;
 
-  // Fonction pour estimer les tokens d'un contenu
+  // Fonction pour estimer les tokens d'un contenu - ESTIMATION PLUS CONSERVATRICE
   const estimateContentTokens = (content) => {
     let contentLength = 0;
     if (typeof content === 'string') {
@@ -28,7 +31,8 @@ function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 100
         return partSum;
       }, 0);
     }
-    return Math.ceil(contentLength / 4);
+    // Estimation BEAUCOUP plus conservative : 1 token = 3 caractères au lieu de 4
+    return Math.ceil(contentLength / 3);
   };
 
   // Séparer le message système (si présent)
