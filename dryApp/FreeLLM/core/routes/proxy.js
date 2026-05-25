@@ -12,7 +12,9 @@ function isAutoModel(modelId) {
 
 // Fonction pour tronquer les messages selon la limite du modèle
 function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 1000) {
+  console.log('[truncate] contextWindow:', contextWindow, 'maxTokens:', maxTokens);
   const targetInputTokens = contextWindow - maxTokens;
+  console.log('[truncate] targetInputTokens:', targetInputTokens);
   if (targetInputTokens <= 0) return messages;
 
   // Fonction pour estimer les tokens d'un contenu
@@ -40,7 +42,10 @@ function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 100
   let otherTokens = otherMessages.reduce((sum, m) => sum + estimateContentTokens(m.content), 0);
   let totalTokens = systemTokens + otherTokens;
 
+  console.log('[truncate] totalTokens:', totalTokens, 'systemTokens:', systemTokens, 'otherTokens:', otherTokens);
+
   if (totalTokens <= targetInputTokens) {
+    console.log('[truncate] No truncation needed');
     return messages;
   }
 
@@ -59,6 +64,9 @@ function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 100
     result.push(systemMessage);
   }
   result.push(...truncatedOthers);
+
+  const finalTotalTokens = result.reduce((sum, m) => sum + estimateContentTokens(m.content), 0);
+  console.log('[truncate] Done! Original:', totalTokens, 'Final:', finalTotalTokens, 'Messages:', messages.length, '→', result.length);
 
   // Si même avec juste le système, on garde au moins ça
   return result.length > 0 ? result : messages;
@@ -343,10 +351,14 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       recordRequest(route.platform, route.modelId, route.keyId);
 
       // Récupérer le modèle complet pour avoir contextWindow
+      console.log('[proxy] Looking up model with dbId:', route.modelDbId);
       const model = await ModelsModel.findById(route.modelDbId).lean();
+      console.log('[proxy] Found model:', model ? { id: model._id, name: model.name, contextWindow: model.contextWindow } : null);
+      
       let truncatedMessages = messages;
       let estimatedInputTokensTruncated = estimatedInputTokens;
       if (model && model.contextWindow && model.contextWindow > 0) {
+        console.log('[proxy] Truncating messages with contextWindow:', model.contextWindow);
         truncatedMessages = truncateMessagesToContextLimit(messages, model.contextWindow, max_tokens || 1000);
         estimatedInputTokensTruncated = truncatedMessages.reduce((sum, m) => {
           let contentLength = 0;
