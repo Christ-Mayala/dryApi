@@ -4,6 +4,7 @@ const router = express.Router();
 const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId, validateQuery } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateFreeLLM, ensureLabel } = require('../../../validation/middleware');
+const { validateConversation } = require('../validation/conversation.validation');
 const { cache, invalidateCache } = require('../../../../../dry/middlewares/cache/cache.middleware');
 const { withAudit } = require('../../../../../dry/middlewares/audit');
 const queryBuilder = require('../../../../../dry/middlewares/query/queryBuilder');
@@ -30,7 +31,7 @@ router.post(
   '/',
   protect,
   authorize('admin'),
-  ensureLabel('conversations'),
+  validateConversation,
   withAudit('CONVERSATIONS_CREATE'),
   invalidateCache(),
   create
