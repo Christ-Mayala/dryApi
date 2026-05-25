@@ -10,6 +10,60 @@ function isAutoModel(modelId) {
   return modelId === AUTO_MODEL_ID;
 }
 
+// Fonction pour tronquer les messages selon la limite du modèle
+function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 1000) {
+  const targetInputTokens = contextWindow - maxTokens;
+  if (targetInputTokens <= 0) return messages;
+
+  // Fonction pour estimer les tokens d'un contenu
+  const estimateContentTokens = (content) => {
+    let contentLength = 0;
+    if (typeof content === 'string') {
+      contentLength = content.length;
+    } else if (Array.isArray(content)) {
+      contentLength = content.reduce((partSum, part) => {
+        if (part.type === 'text' && part.text) {
+          return partSum + part.text.length;
+        }
+        return partSum;
+      }, 0);
+    }
+    return Math.ceil(contentLength / 4);
+  };
+
+  // Séparer le message système (si présent)
+  const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
+  const otherMessages = systemMessage ? messages.slice(1) : messages;
+
+  // Estimer les tokens totaux
+  const systemTokens = systemMessage ? estimateContentTokens(systemMessage.content) : 0;
+  let otherTokens = otherMessages.reduce((sum, m) => sum + estimateContentTokens(m.content), 0);
+  let totalTokens = systemTokens + otherTokens;
+
+  if (totalTokens <= targetInputTokens) {
+    return messages;
+  }
+
+  // Tronquer en enlevant les messages les plus anciens d'abord (sauf le système)
+  let truncatedOthers = [...otherMessages];
+  while (totalTokens > targetInputTokens && truncatedOthers.length > 0) {
+    const removed = truncatedOthers.shift();
+    const removedTokens = estimateContentTokens(removed.content);
+    totalTokens -= removedTokens;
+    otherTokens -= removedTokens;
+  }
+
+  // Reconstruire le tableau final
+  const result = [];
+  if (systemMessage) {
+    result.push(systemMessage);
+  }
+  result.push(...truncatedOthers);
+
+  // Si même avec juste le système, on garde au moins ça
+  return result.length > 0 ? result : messages;
+}
+
 function timingSafeStringEqual(provided, expected) {
   if (!provided || !expected) return false;
   const a = Buffer.from(provided);
@@ -288,13 +342,35 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
       recordRequest(route.platform, route.modelId, route.keyId);
 
+      // Récupérer le modèle complet pour avoir contextWindow
+      const model = await ModelsModel.findById(route.modelDbId).lean();
+      let truncatedMessages = messages;
+      let estimatedInputTokensTruncated = estimatedInputTokens;
+      if (model && model.contextWindow && model.contextWindow > 0) {
+        truncatedMessages = truncateMessagesToContextLimit(messages, model.contextWindow, max_tokens || 1000);
+        estimatedInputTokensTruncated = truncatedMessages.reduce((sum, m) => {
+          let contentLength = 0;
+          if (typeof m.content === 'string') {
+            contentLength = m.content.length;
+          } else if (Array.isArray(m.content)) {
+            contentLength = m.content.reduce((partSum, part) => {
+              if (part.type === 'text' && part.text) {
+                return partSum + part.text.length;
+              }
+              return partSum;
+            }, 0);
+          }
+          return sum + Math.ceil(contentLength / 4);
+        }, 0);
+      }
+
       try {
         if (stream) {
           let totalOutputTokens = 0;
           let streamStarted = false;
           try {
             const gen = route.provider.streamChatCompletion(
-              route.apiKey, messages, route.modelId,
+              route.apiKey, truncatedMessages, route.modelId,
               { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
             );
 
@@ -319,10 +395,10 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             res.write('data: [DONE]\n\n');
             res.end();
 
-            recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokens + totalOutputTokens);
+            recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokensTruncated + totalOutputTokens);
             recordSuccess(route.modelDbId);
-            setStickyModel(messages, route.modelDbId);
-            await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', estimatedInputTokens, totalOutputTokens, Date.now() - start, null);
+            setStickyModel(truncatedMessages, route.modelDbId);
+            await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', estimatedInputTokensTruncated, totalOutputTokens, Date.now() - start, null);
             return;
           } catch (streamErr) {
             if (streamStarted) {
@@ -330,21 +406,21 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               const payload = { error: { message: "Provider error (" + route.displayName + "): stream interrupted", type: 'stream_error' } };
               try { res.write('data: ' + JSON.stringify(payload) + '\n\n'); } catch { /* socket gone */ }
               try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
-              await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokens, totalOutputTokens, Date.now() - start, streamErr.message);
+              await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokensTruncated, totalOutputTokens, Date.now() - start, streamErr.message);
               return;
             }
             throw streamErr;
           }
         } else {
           const result = await route.provider.chatCompletion(
-            route.apiKey, messages, route.modelId,
+            route.apiKey, truncatedMessages, route.modelId,
             { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
           );
 
           const totalTokens = result.usage?.total_tokens || 0;
           recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
           recordSuccess(route.modelDbId);
-          setStickyModel(messages, route.modelDbId);
+          setStickyModel(truncatedMessages, route.modelDbId);
 
           res.setHeader('X-Routed-Via', route.platform + '/' + route.modelId);
           if (attempt > 0) res.setHeader('X-Fallback-Attempts', String(attempt));
@@ -365,7 +441,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         }
       } catch (err) {
         const latency = Date.now() - start;
-        await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokens, 0, latency, err.message);
+        await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokensTruncated, 0, latency, err.message);
 
         if (isRetryableError(err)) {
           const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;

@@ -2,21 +2,31 @@ const { commonSchemas, validate } = require('../../utils/validation/validation.u
 
 // Validation pour les routes d'authentification (commun à toutes les applications)
 const validateAuth = {
-  register: validate(
-    require('joi').object({
-      name: commonSchemas.name,
-      email: commonSchemas.email,
-      password: commonSchemas.password,
-      role: require('joi').string().valid('admin', 'user').default('user')
-    })
-  ),
+  register: (req, res, next) => {
+    const { validateWithZod } = require('../../utils/validation/zod.util');
+    const { z } = require('zod');
+    const schema = z.object({
+      name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+      email: z.string().email('Email invalide'),
+      password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+      role: z.enum(['admin', 'user']).default('user')
+    });
+    const result = validateWithZod(schema, req.body);
+    if (!result.success) return res.status(400).json({ error: result.error });
+    next();
+  },
 
-  login: validate(
-    require('joi').object({
-      email: commonSchemas.email,
-      password: require('joi').string().required()
-    })
-  )
+  login: (req, res, next) => {
+    const { validateWithZod } = require('../../utils/validation/zod.util');
+    const { z } = require('zod');
+    const schema = z.object({
+      email: z.string().email(),
+      password: z.string().min(1)
+    });
+    const result = validateWithZod(schema, req.body);
+    if (!result.success) return res.status(400).json({ error: result.error });
+    next();
+  }
 };
 
 // Validation pour les paramètres de requête communs
@@ -26,14 +36,18 @@ const validateQuery = {
     'query'
   ),
 
-  search: validate(
-    commonSchemas.pagination.keys({
-      search: require('joi').string().max(100).optional(),
-      category: require('joi').string().optional(),
-      status: commonSchemas.status.optional()
-    }),
-    'query'
-  )
+  search: (req, res, next) => {
+    const { validateWithZod } = require('../../utils/validation/zod.util');
+    const { z } = require('zod');
+    const schema = z.object({
+      search: z.string().max(100).optional(),
+      category: z.string().optional(),
+      status: z.enum(['active', 'inactive', 'pending']).optional()
+    });
+    const result = validateWithZod(schema, req.query);
+    if (!result.success) return res.status(400).json({ error: result.error });
+    next();
+  }
 };
 
 module.exports = {

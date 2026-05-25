@@ -3,6 +3,7 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
 const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
 const { isValidContactPhone, normalizePhoneE164 } = require('../../reservation/controller/reservation.support.util');
+const { generateApiKey } = require('../../../../../dry/services/auth/apiKey.service');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -36,6 +37,11 @@ module.exports = asyncHandler(async (req, res) => {
 
     const user = await User.create(payload);
 
+    // Générer une clé API pour l'utilisateur
+    const apiKey = generateApiKey();
+    user.apiKey = apiKey;
+    await user.save();
+
     const token = signAccessToken(user._id);
     const rt = signRefreshToken(user._id);
 
@@ -61,6 +67,7 @@ module.exports = asyncHandler(async (req, res) => {
                 telephone: user.telephone,
                 role: user.role,
                 avatarUrl: user.avatarUrl,
+                apiKey: user.apiKey, // Inclure la clé API dans la réponse
             },
         },
         'Inscription réussie.',

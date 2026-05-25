@@ -35,9 +35,10 @@ const loadRoutes = (app) => {
             const routeDir = path.join(appPath, feature, 'route');
             if (fs.existsSync(routeDir)) {
                 fs.readdirSync(routeDir).filter(f => f.endsWith('.routes.js')).forEach(file => {
-                    const endpoint = `/api/v1/${feature.toLowerCase()}`;
-                    app.use(endpoint, require(path.join(routeDir, file)));
-                    console.log(`[APP ${appName.toUpperCase()}] ✅ Feature chargée : ${endpoint}`);
+const endpoint = `/api/v1/${feature.toLowerCase()}`;
+const validateApiKeyMiddleware = require('../../middlewares/apiKey/apiKey.middleware');
+router.use(endpoint, validateApiKeyMiddleware, require(path.join(routeDir, file)));
+console.log(`[APP ${appName.toUpperCase()}] ✅ Feature chargée : ${endpoint}`);
                 });
             }
         });
