@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { validateWithZod } = require('../../../../dry/utils/validation/zod.util');
+const { validateWithZod } = require('../../../../../dry/utils/validation/zod.util');
 
 const conversationSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').trim(),

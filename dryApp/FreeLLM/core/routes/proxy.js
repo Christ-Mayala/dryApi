@@ -12,13 +12,10 @@ function isAutoModel(modelId) {
 
 // Fonction pour tronquer les messages selon la limite du modèle
 function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 1000) {
-  // MARGE DE SÉCURITÉ TRÈS IMPORTANTE : 30% de marge + estimation plus conservative
-  const SAFETY_MARGIN = 0.30; // 30% de marge de sécurité
-  const targetInputTokens = Math.floor((contextWindow - maxTokens) * (1 - SAFETY_MARGIN));
-  
+  const targetInputTokens = contextWindow - maxTokens;
   if (targetInputTokens <= 0) return messages;
 
-  // Fonction pour estimer les tokens d'un contenu - ESTIMATION PLUS CONSERVATRICE
+  // Fonction pour estimer les tokens d'un contenu
   const estimateContentTokens = (content) => {
     let contentLength = 0;
     if (typeof content === 'string') {
@@ -31,8 +28,7 @@ function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 100
         return partSum;
       }, 0);
     }
-    // Estimation BEAUCOUP plus conservative : 1 token = 3 caractères au lieu de 4
-    return Math.ceil(contentLength / 3);
+    return Math.ceil(contentLength / 4);
   };
 
   // Séparer le message système (si présent)
@@ -315,25 +311,18 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     }
 
     const skipKeys = new Set();
-    const skippedModels = new Set();
     let lastError = null;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       let route;
       try {
-        // Ne pas utiliser le preferredModel si on a déjà eu des erreurs avec lui
-        let effectivePreferredModel = preferredModel;
-        if (effectivePreferredModel && skippedModels.has(String(effectivePreferredModel))) {
-          effectivePreferredModel = undefined;
-        }
-
         route = await routeRequest(
           ModelsModel, 
           ApiKeysModel, 
           FallbackConfigModel, 
           estimatedTotal, 
           skipKeys.size > 0 ? skipKeys : undefined, 
-          effectivePreferredModel
+          preferredModel
         );
       } catch (err) {
         if (lastError) {
@@ -457,7 +446,6 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         if (isRetryableError(err)) {
           const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
           skipKeys.add(skipId);
-          skippedModels.add(String(route.modelDbId));
           setCooldown(route.platform, route.modelId, route.keyId, 120000);
           recordRateLimitHit(route.modelDbId);
           lastError = err;
