@@ -315,18 +315,25 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     }
 
     const skipKeys = new Set();
+    const skippedModels = new Set();
     let lastError = null;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       let route;
       try {
+        // Ne pas utiliser le preferredModel si on a déjà eu des erreurs avec lui
+        let effectivePreferredModel = preferredModel;
+        if (effectivePreferredModel && skippedModels.has(String(effectivePreferredModel))) {
+          effectivePreferredModel = undefined;
+        }
+
         route = await routeRequest(
           ModelsModel, 
           ApiKeysModel, 
           FallbackConfigModel, 
           estimatedTotal, 
           skipKeys.size > 0 ? skipKeys : undefined, 
-          preferredModel
+          effectivePreferredModel
         );
       } catch (err) {
         if (lastError) {
@@ -450,6 +457,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         if (isRetryableError(err)) {
           const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
           skipKeys.add(skipId);
+          skippedModels.add(String(route.modelDbId));
           setCooldown(route.platform, route.modelId, route.keyId, 120000);
           recordRateLimitHit(route.modelDbId);
           lastError = err;
