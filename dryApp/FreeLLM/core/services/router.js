@@ -1,6 +1,8 @@
 const { decrypt } = require('../lib/crypto.js');
 const { canMakeRequest, canUseTokens, isOnCooldown } = require('./ratelimit.js');
 const { getProvider } = require('../providers/index.js');
+const { getCircuitBreaker } = require('./circuitBreaker.js');
+const { getSuccessRate, getAvgLatency, getP95Latency } = require('./performanceMetrics.js');
 
 // Round-robin index per platform
 const roundRobinIndex = new Map();
@@ -71,7 +73,7 @@ function getPenalty(modelDbId) {
  */
 function getAllPenalties() {
   const result = [];
-  for (const [modelDbId, entry] of rateLimitPenalties) {
+  for (const [modelDbId, entry] of rateLimitPenalties.entries()) {
     const penalty = getPenalty(modelDbId);
     if (penalty > 0) {
       result.push({ modelDbId: String(modelDbId), count: entry.count, penalty });
@@ -81,9 +83,37 @@ function getAllPenalties() {
 }
 
 /**
+ * Calcul un score intelligent pour un modèle basé sur:
+ * - Priorité de base
+ * - Pénalité rate limit
+ * - Taux de succès
+ * - Latence moyenne
+ * - Classement vitesse/intelligence
+ */
+function calculateModelScore(entry, model) {
+  const basePriority = entry.priority || 0;
+  const ratePenalty = getPenalty(entry.modelDbId);
+  
+  const successRate = getSuccessRate(model.platform, model.modelId);
+  const avgLatency = getAvgLatency(model.platform, model.modelId);
+  
+  // Score de latence (plus bas = mieux)
+  const latencyScore = Math.min(1, 10000 / (avgLatency || 10000));
+  
+  // Score final (plus haut = mieux)
+  let score = 1000 - basePriority - ratePenalty * 10;
+  score += successRate * 100;
+  score += latencyScore * 50;
+  
+  // Bonus pour vitesse (speedRank plus bas = plus rapide)
+  score += (20 - (model.speedRank || 10)) * 2;
+  
+  return score;
+}
+
+/**
  * Route a request to the best available model.
- * Models are sorted by (base_priority + rate_limit_penalty) so frequently
- * rate-limited models automatically sink below working ones.
+ * Models are sorted by intelligent score.
  *
  * If preferredModelDbId is set, that model gets tried FIRST (sticky sessions).
  * This prevents hallucination from model switching mid-conversation.
@@ -94,32 +124,54 @@ function getAllPenalties() {
  * @param estimatedTokens - estimated total tokens for rate limit check
  * @param skipKeys - set of "platform:modelId:keyId" to skip (failed on this request)
  * @param preferredModelDbId - try this model first (sticky session)
+ * @param requestType - type de requête (chat, code, reasoning) pour adapter le routing
  */
-async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId) {
+async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat') {
   // Get fallback chain ordered by priority
   const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
     .sort({ priority: 1 })
     .lean();
 
-  // Apply dynamic penalties: sort by (base priority + penalty)
-  const sortedChain = fallbackChain.map(entry => ({
-    ...entry,
-    effectivePriority: (entry.priority ?? 0) + getPenalty(entry.modelDbId),
-  })).sort((a, b) => a.effectivePriority - b.effectivePriority);
+  // Récupérer tous les modèles en une seule requête
+  const modelDbIds = fallbackChain.map(entry => entry.modelDbId);
+  const allModels = await ModelsModel.find({ _id: { $in: modelDbIds }, enabled: true, deletedAt: null }).lean();
+  const modelMap = new Map();
+  for (const model of allModels) {
+    modelMap.set(String(model._id), model);
+  }
+
+  // Calculer les scores et trier
+  const scoredChain = fallbackChain
+    .filter(entry => modelMap.has(String(entry.modelDbId)))
+    .map(entry => {
+      const model = modelMap.get(String(entry.modelDbId));
+      return {
+        ...entry,
+        model,
+        score: calculateModelScore(entry, model)
+      };
+    })
+    .sort((a, b) => b.score - a.score); // Du plus haut score au plus bas
 
   // Sticky session: move preferred model to front of chain
   if (preferredModelDbId) {
-    const idx = sortedChain.findIndex(e => String(e.modelDbId) === String(preferredModelDbId));
+    const idx = scoredChain.findIndex(e => String(e.modelDbId) === String(preferredModelDbId));
     if (idx > 0) {
-      const [preferred] = sortedChain.splice(idx, 1);
-      sortedChain.unshift(preferred);
+      const [preferred] = scoredChain.splice(idx, 1);
+      scoredChain.unshift(preferred);
     }
   }
 
-  for (const entry of sortedChain) {
-    // Get model details
-    const model = await ModelsModel.findById(entry.modelDbId).lean();
-    if (!model || !model.enabled) continue;
+  for (const entry of scoredChain) {
+    const model = entry.model;
+    if (!model) continue;
+
+    // Vérifier le circuit breaker
+    const cbKey = `${model.platform}:${model.modelId}`;
+    const circuitBreaker = getCircuitBreaker(cbKey);
+    if (!circuitBreaker.canCall()) {
+      continue;
+    }
 
     // Check if we have a provider for this platform
     const provider = getProvider(model.platform);
@@ -145,7 +197,7 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
 
     // Try all keys for this model before giving up on it
     const rrKey = `${model.platform}:${model.modelId}`;
-    let idx = roundRobinIndex.get(rrKey) ?? 0;
+    let idx = roundRobinIndex.get(rrKey) || 0;
 
     for (let attempt = 0; attempt < keys.length; attempt++) {
       const key = keys[idx % keys.length];
@@ -183,16 +235,13 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
         keyId: key._id,
         platform: model.platform,
         displayName: model.displayName,
+        score: entry.score
       };
     }
 
     // If we reach here, this specific model has NO available keys.
     // Update round-robin index even if we failed so we don't get stuck.
     roundRobinIndex.set(rrKey, idx);
-    
-    // We don't explicitly penalize the model here because the fact that we 
-    // couldn't find a key means we will naturally move to the next model 
-    // in the `sortedChain` for THIS specific request.
   }
 
   const err = new Error('All models exhausted. Add more API keys or wait for rate limits to reset.');

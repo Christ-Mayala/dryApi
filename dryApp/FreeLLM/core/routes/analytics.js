@@ -1,5 +1,8 @@
 const express = require('express');
 const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
+const { getAllCircuitBreakers } = require('../services/circuitBreaker.js');
+const { getAllMetrics } = require('../services/performanceMetrics.js');
+const { getStats: getCacheStats } = require('../services/responseCache.js');
 const router = express.Router();
 
 function getSinceTimestamp(range) {
@@ -42,16 +45,14 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
 
     const totalRequests = stats.total_requests;
     const successRate = totalRequests > 0 ? (stats.success_count / totalRequests) * 100 : 0;
-    const inputCost = (stats.total_input_tokens / 1000000) * 3;
-    const outputCost = (stats.total_output_tokens / 1000000) * 15;
+    const avgLatency = totalRequests > 0 ? Math.round(stats.total_latency / totalRequests) : 0;
 
     res.json({
       totalRequests,
       successRate: Math.round(successRate * 10) / 10,
       totalInputTokens: stats.total_input_tokens,
       totalOutputTokens: stats.total_output_tokens,
-      avgLatencyMs: totalRequests > 0 ? Math.round(stats.total_latency / totalRequests) : 0,
-      estimatedCostSavings: Math.round((inputCost + outputCost) * 100) / 100
+      avgLatencyMs: avgLatency,
     });
   });
 
@@ -94,7 +95,7 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
       successRate: Math.round((r.success_count / r.requests) * 100 * 10) / 10,
       avgLatencyMs: r.requests > 0 ? Math.round(r.total_latency / r.requests) : 0,
       totalInputTokens: r.total_input_tokens,
-      totalOutputTokens: r.total_output_tokens
+      totalOutputTokens: r.total_output_tokens,
     })).sort((a, b) => b.requests - a.requests);
 
     res.json(result);
@@ -247,6 +248,25 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
       latencyMs: e.latencyMs,
       createdAt: e.createdAt
     })));
+  });
+
+  // Nouveau endpoint: status des circuit breakers
+  router.get('/circuit-breakers', async (req, res) => {
+    res.json({
+      circuitBreakers: getAllCircuitBreakers()
+    });
+  });
+
+  // Nouveau endpoint: métriques de performance en temps réel
+  router.get('/performance-metrics', async (req, res) => {
+    res.json({
+      metrics: getAllMetrics()
+    });
+  });
+
+  // Nouveau endpoint: stats du cache
+  router.get('/cache-stats', async (req, res) => {
+    res.json(getCacheStats());
   });
 
   return router;

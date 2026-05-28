@@ -2,74 +2,17 @@ const crypto = require('crypto');
 const express = require('express');
 const { routeRequest, recordRateLimitHit, recordSuccess } = require('../services/router.js');
 const { recordRequest, recordTokens, setCooldown } = require('../services/ratelimit.js');
-
+const { getCircuitBreaker } = require('../services/circuitBreaker.js');
+const perfMetrics = require('../services/performanceMetrics.js');
+const { getCacheKey, get, set } = require('../services/responseCache.js');
+const tokenEstimator = require('../services/tokenEstimator.js');
+const contextManager = require('../services/contextManager.js');
+const requestClassifier = require('../services/requestClassifier.js');
 
 const AUTO_MODEL_ID = 'auto';
 
 function isAutoModel(modelId) {
   return modelId === AUTO_MODEL_ID;
-}
-
-// Fonction pour tronquer les messages selon la limite du modèle
-function truncateMessagesToContextLimit(messages, contextWindow, maxTokens = 1000) {
-  console.log('[truncate] contextWindow:', contextWindow, 'maxTokens:', maxTokens);
-  const targetInputTokens = contextWindow - maxTokens;
-  console.log('[truncate] targetInputTokens:', targetInputTokens);
-  if (targetInputTokens <= 0) return messages;
-
-  // Fonction pour estimer les tokens d'un contenu
-  const estimateContentTokens = (content) => {
-    let contentLength = 0;
-    if (typeof content === 'string') {
-      contentLength = content.length;
-    } else if (Array.isArray(content)) {
-      contentLength = content.reduce((partSum, part) => {
-        if (part.type === 'text' && part.text) {
-          return partSum + part.text.length;
-        }
-        return partSum;
-      }, 0);
-    }
-    return Math.ceil(contentLength / 4);
-  };
-
-  // Séparer le message système (si présent)
-  const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
-  const otherMessages = systemMessage ? messages.slice(1) : messages;
-
-  // Estimer les tokens totaux
-  const systemTokens = systemMessage ? estimateContentTokens(systemMessage.content) : 0;
-  let otherTokens = otherMessages.reduce((sum, m) => sum + estimateContentTokens(m.content), 0);
-  let totalTokens = systemTokens + otherTokens;
-
-  console.log('[truncate] totalTokens:', totalTokens, 'systemTokens:', systemTokens, 'otherTokens:', otherTokens);
-
-  if (totalTokens <= targetInputTokens) {
-    console.log('[truncate] No truncation needed');
-    return messages;
-  }
-
-  // Tronquer en enlevant les messages les plus anciens d'abord (sauf le système)
-  let truncatedOthers = [...otherMessages];
-  while (totalTokens > targetInputTokens && truncatedOthers.length > 0) {
-    const removed = truncatedOthers.shift();
-    const removedTokens = estimateContentTokens(removed.content);
-    totalTokens -= removedTokens;
-    otherTokens -= removedTokens;
-  }
-
-  // Reconstruire le tableau final
-  const result = [];
-  if (systemMessage) {
-    result.push(systemMessage);
-  }
-  result.push(...truncatedOthers);
-
-  const finalTotalTokens = result.reduce((sum, m) => sum + estimateContentTokens(m.content), 0);
-  console.log('[truncate] Done! Original:', totalTokens, 'Final:', finalTotalTokens, 'Messages:', messages.length, '→', result.length);
-
-  // Si même avec juste le système, on garde au moins ça
-  return result.length > 0 ? result : messages;
 }
 
 function timingSafeStringEqual(provided, expected) {
@@ -124,13 +67,45 @@ function setStickyModel(messages, modelDbId) {
 
   if (stickySessionMap.size > 500) {
     const now = Date.now();
-    for (const [k, v] of stickySessionMap) {
+    for (const [k, v] of stickySessionMap.entries()) {
       if (now - v.lastUsed > STICKY_TTL_MS) stickySessionMap.delete(k);
     }
   }
 }
 
-const MAX_RETRIES = 20;
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const RETRY_POLICY = {
+  timeout: 2,
+  '429': 1,
+  '503': 2,
+  network: 2,
+  default: 1
+};
+
+const MAX_RETRIES = 2;
+const BASE_BACKOFF_MS = 1000;
+
+function getRetryCountForError(error) {
+  const msg = (error.message || '').toLowerCase();
+  
+  if (msg.includes('timeout') || msg.includes('etimedout')) {
+    return RETRY_POLICY.timeout;
+  }
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('quota')) {
+    return RETRY_POLICY['429'];
+  }
+  if (msg.includes('503') || msg.includes('unavailable')) {
+    return RETRY_POLICY['503'];
+  }
+  if (msg.includes('econnrefused') || msg.includes('econnreset') || msg.includes('dns')) {
+    return RETRY_POLICY.network;
+  }
+  
+  return RETRY_POLICY.default;
+}
 
 function isRetryableError(err) {
   const msg = (err.message || '').toLowerCase();
@@ -139,12 +114,10 @@ function isRetryableError(err) {
     || msg.includes('aborted') || msg.includes('timeout') || msg.includes('etimedout')
     || msg.includes('econnrefused') || msg.includes('econnreset')
     || msg.includes('503') || msg.includes('unavailable')
-    || msg.includes('500') || msg.includes('internal server error')
-    || msg.includes('404') || msg.includes('not found')
-    || msg.includes('401') || msg.includes('403') || msg.includes('unauthorized') || msg.includes('forbidden');
+    || msg.includes('500') || msg.includes('internal server error');
 }
 
-async function logRequest(RequestsModel, userId, platform, modelId, status, inputTokens, outputTokens, latencyMs, error) {
+async function logRequest(RequestsModel, userId, platform, modelId, status, inputTokens, outputTokens, latencyMs, error, taskType, retryCount) {
   try {
     await RequestsModel.create({
       userId,
@@ -154,7 +127,9 @@ async function logRequest(RequestsModel, userId, platform, modelId, status, inpu
       inputTokens: inputTokens,
       outputTokens: outputTokens,
       latencyMs: latencyMs,
-      error: error
+      error: error,
+      taskType: taskType,
+      retryCount: retryCount
     });
   } catch (e) {
     console.error('Failed to log request:', e);
@@ -163,6 +138,7 @@ async function logRequest(RequestsModel, userId, platform, modelId, status, inpu
 
 function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel, RequestsModel, unifiedApiKey) {
   const router = express.Router();
+  
   router.get('/models', async (req, res) => {
     const models = await ModelsModel.find({ enabled: true, deletedAt: null })
       .sort({ intelligenceRank: 1 })
@@ -177,7 +153,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           created: 0,
           owned_by: 'freellmapi',
           name: 'Auto (router picks the best available model)',
-          context_window: 10485760,
+          context_window: 128000,
         },
         ...models.map(m => ({
           id: m.modelId,
@@ -185,14 +161,19 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           created: 0,
           owned_by: m.platform,
           name: m.displayName,
-          context_window: m.contextWindow,
+          context_window: m.contextWindow || 32768,
         })),
       ],
     });
   });
 
   router.post('/chat/completions', async (req, res) => {
-    const start = Date.now();
+    const overallStart = Date.now();
+    let retryCount = 0;
+    let taskType = 'chat';
+    let cacheHit = false;
+    let compressionRatio = 0;
+    let tokensSaved = 0;
 
     let userId = null;
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -227,7 +208,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     const requestedModel = req.body.model;
     const temperature = req.body.temperature;
-    const max_tokens = req.body.max_tokens;
+    const max_tokens = req.body.max_tokens || 1000;
     const top_p = req.body.top_p;
     const stream = req.body.stream;
     const tools = req.body.tools;
@@ -235,37 +216,55 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const parallel_tool_calls = req.body.parallel_tool_calls;
     const messages = req.body.messages;
 
-    const estimatedInputTokens = messages.reduce((sum, m) => {
-      let contentLength = 0;
-      if (typeof m.content === 'string') {
-        contentLength = m.content.length;
-      } else if (Array.isArray(m.content)) {
-        contentLength = m.content.reduce((partSum, part) => {
-          if (part.type === 'text' && part.text) {
-            return partSum + part.text.length;
-          }
-          return partSum;
-        }, 0);
+    // Classify request
+    const classification = requestClassifier.classifyRequest(messages);
+    taskType = classification.taskType;
+    console.log(`[Orchestrator] Classified request: ${taskType} (confidence: ${classification.confidence.toFixed(2)})`);
+
+    // Token estimation & context management
+    const tokenBudget = tokenEstimator.getTokenBudget(taskType);
+    const contextResult = contextManager.manageContext(messages, tokenBudget.input);
+    let processedMessages = contextResult.messages;
+    compressionRatio = contextResult.compressionRatio || 0;
+    tokensSaved = contextResult.tokensSaved || 0;
+    
+    if (contextResult.compressed) {
+      console.log(`[Orchestrator] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
+    }
+
+    // Cache check
+    const cacheable = !stream && !tools && !tool_choice && (temperature === 0 || temperature === undefined);
+    let cacheKey = null;
+    if (cacheable) {
+      cacheKey = getCacheKey(processedMessages, { temperature, max_tokens, top_p, model: requestedModel });
+      const cached = get(cacheKey);
+      if (cached) {
+        cacheHit = true;
+        const latency = Date.now() - overallStart;
+        res.setHeader('X-Cache-Hit', 'true');
+        res.setHeader('X-Latency', latency);
+        res.setHeader('X-Task-Type', taskType);
+        await logRequest(RequestsModel, userId, 'cache', 'cached', 'success', 
+          tokenEstimator.estimateTotalTokens(messages), 
+          cached.usage?.completion_tokens || 0, 
+          latency, null, taskType, 0);
+        res.json(cached);
+        return;
       }
-      return sum + Math.ceil(contentLength / 4);
-    }, 0);
-    const estimatedTotal = estimatedInputTokens + (max_tokens || 1000);
+    }
 
     let preferredModel;
     if (isAutoModel(requestedModel)) {
       preferredModel = getStickyModel(messages);
       
-      // Si pas de sticky model → choisir le bon modèle selon la requête
       if (!preferredModel) {
         const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
           .sort({ priority: 1 })
           .lean();
         
-        // Récupérer tous les modèles en une seule requête pour optimiser
         const modelDbIds = fallbackChain.map(entry => entry.modelDbId);
         const allModels = await ModelsModel.find({ _id: { $in: modelDbIds }, enabled: true, deletedAt: null }).lean();
         
-        // Créer un map pour accéder aux modèles rapidement
         const modelMap = new Map();
         for (const model of allModels) {
           modelMap.set(String(model._id), model);
@@ -280,18 +279,6 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               model,
             });
           }
-        }
-        
-        if (tools || tool_choice) {
-          // Requête avec outils → trier d'abord par intelligenceRank, puis par ta priorité
-          candidateModels.sort((a, b) => {
-            const intelDiff = (a.model.intelligenceRank || 0) - (b.model.intelligenceRank || 0);
-            if (intelDiff !== 0) return intelDiff;
-            return (a.priority || 0) - (b.priority || 0);
-          });
-        } else {
-          // Requête sans outils → garder EXACTEMENT l'ordre de ta fallback chain
-          candidateModels.sort((a, b) => (a.priority || 0) - (b.priority || 0));
         }
         
         if (candidateModels.length > 0) {
@@ -321,22 +308,24 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const skipKeys = new Set();
     let lastError = null;
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      retryCount = attempt;
       let route;
       try {
         route = await routeRequest(
           ModelsModel, 
           ApiKeysModel, 
           FallbackConfigModel, 
-          estimatedTotal, 
+          tokenEstimator.estimateTotalTokens(processedMessages) + max_tokens, 
           skipKeys.size > 0 ? skipKeys : undefined, 
-          preferredModel
+          preferredModel,
+          taskType
         );
       } catch (err) {
         if (lastError) {
           res.status(429).json({
             error: {
-              message: "All models rate-limited. Last error: " + lastError.message,
+              message: "All models exhausted. Last error: " + lastError.message,
               type: 'rate_limit_error',
             },
           });
@@ -345,36 +334,36 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             error: { message: err.message, type: 'routing_error' },
           });
         }
+        await logRequest(RequestsModel, userId, 'unknown', 'unknown', 'error', 
+          tokenEstimator.estimateTotalTokens(messages), 0, Date.now() - overallStart, 
+          err.message, taskType, retryCount);
         return;
+      }
+
+      // Check token limits for selected provider
+      const tokenCheck = tokenEstimator.checkTokenLimits(
+        processedMessages, 
+        route.platform, 
+        taskType, 
+        max_tokens
+      );
+      
+      if (tokenCheck.needsCompression) {
+        console.log(`[Orchestrator] Token limits exceeded for ${route.platform}, compressing more`);
+        const furtherCompressed = tokenEstimator.compressContext(
+          processedMessages, 
+          Math.min(tokenCheck.budget.input, tokenCheck.providerLimit - max_tokens)
+        );
+        processedMessages = furtherCompressed.messages;
+        tokensSaved += tokenEstimator.estimateTotalTokens(messages) - furtherCompressed.compressedTokens;
+        compressionRatio = 1 - (furtherCompressed.compressedTokens / tokenEstimator.estimateTotalTokens(messages));
       }
 
       recordRequest(route.platform, route.modelId, route.keyId);
 
-      // Récupérer le modèle complet pour avoir contextWindow
-      console.log('[proxy] Looking up model with dbId:', route.modelDbId);
-      const model = await ModelsModel.findById(route.modelDbId).lean();
-      console.log('[proxy] Found model:', model ? { id: model._id, name: model.name, contextWindow: model.contextWindow } : null);
-      
-      let truncatedMessages = messages;
-      let estimatedInputTokensTruncated = estimatedInputTokens;
-      if (model && model.contextWindow && model.contextWindow > 0) {
-        console.log('[proxy] Truncating messages with contextWindow:', model.contextWindow);
-        truncatedMessages = truncateMessagesToContextLimit(messages, model.contextWindow, max_tokens || 1000);
-        estimatedInputTokensTruncated = truncatedMessages.reduce((sum, m) => {
-          let contentLength = 0;
-          if (typeof m.content === 'string') {
-            contentLength = m.content.length;
-          } else if (Array.isArray(m.content)) {
-            contentLength = m.content.reduce((partSum, part) => {
-              if (part.type === 'text' && part.text) {
-                return partSum + part.text.length;
-              }
-              return partSum;
-            }, 0);
-          }
-          return sum + Math.ceil(contentLength / 4);
-        }, 0);
-      }
+      const cbKey = `${route.platform}:${route.modelId}`;
+      const circuitBreaker = getCircuitBreaker(cbKey);
+      const requestStart = Date.now();
 
       try {
         if (stream) {
@@ -382,7 +371,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           let streamStarted = false;
           try {
             const gen = route.provider.streamChatCompletion(
-              route.apiKey, truncatedMessages, route.modelId,
+              route.apiKey, processedMessages, route.modelId,
               { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
             );
 
@@ -392,6 +381,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
                 res.setHeader('Cache-Control', 'no-cache');
                 res.setHeader('Connection', 'keep-alive');
                 res.setHeader('X-Routed-Via', route.platform + '/' + route.modelId);
+                res.setHeader('X-Task-Type', taskType);
+                res.setHeader('X-Compression-Ratio', compressionRatio.toFixed(3));
                 if (attempt > 0) res.setHeader('X-Fallback-Attempts', String(attempt));
                 streamStarted = true;
               }
@@ -407,10 +398,17 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             res.write('data: [DONE]\n\n');
             res.end();
 
-            recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokensTruncated + totalOutputTokens);
+            const latency = Date.now() - requestStart;
+            recordTokens(route.platform, route.modelId, route.keyId, 
+              tokenEstimator.estimateTotalTokens(processedMessages) + totalOutputTokens);
             recordSuccess(route.modelDbId);
-            setStickyModel(truncatedMessages, route.modelDbId);
-            await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', estimatedInputTokensTruncated, totalOutputTokens, Date.now() - start, null);
+            circuitBreaker.recordSuccess();
+            perfMetrics.recordSuccess(route.platform, route.modelId, latency, 
+              tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens);
+            setStickyModel(processedMessages, route.modelDbId);
+            await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', 
+              tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
+              latency, null, taskType, retryCount);
             return;
           } catch (streamErr) {
             if (streamStarted) {
@@ -418,24 +416,42 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               const payload = { error: { message: "Provider error (" + route.displayName + "): stream interrupted", type: 'stream_error' } };
               try { res.write('data: ' + JSON.stringify(payload) + '\n\n'); } catch { /* socket gone */ }
               try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
-              await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokensTruncated, totalOutputTokens, Date.now() - start, streamErr.message);
+              const latency = Date.now() - requestStart;
+              await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', 
+                tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
+                latency, streamErr.message, taskType, retryCount);
               return;
             }
             throw streamErr;
           }
         } else {
           const result = await route.provider.chatCompletion(
-            route.apiKey, truncatedMessages, route.modelId,
+            route.apiKey, processedMessages, route.modelId,
             { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
           );
 
+          const latency = Date.now() - requestStart;
           const totalTokens = result.usage?.total_tokens || 0;
+          const inputTokensResult = result.usage?.prompt_tokens || tokenEstimator.estimateTotalTokens(processedMessages);
+          const outputTokensResult = result.usage?.completion_tokens || 0;
+          
           recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
           recordSuccess(route.modelDbId);
-          setStickyModel(truncatedMessages, route.modelDbId);
+          circuitBreaker.recordSuccess();
+          perfMetrics.recordSuccess(route.platform, route.modelId, latency, inputTokensResult, outputTokensResult);
+          setStickyModel(processedMessages, route.modelDbId);
 
           res.setHeader('X-Routed-Via', route.platform + '/' + route.modelId);
+          res.setHeader('X-Task-Type', taskType);
+          res.setHeader('X-Compression-Ratio', compressionRatio.toFixed(3));
+          res.setHeader('X-Latency', latency);
           if (attempt > 0) res.setHeader('X-Fallback-Attempts', String(attempt));
+          
+          // Store in cache
+          if (cacheable && cacheKey && attempt === 0) {
+            set(cacheKey, result);
+          }
+          
           res.json(result);
 
           await logRequest(
@@ -444,24 +460,37 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             route.platform,
             route.modelId,
             'success',
-            result.usage?.prompt_tokens || 0,
-            result.usage?.completion_tokens || 0,
-            Date.now() - start,
-            null
+            inputTokensResult,
+            outputTokensResult,
+            latency,
+            null,
+            taskType,
+            retryCount
           );
           return;
         }
       } catch (err) {
-        const latency = Date.now() - start;
-        await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', estimatedInputTokensTruncated, 0, latency, err.message);
+        const latency = Date.now() - requestStart;
+        await logRequest(RequestsModel, userId, route.platform, route.modelId, 'error', 
+          tokenEstimator.estimateTotalTokens(processedMessages), 0, latency, 
+          err.message, taskType, retryCount);
 
-        if (isRetryableError(err)) {
+        circuitBreaker.recordFailure();
+        perfMetrics.recordFailure(route.platform, route.modelId);
+
+        const maxRetriesForError = getRetryCountForError(err);
+        if (isRetryableError(err) && attempt < maxRetriesForError) {
           const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
           skipKeys.add(skipId);
           setCooldown(route.platform, route.modelId, route.keyId, 120000);
           recordRateLimitHit(route.modelDbId);
           lastError = err;
-          console.log('[Proxy] ' + (err.message || '').slice(0, 60) + ' from ' + route.displayName + ', falling back (attempt ' + (attempt + 1) + '/' + MAX_RETRIES + ')');
+          console.log(`[Orchestrator] ${err.message.slice(0, 60)} from ${route.displayName}, retry ${attempt + 1}/${maxRetriesForError}`);
+          
+          const backoffMs = BASE_BACKOFF_MS * Math.pow(2, attempt);
+          console.log(`[Orchestrator] Backoff: ${backoffMs}ms`);
+          await delay(backoffMs);
+          
           continue;
         }
 
@@ -479,7 +508,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     res.status(429).json({
       error: {
-        message: "All models rate-limited after " + MAX_RETRIES + " attempts. Last: " + (lastError?.message || ''),
+        message: "All models exhausted after " + retryCount + " attempts. Last: " + (lastError?.message || ''),
         type: 'rate_limit_error',
       },
     });
