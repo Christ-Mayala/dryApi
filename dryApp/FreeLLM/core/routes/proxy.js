@@ -78,15 +78,21 @@ function delay(ms) {
 }
 
 const RETRY_POLICY = {
-  timeout: 2,
-  '429': 1,
-  '503': 2,
-  network: 2,
-  default: 1
+  timeout: 0, // ZERO retries for timeout (évite les cascades)
+  '429': 0,    // ZERO retries for rate limit
+  '503': 0,    // ZERO retries for service unavailable
+  network: 0,  // ZERO retries for network errors
+  default: 0   // ZERO retries by default
 };
 
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 0; // NO MORE RETRIES AT ALL TO PREVENT CASCADES
+const MAX_FALLBACKS = 1; // MAX 1 FALLBACK PROVIDER
 const BASE_BACKOFF_MS = 1000;
+
+// GLOBAL RUNTIME TOKEN BUDGET PER CONVERSATION
+const CONVERSATION_TOKEN_BUDGET = 100000; // 100k tokens max par conversation
+const conversationTokenUsage = new Map(); // Map<convId, {usedTokens: number, createdAt: number}>
+const CONVERSATION_BUDGET_TTL = 3600000 * 24; // 24 hours
 
 function getRetryCountForError(error) {
   const msg = (error.message || '').toLowerCase();
@@ -115,6 +121,11 @@ function isRetryableError(err) {
     || msg.includes('econnrefused') || msg.includes('econnreset')
     || msg.includes('503') || msg.includes('unavailable')
     || msg.includes('500') || msg.includes('internal server error');
+}
+
+// DETAILED OBSERVABILITY LOGGING
+function logOrchestrationDetails(details) {
+  console.log(`[Orchestrator] 📊 ${JSON.stringify(details, null, 2)}`);
 }
 
 async function logRequest(RequestsModel, userId, platform, modelId, status, inputTokens, outputTokens, latencyMs, error, taskType, retryCount) {
@@ -216,6 +227,31 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const parallel_tool_calls = req.body.parallel_tool_calls;
     const messages = req.body.messages;
 
+    // GLOBAL CONVERSATION TOKEN BUDGET CHECK
+    let conversationId = id;
+    if (!conversationId || conversationId === 'new') {
+      conversationId = crypto.randomUUID();
+    }
+    let convBudget = conversationTokenUsage.get(conversationId);
+    const now = Date.now();
+    if (!convBudget || now - convBudget.createdAt > CONVERSATION_BUDGET_TTL) {
+      convBudget = { usedTokens: 0, createdAt: now };
+      conversationTokenUsage.set(conversationId, convBudget);
+    }
+    const estimatedInputTokens = tokenEstimator.estimateTotalTokens(messages);
+    const estimatedTotalTokens = estimatedInputTokens + max_tokens;
+    if (convBudget.usedTokens + estimatedTotalTokens > CONVERSATION_TOKEN_BUDGET) {
+      console.warn(`[Orchestrator] Conversation budget exceeded for ${conversationId}: used=${convBudget.usedTokens}, estimated=${estimatedTotalTokens}, budget=${CONVERSATION_TOKEN_BUDGET}`);
+      res.status(429).json({
+        error: {
+          message: `Conversation token budget exceeded (${CONVERSATION_TOKEN_BUDGET} tokens max). Start a new conversation.`,
+          type: 'budget_exceeded'
+        }
+      });
+      return;
+    }
+    console.log(`[Orchestrator] Conversation ${conversationId} token usage: ${convBudget.usedTokens}/${CONVERSATION_TOKEN_BUDGET} (+${estimatedTotalTokens} est.)`);
+
     // Classify request
     const classification = requestClassifier.classifyRequest(messages);
     taskType = classification.taskType;
@@ -227,8 +263,9 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     let processedMessages = contextResult.messages;
     compressionRatio = contextResult.compressionRatio || 0;
     tokensSaved = contextResult.tokensSaved || 0;
+    const alreadyCompressed = contextResult.compressed;
     
-    if (contextResult.compressed) {
+    if (alreadyCompressed) {
       console.log(`[Orchestrator] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
     }
 
@@ -308,9 +345,10 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const skipKeys = new Set();
     let lastError = null;
 
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      retryCount = attempt;
-      let route;
+    let fallbackCount = 0;
+  for (let attempt = 0; fallbackCount <= MAX_FALLBACKS; attempt++) {
+    retryCount = attempt;
+    let route;
       try {
         route = await routeRequest(
           ModelsModel, 
@@ -348,8 +386,9 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         max_tokens
       );
       
-      if (tokenCheck.needsCompression) {
-        console.log(`[Orchestrator] Token limits exceeded for ${route.platform}, compressing more`);
+      // ONLY compress if NOT already compressed by context manager to avoid double compression
+      if (tokenCheck.needsCompression && !alreadyCompressed) {
+        console.log(`[Orchestrator] Token limits exceeded for ${route.platform}, compressing`);
         const furtherCompressed = tokenEstimator.compressContext(
           processedMessages, 
           Math.min(tokenCheck.budget.input, tokenCheck.providerLimit - max_tokens)
@@ -357,6 +396,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         processedMessages = furtherCompressed.messages;
         tokensSaved += tokenEstimator.estimateTotalTokens(messages) - furtherCompressed.compressedTokens;
         compressionRatio = 1 - (furtherCompressed.compressedTokens / tokenEstimator.estimateTotalTokens(messages));
+      } else if (tokenCheck.needsCompression && alreadyCompressed) {
+        console.log(`[Orchestrator] Token limits exceeded for ${route.platform} but context already compressed - skipping further compression to avoid info loss`);
       }
 
       recordRequest(route.platform, route.modelId, route.keyId);
@@ -399,13 +440,40 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             res.end();
 
             const latency = Date.now() - requestStart;
-            recordTokens(route.platform, route.modelId, route.keyId, 
-              tokenEstimator.estimateTotalTokens(processedMessages) + totalOutputTokens);
+            const totalTokensUsed = tokenEstimator.estimateTotalTokens(processedMessages) + totalOutputTokens;
+            convBudget.usedTokens += totalTokensUsed;
+            conversationTokenUsage.set(conversationId, convBudget);
+            
+            recordTokens(route.platform, route.modelId, route.keyId, totalTokensUsed);
             recordSuccess(route.modelDbId);
             circuitBreaker.recordSuccess();
             perfMetrics.recordSuccess(route.platform, route.modelId, latency, 
               tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens);
             setStickyModel(processedMessages, route.modelDbId);
+            const orchestrationDetails = {
+              conversationId,
+              taskType,
+              platform: route.platform,
+              model: route.modelId,
+              status: 'success',
+              latency,
+              tokens: {
+                originalInput: tokenEstimator.estimateTotalTokens(messages),
+                processedInput: tokenEstimator.estimateTotalTokens(processedMessages),
+                output: totalOutputTokens,
+                total: tokenEstimator.estimateTotalTokens(processedMessages) + totalOutputTokens,
+                saved: tokensSaved
+              },
+              compression: compressionRatio,
+              conversationBudget: {
+                used: convBudget.usedTokens,
+                budget: CONVERSATION_TOKEN_BUDGET
+              },
+              fallbackCount,
+              cacheHit
+            };
+            logOrchestrationDetails(orchestrationDetails);
+            
             await logRequest(RequestsModel, userId, route.platform, route.modelId, 'success', 
               tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
               latency, null, taskType, retryCount);
@@ -426,20 +494,23 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           }
         } else {
           const result = await route.provider.chatCompletion(
-            route.apiKey, processedMessages, route.modelId,
-            { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
-          );
+          route.apiKey, processedMessages, route.modelId,
+          { temperature: temperature, max_tokens: max_tokens, top_p: top_p, tools: tools, tool_choice: tool_choice, parallel_tool_calls: parallel_tool_calls },
+        );
 
-          const latency = Date.now() - requestStart;
-          const totalTokens = result.usage?.total_tokens || 0;
-          const inputTokensResult = result.usage?.prompt_tokens || tokenEstimator.estimateTotalTokens(processedMessages);
-          const outputTokensResult = result.usage?.completion_tokens || 0;
-          
-          recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
-          recordSuccess(route.modelDbId);
-          circuitBreaker.recordSuccess();
-          perfMetrics.recordSuccess(route.platform, route.modelId, latency, inputTokensResult, outputTokensResult);
-          setStickyModel(processedMessages, route.modelDbId);
+        const latency = Date.now() - requestStart;
+        const totalTokens = result.usage?.total_tokens || 0;
+        const inputTokensResult = result.usage?.prompt_tokens || tokenEstimator.estimateTotalTokens(processedMessages);
+        const outputTokensResult = result.usage?.completion_tokens || 0;
+        
+        convBudget.usedTokens += totalTokens;
+        conversationTokenUsage.set(conversationId, convBudget);
+        
+        recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
+        recordSuccess(route.modelDbId);
+        circuitBreaker.recordSuccess();
+        perfMetrics.recordSuccess(route.platform, route.modelId, latency, inputTokensResult, outputTokensResult);
+        setStickyModel(processedMessages, route.modelDbId);
 
           res.setHeader('X-Routed-Via', route.platform + '/' + route.modelId);
           res.setHeader('X-Task-Type', taskType);
@@ -453,6 +524,30 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           }
           
           res.json(result);
+
+          const orchestrationDetails = {
+            conversationId,
+            taskType,
+            platform: route.platform,
+            model: route.modelId,
+            status: 'success',
+            latency,
+            tokens: {
+              originalInput: tokenEstimator.estimateTotalTokens(messages),
+              processedInput: inputTokensResult,
+              output: outputTokensResult,
+              total: totalTokens,
+              saved: tokensSaved
+            },
+            compression: compressionRatio,
+            conversationBudget: {
+              used: convBudget.usedTokens,
+              budget: CONVERSATION_TOKEN_BUDGET
+            },
+            fallbackCount,
+            cacheHit
+          };
+          logOrchestrationDetails(orchestrationDetails);
 
           await logRequest(
             RequestsModel,
@@ -478,20 +573,15 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         circuitBreaker.recordFailure();
         perfMetrics.recordFailure(route.platform, route.modelId);
 
-        const maxRetriesForError = getRetryCountForError(err);
-        if (isRetryableError(err) && attempt < maxRetriesForError) {
-          const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
-          skipKeys.add(skipId);
-          setCooldown(route.platform, route.modelId, route.keyId, 120000);
-          recordRateLimitHit(route.modelDbId);
-          lastError = err;
-          console.log(`[Orchestrator] ${err.message.slice(0, 60)} from ${route.displayName}, retry ${attempt + 1}/${maxRetriesForError}`);
-          
-          const backoffMs = BASE_BACKOFF_MS * Math.pow(2, attempt);
-          console.log(`[Orchestrator] Backoff: ${backoffMs}ms`);
-          await delay(backoffMs);
-          
-          continue;
+      if (fallbackCount < MAX_FALLBACKS) {
+        const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
+        skipKeys.add(skipId);
+        setCooldown(route.platform, route.modelId, route.keyId, 120000);
+        recordRateLimitHit(route.modelDbId);
+        lastError = err;
+        fallbackCount++;
+        console.log(`[Orchestrator] ${err.message.slice(0, 60)} from ${route.displayName}, fallback ${fallbackCount}/${MAX_FALLBACKS}`);
+        continue;
         }
 
         console.error('[Proxy] Provider error:', err.message, err.response?.data);
