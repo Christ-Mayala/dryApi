@@ -228,8 +228,15 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const messages = req.body.messages;
 
     // GLOBAL CONVERSATION TOKEN BUDGET CHECK
-    let conversationId = id;
-    if (!conversationId || conversationId === 'new') {
+    // Generate conversation ID from first user message content for consistency
+    let conversationId;
+    const firstUserMsg = messages.find(m => m.role === 'user' && m.content);
+    if (firstUserMsg) {
+      const contentToHash = typeof firstUserMsg.content === 'string' 
+        ? firstUserMsg.content 
+        : JSON.stringify(firstUserMsg.content);
+      conversationId = crypto.createHash('md5').update(contentToHash.slice(0, 200)).digest('hex');
+    } else {
       conversationId = crypto.randomUUID();
     }
     let convBudget = conversationTokenUsage.get(conversationId);

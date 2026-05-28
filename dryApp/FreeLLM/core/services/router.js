@@ -2,7 +2,8 @@ const { decrypt } = require('../lib/crypto.js');
 const { canMakeRequest, canUseTokens, isOnCooldown } = require('./ratelimit.js');
 const { getProvider } = require('../providers/index.js');
 const { getCircuitBreaker } = require('./circuitBreaker.js');
-const { getSuccessRate, getAvgLatency, getP95Latency } = require('./performanceMetrics.js');
+const { getSuccessRate, getAvgLatency } = require('./performanceMetrics.js');
+const { getProviderScore, IDE_PREFERRED_PROVIDERS } = require('./keyPoolManager.js');
 
 // Round-robin index per platform
 const roundRobinIndex = new Map();
@@ -90,22 +91,33 @@ function getAllPenalties() {
  * - Latence moyenne
  * - Classement vitesse/intelligence
  */
-function calculateModelScore(entry, model) {
+function calculateModelScore(entry, model, isIdeMode) {
   const basePriority = entry.priority || 0;
   const ratePenalty = getPenalty(entry.modelDbId);
   
   const successRate = getSuccessRate(model.platform, model.modelId);
   const avgLatency = getAvgLatency(model.platform, model.modelId);
   
-  // Score de latence (plus bas = mieux)
-  const latencyScore = Math.min(1, 10000 / (avgLatency || 10000));
+  // Get dynamic provider score from keyPoolManager
+  const providerScore = getProviderScore(model.platform);
   
   // Score final (plus haut = mieux)
-  let score = 1000 - basePriority - ratePenalty * 10;
+  let score = providerScore; // Base score = dynamic provider score
+  
+  // Adjust with fallback config priority
+  score -= basePriority * 5;
+  
+  // Rate limit penalty
+  score -= ratePenalty * 20;
+  
+  // Success rate bonus (0-100 points)
   score += successRate * 100;
+  
+  // Latency bonus (0-50 points, lower is better)
+  const latencyScore = Math.min(1, 10000 / (avgLatency || 10000));
   score += latencyScore * 50;
   
-  // Bonus pour vitesse (speedRank plus bas = plus rapide)
+  // Speed rank bonus (0-40 points, lower is better)
   score += (20 - (model.speedRank || 10)) * 2;
   
   return score;
@@ -126,7 +138,7 @@ function calculateModelScore(entry, model) {
  * @param preferredModelDbId - try this model first (sticky session)
  * @param requestType - type de requête (chat, code, reasoning) pour adapter le routing
  */
-async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat') {
+async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat', isIdeMode = false) {
   // Get fallback chain ordered by priority
   const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
     .sort({ priority: 1 })
@@ -148,7 +160,7 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
       return {
         ...entry,
         model,
-        score: calculateModelScore(entry, model)
+        score: calculateModelScore(entry, model, isIdeMode)
       };
     })
     .sort((a, b) => b.score - a.score); // Du plus haut score au plus bas
