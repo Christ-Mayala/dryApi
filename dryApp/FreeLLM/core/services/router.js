@@ -138,7 +138,7 @@ function calculateModelScore(entry, model, isIdeMode) {
  * @param preferredModelDbId - try this model first (sticky session)
  * @param requestType - type de requête (chat, code, reasoning) pour adapter le routing
  */
-async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat', isIdeMode = false) {
+async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat', isIdeMode = false, hasTools = false) {
   // Get fallback chain ordered by priority
   const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
     .sort({ priority: 1 })
@@ -162,6 +162,13 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
         model,
         score: calculateModelScore(entry, model, isIdeMode)
       };
+    })
+    .filter(entry => {
+      // Si la requête a des outils, on écarte NVIDIA
+      if (hasTools && entry.model.platform.toLowerCase().includes('nvidia')) {
+        return false;
+      }
+      return true;
     })
     .sort((a, b) => b.score - a.score); // Du plus haut score au plus bas
 

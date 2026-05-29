@@ -459,7 +459,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           skipKeys.size > 0 ? skipKeys : undefined, 
           preferredModel,
           taskType,
-          isIdeMode
+          isIdeMode,
+          !!(tools && tools.length > 0) // hasTools = true si outils présents
         );
         
         keyId = route.keyId;
