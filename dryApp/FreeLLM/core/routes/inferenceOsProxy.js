@@ -476,7 +476,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           max_tokens
         );
         
-        if (tokenCheck.needsCompression && !alreadyCompressed && !isIdeMode) {
+        if (tokenCheck.needsCompression && !alreadyCompressed && !isIdeMode && !hasTools) {
           console.log(`[InferenceOS] Token limits exceeded for ${route.platform}, compressing`);
           const furtherCompressed = tokenEstimator.compressContext(
             processedMessages, 
