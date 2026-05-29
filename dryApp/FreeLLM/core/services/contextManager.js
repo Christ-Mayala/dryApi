@@ -87,7 +87,6 @@ function manageContext(messages, maxTokens = 8000) {
   }
   
   // Need compression
-  let processedMessages = [...messages];
   let summary = null;
   const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
   
@@ -97,8 +96,50 @@ function manageContext(messages, maxTokens = 8000) {
     summary = createConversationSummary(messages);
   }
   
-  // Sliding window: keep system message + summary + last 8 messages
-  const recentCount = 8;
+  // GROUP messages into chunks (tool pairs + single messages)
+  const messageChunks = [];
+  let i = 0;
+  
+  while (i < messages.length) {
+    const msg = messages[i];
+    
+    // Skip system message for chunking (we handle it separately)
+    if (i === 0 && msg.role === 'system') {
+      i++;
+      continue;
+    }
+    
+    // Check if this is an assistant message with tool_calls
+    if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
+      // Look for the next tool message (tool response)
+      let toolResponse = null;
+      if (i + 1 < messages.length && messages[i + 1].role === 'tool') {
+        toolResponse = messages[i + 1];
+      }
+      
+      // Add both as a single chunk
+      if (toolResponse) {
+        messageChunks.push([msg, toolResponse]);
+        i += 2;
+      } else {
+        messageChunks.push([msg]);
+        i++;
+      }
+    } else if (msg.role === 'tool') {
+      // Single tool message - shouldn't happen normally, but just in case
+      messageChunks.push([msg]);
+      i++;
+    } else {
+      // Regular message
+      messageChunks.push([msg]);
+      i++;
+    }
+  }
+  
+  // Select recent chunks - we want to keep as many tool pairs as possible
+  const recentChunkCount = 6; // Keep 6 chunks (could be up to 12 messages if all are pairs)
+  const recentChunks = messageChunks.slice(-recentChunkCount);
+  
   let finalMessages = [];
   
   if (systemMessage) {
@@ -112,10 +153,10 @@ function manageContext(messages, maxTokens = 8000) {
     });
   }
   
-  // Add recent messages
-  const startIdx = systemMessage ? 1 : 0;
-  const recentMessages = messages.slice(Math.max(startIdx, messages.length - recentCount));
-  finalMessages.push(...recentMessages);
+  // Add all recent chunks
+  for (const chunk of recentChunks) {
+    finalMessages.push(...chunk);
+  }
   
   // Check if still over limit
   let finalTokens = estimateTotalTokens(finalMessages);
