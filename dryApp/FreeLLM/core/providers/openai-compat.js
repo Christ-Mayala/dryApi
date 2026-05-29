@@ -20,8 +20,10 @@ class OpenAICompatProvider extends BaseProvider {
   }
 
   async chatCompletion(apiKey, messages, modelId, options) {
-    // NVIDIA NIM API ne supporte pas les outils
-    const isNvidia = this.platform.toLowerCase().includes('nvidia');
+    // Providers qui NE supportent PAS les outils
+    const NO_TOOLS_PLATFORMS = new Set(['nvidia', 'mistral']);
+    const platformLower = this.platform.toLowerCase();
+    const needsNoTools = Array.from(NO_TOOLS_PLATFORMS).some(p => platformLower.includes(p));
     
     const body = {
       model: modelId,
@@ -31,7 +33,7 @@ class OpenAICompatProvider extends BaseProvider {
       top_p: options?.top_p,
     };
     
-    if (!isNvidia) {
+    if (!needsNoTools) {
       body.tools = options?.tools;
       body.tool_choice = options?.tool_choice;
       body.parallel_tool_calls = options?.parallel_tool_calls;
@@ -59,8 +61,10 @@ class OpenAICompatProvider extends BaseProvider {
   }
 
   async *streamChatCompletion(apiKey, messages, modelId, options) {
-    // NVIDIA NIM API ne supporte pas les outils
-    const isNvidia = this.platform.toLowerCase().includes('nvidia');
+    // Providers qui NE supportent PAS les outils
+    const NO_TOOLS_PLATFORMS = new Set(['nvidia', 'mistral']);
+    const platformLower = this.platform.toLowerCase();
+    const needsNoTools = Array.from(NO_TOOLS_PLATFORMS).some(p => platformLower.includes(p));
     
     const body = {
       model: modelId,
@@ -71,7 +75,7 @@ class OpenAICompatProvider extends BaseProvider {
       stream: true,
     };
     
-    if (!isNvidia) {
+    if (!needsNoTools) {
       body.tools = options?.tools;
       body.tool_choice = options?.tool_choice;
       body.parallel_tool_calls = options?.parallel_tool_calls;

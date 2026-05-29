@@ -152,6 +152,9 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     modelMap.set(String(model._id), model);
   }
 
+  // Providers qui SUPPORTENT les outils
+  const TOOLS_SUPPORTED = new Set(['google', 'openrouter']);
+
   // Calculer les scores et trier
   const scoredChain = fallbackChain
     .filter(entry => modelMap.has(String(entry.modelDbId)))
@@ -164,8 +167,14 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
       };
     })
     .filter(entry => {
-      // Si la requête a des outils, on écarte NVIDIA
-      if (hasTools && entry.model.platform.toLowerCase().includes('nvidia')) {
+      // Si la requête a des outils, NE GARDER QUE les providers qui supportent les outils
+      if (hasTools) {
+        const platformLower = entry.model.platform.toLowerCase();
+        for (const goodPlatform of TOOLS_SUPPORTED) {
+          if (platformLower.includes(goodPlatform)) {
+            return true;
+          }
+        }
         return false;
       }
       return true;
