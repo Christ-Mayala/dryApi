@@ -20,6 +20,23 @@ class OpenAICompatProvider extends BaseProvider {
   }
 
   async chatCompletion(apiKey, messages, modelId, options) {
+    // NVIDIA NIM API ne supporte pas les outils
+    const isNvidia = this.platform.toLowerCase().includes('nvidia');
+    
+    const body = {
+      model: modelId,
+      messages,
+      temperature: options?.temperature,
+      max_tokens: options?.max_tokens,
+      top_p: options?.top_p,
+    };
+    
+    if (!isNvidia) {
+      body.tools = options?.tools;
+      body.tool_choice = options?.tool_choice;
+      body.parallel_tool_calls = options?.parallel_tool_calls;
+    }
+    
     const res = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -27,16 +44,7 @@ class OpenAICompatProvider extends BaseProvider {
         'Content-Type': 'application/json',
         ...this.extraHeaders,
       },
-      body: JSON.stringify({
-        model: modelId,
-        messages,
-        temperature: options?.temperature,
-        max_tokens: options?.max_tokens,
-        top_p: options?.top_p,
-        tools: options?.tools,
-        tool_choice: options?.tool_choice,
-        parallel_tool_calls: options?.parallel_tool_calls,
-      }),
+      body: JSON.stringify(body),
     }, this.timeoutMs);
 
     if (!res.ok) {
@@ -51,6 +59,24 @@ class OpenAICompatProvider extends BaseProvider {
   }
 
   async *streamChatCompletion(apiKey, messages, modelId, options) {
+    // NVIDIA NIM API ne supporte pas les outils
+    const isNvidia = this.platform.toLowerCase().includes('nvidia');
+    
+    const body = {
+      model: modelId,
+      messages,
+      temperature: options?.temperature,
+      max_tokens: options?.max_tokens,
+      top_p: options?.top_p,
+      stream: true,
+    };
+    
+    if (!isNvidia) {
+      body.tools = options?.tools;
+      body.tool_choice = options?.tool_choice;
+      body.parallel_tool_calls = options?.parallel_tool_calls;
+    }
+    
     const res = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -58,17 +84,7 @@ class OpenAICompatProvider extends BaseProvider {
         'Content-Type': 'application/json',
         ...this.extraHeaders,
       },
-      body: JSON.stringify({
-        model: modelId,
-        messages,
-        temperature: options?.temperature,
-        max_tokens: options?.max_tokens,
-        top_p: options?.top_p,
-        tools: options?.tools,
-        tool_choice: options?.tool_choice,
-        parallel_tool_calls: options?.parallel_tool_calls,
-        stream: true,
-      }),
+      body: JSON.stringify(body),
     }, this.timeoutMs);
 
     if (!res.ok) {
