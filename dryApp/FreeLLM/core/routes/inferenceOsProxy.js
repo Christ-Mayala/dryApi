@@ -342,9 +342,10 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       console.log(`[InferenceOS] Classified request: ${taskType} (confidence: ${classification.confidence.toFixed(2)})`);
     }
 
-    // 4.2 Context Management ONLY if NOT in IDE Mode AND needed
+    // 4.2 Context Management ONLY if NOT in IDE Mode AND NO TOOLS
     let alreadyCompressed = false;
-    if (!isIdeMode) {
+    const hasTools = !!(tools && tools.length > 0);
+    if (!isIdeMode && !hasTools) {
       const tokenBudget = tokenEstimator.getTokenBudget(taskType);
       const contextResult = contextManager.manageContext(messages, tokenBudget.input);
       processedMessages = contextResult.messages;
@@ -355,6 +356,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       if (alreadyCompressed) {
         console.log(`[InferenceOS] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
       }
+    } else if (hasTools) {
+      console.log(`[InferenceOS] Tools detected - skipping context management to preserve tool sequence integrity.`);
     }
 
     // 4.3 Cache check
