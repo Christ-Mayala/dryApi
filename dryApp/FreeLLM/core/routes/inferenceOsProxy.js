@@ -91,6 +91,8 @@ function logOrchestrationDetails(details) {
 
 async function logRequest(RequestsModel, userId, platform, modelId, keyId, status, inputTokens, outputTokens, latencyMs, error, taskType, fallbackCount, requestId) {
   try {
+    // Generate unique slug using crypto.randomUUID() to avoid collisions
+    const slug = `${platform}-${crypto.randomUUID()}`;
     await RequestsModel.create({
       userId,
       platform,
@@ -103,7 +105,8 @@ async function logRequest(RequestsModel, userId, platform, modelId, keyId, statu
       error,
       taskType,
       fallbackCount,
-      requestId
+      requestId,
+      slug
     });
   } catch (e) {
     console.error('Failed to log request:', e);
@@ -222,6 +225,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
     const User = req.getModel('User');
 
+    const authStart = Date.now();
     if (token && timingSafeStringEqual(token, unifiedApiKey)) {
       const admin = await User.findOne({ role: 'admin' }).lean();
       userId = admin ? admin._id : null;
@@ -248,6 +252,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       });
       return;
     }
+    const authEnd = Date.now();
+    console.log(`[InferenceOS][${requestId}] Auth: ${authEnd - authStart}ms`);
 
     const requestedModel = req.body.model;
     const temperature = req.body.temperature;
@@ -335,6 +341,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     // --- 4. LAZY ORCHESTRATION START ---
     
+    const contextStart = Date.now();
     // 4.1 Classify ONLY if NOT in IDE Mode
     if (!isIdeMode) {
       const classification = requestClassifier.classifyRequest(messages);
@@ -361,6 +368,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     } else if (alreadyCompressed) {
       console.log(`[InferenceOS] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
     }
+    const contextEnd = Date.now();
+    console.log(`[InferenceOS][${requestId}] Context management: ${contextEnd - contextStart}ms`);
 
     // 4.3 Cache check
     const cacheable = !stream && !tools && !tool_choice && (temperature === 0 || temperature === undefined);

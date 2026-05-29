@@ -293,6 +293,28 @@ function recordKeyFailure(platform, keyId, error) {
     return;
   }
   
+  // First check for critical error types
+  let cooldownMs = COOLDOWN_MS;
+  
+  // 401 Unauthorized → Permanent blacklist for 24h
+  if (error && error.toLowerCase().includes('401') || error && error.toLowerCase().includes('user not found')) {
+    console.warn(`[KeyPoolManager] 401 detected for ${platform}/${keyId} - blacklisting for 24h`);
+    cooldownMs = 24 * 60 * 60 * 1000;
+  }
+  
+  // 429 Rate Limited → Extract retry delay from error if available
+  if (error && error.toLowerCase().includes('429') || error && error.toLowerCase().includes('quota exceeded')) {
+    const retryMatch = error.match(/retry in (\d+(\.\d+)?)/);
+    if (retryMatch) {
+      cooldownMs = Math.ceil(parseFloat(retryMatch[1]) * 1000);
+      console.warn(`[KeyPoolManager] 429 detected for ${platform}/${keyId} - cooldown for ${cooldownMs}ms`);
+    } else {
+      // Default 60s cooldown
+      cooldownMs = 60 * 1000;
+      console.warn(`[KeyPoolManager] 429 detected for ${platform}/${keyId} - cooldown for ${cooldownMs}ms`);
+    }
+  }
+  
   // First update key metrics
   const platformKeys = KEY_POOL.get(platform);
   if (platformKeys) {
@@ -308,10 +330,8 @@ function recordKeyFailure(platform, keyId, error) {
         stats.recentErrors.shift();
       }
       
-      if (stats.failureCount >= MAX_ERRORS_BEFORE_COOLDOWN) {
-        stats.cooldownUntil = Date.now() + COOLDOWN_MS;
-        console.warn(`[KeyPoolManager] Key ${keyId} on ${platform} put into cooldown until ${new Date(stats.cooldownUntil).toISOString()}`);
-      }
+      stats.cooldownUntil = Date.now() + cooldownMs;
+      console.warn(`[KeyPoolManager] Key ${keyId} on ${platform} put into cooldown until ${new Date(stats.cooldownUntil).toISOString()}`);
     }
   }
   
