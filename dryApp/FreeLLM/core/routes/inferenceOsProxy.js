@@ -342,22 +342,24 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       console.log(`[InferenceOS] Classified request: ${taskType} (confidence: ${classification.confidence.toFixed(2)})`);
     }
 
-    // 4.2 Context Management ONLY if NOT in IDE Mode AND NO TOOLS
+    // 4.2 Context Management with Tool Safe Mode if needed
     let alreadyCompressed = false;
     const hasTools = !!(tools && tools.length > 0);
-    if (!isIdeMode && !hasTools) {
-      const tokenBudget = tokenEstimator.getTokenBudget(taskType);
-      const contextResult = contextManager.manageContext(messages, tokenBudget.input);
-      processedMessages = contextResult.messages;
-      compressionRatio = contextResult.compressionRatio || 0;
-      tokensSaved = contextResult.tokensSaved || 0;
-      alreadyCompressed = contextResult.compressed;
-      
+    const tokenBudget = tokenEstimator.getTokenBudget(taskType);
+    const contextResult = contextManager.manageContext(messages, tokenBudget.input, hasTools);
+    processedMessages = contextResult.messages;
+    compressionRatio = contextResult.compressionRatio || 0;
+    tokensSaved = contextResult.tokensSaved || 0;
+    alreadyCompressed = contextResult.compressed;
+    
+    if (hasTools) {
       if (alreadyCompressed) {
-        console.log(`[InferenceOS] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
+        console.log(`[InferenceOS] Tools detected - used Tool Safe Context Mode: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
+      } else {
+        console.log(`[InferenceOS] Tools detected - used Tool Safe Context Mode (no compression needed)`);
       }
-    } else if (hasTools) {
-      console.log(`[InferenceOS] Tools detected - skipping context management to preserve tool sequence integrity.`);
+    } else if (alreadyCompressed) {
+      console.log(`[InferenceOS] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
     }
 
     // 4.3 Cache check

@@ -69,15 +69,128 @@ function createConversationSummary(messages) {
   return `[CONVERSATION SUMMARY]\n${summaryParts.join('\n')}\n[END SUMMARY]`;
 }
 
-function manageContext(messages, maxTokens = 8000) {
+function manageToolSafeContext(messages, maxTokens = 16000) {
+  const conversationKey = getConversationKey(messages);
+  const currentTokens = estimateTotalTokens(messages);
+  
+  let finalMessages = [];
+  
+  // 1. Keep system messages (at beginning)
+  const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
+  if (systemMessage) {
+    finalMessages.push(systemMessage);
+  }
+  
+  // 2. Group messages into tool-safe chunks (preserve pairs)
+  const messageChunks = [];
+  let i = systemMessage ? 1 : 0;
+  
+  while (i < messages.length) {
+    const msg = messages[i];
+    
+    // Check if this is an assistant message with tool_calls
+    if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
+      let toolResponse = null;
+      if (i + 1 < messages.length && messages[i + 1].role === 'tool') {
+        toolResponse = messages[i + 1];
+      }
+      
+      if (toolResponse) {
+        messageChunks.push({
+          type: 'tool-pair',
+          messages: [msg, toolResponse]
+        });
+        i += 2;
+      } else {
+        messageChunks.push({
+          type: 'single',
+          messages: [msg]
+        });
+        i++;
+      }
+    } else if (msg.role === 'tool') {
+      messageChunks.push({
+        type: 'single',
+        messages: [msg]
+      });
+      i++;
+    } else {
+      messageChunks.push({
+        type: 'single',
+        messages: [msg]
+      });
+      i++;
+    }
+  }
+  
+  // 3. Keep recent chunks (preserve tool pairs - never split them!)
+  // Try to keep last 10-12 chunks, adjust downward if needed
+  let recentChunkCount = 12;
+  let selectedChunks = messageChunks.slice(-recentChunkCount);
+  
+  // 4. Build final messages
+  for (const chunk of selectedChunks) {
+    finalMessages.push(...chunk.messages);
+  }
+  
+  // 5. Check token limit, if still over reduce chunk count
+  let finalTokens = estimateTotalTokens(finalMessages);
+  while (finalTokens > maxTokens && selectedChunks.length > 4) {
+    recentChunkCount--;
+    selectedChunks = messageChunks.slice(-recentChunkCount);
+    
+    finalMessages = [];
+    if (systemMessage) finalMessages.push(systemMessage);
+    for (const chunk of selectedChunks) {
+      finalMessages.push(...chunk.messages);
+    }
+    finalTokens = estimateTotalTokens(finalMessages);
+  }
+  
+  // 6. If still over limit, compress but preserve tool pairs structure
+  if (finalTokens > maxTokens) {
+    // Keep last 4 tool pairs/chunks, create simple summary of older ones
+    const recentChunks = messageChunks.slice(-4);
+    
+    finalMessages = [];
+    if (systemMessage) finalMessages.push(systemMessage);
+    
+    finalMessages.push({
+      role: 'system',
+      content: '[CONVERSATION SUMMARY: Older messages omitted to preserve tool sequence integrity]'
+    });
+    
+    for (const chunk of recentChunks) {
+      finalMessages.push(...chunk.messages);
+    }
+    finalTokens = estimateTotalTokens(finalMessages);
+  }
+  
+  const tokensSaved = currentTokens - finalTokens;
+  const compressionRatio = 1 - (finalTokens / currentTokens);
+  
+  return {
+    messages: finalMessages,
+    compressed: tokensSaved > 0,
+    compressionRatio,
+    tokensSaved,
+    originalTokens: currentTokens,
+    finalTokens,
+    isToolSafeMode: true
+  };
+}
+
+function manageContext(messages, maxTokens = 8000, hasTools = false) {
+  if (hasTools) {
+    return manageToolSafeContext(messages, maxTokens);
+  }
+  
   const conversationKey = getConversationKey(messages);
   const existingMemory = getConversationMemory(conversationKey);
   
-  // First, estimate tokens
   const currentTokens = estimateTotalTokens(messages);
   
   if (currentTokens <= maxTokens) {
-    // No need for compression, just keep recent messages
     return {
       messages,
       compressed: false,
@@ -86,7 +199,6 @@ function manageContext(messages, maxTokens = 8000) {
     };
   }
   
-  // Need compression
   let summary = null;
   const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
   
@@ -96,28 +208,20 @@ function manageContext(messages, maxTokens = 8000) {
     summary = createConversationSummary(messages);
   }
   
-  // GROUP messages into chunks (tool pairs + single messages)
   const messageChunks = [];
   let i = 0;
   
   while (i < messages.length) {
     const msg = messages[i];
-    
-    // Skip system message for chunking (we handle it separately)
     if (i === 0 && msg.role === 'system') {
       i++;
       continue;
     }
-    
-    // Check if this is an assistant message with tool_calls
     if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
-      // Look for the next tool message (tool response)
       let toolResponse = null;
       if (i + 1 < messages.length && messages[i + 1].role === 'tool') {
         toolResponse = messages[i + 1];
       }
-      
-      // Add both as a single chunk
       if (toolResponse) {
         messageChunks.push([msg, toolResponse]);
         i += 2;
@@ -126,26 +230,19 @@ function manageContext(messages, maxTokens = 8000) {
         i++;
       }
     } else if (msg.role === 'tool') {
-      // Single tool message - shouldn't happen normally, but just in case
       messageChunks.push([msg]);
       i++;
     } else {
-      // Regular message
       messageChunks.push([msg]);
       i++;
     }
   }
   
-  // Select recent chunks - we want to keep as many tool pairs as possible
-  const recentChunkCount = 6; // Keep 6 chunks (could be up to 12 messages if all are pairs)
+  const recentChunkCount = 6;
   const recentChunks = messageChunks.slice(-recentChunkCount);
   
   let finalMessages = [];
-  
-  if (systemMessage) {
-    finalMessages.push(systemMessage);
-  }
-  
+  if (systemMessage) finalMessages.push(systemMessage);
   if (summary) {
     finalMessages.push({
       role: 'system',
@@ -153,12 +250,10 @@ function manageContext(messages, maxTokens = 8000) {
     });
   }
   
-  // Add all recent chunks
   for (const chunk of recentChunks) {
     finalMessages.push(...chunk);
   }
   
-  // Check if still over limit
   let finalTokens = estimateTotalTokens(finalMessages);
   if (finalTokens > maxTokens) {
     const compressed = compressContext(finalMessages, maxTokens * 0.9);
@@ -169,7 +264,6 @@ function manageContext(messages, maxTokens = 8000) {
   const tokensSaved = currentTokens - finalTokens;
   const compressionRatio = 1 - (finalTokens / currentTokens);
   
-  // Update memory with new summary
   if (conversationKey && finalMessages.length > 4) {
     const newSummary = createConversationSummary(finalMessages);
     updateConversationMemory(conversationKey, newSummary, finalMessages.slice(-4));
