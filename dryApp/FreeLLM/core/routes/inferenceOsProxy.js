@@ -444,7 +444,59 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const tokenBudget = tokenEstimator.getTokenBudget(taskType);
     
     if (isIdeMode) {
-      processedMessages = messages;
+      let newMessages = [...messages];
+      const ideRulesPrompt = `Tu es un assistant de développement intégré à un IDE.
+
+Tu ne fonctionnes PAS comme un agent autonome en boucle infinie.
+Tu ne dois jamais exécuter plusieurs étapes sans validation explicite.
+
+Règles strictes :
+
+1. Une seule réponse = une seule action logique.
+   - Pas de plan multi-étapes exécuté automatiquement.
+   - Pas de boucle “analyser → coder → corriger → re-tester”.
+
+2. Tu ne dois pas déclencher plusieurs appels implicites.
+   - Aucun enchaînement de requêtes internes.
+   - Aucun auto-retry.
+
+3. Si une tâche est complexe :
+   - Tu proposes un plan court (max 3 étapes)
+   - Tu attends confirmation explicite avant de continuer.
+
+4. Optimisation API obligatoire :
+   - Réduis les appels inutiles.
+   - Préfère une réponse complète unique plutôt que plusieurs petites réponses.
+
+5. Mode IDE :
+   - Tu réponds uniquement sur la demande actuelle.
+   - Tu n’anticipes pas les étapes suivantes.
+
+6. Gestion des erreurs :
+   - Si limitation API ou rate limit apparaît, tu arrêtes immédiatement.
+   - Tu ne retries pas automatiquement.
+
+7. Priorité :
+   - Minimiser les requêtes API
+   - Maximiser la complétude de chaque réponse
+
+Sortie :
+- Réponse directe
+- Pas d’explication inutile
+- Pas de narration`;
+
+      if (newMessages.length > 0 && newMessages[0].role === 'system') {
+        newMessages[0] = {
+          ...newMessages[0],
+          content: ideRulesPrompt + "\n\n" + newMessages[0].content
+        };
+      } else {
+        newMessages.unshift({
+          role: 'system',
+          content: ideRulesPrompt
+        });
+      }
+      processedMessages = newMessages;
       compressionRatio = 0;
       tokensSaved = 0;
       alreadyCompressed = true;
