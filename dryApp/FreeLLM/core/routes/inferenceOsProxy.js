@@ -2,7 +2,6 @@ const crypto = require('crypto');
 const express = require('express');
 const { routeRequest, recordRateLimitHit, recordSuccess } = require('../services/router.js');
 const { recordRequest, recordTokens, setCooldown } = require('../services/ratelimit.js');
-const { getCircuitBreaker } = require('../services/circuitBreaker.js');
 const perfMetrics = require('../services/performanceMetrics.js');
 const { getCacheKey, get, set } = require('../services/responseCache.js');
 const tokenEstimator = require('../services/tokenEstimator.js');
@@ -12,6 +11,7 @@ const keyPoolManager = require('../services/keyPoolManager.js');
 const fastPathLayer = require('../services/fastPathLayer.js');
 const ideMode = require('../services/ideMode.js');
 const toolRuntime = require('../services/toolRuntime.js');
+const { createProfiler, logger, circuitBreaker } = require('../services/inferenceLogger.js');
 
 const AUTO_MODEL_ID = 'auto';
 
@@ -84,11 +84,6 @@ const CONVERSATION_TOKEN_BUDGET = 1000000; // 1 MILLION tokens max per conversat
 const conversationTokenUsage = new Map(); // Map<convId, {usedTokens: number, createdAt: number}>
 const CONVERSATION_BUDGET_TTL = 3600000 * 24; // 24 hours
 
-// DETAILED OBSERVABILITY LOGGING
-function logOrchestrationDetails(details) {
-  console.log(`[InferenceOS] 📊 ${JSON.stringify(details, null, 2)}`);
-}
-
 async function logRequest(RequestsModel, userId, platform, modelId, keyId, status, inputTokens, outputTokens, latencyMs, error, taskType, fallbackCount, requestId) {
   try {
     // Generate unique slug using crypto.randomUUID() to avoid collisions
@@ -109,15 +104,21 @@ async function logRequest(RequestsModel, userId, platform, modelId, keyId, statu
       slug
     });
   } catch (e) {
-    console.error('Failed to log request:', e);
+    logger.error({
+      component: 'InferenceOS',
+      event: 'LOG_REQUEST_FAILED',
+      requestId,
+      error: e.message
+    });
   }
 }
 
 function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel, RequestsModel, unifiedApiKey) {
   const router = express.Router();
   
-  // Initialize key pool manager
+  // Initialize key pool manager and wire DB model for persistent blacklisting
   keyPoolManager.initializeKeyPool(ApiKeysModel);
+  keyPoolManager.setApiKeysModel(ApiKeysModel);
   
   router.get('/models', async (req, res) => {
     const models = await ModelsModel.find({ enabled: true, deletedAt: null })
@@ -175,7 +176,12 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         });
       }
       
-      console.log(`[ToolRuntime] Exécution de l'outil: ${tool_name}`);
+      logger.debug({
+        component: 'ToolRuntime',
+        event: 'EXECUTE_START',
+        requestId,
+        toolName: tool_name
+      });
       
       const result = await toolRuntime.executeToolRequest({
         toolName: tool_name,
@@ -183,23 +189,26 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         userRequest: user_request || req.body.messages?.map(m => m.content).join('\n') || ''
       });
       
-      console.log(`[ToolRuntime] Résultat: ${result.success ? 'Succès' : 'Fallback'}`);
+      logger.debug({
+        component: 'ToolRuntime',
+        event: 'EXECUTE_COMPLETE',
+        requestId,
+        toolName: tool_name,
+        success: result.success,
+        usedFallback: result.used_fallback
+      });
       
-      if (result.used_fallback) {
-        // Si fallback utilisé, retourner avec statut 200 mais inclure les infos de fallback
-        res.status(200).json({
-          ...result,
-          request_id: requestId
-        });
-      } else {
-        // Succès de l'exécution de l'outil
-        res.status(200).json({
-          ...result,
-          request_id: requestId
-        });
-      }
+      res.status(200).json({
+        ...result,
+        request_id: requestId
+      });
     } catch (error) {
-      console.error('[ToolRuntime] Erreur:', error);
+      logger.error({
+        component: 'ToolRuntime',
+        event: 'EXECUTE_FAILED',
+        requestId,
+        error: error.message
+      });
       res.status(500).json({
         error: {
           message: `Erreur serveur: ${error.message}`,
@@ -211,7 +220,9 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
   });
 
   router.post('/chat/completions', async (req, res) => {
-    const overallStart = Date.now();
+    const profiler = createProfiler();
+    profiler.mark('start');
+    
     const requestId = crypto.randomUUID();
     let fallbackCount = 0;
     let taskType = 'chat';
@@ -221,7 +232,26 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     let processedMessages = req.body.messages;
     let keyId = null;
 
-    let userId = null;
+    let finalStatus = 'error';
+    let finalError = null;
+    let routeContext = { platform: null, modelId: null };
+    let isIdeMode = false;
+    let tokensContext = { originalInput: 0, processedInput: 0, output: 0, total: 0, saved: 0, conversationUsed: 0 };
+    let isFinalized = false;
+
+    const finalizeRequest = () => {
+      if (isFinalized) return;
+      isFinalized = true;
+      finalStatus = 'error';
+        finalError = finalError;
+        routeContext.platform = routeContext.platform;
+        routeContext.modelId = routeContext.modelId;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
+    };
+
+    try {
+      let userId = null;
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
     const User = req.getModel('User');
 
@@ -239,6 +269,13 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         const decoded = verifyToken(token);
         userId = decoded.id;
       } catch (err) {
+        profiler.mark('auth');
+        finalStatus = 'error';
+        finalError = 'Invalid API key or JWT token';
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
         res.status(401).json({
           error: { message: 'Invalid API key or JWT token', type: 'authentication_error' },
         });
@@ -247,13 +284,19 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     }
 
     if (!userId) {
+      profiler.mark('auth');
+      finalStatus = 'error';
+        finalError = 'Authentication required';
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
       res.status(401).json({
         error: { message: 'Authentication required', type: 'authentication_error' },
       });
       return;
     }
-    const authEnd = Date.now();
-    console.log(`[InferenceOS][${requestId}] Auth: ${authEnd - authStart}ms`);
+    profiler.mark('auth');
 
     const requestedModel = req.body.model;
     const temperature = req.body.temperature;
@@ -265,10 +308,37 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const parallel_tool_calls = req.body.parallel_tool_calls;
     const messages = req.body.messages;
 
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      finalStatus = 400;
+      finalError = "Invalid request: 'messages' array is required and cannot be empty.";
+      res.status(400).json({ error: { message: finalError, type: 'invalid_request_error', requestId } });
+      return;
+    }
+    
+    // Check if at least one message has non-empty content
+    const hasValidContent = messages.some(m => {
+      if (typeof m.content === 'string') return m.content.trim().length > 0;
+      if (Array.isArray(m.content)) return m.content.some(part => part.type === 'text' && part.text.trim().length > 0);
+      return false;
+    });
+    
+    if (!hasValidContent) {
+      finalStatus = 400;
+      finalError = "Invalid request: messages must contain at least one non-empty content block.";
+      res.status(400).json({ error: { message: finalError, type: 'invalid_request_error', requestId } });
+      return;
+    }
+
     // --- 1. IDE MODE DETECTION (very fast) ---
     const isIdeMode = ideMode.detectIdeMode(req.headers['user-agent'], req.headers['x-ide-mode']);
     const requestTimeout = isIdeMode ? 5000 : 60000;
-    console.log(`[InferenceOS] Request ${requestId} - IDE Mode: ${isIdeMode}`);
+    logger.debug({
+      component: 'InferenceOS',
+      event: 'REQUEST_START',
+      requestId,
+      isIdeMode,
+      hasTools: !!(tools && tools.length > 0)
+    });
 
     // --- 2. FAST PATH LAYER (ultra fast) ---
     const fastPathResult = fastPathLayer.checkFastPath(messages, temperature, tools, tool_choice);
@@ -282,28 +352,31 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       }
 
       if (result) {
-        const latency = Date.now() - overallStart;
-        res.setHeader('X-Cache-Hit', String(cacheHit));
-        res.setHeader('X-Latency', latency);
-        res.setHeader('X-Task-Type', taskType);
-        res.setHeader('X-Request-Id', requestId);
+        profiler.mark('context');
+        profiler.mark('routing');
+        profiler.mark('provider');
+        profiler.mark('providerEnd');
+        const mongoSaveStart = Date.now();
         await logRequest(RequestsModel, userId, 'fast-path', 'fast-path', null, 'success', 
           tokenEstimator.estimateTotalTokens(messages), 
           result.usage?.completion_tokens || 0, 
-          latency, null, taskType, 0, requestId);
+          Date.now() - profiler.start, null, taskType, 0, requestId);
+        profiler.mark('mongo');
         
-        const details = {
-          requestId,
-          taskType,
-          status: 'success',
-          path: 'fast-path',
-          cacheHit,
-          latency,
-          isIdeMode
-        };
-        logOrchestrationDetails(details);
-        
+        const serializeStart = Date.now();
+        res.setHeader('X-Cache-Hit', String(cacheHit));
+        res.setHeader('X-Latency', Date.now() - profiler.start);
+        res.setHeader('X-Task-Type', taskType);
+        res.setHeader('X-Request-Id', requestId);
         res.json(result);
+        profiler.mark('serialize');
+        
+        finalStatus = 'success';
+        finalError = null;
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
         return;
       }
     }
@@ -328,7 +401,18 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const estimatedInputTokens = tokenEstimator.estimateTotalTokens(messages);
     const estimatedTotalTokens = estimatedInputTokens + max_tokens;
     if (convBudget.usedTokens + estimatedTotalTokens > CONVERSATION_TOKEN_BUDGET) {
-      console.warn(`[InferenceOS] Conversation budget exceeded for ${conversationId}: used=${convBudget.usedTokens}, estimated=${estimatedTotalTokens}, budget=${CONVERSATION_TOKEN_BUDGET}`);
+      profiler.mark('context');
+      profiler.mark('routing');
+      profiler.mark('provider');
+      profiler.mark('providerEnd');
+      profiler.mark('mongo');
+      profiler.mark('serialize');
+      finalStatus = 'error';
+        finalError = 'Conversation token budget exceeded';
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
       res.status(429).json({
         error: {
           message: `Conversation token budget exceeded (${CONVERSATION_TOKEN_BUDGET} tokens max). Start a new conversation.`,
@@ -341,35 +425,61 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     // --- 4. LAZY ORCHESTRATION START ---
     
-    const contextStart = Date.now();
     // 4.1 Classify ONLY if NOT in IDE Mode
     if (!isIdeMode) {
       const classification = requestClassifier.classifyRequest(messages);
       taskType = classification.taskType;
-      console.log(`[InferenceOS] Classified request: ${taskType} (confidence: ${classification.confidence.toFixed(2)})`);
+      logger.debug({
+        component: 'InferenceOS',
+        event: 'REQUEST_CLASSIFIED',
+        requestId,
+        taskType,
+        confidence: classification.confidence
+      });
     }
 
     // 4.2 Context Management with Tool Safe Mode if needed
     let alreadyCompressed = false;
     const hasTools = !!(tools && tools.length > 0);
     const tokenBudget = tokenEstimator.getTokenBudget(taskType);
-    const contextResult = contextManager.manageContext(messages, tokenBudget.input, hasTools);
-    processedMessages = contextResult.messages;
-    compressionRatio = contextResult.compressionRatio || 0;
-    tokensSaved = contextResult.tokensSaved || 0;
-    alreadyCompressed = contextResult.compressed;
     
-    if (hasTools) {
-      if (alreadyCompressed) {
-        console.log(`[InferenceOS] Tools detected - used Tool Safe Context Mode: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
-      } else {
-        console.log(`[InferenceOS] Tools detected - used Tool Safe Context Mode (no compression needed)`);
+    if (isIdeMode) {
+      processedMessages = messages;
+      compressionRatio = 0;
+      tokensSaved = 0;
+      alreadyCompressed = true;
+      profiler.mark('context');
+    } else {
+      const contextResult = contextManager.manageContext(messages, tokenBudget.input, hasTools);
+      processedMessages = contextResult.messages;
+      compressionRatio = contextResult.compressionRatio || 0;
+      tokensSaved = contextResult.tokensSaved || 0;
+      alreadyCompressed = contextResult.compressed;
+      profiler.mark('context');
+
+      // Guard: ContextManager must never produce an empty or content-less result
+      const hasProcessedContent = processedMessages && processedMessages.length > 0 &&
+        processedMessages.some(m => {
+          if (typeof m.content === 'string') return m.content.trim().length > 0;
+          if (Array.isArray(m.content)) return m.content.some(p => p.type === 'text' && p.text.trim().length > 0);
+          return false;
+        });
+      if (!hasProcessedContent) {
+        finalStatus = 400;
+        finalError = 'Context compression produced empty messages. Request cannot be processed.';
+        res.status(400).json({ error: { message: finalError, type: 'invalid_request_error', requestId } });
+        return;
       }
-    } else if (alreadyCompressed) {
-      console.log(`[InferenceOS] Compressed context: ${(compressionRatio * 100).toFixed(1)}% reduction, saved ${tokensSaved} tokens`);
     }
-    const contextEnd = Date.now();
-    console.log(`[InferenceOS][${requestId}] Context management: ${contextEnd - contextStart}ms`);
+    
+    logger.debug({
+      component: 'InferenceOS',
+      event: 'CONTEXT_MANAGEMENT_COMPLETE',
+      requestId,
+      hasTools,
+      compressionRatio,
+      tokensSaved
+    });
 
     // 4.3 Cache check
     const cacheable = !stream && !tools && !tool_choice && (temperature === 0 || temperature === undefined);
@@ -379,27 +489,31 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       const cached = get(cacheKey);
       if (cached) {
         cacheHit = true;
-        const latency = Date.now() - overallStart;
-        res.setHeader('X-Cache-Hit', 'true');
-        res.setHeader('X-Latency', latency);
-        res.setHeader('X-Task-Type', taskType);
-        res.setHeader('X-Request-Id', requestId);
+        profiler.mark('routing');
+        profiler.mark('provider');
+        profiler.mark('providerEnd');
+        
+        const mongoSaveStart = Date.now();
         await logRequest(RequestsModel, userId, 'cache', 'cached', null, 'success', 
           tokenEstimator.estimateTotalTokens(messages), 
           cached.usage?.completion_tokens || 0, 
-          latency, null, taskType, 0, requestId);
+          Date.now() - profiler.start, null, taskType, 0, requestId);
+        profiler.mark('mongo');
         
-        logOrchestrationDetails({
-          requestId,
-          taskType,
-          status: 'success',
-          path: 'cache',
-          cacheHit,
-          latency,
-          isIdeMode
-        });
-        
+        const serializeStart = Date.now();
+        res.setHeader('X-Cache-Hit', 'true');
+        res.setHeader('X-Latency', Date.now() - profiler.start);
+        res.setHeader('X-Task-Type', taskType);
+        res.setHeader('X-Request-Id', requestId);
         res.json(cached);
+        profiler.mark('serialize');
+        
+        finalStatus = 'success';
+        finalError = null;
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
         return;
       }
     }
@@ -444,6 +558,17 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       } else {
         const disabled = await ModelsModel.findOne({ modelId: requestedModel, deletedAt: null }).lean();
         const reason = disabled ? 'is disabled' : 'is not in the catalog';
+        profiler.mark('routing');
+        profiler.mark('provider');
+        profiler.mark('providerEnd');
+        profiler.mark('mongo');
+        profiler.mark('serialize');
+        finalStatus = 'error';
+        finalError = 'Model ' + requestedModel + ' ' + reason;
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
         res.status(400).json({
           error: {
             message: "Model '" + requestedModel + "' " + reason + ". Use 'auto' (or omit the 'model' field) to auto-route, or call /v1/models for the available list.",
@@ -476,6 +601,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           isIdeMode,
           !!(tools && tools.length > 0) // hasTools = true si outils présents
         );
+        profiler.mark('routing');
         
         keyId = route.keyId;
 
@@ -488,7 +614,12 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         );
         
         if (tokenCheck.needsCompression && !alreadyCompressed && !isIdeMode && !hasTools) {
-          console.log(`[InferenceOS] Token limits exceeded for ${route.platform}, compressing`);
+          logger.debug({
+            component: 'InferenceOS',
+            event: 'NEEDS_FURTHER_COMPRESSION',
+            requestId,
+            platform: route.platform
+          });
           const furtherCompressed = tokenEstimator.compressContext(
             processedMessages, 
             Math.min(tokenCheck.budget.input, tokenCheck.providerLimit - max_tokens)
@@ -500,9 +631,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
         recordRequest(route.platform, route.modelId, route.keyId);
 
-        const cbKey = `${route.platform}:${route.modelId}`;
-        const circuitBreaker = getCircuitBreaker(cbKey);
         const requestStart = Date.now();
+        profiler.mark('provider');
 
         try {
           if (stream) {
@@ -521,8 +651,13 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
                   timeout: requestTimeout
                 },
               );
-
+              
+              let firstChunk = true;
               for await (const chunk of gen) {
+                if (firstChunk) {
+                  profiler.mark('providerStreamStart');
+                  firstChunk = false;
+                }
                 if (!streamStarted) {
                   res.setHeader('Content-Type', 'text/event-stream');
                   res.setHeader('Cache-Control', 'no-cache');
@@ -538,6 +673,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
                 totalOutputTokens += Math.ceil(text.length / 4);
                 res.write('data: ' + JSON.stringify(chunk) + '\n\n');
               }
+              profiler.mark('providerStreamEnd');
+              profiler.mark('providerEnd');
 
               if (!streamStarted) {
                 res.setHeader('Content-Type', 'text/event-stream');
@@ -553,50 +690,59 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               
               recordTokens(route.platform, route.modelId, route.keyId, totalTokensUsed);
               recordSuccess(route.modelDbId);
-              circuitBreaker.recordSuccess();
+              circuitBreaker.recordSuccess(route.platform);
               perfMetrics.recordSuccess(route.platform, route.modelId, latency, 
                 tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens);
               keyPoolManager.recordKeySuccess(route.platform, route.keyId, latency);
               setStickyModel(processedMessages, route.modelDbId);
               
-              logOrchestrationDetails({
-                requestId,
-                conversationId,
-                taskType,
-                platform: route.platform,
-                model: route.modelId,
-                keyId,
-                status: 'success',
-                path: 'orchestrated',
-                latency,
-                tokens: {
+              // First save to Mongo and measure that time
+              const mongoSaveStart = Date.now();
+              await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'success', 
+                tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
+                latency, null, taskType, fallbackCount, requestId);
+              profiler.mark('mongo');
+              
+              profiler.mark('serialize');
+              finalStatus = 'success';
+        finalError = null;
+        routeContext.platform = route.platform;
+        routeContext.modelId = route.modelId;
+        tokensContext = {
                   originalInput: tokenEstimator.estimateTotalTokens(messages),
                   processedInput: tokenEstimator.estimateTotalTokens(processedMessages),
                   output: totalOutputTokens,
                   total: totalTokensUsed,
                   saved: tokensSaved,
                   conversationUsed: convBudget.usedTokens
-                },
-                compression: compressionRatio,
-                fallbackCount,
-                cacheHit,
-                isIdeMode
-              });
-              
-              await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'success', 
-                tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
-                latency, null, taskType, fallbackCount, requestId);
+                };
+        // logger.request removed
               return;
             } catch (streamErr) {
               if (streamStarted) {
-                console.error('[InferenceOS] Mid-stream error from ' + route.displayName + ':', streamErr.message);
+                logger.error({
+                  component: 'InferenceOS',
+                  event: 'MID_STREAM_ERROR',
+                  requestId,
+                  platform: route.platform,
+                  error: streamErr.message
+                });
                 const payload = { error: { message: "Provider error (" + route.displayName + "): stream interrupted", type: 'stream_error' } };
                 try { res.write('data: ' + JSON.stringify(payload) + '\n\n'); } catch { /* socket gone */ }
                 try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
                 const latency = Date.now() - requestStart;
+                const mongoSaveStart = Date.now();
                 await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
                   tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
                   latency, streamErr.message, taskType, fallbackCount, requestId);
+                profiler.mark('mongo');
+                profiler.mark('serialize');
+                finalStatus = 'error';
+        finalError = streamErr.message;
+        routeContext.platform = route.platform;
+        routeContext.modelId = route.modelId;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
                 return;
               }
               throw streamErr;
@@ -614,6 +760,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               timeout: requestTimeout
             },
           );
+            profiler.mark('providerEnd');
 
             const latency = Date.now() - requestStart;
             const totalTokens = result.usage?.total_tokens || 0;
@@ -625,7 +772,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
             
             recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
             recordSuccess(route.modelDbId);
-            circuitBreaker.recordSuccess();
+            circuitBreaker.recordSuccess(route.platform);
             perfMetrics.recordSuccess(route.platform, route.modelId, latency, inputTokensResult, outputTokensResult);
             keyPoolManager.recordKeySuccess(route.platform, route.keyId, latency);
             setStickyModel(processedMessages, route.modelDbId);
@@ -641,32 +788,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               set(cacheKey, result);
             }
             
-            res.json(result);
-
-            logOrchestrationDetails({
-              requestId,
-              conversationId,
-              taskType,
-              platform: route.platform,
-              model: route.modelId,
-              keyId,
-              status: 'success',
-              path: 'orchestrated',
-              latency,
-              tokens: {
-                originalInput: tokenEstimator.estimateTotalTokens(messages),
-                processedInput: inputTokensResult,
-                output: outputTokensResult,
-                total: totalTokens,
-                saved: tokensSaved,
-                conversationUsed: convBudget.usedTokens
-              },
-              compression: compressionRatio,
-              fallbackCount,
-              cacheHit,
-              isIdeMode
-            });
-
+            // First save to Mongo and measure that time
+            const mongoSaveStart = Date.now();
             await logRequest(
               RequestsModel,
               userId,
@@ -682,15 +805,38 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
               fallbackCount,
               requestId
             );
+            profiler.mark('mongo');
+            
+            // Then serialize and send response
+            const serializeStart = Date.now();
+            res.json(result);
+            profiler.mark('serialize');
+
+            finalStatus = 'success';
+        finalError = null;
+        routeContext.platform = route.platform;
+        routeContext.modelId = route.modelId;
+        tokensContext = {
+                originalInput: tokenEstimator.estimateTotalTokens(messages),
+                processedInput: inputTokensResult,
+                output: outputTokensResult,
+                total: totalTokens,
+                saved: tokensSaved,
+                conversationUsed: convBudget.usedTokens
+              };
+        // logger.request removed
             return;
           }
         } catch (err) {
           const latency = Date.now() - requestStart;
+          const mongoSaveStart = Date.now();
           await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
             tokenEstimator.estimateTotalTokens(processedMessages), 0, latency, 
             err.message, taskType, fallbackCount, requestId);
+          profiler.mark('mongo');
+          profiler.mark('serialize');
 
-          circuitBreaker.recordFailure();
+          circuitBreaker.recordFailure(route.platform);
           perfMetrics.recordFailure(route.platform, route.modelId);
           keyPoolManager.recordKeyFailure(route.platform, route.keyId, err.message);
           throw err;
@@ -699,12 +845,71 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         // IGNORE "this operation was aborted" - they're often user interruptions or timeouts (not true provider failures)
         // DO NOT increment fallbackCount or skip this key!
         if (err.message && err.message.toLowerCase().includes('aborted')) {
-          console.warn(`[InferenceOS] Ignoring aborted error for ${route?.platform || 'unknown'}:`, err.message);
+          logger.debug({
+            component: 'InferenceOS',
+            event: 'IGNORE_ABORTED_ERROR',
+            requestId,
+            platform: route?.platform || 'unknown',
+            error: err.message
+          });
           lastError = err;
           // Just retry the same key/route, DO NOT count as fallback or skip
           continue;
         }
-        
+
+        // --- CRITICAL ERROR CLASSIFICATION ---
+        // Some errors indicate a payload problem (not a provider issue).
+        // Retrying with another provider will produce the same result → stop immediately.
+        const msg = err.message || '';
+        const isCriticalPayloadError = (
+          msg.includes('400') &&
+          (msg.toLowerCase().includes('contents is not specified') ||
+           msg.toLowerCase().includes('invalid argument') ||
+           msg.toLowerCase().includes('empty') ||
+           msg.toLowerCase().includes('must have at least'))
+        );
+        const isDeadKeyError = (
+          msg.includes('401') ||
+          msg.toLowerCase().includes('user not found') ||
+          msg.toLowerCase().includes('invalid api key') ||
+          msg.toLowerCase().includes('authentication') ||
+          msg.includes('403')
+        );
+
+        if (isCriticalPayloadError) {
+          logger.error({
+            component: 'InferenceOS',
+            event: 'CRITICAL_PAYLOAD_ERROR',
+            requestId,
+            platform: route?.platform,
+            error: msg
+          });
+          finalStatus = 400;
+          finalError = `Payload error (${route?.platform}): ${msg}`;
+          res.status(400).json({
+            error: { message: finalError, type: 'invalid_request_error', requestId }
+          });
+          return;
+        }
+
+        if (isDeadKeyError && route) {
+          // Dead key: blacklist immediately in keyPool AND skip in this request, but DO allow fallback
+          logger.event({
+            component: 'InferenceOS',
+            event: 'DEAD_KEY_DETECTED',
+            requestId,
+            platform: route.platform,
+            keyId: route.keyId,
+            error: msg.slice(0, 100)
+          });
+          keyPoolManager.recordKeyFailure(route.platform, route.keyId, err.message);
+          const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
+          skipKeys.add(skipId);
+          lastError = err;
+          fallbackCount++;
+          continue;
+        }
+
         if (fallbackCount < MAX_FALLBACKS) {
           if (route) {
             const skipId = route.platform + ':' + route.modelId + ':' + route.keyId;
@@ -714,21 +919,31 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           }
           lastError = err;
           fallbackCount++;
-          console.log(`[InferenceOS] ${err.message.slice(0, 60)}, fallback ${fallbackCount}/${MAX_FALLBACKS}`);
+          logger.event({
+            component: 'InferenceOS',
+            event: 'FALLBACK',
+            requestId,
+            fallbackCount,
+            maxFallbacks: MAX_FALLBACKS,
+            error: err.message.slice(0, 100)
+          });
           continue;
         }
 
-        console.error('[InferenceOS] Provider error:', err.message, err.response?.data);
-        const finalStatus = lastError && lastError.message.includes('429') ? 429 : 502;
-        
-        logOrchestrationDetails({
+        logger.error({
+          component: 'InferenceOS',
+          event: 'ALL_PROVIDERS_EXHAUSTED',
           requestId,
-          taskType,
-          status: 'error',
           error: err.message,
-          fallbackCount,
-          isIdeMode
+          fallbackCount
         });
+        finalStatus = lastError && lastError.message.includes('429') ? 429 : 502;
+        
+        finalError = lastError ? "All models exhausted. Last error: " + lastError.message : "Error: " + err.message;
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
         
         res.status(finalStatus).json({
           error: {
@@ -742,6 +957,17 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       }
     }
 
+    profiler.mark('routing');
+    profiler.mark('provider');
+    profiler.mark('providerEnd');
+    profiler.mark('mongo');
+    profiler.mark('serialize');
+    finalStatus = 'error';
+        finalError = "All models exhausted after " + fallbackCount + " attempts. Last: " + (lastError?.message || '');
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
     res.status(429).json({
       error: {
         message: "All models exhausted after " + fallbackCount + " attempts. Last: " + (lastError?.message || ''),
@@ -749,6 +975,9 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         requestId
       },
     });
+    } finally {
+      finalizeRequest();
+    }
   });
 
   return router;

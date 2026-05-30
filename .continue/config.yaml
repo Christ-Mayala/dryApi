@@ -1,0 +1,34 @@
+# Configuration pour FreeLLM API (LOCAL - pour test tronquage)
+name: FreeLLM Config
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+models:
+  - name: FreeLLM Auto (Local)
+    provider: openai
+    model: auto
+    apiKey: bf0f7a5753acb2116ba08e4efb61255951889a623ad18127c95ade9ffa6056fd
+    apiBase: http://localhost:5000/api/v1/freellm
+
+  - name: FreeLLM Claude (Local)
+    provider: openai
+    model: claude-3-5-sonnet-20241022
+    apiKey: bf0f7a5753acb2116ba08e4efb61255951889a623ad18127c95ade9ffa6056fd
+    apiBase: http://localhost:5000/api/v1/freellm
+
+  - name: FreeLLM GPT-4 (Local)
+    provider: openai
+    model: gpt-4o
+    apiKey: bf0f7a5753acb2116ba08e4efb61255951889a623ad18127c95ade9ffa6056fd
+    apiBase: http://localhost:5000/api/v1/freellm
+
+  - name: FreeLLM Gemini (Local)
+    provider: openai
+    model: gemini-2.0-flash-exp
+    apiKey: bf0f7a5753acb2116ba08e4efb61255951889a623ad18127c95ade9ffa6056fd
+    apiBase: http://localhost:5000/api/v1/freellm
+
+# MCP Servers that Continue can access
+mcpServers:
+  - uses: anthropic/memory-mcp

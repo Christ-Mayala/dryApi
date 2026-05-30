@@ -1,0 +1,16 @@
+# Configuration pour FreeLLM API
+name: FreeLLM Config
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+models:
+  - name: FreeLLM Auto
+    provider: openai
+    model: auto
+    apiKey: bf0f7a5753acb2116ba08e4efb61255951889a623ad18127c95ade9ffa6056fd
+    apiBase: https://dryapi.onrender.com/v1
+
+# MCP Servers that Continue can access
+mcpServers:
+  - uses: anthropic/memory-mcp

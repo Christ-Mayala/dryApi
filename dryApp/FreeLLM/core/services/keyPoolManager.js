@@ -1,4 +1,9 @@
 const crypto = require('crypto');
+const { logger, circuitBreaker } = require('./inferenceLogger');
+
+// Reference to ApiKeysModel for persistent blacklisting — set at startup
+let _ApiKeysModel = null;
+function setApiKeysModel(model) { _ApiKeysModel = model; }
 
 /**
  * @typedef {Object} KeyStats
@@ -10,6 +15,8 @@ const crypto = require('crypto');
  * @property {number} lastUsedAt
  * @property {number | null} cooldownUntil
  * @property {string[]} recentErrors
+ * @property {'active' | 'invalid' | 'cooldown'} status
+ * @property {number | null} disabledAt
  */
 
 /**
@@ -22,13 +29,6 @@ const crypto = require('crypto');
  * @property {KeyStats} stats
  */
 
-const KEY_POOL = new Map(); // Map<platform, Map<keyId, StoredKey>>
-const PROVIDER_METRICS = new Map(); // Map<platform, ProviderMetrics>
-const COOLDOWN_MS = 120000; // 2 minutes
-const RECENT_LATENCY_COUNT = 10;
-const MAX_ERRORS_BEFORE_COOLDOWN = 3;
-const PROVIDER_METRICS_DECAY_MS = 3600000; // 1 hour
-
 /**
  * @typedef {Object} ProviderMetrics
  * @property {number} totalRequests
@@ -37,10 +37,19 @@ const PROVIDER_METRICS_DECAY_MS = 3600000; // 1 hour
  * @property {number} totalLatencyMs
  * @property {number[]} recentLatencies
  * @property {number} lastUpdatedAt
- * @property {number} priorityBoost // For IDE mode preferred providers
+ * @property {number} priorityBoost
+ * @property {boolean} rateLimited
+ * @property {number | null} retryAfter
  */
 
-// IDE Mode preferred providers with priority boosts (based on actual available providers)
+const KEY_POOL = new Map(); // Map<platform, Map<keyId, StoredKey>>
+const PROVIDER_METRICS = new Map(); // Map<platform, ProviderMetrics>
+const COOLDOWN_MS = 120000;
+const RECENT_LATENCY_COUNT = 10;
+const MAX_ERRORS_BEFORE_COOLDOWN = 3;
+const PROVIDER_METRICS_DECAY_MS = 3600000;
+
+// IDE Mode preferred providers
 const IDE_PREFERRED_PROVIDERS = {
   'groq': 1000,
   'nvidia': 900,
@@ -61,20 +70,20 @@ const IDE_PREFERRED_PROVIDERS = {
 };
 
 /**
- * Initialize the Key Pool Manager with API keys from the database
- * @param {any} ApiKeysModel Mongoose model for API keys
+ * Initialize KeyPoolManager from DB
  */
 async function initializeKeyPool(ApiKeysModel) {
-  console.log('[KeyPoolManager] Initializing key pool...');
-  const keys = await ApiKeysModel.find({ enabled: true, status: { $ne: 'invalid' }, deletedAt: null }).lean();
-  
+  logger.debug('[KEYPOOL]', {
+    event: 'INITIALIZE_START'
+  });
+  const keys = await ApiKeysModel.find({ deletedAt: null, enabled: true }).lean();
+
   for (const key of keys) {
     const platform = key.platform;
     if (!KEY_POOL.has(platform)) {
       KEY_POOL.set(platform, new Map());
     }
-    
-    // Initialize provider metrics if not exists
+
     if (!PROVIDER_METRICS.has(platform)) {
       PROVIDER_METRICS.set(platform, {
         totalRequests: 0,
@@ -83,10 +92,12 @@ async function initializeKeyPool(ApiKeysModel) {
         totalLatencyMs: 0,
         recentLatencies: [],
         lastUpdatedAt: Date.now(),
-        priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0
+        priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0,
+        rateLimited: false,
+        retryAfter: null
       });
     }
-    
+
     const keyId = String(key._id);
     KEY_POOL.get(platform).set(keyId, {
       id: keyId,
@@ -102,65 +113,73 @@ async function initializeKeyPool(ApiKeysModel) {
         recentLatencies: [],
         lastUsedAt: 0,
         cooldownUntil: null,
-        recentErrors: []
+        recentErrors: [],
+        status: 'active',
+        disabledAt: null
       }
     });
   }
-  
-  console.log(`[KeyPoolManager] Initialized with ${keys.length} keys across ${KEY_POOL.size} platforms`);
+
+  logger.debug('[KEYPOOL]', {
+    event: 'INITIALIZE_COMPLETE',
+    keyCount: keys.length,
+    platformCount: KEY_POOL.size
+  });
 }
 
 /**
- * Decay old provider metrics to keep scoring fresh
+ * Decay old provider metrics to keep scores fresh
  */
 function decayProviderMetrics() {
   const now = Date.now();
   for (const [platform, metrics] of PROVIDER_METRICS) {
     const elapsed = now - metrics.lastUpdatedAt;
     if (elapsed > PROVIDER_METRICS_DECAY_MS) {
-      // Decay metrics by 50% to prioritize recent performance
       metrics.totalRequests = Math.floor(metrics.totalRequests * 0.5);
       metrics.successCount = Math.floor(metrics.successCount * 0.5);
       metrics.failureCount = Math.floor(metrics.failureCount * 0.5);
       metrics.totalLatencyMs = Math.floor(metrics.totalLatencyMs * 0.5);
-      // Keep only the most recent half of latencies
       metrics.recentLatencies = metrics.recentLatencies.slice(Math.floor(metrics.recentLatencies.length / 2));
       metrics.lastUpdatedAt = now;
+
+      if (metrics.retryAfter && now > metrics.retryAfter) {
+        metrics.rateLimited = false;
+        metrics.retryAfter = null;
+      }
     }
   }
 }
 
 /**
  * Get dynamic provider score with real-time metrics
- * @param {string} platform
- * @returns {number}
  */
 function getProviderScore(platform) {
   decayProviderMetrics();
   const metrics = PROVIDER_METRICS.get(platform);
   if (!metrics) return IDE_PREFERRED_PROVIDERS[platform] || 0;
-  
+
   let score = metrics.priorityBoost;
-  
-  // Success rate (0-300 points)
+
+  if (metrics.rateLimited) {
+    score -= 1000;
+  }
+
   if (metrics.totalRequests > 0) {
     const successRate = metrics.successCount / metrics.totalRequests;
     score += successRate * 300;
   }
-  
-  // Average latency (0-200 points, lower is better)
+
   if (metrics.recentLatencies.length > 0) {
     const avgLatency = metrics.recentLatencies.reduce((a, b) => a + b, 0) / metrics.recentLatencies.length;
-    const latencyScore = Math.max(0, 200 * (1 - avgLatency / 3000)); // 3s max
+    const latencyScore = Math.max(0, 200 * (1 - avgLatency / 3000));
     score += latencyScore;
   }
-  
+
   return score;
 }
 
 /**
  * Get sorted list of platforms by dynamic score
- * @returns {string[]}
  */
 function getSortedPlatforms() {
   return Array.from(PROVIDER_METRICS.keys())
@@ -169,71 +188,58 @@ function getSortedPlatforms() {
 
 /**
  * Get the best available key for a platform
- * @param {string} platform Platform name
- * @returns {StoredKey | null} Best available key, or null if none
  */
 function getBestKey(platform) {
   const platformKeys = KEY_POOL.get(platform);
   if (!platformKeys) return null;
-  
+
   const now = Date.now();
   let bestKey = null;
   let bestScore = -Infinity;
-  
+
   for (const [keyId, key] of platformKeys) {
-    // Skip keys in cooldown
-    if (key.stats.cooldownUntil && now < key.stats.cooldownUntil) {
-      continue;
-    }
-    
+    if (key.stats.status !== 'active') continue;
+    if (key.stats.cooldownUntil && now < key.stats.cooldownUntil) continue;
+
     const score = calculateKeyScore(key);
     if (score > bestScore) {
       bestScore = score;
       bestKey = key;
     }
   }
-  
+
   return bestKey;
 }
 
 /**
- * Calculate a dynamic score for a key based on performance
- * @param {StoredKey} key
- * @returns {number} Score between 0 and 100
+ * Calculate a dynamic score for a key
  */
 function calculateKeyScore(key) {
   const { stats } = key;
-  let score = 50; // Base score
-  
-  // Success rate (0-30 points)
+  let score = 50;
+
   if (stats.totalRequests > 0) {
     const successRate = stats.successCount / stats.totalRequests;
     score += successRate * 30;
   }
-  
-  // Average latency (0-20 points, lower is better)
+
   if (stats.recentLatencies.length > 0) {
     const avgLatency = stats.recentLatencies.reduce((a, b) => a + b, 0) / stats.recentLatencies.length;
     const latencyScore = Math.max(0, 20 * (1 - avgLatency / 5000));
     score += latencyScore;
   }
-  
-  // Recency (0-10 points, more recent is better)
+
   const recencyMs = Date.now() - stats.lastUsedAt;
-  const recencyScore = Math.max(0, 10 * (1 - recencyMs / (3600000 * 24))); // 24 hours
+  const recencyScore = Math.max(0, 10 * (1 - recencyMs / (3600000 * 24)));
   score += recencyScore;
-  
+
   return score;
 }
 
 /**
  * Record a successful request for a key AND provider
- * @param {string} platform
- * @param {string} keyId
- * @param {number} latencyMs
  */
 function recordKeySuccess(platform, keyId, latencyMs) {
-  // First update key metrics
   const platformKeys = KEY_POOL.get(platform);
   if (platformKeys) {
     const key = platformKeys.get(keyId);
@@ -243,17 +249,16 @@ function recordKeySuccess(platform, keyId, latencyMs) {
       stats.successCount++;
       stats.totalLatencyMs += latencyMs;
       stats.lastUsedAt = Date.now();
-      
+
       stats.recentLatencies.push(latencyMs);
       if (stats.recentLatencies.length > RECENT_LATENCY_COUNT) {
         stats.recentLatencies.shift();
       }
-      
+
       stats.failureCount = Math.max(0, stats.failureCount - 1);
     }
   }
-  
-  // Now update provider metrics
+
   let metrics = PROVIDER_METRICS.get(platform);
   if (!metrics) {
     metrics = {
@@ -263,11 +268,13 @@ function recordKeySuccess(platform, keyId, latencyMs) {
       totalLatencyMs: 0,
       recentLatencies: [],
       lastUpdatedAt: Date.now(),
-      priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0
+      priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0,
+      rateLimited: false,
+      retryAfter: null
     };
     PROVIDER_METRICS.set(platform, metrics);
   }
-  
+
   metrics.totalRequests++;
   metrics.successCount++;
   metrics.totalLatencyMs += latencyMs;
@@ -276,46 +283,99 @@ function recordKeySuccess(platform, keyId, latencyMs) {
     metrics.recentLatencies.shift();
   }
   metrics.lastUpdatedAt = Date.now();
-  
-  console.log(`[KeyPoolManager] Success recorded for ${platform}/${keyId} (${latencyMs}ms)`);
+
+  circuitBreaker.recordSuccess(platform);
+
+  logger.debug('[KEYPOOL]', {
+    event: 'KEY_SUCCESS',
+    provider: platform,
+    keyId,
+    latencyMs
+  });
+}
+
+/**
+ * Extract retry delay from error message
+ */
+function extractRetryDelay(errorMessage) {
+  if (!errorMessage) return null;
+
+  const patterns = [
+    /retry after (\d+(?:\.\d+)?)/i,
+    /retry in (\d+(?:\.\d+)?)/i,
+    /try again in (\d+(?:\.\d+)?)/i,
+    /wait (\d+(?:\.\d+)?)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = errorMessage.match(pattern);
+    if (match) {
+      const delay = parseFloat(match[1]);
+      if (!isNaN(delay)) {
+        return Math.ceil(delay * 1000);
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
  * Record a failed request for a key AND provider
- * @param {string} platform
- * @param {string} keyId
- * @param {string} error
  */
-function recordKeyFailure(platform, keyId, error) {
-  // IGNORE "this operation was aborted" errors - they're often user interruptions/timeouts, not true provider failures
-  if (error && error.toLowerCase().includes('aborted')) {
-    console.log(`[KeyPoolManager] Ignoring aborted error for ${platform}/${keyId}`);
+function recordKeyFailure(platform, keyId, errorMessage) {
+  if (errorMessage && errorMessage.toLowerCase().includes('aborted')) {
+    logger.debug('[KEYPOOL]', {
+      event: 'IGNORE_ABORTED',
+      provider: platform,
+      keyId
+    });
     return;
   }
-  
-  // First check for critical error types
+
+  const now = Date.now();
   let cooldownMs = COOLDOWN_MS;
-  
-  // 401 Unauthorized → Permanent blacklist for 24h
-  if (error && error.toLowerCase().includes('401') || error && error.toLowerCase().includes('user not found')) {
-    console.warn(`[KeyPoolManager] 401 detected for ${platform}/${keyId} - blacklisting for 24h`);
+  let keyStatus = 'active';
+  let providerRateLimited = false;
+  let providerRetryAfter = null;
+
+  if (errorMessage && (errorMessage.toLowerCase().includes('401') || errorMessage.toLowerCase().includes('user not found'))) {
     cooldownMs = 24 * 60 * 60 * 1000;
-  }
-  
-  // 429 Rate Limited → Extract retry delay from error if available
-  if (error && error.toLowerCase().includes('429') || error && error.toLowerCase().includes('quota exceeded')) {
-    const retryMatch = error.match(/retry in (\d+(\.\d+)?)/);
-    if (retryMatch) {
-      cooldownMs = Math.ceil(parseFloat(retryMatch[1]) * 1000);
-      console.warn(`[KeyPoolManager] 429 detected for ${platform}/${keyId} - cooldown for ${cooldownMs}ms`);
+    keyStatus = 'invalid';
+    logger.event('KEY_BLACKLISTED', {
+      provider: platform,
+      keyId,
+      reason: '401_UNAUTHORIZED',
+      cooldownUntil: now + cooldownMs
+    });
+  } else if (errorMessage && (errorMessage.toLowerCase().includes('403'))) {
+    cooldownMs = 24 * 60 * 60 * 1000;
+    keyStatus = 'invalid';
+    logger.event('KEY_BLACKLISTED', {
+      provider: platform,
+      keyId,
+      reason: '403_FORBIDDEN',
+      cooldownUntil: now + cooldownMs
+    });
+  } else if (errorMessage && (errorMessage.toLowerCase().includes('429') || errorMessage.toLowerCase().includes('quota exceeded'))) {
+    const extractedDelay = extractRetryDelay(errorMessage);
+    if (extractedDelay) {
+      cooldownMs = extractedDelay;
+      providerRateLimited = true;
+      providerRetryAfter = now + extractedDelay;
     } else {
-      // Default 60s cooldown
       cooldownMs = 60 * 1000;
-      console.warn(`[KeyPoolManager] 429 detected for ${platform}/${keyId} - cooldown for ${cooldownMs}ms`);
+      providerRateLimited = true;
+      providerRetryAfter = now + cooldownMs;
     }
+    logger.event('RATE_LIMITED', {
+      provider: platform,
+      keyId,
+      cooldownMs,
+      retryAfter: providerRetryAfter
+    });
   }
-  
-  // First update key metrics
+
   const platformKeys = KEY_POOL.get(platform);
   if (platformKeys) {
     const key = platformKeys.get(keyId);
@@ -323,19 +383,30 @@ function recordKeyFailure(platform, keyId, error) {
       const stats = key.stats;
       stats.totalRequests++;
       stats.failureCount++;
-      stats.lastUsedAt = Date.now();
-      
-      stats.recentErrors.push(error);
+      stats.lastUsedAt = now;
+
+      stats.recentErrors.push(errorMessage);
       if (stats.recentErrors.length > 5) {
         stats.recentErrors.shift();
       }
-      
-      stats.cooldownUntil = Date.now() + cooldownMs;
-      console.warn(`[KeyPoolManager] Key ${keyId} on ${platform} put into cooldown until ${new Date(stats.cooldownUntil).toISOString()}`);
+
+      stats.cooldownUntil = now + cooldownMs;
+      stats.status = keyStatus;
+      if (keyStatus === 'invalid') {
+        stats.disabledAt = now;
+        // Persist to DB asynchronously so dead key is never retried after restart
+        if (_ApiKeysModel) {
+          _ApiKeysModel.updateOne(
+            { _id: keyId },
+            { $set: { status: 'invalid', enabled: false } }
+          ).catch(dbErr => {
+            logger.debug('[KEYPOOL]', { event: 'DB_BLACKLIST_FAILED', keyId, error: dbErr.message });
+          });
+        }
+      }
     }
   }
-  
-  // Now update provider metrics
+
   let metrics = PROVIDER_METRICS.get(platform);
   if (!metrics) {
     metrics = {
@@ -345,51 +416,62 @@ function recordKeyFailure(platform, keyId, error) {
       totalLatencyMs: 0,
       recentLatencies: [],
       lastUpdatedAt: Date.now(),
-      priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0
+      priorityBoost: IDE_PREFERRED_PROVIDERS[platform] || 0,
+      rateLimited: false,
+      retryAfter: null
     };
     PROVIDER_METRICS.set(platform, metrics);
   }
-  
+
   metrics.totalRequests++;
   metrics.failureCount++;
   metrics.lastUpdatedAt = Date.now();
-  
-  console.warn(`[KeyPoolManager] Failure recorded for ${platform}/${keyId}: ${error}`);
+
+  if (providerRateLimited) {
+    metrics.rateLimited = true;
+    metrics.retryAfter = providerRetryAfter;
+  }
+
+  circuitBreaker.recordFailure(platform);
+
+  logger.debug('[KEYPOOL]', {
+    event: 'KEY_FAILURE',
+    provider: platform,
+    keyId,
+    errorMessage
+  });
 }
 
 /**
- * Get statistics for a key
- * @param {string} platform
- * @param {string} keyId
- * @returns {KeyStats | null}
+ * Get stats for a key
  */
 function getKeyStats(platform, keyId) {
   const platformKeys = KEY_POOL.get(platform);
   if (!platformKeys) return null;
-  
+
   const key = platformKeys.get(keyId);
   if (!key) return null;
-  
+
   return key.stats;
 }
 
 /**
- * Get all statistics for all providers and keys
- * @returns {Object}
+ * Get all stats for all providers and keys
  */
 function getAllStats() {
   const stats = {
     providers: {},
     keys: {}
   };
-  
+
   for (const [platform, metrics] of PROVIDER_METRICS) {
     stats.providers[platform] = {
       ...metrics,
-      score: getProviderScore(platform)
+      score: getProviderScore(platform),
+      circuitBreaker: circuitBreaker.getState(platform)
     };
   }
-  
+
   for (const [platform, keys] of KEY_POOL) {
     stats.keys[platform] = Array.from(keys.values()).map(key => ({
       keyId: key.id,
@@ -397,12 +479,13 @@ function getAllStats() {
       score: calculateKeyScore(key)
     }));
   }
-  
+
   return stats;
 }
 
 module.exports = {
   initializeKeyPool,
+  setApiKeysModel,
   getBestKey,
   recordKeySuccess,
   recordKeyFailure,
