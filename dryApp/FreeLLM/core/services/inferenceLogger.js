@@ -73,6 +73,9 @@ const LOG_LEVELS = {
   ERROR: 'ERROR'
 };
 
+const classicLogger = require('../../../../dry/utils/logging/logger');
+const IS_PROD = process.env.NODE_ENV === 'production';
+
 /**
  * Logger centralisé
  */
@@ -81,48 +84,64 @@ const logger = {
    * Log final de requête (UN SEUL PAR REQUÊTE)
    */
   request(data) {
-    console.log(JSON.stringify({
-      level: LOG_LEVELS.REQUEST,
-      message: '[REQ-FINAL]',
-      timestamp: new Date().toISOString(),
-      ...data
-    }));
+    if (IS_PROD) {
+      const statusStr = data.status === 'success' ? 'OK' : 'FAIL';
+      const duration = data.performance?.total || 0;
+      const msg = `[REQ-FINAL] [${data.requestId}] ${data.platform || 'unknown'}:${data.model || 'unknown'} ${statusStr} ${duration}ms`;
+      classicLogger(msg, data.status === 'success' ? 'success' : 'error');
+    } else {
+      console.log(JSON.stringify({
+        level: LOG_LEVELS.REQUEST,
+        message: '[REQ-FINAL]',
+        timestamp: new Date().toISOString(),
+        ...data
+      }));
+    }
   },
 
   /**
    * Log d'événement (fallback, retry, cooldown, etc.)
    */
   event(message, data) {
-    console.log(JSON.stringify({
-      level: LOG_LEVELS.EVENT,
-      message: message,
-      timestamp: new Date().toISOString(),
-      ...data
-    }));
+    if (!IS_PROD) {
+      console.log(JSON.stringify({
+        level: LOG_LEVELS.EVENT,
+        message: message,
+        timestamp: new Date().toISOString(),
+        ...data
+      }));
+    }
   },
 
   /**
    * Log de debug (détails internes, KeyPoolManager, etc.)
    */
   debug(message, data) {
-    console.log(JSON.stringify({
-      level: LOG_LEVELS.DEBUG,
-      message: message,
-      timestamp: new Date().toISOString(),
-      ...data
-    }));
+    if (!IS_PROD) {
+      console.log(JSON.stringify({
+        level: LOG_LEVELS.DEBUG,
+        message: message,
+        timestamp: new Date().toISOString(),
+        ...data
+      }));
+    }
   },
 
   /**
    * Log d'erreur
    */
   error(message, data) {
-    console.error(JSON.stringify({
-      level: LOG_LEVELS.ERROR,
-      message: message,
-      timestamp: new Date().toISOString(),
-      ...data
-    }));
+    if (IS_PROD) {
+      const msg = `[${data?.requestId || 'unknown'}] ${message} ${data ? JSON.stringify(data) : ''}`;
+      classicLogger(msg, 'error');
+    } else {
+      console.error(JSON.stringify({
+        level: LOG_LEVELS.ERROR,
+        message: message,
+        timestamp: new Date().toISOString(),
+        ...data
+      }));
+    }
   }
 };
 
