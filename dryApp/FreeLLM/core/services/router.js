@@ -1,9 +1,9 @@
 const { decrypt } = require('../lib/crypto.js');
 const { canMakeRequest, canUseTokens, isOnCooldown } = require('./ratelimit.js');
 const { getProvider } = require('../providers/index.js');
-const { getCircuitBreaker } = require('./circuitBreaker.js');
+const { circuitBreaker } = require('./inferenceLogger.js');
 const { getSuccessRate, getAvgLatency } = require('./performanceMetrics.js');
-const { getProviderScore, IDE_PREFERRED_PROVIDERS } = require('./keyPoolManager.js');
+const { getProviderScore, getKeyStats, IDE_PREFERRED_PROVIDERS } = require('./keyPoolManager.js');
 
 // Round-robin index per platform
 const roundRobinIndex = new Map();
@@ -194,10 +194,8 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     const model = entry.model;
     if (!model) continue;
 
-    // Vérifier le circuit breaker
-    const cbKey = `${model.platform}:${model.modelId}`;
-    const circuitBreaker = getCircuitBreaker(cbKey);
-    if (!circuitBreaker.canCall()) {
+    // Vérifier le circuit breaker (provider level)
+    if (!circuitBreaker.isAvailable(model.platform)) {
       continue;
     }
 
@@ -234,7 +232,15 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
       const skipId = `${model.platform}:${model.modelId}:${key._id}`;
       if (skipKeys.has(skipId)) continue;
 
-      // Check cooldown (from previous 429s)
+      // Check keyPoolManager in-memory state: skip dead/blacklisted/cooldown keys
+      // without an extra DB query on every iteration
+      const keyStats = getKeyStats(model.platform, String(key._id));
+      if (keyStats) {
+        if (keyStats.status === 'invalid') continue;
+        if (keyStats.cooldownUntil && Date.now() < keyStats.cooldownUntil) continue;
+      }
+
+      // Check cooldown (from rate-limit tracker)
       if (isOnCooldown(model.platform, model.modelId, key._id)) continue;
 
       if (!canMakeRequest(model.platform, model.modelId, key._id, limits)) continue;
