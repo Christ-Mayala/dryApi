@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarifs — DRY API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
+    
+    /* Header */
+    header { text-align: center; margin-bottom: 60px; }
+    header h1 {
+      font-size: clamp(2.5em, 5vw, 3.5em);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { color: #94a3b8; font-size: 1.2em; margin-top: 12px; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .badge {
+      display: inline-block;
+      background: rgba(96, 165, 250, 0.1);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.85em;
+      color: #60a5fa;
+      margin-bottom: 20px;
+    }
+
+    /* Prix toggle */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .toggle-wrap span { color: #94a3b8; font-weight: 500; }
+    .toggle-wrap span.active { color: #f1f5f9; }
+    .toggle {
+      width: 52px;
+      height: 28px;
+      background: #334155;
+      border-radius: 999px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .toggle.active { background: #3b82f6; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.3s;
+    }
+    .toggle.active::after { transform: translateX(24px); }
+    .save-badge {
+      background: #22c55e;
+      color: #052e16;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8em;
+      font-weight: 700;
+    }
+
+    /* Grille */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Carte */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 24px;
+      padding: 40px 32px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #475569;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+    }
+    .card.popular {
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, #1e293b 0%, #1e3a5f 100%);
+      transform: scale(1.02);
+    }
+    .card.popular:hover { transform: scale(1.02) translateY(-4px); }
+    .card.popular .popular-tag {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #3b82f6;
+      color: white;
+      padding: 6px 20px;
+      border-radius: 999px;
+      font-size: 0.85em;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .card h3 { font-size: 1.4em; font-weight: 700; margin-bottom: 8px; }
+    .card .desc { color: #94a3b8; font-size: 0.95em; margin-bottom: 24px; min-height: 48px; }
+    .card .price {
+      font-size: 3em;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+    .card .price .currency { font-size: 0.4em; vertical-align: super; color: #64748b; }
+    .card .price .period { font-size: 0.3em; color: #64748b; font-weight: 400; }
+    .card .price-sub {
+      color: #64748b;
+      font-size: 0.9em;
+      margin-bottom: 32px;
+    }
+
+    .card .features { flex: 1; margin-bottom: 32px; }
+    .card .features li {
+      list-style: none;
+      padding: 10px 0;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95em;
+    }
+    .card .features li:last-child { border-bottom: none; }
+    .card .features li::before {
+      content: '✓';
+      width: 20px;
+      height: 20px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75em;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .card .features li.missing { opacity: 0.4; }
+    .card .features li.missing::before {
+      content: '—';
+      background: rgba(100, 116, 139, 0.1);
+      color: #64748b;
+    }
+
+    .card .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .card .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    .card .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
+    .card .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .card .btn-secondary:hover { background: #475569; }
+    .card .btn-enterprise {
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+      color: white;
+    }
+    .card .btn-enterprise:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139,92,246,0.3); }
+
+    /* FAQ */
+    .faq { margin-top: 80px; }
+    .faq h2 { text-align: center; font-size: 2em; font-weight: 700; margin-bottom: 40px; }
+    .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; }
+    .faq-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .faq-item h4 { font-size: 1.1em; margin-bottom: 8px; }
+    .faq-item p { color: #94a3b8; font-size: 0.95em; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+      font-size: 0.9em;
+      border-top: 1px solid #1e293b;
+      margin-top: 80px;
+    }
+    footer a { color: #60a5fa; text-decoration: none; }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      .card.popular { transform: none; }
+      .card.popular:hover { transform: translateY(-4px); }
+      .faq-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">🚀 DRY API Framework</div>
+      <h1>Une tarification simple et transparente</h1>
+      <p>Choisissez le plan qui correspond à vos besoins. Évoluez à tout moment.</p>
+      <div class="toggle-wrap">
+        <span class="active" id="monthly-label">Mensuel</span>
+        <div class="toggle active" id="billing-toggle" onclick="toggleBilling()"></div>
+        <span id="annual-label">Annuel <span class="save-badge">-20%</span></span>
+      </div>
+    </header>
+
+    <div class="grid" id="pricing-grid">
+      <!-- Community -->
+      <div class="card">
+        <h3>Community</h3>
+        <p class="desc">Pour démarrer vos projets et explorer l'API</p>
+        <div class="price">0<span class="currency">€</span></div>
+        <p class="price-sub">Gratuit — Aucune carte bancaire</p>
+        <ul class="features">
+          <li>API de base</li>
+          <li>100 requêtes / heure</li>
+          <li>1 application</li>
+          <li>Documentation Swagger</li>
+          <li>Support communautaire</li>
+          <li class="missing">Monitoring Prometheus</li>
+          <li class="missing">Support prioritaire</li>
+          <li class="missing">SLA 99.9%</li>
+        </ul>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">Commencer gratuitement</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="card popular">
+        <div class="popular-tag">⭐ Le plus populaire</div>
+        <h3>Pro</h3>
+        <p class="desc">Pour les professionnels et les équipes</p>
+        <div class="price" id="pro-price">99<span class="currency">€</span><span class="period">/mois</span></div>
+        <p class="price-sub" id="pro-sub">Facturé mensuellement</p>
+        <ul class="features">
+          <li>API complète</li>
+          <li>1 000 requêtes / heure</li>
+          <li>10 applications</li>
+          <li>Documentation Swagger</li>
+          <li>Monitoring Prometheus</li>
+          <li>Support prioritaire</li>
+          <li>Clés API illimitées</li>
+          <li>Export de données</li>
+          <li class="missing">SLA 99.9%</li>
+        </ul>
+        <button class="btn btn-primary" onclick="redirectToCheckout('pro')">Choisir Pro</button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="card">
+        <h3>Enterprise</h3>
+        <p class="desc">Pour les entreprises avec des besoins spécifiques</p>
+        <div class="price">Sur<span class="currency" style="font-size:0.6em;"> </span><span class="period">devis</span></div>
+        <p class="price-sub">Contactez notre équipe</p>
+        <ul class="features">
+          <li>🚀 Tout Pro +</li>
+          <li>Requêtes illimitées</li>
+          <li>Applications illimitées</li>
+          <li>SLA 99.9% garanti</li>
+          <li>Support dédié 24/7</li>
+          <li>Déploiement personnalisé</li>
+          <li>Audit de sécurité</li>
+          <li>Formation équipe</li>
+        </ul>
+        <button class="btn btn-enterprise" onclick="window.location.href='mailto:cybertouch2012@gmail.com'">Contacter la vente</button>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h2>❓ Questions fréquentes</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Puis-je changer de plan à tout moment ?</h4>
+          <p>Oui, vous pouvez passer au plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Comment fonctionne la facturation ?</h4>
+          <p>La facturation est mensuelle. Vous pouvez aussi opter pour un engagement annuel avec 20% de réduction.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Y a-t-il un engagement ?</h4>
+          <p>Non, vous pouvez résilier à tout moment. Le plan Community est gratuit sans limite de durée.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Quel support est inclus ?</h4>
+          <p>Community : support communautaire. Pro : support prioritaire par email. Enterprise : support dédié 24/7.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Puis-je essayer le plan Pro gratuitement ?</h4>
+          <p>Oui, nous offrons 14 jours d'essai gratuit sur le plan Pro, sans engagement.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Comment contacter le support ?</h4>
+          <p>Par email à <a href="mailto:cybertouch2012@gmail.com">cybertouch2012@gmail.com</a> ou via les issues GitHub.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>DRY API Framework — <a href="mailto:cybertouch2012@gmail.com">cybertouch2012@gmail.com</a></p>
+      <p style="margin-top:8px;font-size:0.85em;">🚀 Prêt pour la production. Sécurisé, scalable, documenté.</p>
+    </footer>
+  </div>
+
+  <script>
+    let isAnnual = false;
+    
+    function toggleBilling() {
+      isAnnual = !isAnnual;
+      document.getElementById('billing-toggle').classList.toggle('active', isAnnual);
+      document.getElementById('monthly-label').classList.toggle('active', !isAnnual);
+      document.getElementById('annual-label').classList.toggle('active', isAnnual);
+      updatePrices();
+    }
+    
+    function updatePrices() {
+      const priceEl = document.getElementById('pro-price');
+      const subEl = document.getElementById('pro-sub');
+      if (isAnnual) {
+        priceEl.innerHTML = '79<span class="currency">€</span><span class="period">/mois</span>';
+        subEl.textContent = 'Facturé annuellement (948€/an)';
+      } else {
+        priceEl.innerHTML = '99<span class="currency">€</span><span class="period">/mois</span>';
+        subEl.textContent = 'Facturé mensuellement';
+      }
+    }
+
+    function redirectToCheckout(planId) {
+      // Envoyer une requête POST à l'API billing
+      fetch('/api/v1/billing/checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data.url) {
+          window.location.href = data.data.url;
+        } else {
+          alert('Redirection vers la page de connexion...');
+          window.location.href = '/api/v1/scim/auth/login';
+        }
+      })
+      .catch(() => {
+        alert('Veuillez vous connecter pour souscrire.');
+        window.location.href = '/api/v1/scim/auth/login';
+      });
+    }
+  </script>
+</body>
+</html>

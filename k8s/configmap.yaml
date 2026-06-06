@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dry-api-config
+  namespace: dryapi
+  labels:
+    app: dry-api
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+  APP_NAME: "DRY API"
+  LOG_LEVEL: "info"
+  LOG_REQUESTS: "true"
+  PROMETHEUS_ENABLED: "true"
+  REDIS_ENABLED: "true"
+  REDIS_URL: "redis://redis-service:6379"
+  MONGO_DB_PREFIX: ""
+  ALLOWED_ORIGINS: "https://app.dryapi.io,https://admin.dryapi.io"
+  CORS_ORIGINS: "https://app.dryapi.io,https://admin.dryapi.io"
+  MAX_LOGIN_ATTEMPTS: "5"
+  LOCK_TIME: "2"
+  RATE_LIMIT_WINDOW_MS: "600000"
+  RATE_LIMIT_MAX: "1000"
+  RATE_LIMIT_AUTH_MULTIPLIER: "20"
+  RATE_LIMIT_ADMIN_MULTIPLIER: "100"
+  EMAIL_PROVIDER: "smtp"
+  EMAIL_HOST: "smtp.gmail.com"
+  EMAIL_PORT: "587"
+  EMAIL_SECURE: "false"
+  SEND_WELCOME_EMAIL_ON_REGISTER: "true"
+  ALERT_API_ERRORS: "true"
+  ALERT_API_CLIENT_ERRORS: "false"
+  PURGE_ENABLED: "true"
+  PURGE_AFTER_DAYS: "14"
+  PURGE_CRON: "0 3 * * *"
+  MONITOR_REPEAT_ALERTS: "false"
+  MONITOR_REPEAT_ALERT_MS: "900000"
+  MONITOR_DAILY_SUMMARY: "true"
+  MONITOR_LOGS_EVERY_DAYS: "3"
+  HEALTH_MONITOR_INTERVAL_MS: "30000"
+  CRASH_ON_UNHANDLED_REJECTION: "false"
