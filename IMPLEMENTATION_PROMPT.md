@@ -553,7 +553,7 @@ Sections:
    - Variables d'environnement
    - Output de build
    
-5. Déploiement Railway
+5. Déploiement Netlify
    - Configuration zéro-config
    - Variables d'environnement
    
