@@ -10,7 +10,14 @@ const {
   generateSwaggerRoutes,
 } = require('../utils/documentation/swagger.util');
 
+// Nouveaux modules (Phase 2)
+const { createMetrics, httpMetricsMiddleware } = require('../config/prometheus.config');
+const healthRoutes = require('../routes/health.routes');
+const billingRoutes = require('../modules/billing/billing.routes');
+const licensingRoutes = require('../modules/licensing/licensing.routes');
+
 const registerHealthRoutes = (app) => {
+  // Route racine avec status du serveur
   app.get('/', async (req, res) => {
     try {
       const health = await healthService.getHealthStatus();
@@ -29,17 +36,13 @@ const registerHealthRoutes = (app) => {
     }
   });
 
-  app.get('/health/live', async (req, res) => {
-    const liveness = await healthService.getLiveness();
-    res.status(200).json(liveness);
-  });
+  // Endpoints de health dédiés (montés dans /health via healthRoutes)
+  app.use('/health', healthRoutes);
 
-  app.get('/health/ready', async (req, res) => {
-    const readiness = await healthService.getReadiness();
-    const statusCode = readiness.status === 'READY' ? 200 : 503;
-    res.status(statusCode).json(readiness);
-  });
+  // Métriques Prometheus (/metrics) via le routeur health
+  // Note: GET /metrics est géré par healthRoutes
 
+  // System status
   app.get('/system/status.json', async (req, res) => {
     const overview = await healthService.getSystemOverview();
     res.status(200).json(overview);
@@ -49,8 +52,8 @@ const registerHealthRoutes = (app) => {
     const overview = await healthService.getSystemOverview();
     res.status(200).send(healthService.renderSystemStatusPage(overview));
   });
- 
-  // Nouveaux endpoints pour les actions système
+
+  // Actions système
   app.post('/system/actions/create-app', async (req, res) => {
     const { appName, template, addons } = req.body;
     try {
@@ -83,11 +86,29 @@ const registerDocumentationRoutes = (app) => {
 };
 
 const registerApplicationRoutes = async (app) => {
+  // Initialiser les métriques Prometheus
+  const metrics = createMetrics();
+  
+  // Middleware de tracking HTTP Prometheus (après toutes les routes)
+  app.use(httpMetricsMiddleware(metrics));
+
+  // Bootstrap des apps multi-tenant
   await bootstrapApps(app);
+
+  // Routes système
   registerHealthRoutes(app);
   registerDocumentationRoutes(app);
 
+  // Routes billing (monté dans l'espace API)
+  app.use('/api/v1/billing', billingRoutes);
+
+  // Routes licensing
+  app.use('/api/v1/licensing', licensingRoutes);
+
+  // 404
   app.use((req, res) => sendResponse(res, null, 'Route introuvable', false));
+  
+  // Gestion d'erreurs
   app.use(handleCsrfError);
   app.use(errorHandler);
 };

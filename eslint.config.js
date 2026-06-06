@@ -9,6 +9,8 @@ module.exports = [
       'node_modules/**',
       'downloads/**',
       'generated/**',
+      'frontend/**',
+      'dry/ui/**',
       'api.config.js',
     ],
   },

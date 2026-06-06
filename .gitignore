@@ -8,6 +8,7 @@ vite.config.ts.*
 .env.local
 .env.*.local
 frontend-mediadl/
+frontend/
 coverage/
 logs/*.log
 logs/*.json
