@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const compression = require('compression');
 const session = require('express-session');
 const cors = require('cors');
@@ -135,6 +136,12 @@ const createApp = () => {
 
   // ── Sécurité (Helmet, rate limiting, sanitize) ──
   setupSecurity(app);
+
+  // ── Landing Pages (pricing, etc.) ──
+  const landingDir = path.join(__dirname, '../../landing');
+  app.get(['/pricing', '/pricing.html'], (req, res) => {
+    res.sendFile(path.join(landingDir, 'pricing.html'));
+  });
 
   return { app, allowedOrigins };
 };
