@@ -139,7 +139,8 @@ const createApp = () => {
 
   // ── Landing Pages (pricing, etc.) ──
   const landingDir = path.join(__dirname, '../../landing');
-  app.get(['/pricing', '/pricing.html'], (req, res) => {
+  app.use(express.static(landingDir));
+  app.get('/pricing', (req, res) => {
     res.sendFile(path.join(landingDir, 'pricing.html'));
   });
 
