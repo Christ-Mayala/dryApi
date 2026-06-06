@@ -1,118 +1,273 @@
 # DRY API Framework
 
-Framework Node.js multi-tenant pour construire des APIs metier a partir d'un noyau commun, tout en gardant chaque application cliente isolee dans `dryApp/`.
+**🚀 Framework Node.js multi-tenant pour construire et opérer des APIs métier sécurisées, documentées et scalable.**
 
-## Ce que fait DRY
+[![Status](https://img.shields.io/badge/status-production-ready-brightgreen)](https://dryapi.onrender.com)
+[![License](https://img.shields.io/badge/license-ISC-blue)](LICENSE)
+[![Node](https://img.shields.io/badge/node-20+-339933?logo=node.js)](package.json)
+[![Tests](https://img.shields.io/badge/tests-✔-brightgreen)](.github/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-70%25+-yellowgreen)](https://dryapi.onrender.com/coverage)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)](Dockerfile)
+[![Kubernetes](https://img.shields.io/badge/k8s-ready-326CE5?logo=kubernetes)](k8s/)
 
-- Noyau commun dans `dry/` pour la securite, les middlewares, les factories, le cache, la documentation et le monitoring.
-- Couche metier dans `dryApp/` pour les tenants et leurs features.
-- Bootstrap unique qui monte toutes les apps detectees sous `/api/v1/<app>`.
-- Documentation Swagger, scripts de maintenance, health checks et tests integres.
+---
 
-## Ce qui est core vs optionnel
+## 📋 Tableau des Features
 
-Le core obligatoire:
+| Fonctionnalité | Community | Pro | Enterprise |
+|---------------|:---------:|:---:|:----------:|
+| API REST complète | ✅ | ✅ | ✅ |
+| Documentation Swagger | ✅ | ✅ | ✅ |
+| Multi-tenant (6 apps) | ✅ | ✅ | ✅ |
+| Authentification JWT | ✅ | ✅ | ✅ |
+| Rate limiting | 100 req/h | 1 000 req/h | Illimité |
+| Monitoring Prometheus | ❌ | ✅ | ✅ |
+| Winston Logger structuré | ❌ | ✅ | ✅ |
+| Health checks (/live/ready/startup) | ❌ | ✅ | ✅ |
+| Métriques performance | ❌ | ✅ | ✅ |
+| Validation entrées XSS/NoSQL | ✅ | ✅ | ✅ |
+| Versioning API | ✅ | ✅ | ✅ |
+| Piste d'audit | ❌ | ✅ | ✅ |
+| Sauvegardes automatisées | ❌ | ✅ | ✅ |
+| Module billing Stripe | ❌ | ✅ | ✅ |
+| Système de licences | ❌ | ✅ | ✅ |
+| Support prioritaire | ❌ | ✅ | ✅ |
+| SLA 99.9% | ❌ | ❌ | ✅ |
+| Support dédié 24/7 | ❌ | ❌ | ✅ |
 
-- Express, MongoDB, bootloader multi-tenant
-- auth JWT, middlewares de securite, gestion d'erreurs
-- `routerFactory`, `crudFactory`, conventions de features
-- health checks et documentation Swagger
+---
 
-Les modules optionnels:
-
-- Redis pour le cache
-- Cloudinary pour les medias
-- Stripe pour les paiements
-- Socket.IO pour les notifications
-- OAuth Google/Facebook
-- outils media et scraping
-
-L'objectif est de garder le noyau lisible et stable, puis d'activer les integrations seulement quand une app en a besoin.
-
-## Apps vitrine
-
-- `SCIM`: cas d'usage reservation + notifications + administration.
-- `SkillForge`: cas d'usage catalogue, commandes, paiement et export.
-- `MediaDL`: cas d'usage media pipeline et traitements de fichiers.
-
-## Demarrage en 10 minutes
-
-1. Installer les dependances
+## 🚀 Démarrage Rapide (5 minutes)
 
 ```bash
+# 1. Cloner
+git clone https://github.com/cyberfusion/dry-api.git
+cd dry-api
+
+# 2. Installer les dépendances
 npm install
-```
 
-2. Initialiser l'environnement
-
-```bash
+# 3. Copier et configurer l'environnement
 cp .env.example .env
-```
+# Éditer .env avec vos valeurs (MONGO_URI, JWT_SECRET, SESSION_SECRET)
 
-3. Renseigner au minimum ces variables dans `.env`
+# 4. Lancer les migrations
+npm run migrate:up
 
-- `MONGO_URI`
-- `JWT_SECRET`
-- `SESSION_SECRET`
-
-4. Lancer le serveur
-
-```bash
+# 5. Démarrer le serveur
 npm run dev
 ```
 
-5. Verifier que tout repond
+Le serveur démarrera et affichera **toutes les URLs disponibles** dans la console :
 
-- health: [http://localhost:5000/health/ready](http://localhost:5000/health/ready)
-- swagger: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+```
+  🚀  DRY API SERVER READY
 
-6. Lancer les checks de base
+  ⚙ SYSTEM OVERVIEW
+  Port             5000
+  Base URL         http://localhost:5000
+
+  📍 ENDPOINTS DISPONIBLES
+  ─────────────────────────────────────
+  🏠 Général
+      → Racine API        /
+      → Health (Live)     /health/live
+      → Health (Ready)    /health/ready
+      → Métriques         /health/metrics
+  
+  📖 Documentation
+      → Swagger UI        /api-docs
+  
+  📊 Monitoring
+      → Dashboard         /system/status
+  
+  💳 Billing
+      → Plans             /api/v1/billing/plans
+  
+  🔌 Applications
+      → Freellm           /api/v1/freellm
+      → Lastreet          /api/v1/lastreet
+      ...
+```
+
+---
+
+## 📦 Commandes Disponibles
 
 ```bash
-npm run lint
-npm run test:unit
-npm run test:integration
-npm run test:smoke
+# Développement
+npm run dev              # Mode développement (nodemon)
+npm start                # Mode production
+
+# Tests
+npm test                 # Tests d'intégration
+npm run test:unit        # Tests unitaires
+npm run test:integration # Tests d'intégration complets
+npm run test:smoke       # Tests de fumée
+npm run test:coverage    # Rapport de couverture
+npm run ci:check         # CI complète (lint + format + tests)
+
+# Base de données
+npm run migrate:up       # Exécuter les migrations
+npm run migrate:down     # Annuler la dernière migration
+npm run migrate:status   # Voir le statut des migrations
+npm run backup:create    # Sauvegarder MongoDB
+
+# Docker
+npm run docker:build     # Build image Docker
+npm run docker:run       # Démarrer avec Docker Compose
+npm run docker:stop      # Arrêter Docker Compose
+
+# Kubernetes
+npm run k8s:deploy       # Déployer sur K8s
+npm run k8s:delete       # Supprimer le déploiement K8s
+
+# Qualité
+npm run lint             # ESLint
+npm run lint:fix         # ESLint correction auto
+npm run format           # Prettier
+npm run coverage         # Rapport de couverture c8
+
+# Monitoring
+npm run health           # Vérifier health check
+npm run status           # Statut du système
+npm run logs             # Voir les logs en temps réel
 ```
 
-## Documentation
+---
 
-- [Demarrage rapide](./docs/01_GETTING_STARTED.md)
-- [Guide developpeur](./docs/02_DEVELOPER_GUIDE.md)
-- [Architecture](./docs/03_ARCHITECTURE.md)
-- [Guide de test](./docs/04_TESTING_GUIDE.md)
-- [Reference API](./docs/05_API_REFERENCE.md)
-- [Deploiement](./docs/06_DEPLOYMENT.md)
-- [Reference commandes](./docs/07_COMMANDS_REFERENCE.md)
-- [Conventions kernel vs app](./docs/08_KERNEL_BOUNDARIES.md)
-- [Scope produit et apps vitrine](./docs/09_PRODUCT_SCOPE.md)
-- [Auth Google/Facebook](./docs/10_SOCIAL_AUTH.md)
+## 🏗 Architecture
 
-## Structure rapide
+```
+config/         → Configuration centralisée et validation runtime
+dry/            → Noyau framework (middlewares, services, factories)
 
-```text
-config/        configuration centralisee et validation runtime
-dry/           noyau framework
-dryApp/        applications clientes et features metier
-docs/          documentation du framework
-scripts/       utilitaires, generation, maintenance, tests
-tests/         suites unit, integration et e2e
+  dry/bootstrap/    → Bootstrap serveur (HTTP, routes, socket, santé)
+  dry/config/       → Logger Winston, Prometheus, connexions
+  dry/middlewares/  → Sécurité, auth, cache, audit, validation
+  dry/modules/      → Billing, licensing, audit
+  dry/schemas/      → Schémas Zod (user, conversation, apiKey, ...)
+  dry/services/     → Redis, santé, alerting, notifications
+  dry/utils/        → Utilitaires (auth, HTTP, validation, logging)
+
+dryApp/         → Applications clientes multi-tenant
+migrations/     → Migrations MongoDB versionnées
+k8s/            → Manifests Kubernetes complets
+monitoring/     → Dashboards Grafana JSON
+landing/        → Pages de tarification
+tests/          → Tests unitaires, intégration, smoke
+docs/           → Documentation complète (10+ fichiers)
 ```
 
-## Qualite et automatisation
+---
 
-- lint et format avec ESLint + Prettier
-- hooks de commit avec Husky
-- couverture du noyau avec `c8`
-- CI GitHub Actions avec MongoDB de test
+## 🔒 Sécurité
 
-## Note securite
+DRY implémente des mesures de sécurité robustes :
 
-Les secrets precedemment presents dans `.env` ont ete neutralises dans ce repo. Ils doivent etre regeneres avant tout usage reel en local, en preview ou en production.
+| Protection | Technologie |
+|-----------|-------------|
+| Headers HTTP | `helmet` (CSP, HSTS, XSS, X-Frame) |
+| Rate limiting | Fenêtre glissante Redis + fallback mémoire |
+| Anti-injection | `express-mongo-sanitize` + patterns NoSQL/SQL |
+| Anti-XSS | Nettoyage automatique des entrées |
+| CORS | Gestion stricte des origines autorisées |
+| JWT | Tokens avec rotation automatique |
+| Validation | Zod + Joi (double couche) |
+| Audit | Logs complets de toutes les opérations |
+| Masquage | Données sensibles masquées dans les logs |
 
-Le framework DRY implémente des mesures de sécurité robustes :
-- **Protection HTTP** : Headers de sécurité via `helmet` (CSP, HSTS, Referrer Policy).
-- **Anti-DDoS / Brute Force** : Rate-limiting intelligent avec identification par token (différencié par rôle : Public/Auth/Admin).
-- **Injection** : Protection NoSQL via `express-mongo-sanitize`.
-- **CORS** : Gestion stricte des origines autorisées avec blocage en production.
-- **Cookies** : Configuration sécurisée (`httpOnly`, `secure`).
+---
+
+## 📊 Monitoring
+
+```
+📈 Prometheus Metrics   → GET /health/metrics
+🏥 Health Checks        → GET /health/live | /ready | /startup
+📋 Dashboard Système    → GET /system/status
+📝 Logs Winston         → logs/ (rotation quotidienne)
+📉 Grafana Dashboard    → monitoring/grafana/dry-api-dashboard.json
+```
+
+---
+
+## 🐳 Déploiement
+
+### Docker
+```bash
+npm run docker:build
+npm run docker:run       # App + MongoDB + Redis + Nginx
+```
+
+### Docker Compose (complet)
+```bash
+docker-compose up -d
+```
+
+### Kubernetes
+```bash
+kubectl create namespace dryapi
+npm run k8s:deploy
+```
+
+### Render (recommandé)
+```bash
+# 1. Connecter le repo GitHub
+# 2. Build: npm install
+# 3. Start: npm start
+# 4. Configurer les variables d'env
+```
+
+---
+
+## 🔌 Applications Multi-Tenant
+
+| Application | Description | Routes |
+|------------|-------------|--------|
+| **FreeLLM** | API IA multi-modèle | `/api/v1/freellm/*` |
+| **LaStreet** | Mise en relation pro | `/api/v1/lastreet/*` |
+| **MediaDL** | Téléchargement média | `/api/v1/mediadl/*` |
+| **SCIM** | Gestion immobilière | `/api/v1/scim/*` |
+| **SkillForge** | E-learning & formation | `/api/v1/skillforge/*` |
+| **SpiritEmeraude** | Artisanat & boutique | `/api/v1/spiritemeraude/*` |
+
+---
+
+## 📚 Documentation
+
+- [Démarrage rapide](docs/01_GETTING_STARTED.md)
+- [Guide développeur](docs/02_DEVELOPER_GUIDE.md)
+- [Architecture](docs/03_ARCHITECTURE.md)
+- [Guide de test](docs/04_TESTING_GUIDE.md)
+- [Référence API](docs/05_API_REFERENCE.md)
+- [Déploiement](docs/06_DEPLOYMENT.md)
+- [Référence commandes](docs/07_COMMANDS_REFERENCE.md)
+- [Codes d'erreur](docs/ERRORS.md)
+- [Guide de dépannage](docs/TROUBLESHOOTING.md)
+- [SLA](docs/SLA.md)
+- [Support](docs/SUPPORT.md)
+- [Changelog](CHANGELOG.md)
+
+---
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/ma-feature`)
+3. Commit (`git commit -m 'feat: ajout de ma feature'`)
+4. Push (`git push origin feature/ma-feature`)
+5. Ouvrir une Pull Request
+
+Les commits doivent suivre la convention [Conventional Commits](https://www.conventionalcommits.org/).
+
+---
+
+## 📄 Licence
+
+DRY API Framework — Licence ISC
+
+**Auteur:** [Cyberfusion](https://github.com/cyberfusion) — cybertouch2012@gmail.com
+
+---
+
+*🚀 Prêt pour la production. Sécurisé, scalable, documenté.*

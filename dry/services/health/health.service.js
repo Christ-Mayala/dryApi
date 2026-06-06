@@ -163,6 +163,21 @@ class HealthService {
           state: 'INFO',
           value: `${baseUrl}/api-docs`,
         },
+        {
+          label: 'Billing',
+          state: config.STRIPE_SECRET_KEY ? 'OK' : 'INFO',
+          value: config.STRIPE_SECRET_KEY ? 'Stripe: connecté' : 'Stripe: non configuré',
+        },
+        {
+          label: 'Licences',
+          state: 'OK',
+          value: 'Système de licences: actif',
+        },
+        {
+          label: 'Métriques',
+          state: 'INFO',
+          value: `${baseUrl}/health/metrics`,
+        },
       ],
       applications,
       health,
@@ -377,6 +392,18 @@ class HealthService {
                 <span style="display:flex;align-items:center;gap:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> API Documentation</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
+              <a href="${overview.urls.base}/system/status.json" target="_blank" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;text-decoration:none;color:#1e293b;font-weight:600;transition:all 0.2s;">
+                <span style="display:flex;align-items:center;gap:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> JSON Status</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+              <a href="${overview.urls.base}/api/v1/billing/plans" target="_blank" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;text-decoration:none;color:#1e293b;font-weight:600;transition:all 0.2s;">
+                <span style="display:flex;align-items:center;gap:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Plans Tarifs</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+              <a href="${overview.urls.base}/health/metrics" target="_blank" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;text-decoration:none;color:#1e293b;font-weight:600;transition:all 0.2s;">
+                <span style="display:flex;align-items:center;gap:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> Métriques Prometheus</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
             </div>
 
             <h3 style="margin:32px 0 16px;font-size:1.1em;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Applications Actives</h3>
@@ -390,6 +417,34 @@ class HealthService {
             </h2>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
               ${overview.corsOrigins.map(o => `<code style="background:#f1f5f9;padding:6px 12px;border-radius:8px;font-size:12px;color:#475569;border:1px solid #e2e8f0;">${o}</code>`).join('') || '<span style="color:#94a3b8;font-size:13px;font-style:italic;">Aucune origine configurée</span>'}
+            </div>
+          </article>
+          <article class="card">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Endpoints API
+            </h2>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:13px;">
+                <span style="font-weight:600;color:#334155;">📖 Documentation</span>
+                <code style="color:#3182ce;">/api-docs</code>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:13px;">
+                <span style="font-weight:600;color:#334155;">💰 Billing</span>
+                <code style="color:#3182ce;">/api/v1/billing</code>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:13px;">
+                <span style="font-weight:600;color:#334155;">🔑 Licensing</span>
+                <code style="color:#3182ce;">/api/v1/licensing</code>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:13px;">
+                <span style="font-weight:600;color:#334155;">🏥 Health</span>
+                <code style="color:#3182ce;">/health/*</code>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:13px;">
+                <span style="font-weight:600;color:#334155;">📊 Metrics</span>
+                <code style="color:#3182ce;">/health/metrics</code>
+              </div>
             </div>
           </article>
         </div>

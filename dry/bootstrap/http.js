@@ -10,6 +10,12 @@ const config = require('../../config/database');
 const logger = require('../utils/logging/logger');
 const setupSecurity = require('../middlewares/protection/security.middleware');
 
+// Nouveaux middlewares (Phase 2, 3)
+const { requestIdMiddleware } = require('../middlewares/requestId.middleware');
+const { apiVersionMiddleware } = require('../middlewares/apiVersion.middleware');
+const { inputValidationMiddleware } = require('../middlewares/inputValidation.middleware');
+const { performanceMonitor } = require('../middlewares/performanceMonitor.middleware');
+
 const getAllowedOrigins = () => {
   const allowedOrigins = (config.ALLOWED_ORIGINS || '')
     .split(',')
@@ -75,15 +81,15 @@ const createApp = () => {
 
   app.set('trust proxy', 1);
 
+  // Compression
   app.use(compression());
 
+  // Session
   app.use(
     session({
       secret: config.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
-      // Passport OAuth (Google/Facebook) utilise la session pour stocker l'état.
-      // `sameSite: 'lax'` permet le retour de provider -> callback sur navigation top-level.
       cookie: {
         secure: config.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -92,20 +98,21 @@ const createApp = () => {
     })
   );
 
+  // Cookie parser
   app.use(cookieParser());
+
+  // Body parsers
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  app.use((req, res, next) => {
-    const incoming = req.headers['x-request-id'];
-    const requestId =
-      typeof incoming === 'string' && incoming.trim() ? incoming.trim() : randomUUID();
-    req.requestId = requestId;
-    res.locals.requestId = requestId;
-    res.setHeader('X-Request-Id', requestId);
-    next();
-  });
+  // ── Middleware: Request ID (tracing distribué) ──
+  app.use(requestIdMiddleware());
 
+  // ── Middleware: Versioning API ──
+  // Ajoute les headers API-Version, API-Deprecated, API-Sunset
+  app.use(apiVersionMiddleware);
+
+  // ── CORS ──
   app.use(
     cors({
       origin: buildCorsOriginHandler(allowedOrigins),
@@ -115,7 +122,18 @@ const createApp = () => {
     })
   );
 
+  // ── Middleware: Validation des entrées ──
+  // Nettoie XSS, détecte injections NoSQL/SQL, valide Content-Type
+  app.use(inputValidationMiddleware);
+
+  // ── Middleware: Monitoring performance ──
+  // Track les temps de réponse, mémoire, endpoints lents
+  app.use(performanceMonitor({ slowThreshold: 5000 }));
+
+  // Request logging (morgan + custom)
   attachRequestLogging(app);
+
+  // ── Sécurité (Helmet, rate limiting, sanitize) ──
   setupSecurity(app);
 
   return { app, allowedOrigins };
