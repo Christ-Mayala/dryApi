@@ -1,0 +1,155 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "title": "DRY API - Monitoring",
+  "version": 1,
+  "timezone": "browser",
+  "editable": true,
+  "tags": ["dry", "api", "monitoring"],
+  "schemaVersion": 36,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "title": "Disponibilité",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 0 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "sum(rate(dry_http_requests_total{status=~\"2..\"}[5m])) / sum(rate(dry_http_requests_total[5m])) * 100",
+        "legendFormat": "Disponibilité"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 99.9 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area" }
+    },
+    {
+      "title": "Requêtes par seconde",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 0 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "sum(rate(dry_http_requests_total[5m]))",
+        "legendFormat": "RPS"
+      }],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "thresholds": { "steps": [{ "color": "green", "value": null }] } }
+      }
+    },
+    {
+      "title": "Taux d'erreur",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "sum(rate(dry_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(dry_http_requests_total[5m])) * 100",
+        "legendFormat": "Erreurs %"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background" }
+    },
+    {
+      "title": "Utilisateurs actifs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 9, "y": 0 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "sum(dry_active_users)",
+        "legendFormat": "Actifs"
+      }]
+    },
+    {
+      "title": "Temps de réponse (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 },
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(dry_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(dry_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(dry_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Requêtes par endpoint",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 4 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "topk(10, sum(rate(dry_http_requests_total[1h])) by (route))",
+        "format": "table",
+        "legendFormat": ""
+      }]
+    },
+    {
+      "title": "Requêtes par statut HTTP",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 12 },
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "sum(rate(dry_http_requests_total{status=~\"2..\"}[5m])) by (status)", "legendFormat": "2xx" },
+        { "expr": "sum(rate(dry_http_requests_total{status=~\"3..\"}[5m])) by (status)", "legendFormat": "3xx" },
+        { "expr": "sum(rate(dry_http_requests_total{status=~\"4..\"}[5m])) by (status)", "legendFormat": "4xx" },
+        { "expr": "sum(rate(dry_http_requests_total{status=~\"5..\"}[5m])) by (status)", "legendFormat": "5xx" }
+      ]
+    },
+    {
+      "title": "Utilisation mémoire",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 12 },
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "process_resident_memory_bytes / 1024 / 1024", "legendFormat": "RSS" },
+        { "expr": "process_heap_bytes / 1024 / 1024", "legendFormat": "Heap" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "MB" } }
+    },
+    {
+      "title": "Top 10 erreurs par endpoint",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "topk(10, sum(rate(dry_errors_total[24h])) by (service, type))",
+        "format": "table",
+        "legendFormat": ""
+      }]
+    }
+  ],
+  "rows": [],
+  "annotations": {
+    "list": [{
+      "builtIn": 1,
+      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+      "enable": true,
+      "hide": true,
+      "iconColor": "rgba(0, 211, 255, 1)",
+      "name": "Annotations & Alerts",
+      "type": "dashboard"
+    }]
+  }
+}
