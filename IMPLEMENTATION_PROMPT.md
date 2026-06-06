@@ -650,7 +650,7 @@ Inclure:
 3. RÉPONSE AUX INCIDENTS
    - Temps de détection: < 5 minutes
    - Temps d'évaluation: < 15 minutes
-   - Communication: status.dryapi.io
+   - Communication: status.dryapi.onrender.com
 
 4. SAUVEGARDE & RÉCUPÉRATION
    - Fréquence de sauvegarde: Quotidienne
@@ -677,8 +677,7 @@ Inclure:
 Crée: docs/SUPPORT.md
 
 1. CANAUX DE SUPPORT
-   - Email: support@dryapi.io
-   - Discord: lien vers communauté
+   - Email: cyberfusion2012@gmail.com 
    - GitHub Issues: pour les bugs
    - Hotline prioritaire: pour clients payants
 
@@ -896,7 +895,7 @@ Source de données: Prometheus
 ### Tâche 8.2: Page de statut
 
 ```
-Crée: status.dryapi.io (ou utilise Statuspage.io)
+Crée: status.dryapi.onrender.com (ou utilise Statuspage.io)
 
 Afficher:
 - Statut actuel: Opérationnel / Dégradé / Bas
