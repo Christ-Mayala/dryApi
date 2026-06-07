@@ -651,7 +651,8 @@ Sortie :
           preferredModel,
           taskType,
           isIdeMode,
-          !!(tools && tools.length > 0) // hasTools = true si outils présents
+          !!(tools && tools.length > 0), // hasTools = true si outils présents
+          userId // per-account key isolation
         );
         profiler.mark('routing');
         

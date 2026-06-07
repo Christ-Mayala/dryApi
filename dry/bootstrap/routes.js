@@ -17,8 +17,8 @@ const billingRoutes = require('../modules/billing/billing.routes');
 const licensingRoutes = require('../modules/licensing/licensing.routes');
 
 const registerHealthRoutes = (app) => {
-  // Route racine avec status du serveur
-  app.get('/', async (req, res) => {
+  // Route racine avec status du serveur (déplacée sur /health/root pour ne pas conflit avec la landing page)
+  app.get('/health/root', async (req, res) => {
     try {
       const health = await healthService.getHealthStatus();
       const statusCode = health.status === 'OK' ? 200 : 503;

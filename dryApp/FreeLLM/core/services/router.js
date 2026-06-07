@@ -137,8 +137,11 @@ function calculateModelScore(entry, model, isIdeMode) {
  * @param skipKeys - set of "platform:modelId:keyId" to skip (failed on this request)
  * @param preferredModelDbId - try this model first (sticky session)
  * @param requestType - type de requête (chat, code, reasoning) pour adapter le routing
+ * @param isIdeMode - if true, use IDE-optimized routing
+ * @param hasTools - if true, only route to tools-capable providers
+ * @param userId - if set, only use API keys belonging to this user (per-account isolation)
  */
-async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat', isIdeMode = false, hasTools = false) {
+async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, estimatedTokens = 1000, skipKeys = new Set(), preferredModelDbId, requestType = 'chat', isIdeMode = false, hasTools = false, userId = null) {
   // Get fallback chain ordered by priority
   const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
     .sort({ priority: 1 })
@@ -204,12 +207,17 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     if (!provider) continue;
 
     // Get all healthy, enabled keys for this platform
-    const keys = await ApiKeysModel.find({ 
+    // Isolated by userId if provided (per-account key isolation)
+    const keyQuery = { 
       platform: model.platform, 
       enabled: true, 
       status: { $ne: 'invalid' },
       deletedAt: null 
-    }).lean();
+    };
+    if (userId) {
+      keyQuery.userId = userId;
+    }
+    const keys = await ApiKeysModel.find(keyQuery).lean();
 
     if (keys.length === 0) continue;
 
