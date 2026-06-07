@@ -24,6 +24,16 @@ async function initEncryptionKey(SettingsModel) {
     return;
   }
 
+  if (!envKey) {
+    console.warn(
+      '\x1b[33m⚠️  WARNING: ENCRYPTION_KEY env var not set!\x1b[0m\n' +
+      '    FreeLLM API keys are encrypted with a key stored in MongoDB.\n' +
+      '    If the database is wiped or the server restarts with a different DB, ALL API keys become undecryptable.\n' +
+      '    Fix: add ENCRYPTION_KEY to your environment variables.\n' +
+      '    Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+    );
+  }
+
   const row = await SettingsModel.findOne({ key: 'encryption_key' });
   if (row) {
     cachedKey = parseHexKey(row.value, 'db');
@@ -32,6 +42,7 @@ async function initEncryptionKey(SettingsModel) {
 
   cachedKey = crypto.randomBytes(KEY_BYTES);
   await SettingsModel.create({ key: 'encryption_key', value: cachedKey.toString('hex') });
+  console.log('\x1b[33m⚠️  No encryption key found. Generated a new one and stored in MongoDB.\x1b[0m');
 }
 
 function getEncryptionKey() {

@@ -131,6 +131,24 @@ const logger = {
    * Log d'erreur
    */
   error(message, data) {
+    // Normalize: if first arg is an object (legacy call pattern), treat it as data
+    if (typeof message === 'object' && message !== null) {
+      if (IS_PROD) {
+        const requestId = message.requestId || 'unknown';
+        const event = message.event || '';
+        const errMsg = message.error || JSON.stringify(message);
+        const msg = `[${requestId}] [${event}] ${errMsg}`;
+        classicLogger(msg, 'error');
+      } else {
+        console.error(JSON.stringify({
+          level: LOG_LEVELS.ERROR,
+          timestamp: new Date().toISOString(),
+          ...message
+        }));
+      }
+      return;
+    }
+    // Standard call pattern: error(stringMessage, optionalDataObject)
     if (IS_PROD) {
       const msg = `[${data?.requestId || 'unknown'}] ${message} ${data ? JSON.stringify(data) : ''}`;
       classicLogger(msg, 'error');

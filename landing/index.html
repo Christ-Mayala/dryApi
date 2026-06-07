@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRY API — Framework Multi-Tenant Intelligent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.5em;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo span {
+      font-weight: 300;
+      -webkit-text-fill-color: #64748b;
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.95em;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: #60a5fa; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #7c3aed);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #60a5fa;
+      border: 1px solid #334155;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: #60a5fa;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5em, 6vw, 4em);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.2em;
+      color: #94a3b8;
+      max-width: 640px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn-primary {
+      padding: 14px 32px;
+      font-size: 1.05em;
+    }
+
+    .hero-actions .btn-secondary {
+      padding: 14px 32px;
+      font-size: 1.05em;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85em;
+      color: #93c5fd;
+      margin-bottom: 32px;
+    }
+
+    .hero-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ── Stats ── */
+    .stats {
+      padding: 60px 0;
+      border-top: 1px solid #1e293b;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      text-align: center;
+    }
+
+    .stat-item h3 {
+      font-size: 2.5em;
+      font-weight: 800;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-item p {
+      color: #64748b;
+      font-size: 0.95em;
+      margin-top: 4px;
+    }
+
+    /* ── Features ── */
+    .features {
+      padding: 80px 0;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 2em;
+      font-weight: 700;
+      margin-bottom: 60px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.15em;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      color: #94a3b8;
+      font-size: 0.95em;
+      line-height: 1.7;
+    }
+
+    /* ── Apps ── */
+    .apps {
+      padding: 80px 0;
+      background: #0a0f1d;
+    }
+
+    .apps h2 {
+      text-align: center;
+      font-size: 2em;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .apps > .container > p {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 48px;
+    }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .app-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .app-card:hover {
+      border-color: #7c3aed;
+    }
+
+    .app-card .emoji {
+      font-size: 2.5em;
+      margin-bottom: 12px;
+    }
+
+    .app-card h4 {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .app-card p {
+      color: #64748b;
+      font-size: 0.9em;
+    }
+
+    /* ── CTA ── */
+    .cta {
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      color: #94a3b8;
+      font-size: 1.1em;
+      margin-bottom: 32px;
+    }
+
+    .cta .btn-primary {
+      padding: 16px 40px;
+      font-size: 1.1em;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid #1e293b;
+    }
+
+    footer .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer p {
+      color: #64748b;
+      font-size: 0.9em;
+    }
+
+    footer a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.9em;
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: #60a5fa; }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header .container {
+        flex-direction: column;
+        gap: 16px;
+      }
+      nav { gap: 16px; }
+      .hero { padding: 60px 0; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="logo">DRY API <span>| Multi-Tenant</span></div>
+      <nav>
+        <a href="/">Accueil</a>
+        <a href="/pricing">Tarifs</a>
+        <a href="#features">Fonctionnalités</a>
+        <a href="#apps">Applications</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Serveur opérationnel
+      </div>
+      <h1>
+        Framework<br />
+        <span class="gradient">Multi-Tenant Intelligent</span>
+      </h1>
+      <p>
+        DRY API est un framework backend tout-en-un avec routage IA intégré,
+        authentification multi-tenant, et 6 applications métiers prêtes à l'emploi.
+      </p>
+      <div class="hero-actions">
+        <a href="#features" class="btn-primary">Explorer les fonctionnalités</a>
+        <a href="/pricing" class="btn-secondary">Voir les tarifs →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <h3>6</h3>
+          <p>Applications intégrées</p>
+        </div>
+        <div class="stat-item">
+          <h3>16+</h3>
+          <p>Plateformes IA supportées</p>
+        </div>
+        <div class="stat-item">
+          <h3>80+</h3>
+          <p>Modèles disponibles</p>
+        </div>
+        <div class="stat-item">
+          <h3>15</h3>
+          <p>Composants DRY UI</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Fonctionnalités clés</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(59,130,246,0.15);">🧠</div>
+          <h3>Inference OS</h3>
+          <p>Routage intelligent des requêtes IA avec fallback automatique, sticky sessions, cache, et compression de contexte.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(124,58,237,0.15);">🔐</div>
+          <h3>Multi-Tenant</h3>
+          <p>Isolation complète des données par application avec authentification JWT, OAuth social, et gestion des rôles.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(34,197,94,0.15);">⚡</div>
+          <h3>16 Plateformes IA</h3>
+          <p>Google, Groq, Cerebras, SambaNova, Mistral, OpenRouter, GitHub, Cohere, Cloudflare, NVIDIA, OpenAI et plus.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(244,114,182,0.15);">💳</div>
+          <h3>Billing & Licensing</h3>
+          <p>Intégration Stripe, plans d'abonnement, licences par tier (free/standard/premium/enterprise), facturation.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(251,191,36,0.15);">📊</div>
+          <h3>Analytics & Monitoring</h3>
+          <p>Métriques Prometheus, health checks (liveness/readiness), tableaux de bord système, alerting webhook.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(56,189,248,0.15);">🛠️</div>
+          <h3>Générateur Frontend</h3>
+          <p>Génération automatique de CRUD pour React, Angular, React Native avec composants DRY UI et gestion des rôles.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Apps -->
+  <section class="apps" id="apps">
+    <div class="container">
+      <h2>Applications intégrées</h2>
+      <p>6 applications métiers prêtes à l'emploi, chacune avec son propre tenant isolé</p>
+      <div class="apps-grid">
+        <div class="app-card">
+          <div class="emoji">🤖</div>
+          <h4>FreeLLM</h4>
+          <p>Interface de chat IA avec routage intelligent et support de 16 plateformes</p>
+        </div>
+        <div class="app-card">
+          <div class="emoji">🏠</div>
+          <h4>LaStreet</h4>
+          <p>Plateforme de mise en relation professionnels-particuliers</p>
+        </div>
+        <div class="app-card">
+          <div class="emoji">🎬</div>
+          <h4>MediaDL</h4>
+          <p>Téléchargement et traitement de médias multi-plateformes</p>
+        </div>
+        <div class="app-card">
+          <div class="emoji">🏘️</div>
+          <h4>SCIM</h4>
+          <p>Gestion immobilière avec réservations, messagerie et notifications</p>
+        </div>
+        <div class="app-card">
+          <div class="emoji">📚</div>
+          <h4>SkillForge</h4>
+          <p>Plateforme e-learning avec cours, ebooks et paiements</p>
+        </div>
+        <div class="app-card">
+          <div class="emoji">🌿</div>
+          <h4>SpiritEmeraude</h4>
+          <p>Boutique en ligne avec galerie, ateliers et impact tracking</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2>Prêt à démarrer ?</h2>
+      <p>Accédez à toutes les fonctionnalités avec un plan adapté à vos besoins.</p>
+      <a href="/pricing" class="btn-primary">Voir les plans disponibles</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 DRY API. Tous droits réservés.</p>
+      <div class="footer-links">
+        <a href="/pricing">Tarifs</a>
+        <a href="/api-docs">API Docs</a>
+        <a href="/system/status">Statut</a>
+        <a href="/health/live">Health</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
