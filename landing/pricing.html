@@ -176,10 +176,53 @@
     footer a { color: #64748b; }
 
     @media (max-width: 768px) {
-      .grid { grid-template-columns: 1fr; }
+      .container { padding: 40px 24px; }
+      header { margin-bottom: 36px; }
+      header h1 { font-size: clamp(1.8em, 5vw, 2.5em); }
+      header p { font-size: 0.95em; }
+      .nav-back { font-size: 0.78em; }
+      .brand-sub { font-size: 0.58em; }
+
+      .grid { grid-template-columns: 1fr; gap: 20px; }
       .card.popular { transform: none; }
       .card.popular:hover { transform: translateY(-4px); }
+      .card { padding: 28px 22px; }
+      .card .price { font-size: 2.2em; }
+      .card h3 { font-size: 1.1em; }
+
+      .toggle-wrap { gap: 12px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
+      .toggle-wrap span { font-size: 0.82em; }
+
+      .faq { margin-top: 40px; }
+      .faq h2 { font-size: 1.3em; }
       .faq-grid { grid-template-columns: 1fr; }
+      .faq-item { padding: 16px 18px; }
+
+      .contact-cta { padding: 40px 0 16px; margin-top: 40px; }
+      .contact-cta h3 { font-size: 1.1em; }
+      .contact-cta .btn-group { flex-direction: column; align-items: center; }
+      .contact-cta .btn { font-size: 0.82em; padding: 10px 20px; width: 100%; max-width: 400px; justify-content: center; }
+
+      footer { padding: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 24px 16px; }
+
+      header h1 { font-size: clamp(1.4em, 6vw, 1.8em); }
+      header p { font-size: 0.85em; }
+
+      .card { padding: 22px 16px; border-radius: 16px; }
+      .card .price { font-size: 1.8em; }
+      .card .desc { font-size: 0.8em; min-height: auto; }
+      .card .features li { font-size: 0.8em; padding: 7px 0; }
+      .card .btn { padding: 12px; font-size: 0.84em; }
+      .card .popular-tag { font-size: 0.7em; padding: 4px 14px; top: -12px; }
+
+      .faq-item h4 { font-size: 0.88em; }
+      .faq-item p { font-size: 0.8em; }
+
+      .contact-cta .btn { font-size: 0.78em; }
     }
   </style>
 </head>
