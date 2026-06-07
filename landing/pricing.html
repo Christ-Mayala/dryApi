@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tarifs — DRY API</title>
+  <title>Plans — DRY API by CyberFusion GROUP</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #0b1120;
+      background: #0a0e1a;
       color: #e2e8f0;
       min-height: 100vh;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
     .container { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
     a { text-decoration: none; color: inherit; }
 
-    /* Header */
     header { text-align: center; margin-bottom: 60px; }
     header h1 {
       font-size: clamp(2.5em, 5vw, 3.5em);
@@ -28,28 +28,29 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    header p { color: #94a3b8; font-size: 1.15em; margin-top: 12px; max-width: 560px; margin-left: auto; margin-right: auto; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(96, 165, 250, 0.08);
-      border: 1px solid rgba(96, 165, 250, 0.18);
-      padding: 6px 16px; border-radius: 999px;
-      font-size: 0.82em; color: #93c5fd; margin-bottom: 20px;
-    }
+    header p { color: #64748b; font-size: 1.1em; margin-top: 10px; max-width: 540px; margin-left: auto; margin-right: auto; }
     .nav-back {
-      display: inline-flex; align-items: center; gap: 6px; color: #94a3b8;
-      font-size: 0.9em; margin-bottom: 20px; transition: color 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; color: #64748b;
+      font-size: 0.85em; margin-bottom: 20px; transition: color 0.2s;
     }
     .nav-back:hover { color: #60a5fa; }
+    .brand-sub {
+      display: block;
+      font-size: 0.65em;
+      color: #475569;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
 
-    /* Toggle */
     .toggle-wrap {
       display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 48px;
     }
-    .toggle-wrap span { color: #94a3b8; font-weight: 500; font-size: 0.95em; }
+    .toggle-wrap span { color: #64748b; font-weight: 500; font-size: 0.9em; }
     .toggle-wrap span.active { color: #f1f5f9; }
     .toggle {
-      width: 52px; height: 28px; background: #334155;
+      width: 52px; height: 28px; background: #1e293b;
       border-radius: 999px; cursor: pointer; position: relative; transition: background 0.3s;
     }
     .toggle.active { background: #3b82f6; }
@@ -60,10 +61,9 @@
     .toggle.active::after { transform: translateX(24px); }
     .save-badge {
       background: #22c55e; color: #052e16;
-      padding: 3px 10px; border-radius: 999px; font-size: 0.75em; font-weight: 700;
+      padding: 3px 10px; border-radius: 999px; font-size: 0.72em; font-weight: 700;
     }
 
-    /* Grid */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -72,11 +72,10 @@
       margin-bottom: 60px;
     }
 
-    /* Card */
     .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 24px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(30, 41, 59, 0.6);
+      border-radius: 20px;
       padding: 36px 28px;
       transition: all 0.3s ease;
       position: relative;
@@ -85,98 +84,96 @@
     }
     .card:hover {
       transform: translateY(-4px);
-      border-color: #475569;
-      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+      border-color: rgba(71, 85, 105, 0.8);
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
     }
     .card.popular {
       border-color: #3b82f6;
-      background: linear-gradient(135deg, #1e293b 0%, #1e3a5f 100%);
+      background: linear-gradient(135deg, rgba(30,41,59,0.6) 0%, rgba(30,58,95,0.6) 100%);
       transform: scale(1.02);
     }
     .card.popular:hover { transform: scale(1.02) translateY(-4px); }
     .card.popular .popular-tag {
       position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-      background: #3b82f6; color: white;
-      padding: 6px 20px; border-radius: 999px; font-size: 0.85em; font-weight: 700; white-space: nowrap;
+      background: linear-gradient(135deg, #3b82f6, #6366f1); color: white;
+      padding: 6px 20px; border-radius: 999px; font-size: 0.8em; font-weight: 700; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.3);
     }
-    .card h3 { font-size: 1.3em; font-weight: 700; margin-bottom: 6px; }
-    .card .desc { color: #94a3b8; font-size: 0.9em; margin-bottom: 24px; min-height: 40px; }
+    .card h3 { font-size: 1.25em; font-weight: 700; margin-bottom: 4px; }
+    .card .desc { color: #64748b; font-size: 0.85em; margin-bottom: 24px; min-height: 36px; }
     .card .price {
-      font-size: 2.8em; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px;
+      font-size: 2.6em; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px;
     }
-    .card .price .currency { font-size: 0.4em; vertical-align: super; color: #64748b; }
-    .card .price .period { font-size: 0.32em; color: #64748b; font-weight: 400; }
-    .card .price-sub { color: #64748b; font-size: 0.85em; margin-bottom: 28px; }
+    .card .price .currency { font-size: 0.35em; vertical-align: super; color: #64748b; font-weight: 600; }
+    .card .price .period { font-size: 0.3em; color: #64748b; font-weight: 400; }
+    .card .price-sub { color: #475569; font-size: 0.82em; margin-bottom: 28px; }
     .card .features { flex: 1; margin-bottom: 28px; }
     .card .features li {
-      list-style: none; padding: 10px 0;
-      border-bottom: 1px solid #1a2538;
-      display: flex; align-items: center; gap: 12px; font-size: 0.92em;
+      list-style: none; padding: 9px 0;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+      display: flex; align-items: center; gap: 10px; font-size: 0.88em;
     }
     .card .features li:last-child { border-bottom: none; }
     .card .features li .check {
-      width: 20px; height: 20px; flex-shrink: 0;
-      background: rgba(34,197,94,0.12); border-radius: 50%;
+      width: 18px; height: 18px; flex-shrink: 0;
+      background: rgba(34,197,94,0.1); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
     }
-    .card .features li .check svg { width: 12px; height: 12px; stroke: #22c55e; }
-    .card .features li.missing { opacity: 0.4; }
-    .card .features li.missing .check { background: rgba(100,116,139,0.08); }
-    .card .features li.missing .check svg { stroke: #64748b; }
+    .card .features li .check svg { width: 10px; height: 10px; stroke: #22c55e; }
+    .card .features li.missing { opacity: 0.35; }
+    .card .features li.missing .check { background: rgba(100,116,139,0.06); }
+    .card .features li.missing .check svg { stroke: #475569; }
 
     .card .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 14px;
-      font-weight: 700; font-size: 0.95em; cursor: pointer;
-      transition: all 0.3s; font-family: inherit;
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-weight: 700; font-size: 0.9em; cursor: pointer;
+      transition: all 0.25s; font-family: inherit;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .card .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;
+      background: linear-gradient(135deg, #3b82f6, #6366f1); color: white;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.25);
     }
-    .card .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
-    .card .btn-secondary { background: #334155; color: #e2e8f0; }
-    .card .btn-secondary:hover { background: #475569; }
+    .card .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
+    .card .btn-secondary { background: rgba(51, 65, 85, 0.6); color: #e2e8f0; }
+    .card .btn-secondary:hover { background: rgba(51, 65, 85, 0.8); }
     .card .btn-enterprise {
-      background: #25D366; color: white;
+      background: linear-gradient(135deg, #25D366, #1da851); color: white;
+      box-shadow: 0 2px 12px rgba(37,211,102,0.25);
     }
-    .card .btn-enterprise:hover { background: #22c55e; transform: translateY(-2px); }
+    .card .btn-enterprise:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.35); }
 
-    /* FAQ */
-    .faq h2 { text-align: center; font-size: 1.8em; font-weight: 700; margin-bottom: 36px; }
-    .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; }
+    .faq { margin-top: 60px; }
+    .faq h2 { text-align: center; font-size: 1.6em; font-weight: 700; margin-bottom: 32px; }
+    .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
     .faq-item {
-      background: #1e293b; border: 1px solid #334155;
-      border-radius: 14px; padding: 22px 24px;
+      background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(30, 41, 59, 0.4);
+      border-radius: 12px; padding: 20px 22px;
     }
-    .faq-item h4 { font-size: 1em; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-    .faq-item p { color: #94a3b8; font-size: 0.9em; }
+    .faq-item h4 { font-size: 0.95em; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .faq-item p { color: #64748b; font-size: 0.85em; }
 
-    /* Contact CTA */
     .contact-cta {
-      text-align: center; padding: 60px 0;
-      border-top: 1px solid #1e293b; margin-top: 60px;
+      text-align: center; padding: 60px 0 20px;
+      border-top: 1px solid rgba(30, 41, 59, 0.4); margin-top: 60px;
     }
-    .contact-cta h3 { font-size: 1.4em; font-weight: 700; margin-bottom: 8px; }
-    .contact-cta p { color: #94a3b8; margin-bottom: 24px; }
+    .contact-cta h3 { font-size: 1.3em; font-weight: 700; margin-bottom: 6px; }
+    .contact-cta p { color: #64748b; font-size: 0.9em; margin-bottom: 24px; }
     .contact-cta .btn-group { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
     .contact-cta .btn {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 12px 24px; border-radius: 10px; font-weight: 600;
-      font-size: 0.92em; cursor: pointer; border: none; font-family: inherit;
+      font-size: 0.88em; cursor: pointer; border: none; font-family: inherit;
       transition: all 0.2s;
     }
-    .contact-cta .btn-whatsapp {
-      background: #25D366; color: white;
-    }
+    .contact-cta .btn-whatsapp { background: #25D366; color: white; }
     .contact-cta .btn-whatsapp:hover { background: #22c55e; transform: translateY(-1px); }
-    .contact-cta .btn-email {
-      background: #334155; color: #e2e8f0;
-    }
-    .contact-cta .btn-email:hover { background: #475569; }
+    .contact-cta .btn-email { background: rgba(51, 65, 85, 0.5); color: #e2e8f0; }
+    .contact-cta .btn-email:hover { background: rgba(51, 65, 85, 0.7); }
 
-    /* Footer */
-    footer { text-align: center; padding: 32px; color: #64748b; font-size: 0.88em; border-top: 1px solid #1e293b; }
-    footer a { color: #60a5fa; }
+    footer { text-align: center; padding: 32px; color: #475569; font-size: 0.82em; border-top: 1px solid rgba(30, 41, 59, 0.3); margin-top: 40px; }
+    footer .brand { color: #64748b; font-weight: 600; }
+    footer a { color: #64748b; }
 
     @media (max-width: 768px) {
       .grid { grid-template-columns: 1fr; }
@@ -190,15 +187,12 @@
   <div class="container">
     <header>
       <a href="/" class="nav-back">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Retour à l'accueil
       </a>
-      <div class="badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        DRY API Framework
-      </div>
-      <h1>Une tarification simple et transparente</h1>
-      <p>Choisissez le plan adapté à vos besoins. Évoluez à tout moment.</p>
+      <span class="brand-sub">CyberFusion GROUP</span>
+      <h1>Des plans adaptés à votre croissance</h1>
+      <p>Choisissez l'offre qui correspond à vos besoins. Évoluez sans contrainte.</p>
       <div class="toggle-wrap">
         <span class="active" id="monthly-label">Mensuel</span>
         <div class="toggle active" id="billing-toggle" onclick="toggleBilling()"></div>
@@ -207,48 +201,46 @@
     </header>
 
     <div class="grid" id="pricing-grid">
-      <!-- Free -->
+      <!-- Community -->
       <div class="card">
         <h3>Community</h3>
-        <p class="desc">Pour démorer et explorer l'API</p>
-        <div class="price">0<span class="currency">€</span></div>
+        <p class="desc">Pour découvrir la plateforme et démarrer</p>
+        <div class="price">0<span class="currency">FCFA</span></div>
         <p class="price-sub">Gratuit — Aucune carte bancaire</p>
         <ul class="features">
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>API de base</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>100 requêtes / heure</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>1 application</li>
-          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Documentation Swagger</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Documentation complète</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Support communautaire</li>
           <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Monitoring Prometheus</li>
           <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Support prioritaire</li>
-          <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>SLA 99.9%</li>
+          <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>SLA 99,9%</li>
         </ul>
         <button class="btn btn-secondary" onclick="window.location.href='/'">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           Commencer gratuitement
         </button>
       </div>
 
       <!-- Pro -->
       <div class="card popular">
-        <div class="popular-tag">⭐ Le plus populaire</div>
+        <div class="popular-tag">Le plus populaire</div>
         <h3>Pro</h3>
         <p class="desc">Pour les professionnels et les équipes</p>
-        <div class="price" id="pro-price">99<span class="currency">€</span><span class="period">/mois</span></div>
+        <div class="price" id="pro-price">59 000<span class="currency">FCFA</span><span class="period">/mois</span></div>
         <p class="price-sub" id="pro-sub">Facturé mensuellement</p>
         <ul class="features">
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>API complète</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>1 000 requêtes / heure</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>10 applications</li>
-          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Documentation Swagger</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>16 plateformes IA</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Monitoring Prometheus</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Support prioritaire</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Clés API illimitées</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Export de données</li>
-          <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>SLA 99.9%</li>
+          <li class="missing"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>SLA 99,9%</li>
         </ul>
         <button class="btn btn-primary" onclick="redirectToCheckout('pro')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           Choisir Pro
         </button>
       </div>
@@ -257,20 +249,20 @@
       <div class="card">
         <h3>Enterprise</h3>
         <p class="desc">Pour les entreprises avec des besoins spécifiques</p>
-        <div class="price">Sur<span class="currency" style="font-size:0.5em;"> </span><span class="period" style="font-size:0.45em;">devis</span></div>
+        <div class="price">Sur<span class="currency" style="font-size:0.4em;"> </span><span class="period" style="font-size:0.4em;">devis</span></div>
         <p class="price-sub">Contactez notre équipe commerciale</p>
         <ul class="features">
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Tout le plan Pro +</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Requêtes illimitées</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Applications illimitées</li>
-          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>SLA 99.9% garanti</li>
-          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Support dédié 24/7</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>SLA 99,9% garanti</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Support dédié 24h/7j</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Déploiement personnalisé</li>
           <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Audit de sécurité</li>
-          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Formation équipe</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Formation équipe incluse</li>
         </ul>
         <button class="btn btn-enterprise" onclick="contactEnterprise()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Contactez-nous sur WhatsApp
         </button>
       </div>
@@ -282,68 +274,66 @@
       <div class="faq-grid">
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
             Puis-je changer de plan ?
           </h4>
           <p>Oui, passez au plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement.</p>
         </div>
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 2v20"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 2v20"/></svg>
             Comment fonctionne la facturation ?
           </h4>
-          <p>Facturation mensuelle ou annuelle avec 20% de réduction. Paiement par carte bancaire via Stripe.</p>
+          <p>Facturation mensuelle ou annuelle (économie de 20%). Paiement par Mobile Money, carte bancaire ou virement.</p>
         </div>
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Y a-t-il un engagement ?
           </h4>
           <p>Non, résiliez à tout moment. Le plan Community est gratuit sans limite de durée.</p>
         </div>
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Quel support est inclus ?
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Quels moyens de paiement ?
           </h4>
-          <p>Community : communautaire. Pro : prioritaire par email. Enterprise : dédié 24/7.</p>
+          <p>Mobile Money (Airtel Money, MTN MoMo), carte bancaire (Stripe) et virement bancaire.</p>
         </div>
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             Puis-je essayer gratuitement ?
           </h4>
-          <p>Oui, 14 jours d'essai gratuit sur le plan Pro, sans engagement ni carte bancaire.</p>
+          <p>Oui, 14 jours d'essai gratuit sur le plan Pro, sans engagement.</p>
         </div>
         <div class="faq-item">
           <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Où êtes-vous basés ?
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Qui édite DRY API ?
           </h4>
-          <p>Basés à Brazzaville, Congo. Support en français et en anglais, disponible 24/7 en ligne.</p>
+          <p>DRY API est éditée par <strong>CyberFusion GROUP</strong>, basé à Brazzaville, Congo.</p>
         </div>
       </div>
     </div>
 
     <!-- Contact CTA -->
     <div class="contact-cta">
-      <h3>Vous avez un projet spécifique ?</h3>
-      <p>Notre équipe commerciale vous répond sous 24h ouvrées.</p>
+      <h3>Besoin d'un accompagnement personnalisé ?</h3>
+      <p>Notre équipe commerciale vous répond sous 24 heures ouvrées.</p>
       <div class="btn-group">
-        <a href="https://wa.me/242068457521" target="_blank" class="btn btn-whatsapp">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <a href="https://wa.me/242068457521?text=Bonjour%20CyberFusion%20GROUP%2C%20je%20souhaite%20des%20informations%20sur%20les%20plans%20DRY%20API." target="_blank" class="btn btn-whatsapp">
           WhatsApp : +242 06 845 7521
         </a>
-        <a href="mailto:cybertouch2012@gmail.com" class="btn btn-email">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Email : cybertouch2012@gmail.com
+        <a href="mailto:cyberfusion2012@gmail.com?subject=Demande%20d'information%20DRY%20API" class="btn btn-email">
+          Email : cyberfusion2012@gmail.com
         </a>
       </div>
     </div>
 
     <footer>
-      <p>DRY API Framework — <a href="mailto:cybertouch2012@gmail.com">cybertouch2012@gmail.com</a> — <a href="https://wa.me/242068457521" target="_blank">WhatsApp</a></p>
-      <p style="margin-top:8px;font-size:0.85em;color:#475569;">Sécurisé · Scalable · Documenté · Multi-Tenant</p>
+      <p><span class="brand">DRY API</span> — Éditée par <strong>CyberFusion GROUP</strong><br/>&copy; 2026 Tous droits réservés.</p>
+      <p style="margin-top:6px;font-size:0.78em;color:#334155;">Framework Multi-Tenant · Sécurisé · Scalable · Made in Congo</p>
     </footer>
   </div>
 
@@ -362,10 +352,10 @@
       const priceEl = document.getElementById('pro-price');
       const subEl = document.getElementById('pro-sub');
       if (isAnnual) {
-        priceEl.innerHTML = '79<span class="currency">€</span><span class="period">/mois</span>';
-        subEl.textContent = 'Facturé annuellement (948€/an)';
+        priceEl.innerHTML = '47 000<span class="currency">FCFA</span><span class="period">/mois</span>';
+        subEl.textContent = 'Facturé annuellement (564 000 FCFA/an)';
       } else {
-        priceEl.innerHTML = '99<span class="currency">€</span><span class="period">/mois</span>';
+        priceEl.innerHTML = '59 000<span class="currency">FCFA</span><span class="period">/mois</span>';
         subEl.textContent = 'Facturé mensuellement';
       }
     }
@@ -376,30 +366,39 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId }),
       })
-      .then(r => r.json())
-      .then(data => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         if (data.success && data.data.url) {
           window.location.href = data.data.url;
         } else {
           const msg = encodeURIComponent(
-            'Bonjour, je souhaite souscrire au plan Pro de DRY API. Pouvez-vous m\'aider ?'
+            '*Demande CyberFusion GROUP - DRY API*%0A%0A' +
+            '*Plan :* Pro (' + (isAnnual ? '47 000 FCFA/mois, annuel' : '59 000 FCFA/mois, mensuel') + ')%0A' +
+            '*Modele :* Framework Multi-Tenant Intelligent%0A' +
+            '*Message :* Je souhaite souscrire au plan Pro.'
           );
-          window.open(`https://wa.me/242068457521?text=${msg}`, '_blank');
+          window.open('https://wa.me/242068457521?text=' + msg, '_blank');
         }
       })
-      .catch(() => {
+      .catch(function() {
         const msg = encodeURIComponent(
-          'Bonjour, je souhaite souscrire au plan Pro de DRY API. Pouvez-vous m\'aider ?'
+          '*Demande CyberFusion GROUP - DRY API*%0A%0A' +
+          '*Plan :* Pro (' + (isAnnual ? '47 000 FCFA/mois, annuel' : '59 000 FCFA/mois, mensuel') + ')%0A' +
+          '*Modele :* Framework Multi-Tenant Intelligent%0A' +
+          '*Message :* Je souhaite souscrire au plan Pro.'
         );
-        window.open(`https://wa.me/242068457521?text=${msg}`, '_blank');
+        window.open('https://wa.me/242068457521?text=' + msg, '_blank');
       });
     }
 
     function contactEnterprise() {
       const msg = encodeURIComponent(
-        'Bonjour, je suis intéressé par le plan Enterprise de DRY API. Pouvez-vous me contacter pour discuter de mes besoins ?'
+        '*Demande CyberFusion GROUP - DRY API*%0A%0A' +
+        '*Plan :* Enterprise (Sur devis)%0A' +
+        '*Modele :* Framework Multi-Tenant Intelligent%0A' +
+        '*Message :* Bonjour, je suis interesse par le plan Enterprise. Pouvez-vous me contacter pour discuter de mes besoins ?'
       );
-      window.open(`https://wa.me/242068457521?text=${msg}`, '_blank');
+      window.open('https://wa.me/242068457521?text=' + msg, '_blank');
     }
   </script>
 </body>
