@@ -1,48 +1,24 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { getPagination } = require('../../../../../dry/utils/data/pagination');
 
+/**
+ * GET /admin/users
+ * Utilise le middleware queryBuilder pour filtrer/paginer.
+ * Le contrôleur ne fait que répondre avec les résultats déjà filtrés.
+ */
 module.exports = asyncHandler(async (req, res) => {
-    const User = req.getModel('User');
-
-    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 10, maxLimit: 100 });
-
-    const query = {};
-    if (req.query.role && req.query.role !== 'all') query.role = req.query.role;
-    if (req.query.status && req.query.status !== 'all') query.status = req.query.status;
+    const { data: users, pagination } = res.advancedResults;
     
-    if (req.query.search) {
-        const searchRegex = { $regex: req.query.search, $options: 'i' };
-        const searchOr = [
-            { name: searchRegex },
-            { nom: searchRegex },
-            { email: searchRegex },
-            { telephone: searchRegex }
-        ];
-
-        if (Object.keys(query).length > 0) {
-            query.$and = query.$and || [];
-            query.$and.push({ $or: searchOr });
-        } else {
-            query.$or = searchOr;
-        }
-    }
-
-    const [users, total] = await Promise.all([
-        User.find(query).select('-password').sort({ createdAt: -1 }).limit(limit).skip(skip),
-        User.countDocuments(query),
-    ]);
-
     return sendResponse(
         res,
         {
             users,
-            page,
-            currentPage: page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
+            page: pagination.page,
+            currentPage: pagination.page,
+            limit: pagination.limit,
+            total: pagination.total,
+            totalPages: pagination.totalPages,
         },
-        'Liste des utilisateurs',
+        'Utilisateurs',
     );
 });

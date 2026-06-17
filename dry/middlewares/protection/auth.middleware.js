@@ -54,13 +54,9 @@ const protect = asyncHandler(async (req, res, next) => {
     if (ok === true) next();
 });
 
-const protectWithQueryToken = asyncHandler(async (req, res, next) => {
-    const token = getTokenFromRequest(req, true);
-    if (!token) return sendResponse(res, null, 'Non autorise, aucun token fourni', false);
-
-    const ok = await resolveUserFromToken(req, res, token);
-    if (ok === true) next();
-});
+// Query token désactivé — le token en URL apparaît dans les logs serveur/proxy (risque sécurité)
+// Utiliser le header Authorization: Bearer <token> à la place
+const protectWithQueryToken = protect;
 
 const authorize = (...roles) => {
     return (req, res, next) => {

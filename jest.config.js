@@ -54,6 +54,8 @@ module.exports = {
 
   // Setup avant chaque fichier de test
   setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterFramework: [],
+  injectGlobals: true,
 
   // Timeout par défaut pour les tests d'intégration (30s)
   testTimeout: 30000,

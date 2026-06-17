@@ -17,16 +17,13 @@ const billingRoutes = require('../modules/billing/billing.routes');
 const licensingRoutes = require('../modules/licensing/licensing.routes');
 
 // Middleware de protection par mot de passe pour les routes système
-const SYSTEM_PASSWORD = process.env.SYSTEM_PASSWORD || 'admin123';
-
-// Avertir si mot de passe par défaut
-if (!process.env.SYSTEM_PASSWORD || process.env.SYSTEM_PASSWORD === 'admin123') {
-  console.warn(
-    '\x1b[33m⚠️  ATTENTION: SYSTEM_PASSWORD non défini ou valeur par défaut !\x1b[0m\n' +
-    '    Les routes système (api-docs, system/status, etc.) utilisent le mot de passe par défaut.\n' +
-    '    Définissez SYSTEM_PASSWORD dans vos variables d\'environnement pour sécuriser l\'accès.'
+if (!process.env.SYSTEM_PASSWORD) {
+  throw new Error(
+    'SYSTEM_PASSWORD doit être défini dans les variables d\'environnement. ' +
+    'Ajoutez SYSTEM_PASSWORD=<mot_de_passe_fort> dans votre fichier .env'
   );
 }
+const SYSTEM_PASSWORD = process.env.SYSTEM_PASSWORD;
 
 const systemPasswordMiddleware = (req, res, next) => {
   const password = SYSTEM_PASSWORD;
@@ -36,8 +33,8 @@ const systemPasswordMiddleware = (req, res, next) => {
     return next();
   }
   
-  // Vérifier le mot de passe dans la query (GET) ou le body (POST)
-  const provided = req.query.password || req.body?.password;
+  // Vérifier le mot de passe uniquement dans le body (POST) — jamais en query string (logs)
+  const provided = req.body?.password;
   if (provided && provided === password) {
     if (req.session) req.session.systemAuth = true;
     return next();

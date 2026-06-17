@@ -441,6 +441,82 @@ class EmailService {
     return this.renderTemplate(raw, vars);
   }
 
+  /**
+   * Génère le HTML du reçu de paiement SenePay.
+   * @param {Object} params
+   * @param {string} params.name            - Nom de l'utilisateur
+   * @param {number} params.amount          - Montant payé
+   * @param {string} params.currency        - Devise (XAF, XOF…)
+   * @param {string} params.orderReference  - Référence commande
+   * @param {string} params.transactionId   - ID transaction SenePay
+   * @param {string} params.operator        - Opérateur mobile money
+   * @param {number} params.fees            - Frais prélevés
+   * @param {number} params.netAmount       - Montant net crédité
+   * @param {string} params.paidAt          - Date du paiement (ISO)
+   * @param {string} params.tenantId        - ID de l'application
+   */
+  generatePaymentReceiptTemplate({
+    name, amount, currency, orderReference, transactionId,
+    operator, fees, netAmount, paidAt, tenantId,
+  }) {
+    const appName = tenantId || config.APP_NAME || 'DRY API';
+    const appUrl  = this.resolveAppUrl(tenantId);
+    const raw     = this.loadTemplate('payment-receipt.html');
+
+    const formatDate = (iso) => {
+      try {
+        return new Intl.DateTimeFormat('fr-FR', {
+          dateStyle: 'long', timeStyle: 'short',
+          timeZone: 'Africa/Brazzaville',
+        }).format(new Date(iso));
+      } catch { return iso || ''; }
+    };
+
+    if (!raw) {
+      return `<p>Paiement confirmé — Référence : ${orderReference} — Montant : ${amount} ${currency}</p>`;
+    }
+
+    return this.renderTemplate(raw, {
+      NAME:            name || 'Client',
+      AMOUNT:          String(amount),
+      CURRENCY:        currency || 'XAF',
+      ORDER_REFERENCE: orderReference || '-',
+      TRANSACTION_ID:  transactionId  || '-',
+      OPERATOR:        (operator || '-').toUpperCase(),
+      FEES:            String(fees ?? 0),
+      NET_AMOUNT:      String(netAmount ?? amount),
+      PAID_AT:         formatDate(paidAt),
+      APP_NAME:        appName,
+      APP_URL:         appUrl,
+      YEAR:            new Date().getFullYear(),
+    });
+  }
+
+  /**
+   * Envoie le reçu de paiement à l'utilisateur.
+   */
+  async sendPaymentReceipt({ email, name, amount, currency, orderReference,
+    transactionId, operator, fees, netAmount, paidAt, tenantId }) {
+    try {
+      if (!email) return { success: false, message: 'Email requis' };
+      const appName = tenantId || config.APP_NAME || 'DRY API';
+      const html = this.generatePaymentReceiptTemplate({
+        name, amount, currency, orderReference, transactionId,
+        operator, fees, netAmount, paidAt, tenantId,
+      });
+      const ok = await this.sendGenericEmail({
+        email,
+        subject: `Reçu de paiement — ${orderReference} — ${appName}`,
+        html,
+        text: `Paiement confirmé. Référence : ${orderReference}. Montant : ${amount} ${currency}. Transaction : ${transactionId}.`,
+      });
+      return { success: !!ok };
+    } catch (error) {
+      logger(`Erreur envoi reçu paiement: ${error.message}`, 'error');
+      return { success: false, error: error.message };
+    }
+  }
+
   async verifyConfiguration() {
     try {
       if (this.provider === 'resend') {

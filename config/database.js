@@ -47,6 +47,9 @@ const buildBaseConfig = () => ({
   JWT_SECRET: readSetting('JWT_SECRET', {
     testFallback: 'test_secret_key_that_is_long_enough_for_ci',
   }),
+  JWT_REFRESH_SECRET: readSetting('JWT_REFRESH_SECRET', {
+    testFallback: 'test_refresh_secret_key_that_is_long_enough_for_ci',
+  }),
   JWT_SECRET_PREVIOUS: readSetting('JWT_SECRET_PREVIOUS'),
   JWT_EXPIRE: readSetting('JWT_EXPIRE', { fallback: '7d', testFallback: '1h' }),
   SESSION_SECRET: readSetting('SESSION_SECRET', {

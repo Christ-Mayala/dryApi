@@ -7,7 +7,8 @@ const signAccessToken = (id) => {
 };
 
 const signRefreshToken = (id) => {
-  return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: '30d' });
+  const secret = config.JWT_REFRESH_SECRET || config.JWT_SECRET;
+  return jwt.sign({ id, type: 'refresh' }, secret, { expiresIn: '30d' });
 };
 
 const hashToken = (token) => {
@@ -25,4 +26,9 @@ const verifyToken = (token) => {
   }
 };
 
-module.exports = { signAccessToken, signRefreshToken, verifyToken, hashToken };
+const verifyRefreshToken = (token) => {
+  const secret = config.JWT_REFRESH_SECRET || config.JWT_SECRET;
+  return jwt.verify(token, secret);
+};
+
+module.exports = { signAccessToken, signRefreshToken, verifyToken, verifyRefreshToken, hashToken };

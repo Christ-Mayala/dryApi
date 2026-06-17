@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reçu de paiement — {{APP_NAME}}</title>
+    <style>
+        body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 0; background-color: #f4f4f5; }
+        .wrapper { background-color: #f4f4f5; padding: 40px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .header { background-color: #000000; padding: 32px; text-align: center; border-bottom: 4px solid #f5c518; }
+        .logo { color: #f5c518; font-size: 28px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; }
+        .header-sub { color: #a1a1aa; font-size: 13px; margin-top: 6px; text-transform: uppercase; letter-spacing: 2px; }
+        .content { padding: 48px 40px; }
+        .success-badge { display: inline-block; background-color: #dcfce7; color: #15803d; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 28px; }
+        .greeting { font-size: 22px; font-weight: 800; margin-bottom: 8px; color: #000; }
+        .subtitle { font-size: 15px; color: #71717a; margin-bottom: 36px; }
+        .receipt-box { background-color: #fafafa; border: 1px solid #e4e4e7; border-radius: 12px; padding: 28px; margin-bottom: 32px; }
+        .receipt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #71717a; margin-bottom: 18px; }
+        .receipt-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; }
+        .receipt-row:last-child { border-bottom: none; }
+        .receipt-label { color: #71717a; }
+        .receipt-value { font-weight: 600; color: #000; text-align: right; }
+        .amount-block { background-color: #000; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 32px; }
+        .amount-label { color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .amount-value { color: #f5c518; font-size: 36px; font-weight: 900; letter-spacing: -1px; }
+        .amount-currency { color: #a1a1aa; font-size: 16px; font-weight: 400; margin-left: 4px; }
+        .divider { height: 1px; background-color: #eaeaea; margin: 28px 0; }
+        .info-text { font-size: 14px; color: #71717a; line-height: 1.8; margin-bottom: 24px; }
+        .btn-container { margin: 32px 0; text-align: center; }
+        .btn { display: inline-block; padding: 16px 32px; background-color: #f5c518; color: #000000 !important; text-decoration: none; font-weight: 800; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+        .transaction-id { background-color: #f4f4f5; border-radius: 8px; padding: 12px 16px; font-family: monospace; font-size: 12px; color: #71717a; word-break: break-all; margin-bottom: 28px; text-align: center; }
+        .footer { background-color: #fafafa; padding: 32px; text-align: center; border-top: 1px solid #eaeaea; }
+        .copyright { color: #a1a1aa; font-size: 11px; margin-top: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .legal { color: #a1a1aa; font-size: 11px; margin-top: 8px; line-height: 1.6; }
+        .highlight { color: #f5c518; font-weight: 700; }
+        .operator-badge { display: inline-block; background-color: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+
+            <!-- HEADER -->
+            <div class="header">
+                <div class="logo">{{APP_NAME}}</div>
+                <div class="header-sub">Reçu de paiement</div>
+            </div>
+
+            <!-- CONTENU -->
+            <div class="content">
+
+                <div class="success-badge">✓ Paiement confirmé</div>
+
+                <div class="greeting">Merci {{NAME}} !</div>
+                <div class="subtitle">Votre paiement a été reçu et confirmé avec succès.</div>
+
+                <!-- MONTANT -->
+                <div class="amount-block">
+                    <div class="amount-label">Montant payé</div>
+                    <div class="amount-value">{{AMOUNT}}<span class="amount-currency">{{CURRENCY}}</span></div>
+                </div>
+
+                <!-- DÉTAILS DU REÇU -->
+                <div class="receipt-box">
+                    <div class="receipt-title">Détails de la transaction</div>
+
+                    <div class="receipt-row">
+                        <span class="receipt-label">Référence commande</span>
+                        <span class="receipt-value">{{ORDER_REFERENCE}}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Date & heure</span>
+                        <span class="receipt-value">{{PAID_AT}}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Opérateur</span>
+                        <span class="receipt-value"><span class="operator-badge">{{OPERATOR}}</span></span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Statut</span>
+                        <span class="receipt-value" style="color:#15803d;">✓ Payé</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Frais de service</span>
+                        <span class="receipt-value">{{FEES}} {{CURRENCY}}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Montant net crédité</span>
+                        <span class="receipt-value highlight">{{NET_AMOUNT}} {{CURRENCY}}</span>
+                    </div>
+                </div>
+
+                <!-- ID TRANSACTION -->
+                <div style="font-size:12px; color:#71717a; margin-bottom:6px; text-align:center;">Identifiant de transaction</div>
+                <div class="transaction-id">{{TRANSACTION_ID}}</div>
+
+                <div class="divider"></div>
+
+                <p class="info-text">
+                    Conservez ce reçu comme preuve de paiement.<br>
+                    En cas de problème, contactez notre support en indiquant votre référence commande <strong>{{ORDER_REFERENCE}}</strong>.
+                </p>
+
+                <div class="btn-container">
+                    <a href="{{APP_URL}}" class="btn">Retour à l'application</a>
+                </div>
+
+                <p style="font-size: 14px; color: #71717a; margin-top: 24px;">
+                    Merci de votre confiance,<br>
+                    <span style="color: #000; font-weight: 700;">L'équipe {{APP_NAME}}</span>
+                </p>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <div class="legal">
+                    <strong>{{APP_NAME}}</strong> · Paiement sécurisé via SenePay.<br>
+                    Développé par <a href="https://cyberfusion-group.vercel.app/" style="color: #71717a; text-decoration: underline;">CyberFusion Group</a>.
+                </div>
+                <div class="copyright">&copy; {{YEAR}} {{APP_NAME}}. Tous droits réservés.</div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

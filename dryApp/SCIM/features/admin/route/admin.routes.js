@@ -1,116 +1,19 @@
 const express = require('express');
-/**
- * @swagger
- * /api/v1/scim/admin:
- *   get:
- *     summary: Lister Admin
- *     tags: [SCIM]
- *     responses:
- *       200:
- *         description: Liste Admin
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *   post:
- *     summary: Creer Admin
- *     tags: [SCIM]
- *     responses:
- *       200:
- *         description: Admin cree
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *
- * /api/v1/scim/admin/{id}:
- *   get:
- *     summary: Recuperer Admin par ID
- *     tags: [SCIM]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Admin recupere
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *   put:
- *     summary: Mettre a jour Admin
- *     tags: [SCIM]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Admin mis a jour
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *   delete:
- *     summary: Supprimer Admin
- *     tags: [SCIM]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Admin supprime
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: Erreur
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-
-
-
 const router = express.Router();
 
 const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateSCIM } = require('../../../validation/middleware');
+
+// Imports des modèles pour le queryBuilder
+const ReservationSchema = require('../../reservation/model/reservation.schema');
+const PropertySchema = require('../../property/model/property.schema');
+const PropertySubmissionSchema = require('../../property/model/propertySubmission.schema');
+const MessageSchema = require('../../message/model/message.schema');
+const UserPublicSchema = require('../../users/model/userPublic.schema');
+
+// Middleware de filtrage réutilisable (comme advancedResults de control-api)
+const queryBuilder = require('../../../../../dry/middlewares/query/queryBuilder');
 
 const getDashboardStats = require('../controller/admin.dashboardStats.controller');
 const getAllReservations = require('../controller/admin.reservations.list.controller');
@@ -146,93 +49,97 @@ const updateSystemSettings = require('../controller/admin.settings.update.contro
 
 router.use(protect);
 router.use(authorize('admin'));
-
-
-
-
-
-
 router.get('/dashboard/stats', getDashboardStats);
 
-
-
-
-
-
-
-router.get('/reservations', getAllReservations);
+// GET /reservations avec queryBuilder (filtrage, pagination, tri)
+router.get('/reservations', 
+    queryBuilder(
+        (req) => req.getModel('Reservation', ReservationSchema),
+        [
+            { path: 'property', select: 'titre ville adresse prix devise categorie images utilisateur isBonPlan bonPlanLabel bonPlanExpiresAt' },
+            { path: 'user', select: 'name nom email telephone role' }
+        ]
+    ),
+    getAllReservations
+);
 router.put('/reservations/:id/status', validateId, updateReservationStatus);
 
-
-
-
-
-
-
-
-router.get('/properties', getAllProperties);
+// GET /properties avec queryBuilder + filtre isDeleted:false par défaut
+router.get('/properties', 
+    queryBuilder(
+        (req) => req.getModel('Property', PropertySchema),
+        [
+            { path: 'utilisateur', select: 'name nom email telephone role' },
+            { path: 'adminReference', select: 'name nom email' }
+        ],
+        { defaultFilter: { isDeleted: false } }
+    ),
+    getAllProperties
+);
 router.get('/properties/:id', validateId, getPropertyById);
 router.put('/properties/:id/status', validateId, updatePropertyStatus);
 router.delete('/properties/:id', validateId, deleteProperty);
-router.get('/property-submissions', listPropertySubmissions);
+
+// GET /property-submissions avec queryBuilder
+router.get('/property-submissions',
+    queryBuilder(
+        (req) => req.getModel('PropertySubmission', PropertySubmissionSchema),
+        [
+            { path: 'submitter.user', select: 'name nom email telephone' },
+            { path: 'reviewedBy', select: 'name nom email telephone' },
+            { path: 'createdProperty', select: 'titre prix ville adresse categorie' }
+        ]
+    ),
+    listPropertySubmissions
+);
 router.put('/property-submissions/:id', validateId, validateSCIM.property.submissionUpdate, updatePropertySubmission);
 router.put('/property-submissions/:id/status', validateId, validateSCIM.property.submissionReview, updatePropertySubmissionStatus);
 router.delete('/property-submissions/:id', validateId, deletePropertySubmission);
 
-router.get('/users', getAllUsers);
+// GET /users avec queryBuilder + exclure le mot de passe
+router.get('/users',
+    queryBuilder(
+        (req) => req.getModel('User', UserPublicSchema),
+        null,
+        { select: '-password' }
+    ),
+    getAllUsers
+);
 router.get('/users/:id', validateId, getUserById);
 router.put('/users/:id', validateId, updateUser);
 router.put('/users/:id/role', validateId, updateUserRole);
 router.delete('/users/:id', validateId, deleteUser);
 router.patch('/users/:id/restore', validateId, restoreUser);
 
-router.get('/messages', getAllMessages);
+// GET /messages avec queryBuilder
+// Middleware de transformation : le frontend envoie status=unread/read, le schema Message utilise lu (boolean)
+const mapMessageStatus = (req, res, next) => {
+    if (req.query.status && req.query.status !== 'all') {
+        req.query.lu = req.query.status === 'unread' ? false : true;
+        delete req.query.status;
+    }
+    next();
+};
+router.get('/messages',
+    mapMessageStatus,
+    queryBuilder(
+        (req) => req.getModel('Message', MessageSchema),
+        [
+            { path: 'expediteur', select: 'name nom email telephone' },
+            { path: 'destinataire', select: 'name nom email telephone' }
+        ]
+    ),
+    getAllMessages
+);
 router.get('/messages/:id', validateId, getMessageById);
 router.put('/messages/:id/status', validateId, updateMessageStatus);
 router.delete('/messages/:id', validateId, deleteMessage);
 
-
-
-
-
-
-
-
 router.get('/analytics/properties', getPropertyAnalytics);
-
-
-
-
-
-
-
 router.get('/analytics/users', getUserAnalytics);
-
-
-
-
-
-
-
 router.get('/analytics/revenue', getRevenueAnalytics);
 
-
-
-
-
-
-
-
 router.get('/settings', getSystemSettings);
-
-
-
-
-
-
-
 router.put('/settings', updateSystemSettings);
-
-
 
 module.exports = router;

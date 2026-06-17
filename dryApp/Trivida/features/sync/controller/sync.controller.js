@@ -1,0 +1,163 @@
+const asyncHandler = require('express-async-handler');
+const sendResponse = require('../../../../../dry/utils/http/response');
+
+// Chargement des schémas Trivida
+const TransactionSchema = require('../../transaction/model/transaction.schema');
+const CustomerSchema    = require('../../customer/model/customer.schema');
+const ActivitySchema    = require('../../activity/model/activity.schema');
+const DebtSchema        = require('../../debt/model/debt.schema');
+const SavingsGoalSchema = require('../../savings/model/savingsGoal.schema');
+
+// Map nom d'entité → schéma
+const SCHEMA_MAP = {
+    transaction:  { modelName: 'TrividaTransaction',  schema: TransactionSchema },
+    customer:     { modelName: 'TrividaCustomer',     schema: CustomerSchema },
+    activity:     { modelName: 'TrividaActivity',     schema: ActivitySchema },
+    debt:         { modelName: 'TrividaDebt',         schema: DebtSchema },
+    savings_goal: { modelName: 'TrividaSavingsGoal',  schema: SavingsGoalSchema },
+};
+
+/**
+ * Utilitaire — Obtenir le modèle MongoDB pour une entité
+ */
+function getModelForEntity(req, entity) {
+    const entry = SCHEMA_MAP[entity];
+    if (!entry) return null;
+    try {
+        return req.getModel(entry.modelName, entry.schema);
+    } catch (error) {
+        console.error(`[Sync] Modèle ${entry.modelName} non trouvé:`, error.message);
+        return null;
+    }
+}
+
+// ─── Push ─────────────────────────────────────────────────────────────────────
+exports.push = asyncHandler(async (req, res) => {
+    const { operations } = req.body;
+    const userId = req.user._id;
+
+    if (!operations || !Array.isArray(operations)) {
+        throw new Error('Le champ operations est requis et doit être un tableau');
+    }
+
+    console.log(`📥 [Sync Push] ${operations.length} op(s) de l'utilisateur ${userId}`);
+
+    const results = [];
+    const errors  = [];
+
+    for (const op of operations) {
+        try {
+            const { entity, localId, operation, payload } = op;
+
+            const Model = getModelForEntity(req, entity);
+            if (!Model) {
+                errors.push({ entity, localId, error: 'Entité non supportée' });
+                continue;
+            }
+
+            const dataWithUser = { ...payload, userId, localId };
+
+            let result;
+            if (operation === 'INSERT') {
+                // Upsert pour éviter les doublons en cas de double push
+                result = await Model.findOneAndUpdate(
+                    { localId, userId },
+                    { $set: dataWithUser },
+                    { new: true, upsert: true }
+                );
+                results.push({ entity, localId, serverId: result._id, status: 'created' });
+
+            } else if (operation === 'UPDATE') {
+                const query = payload.serverId
+                    ? { _id: payload.serverId, userId }
+                    : { localId, userId };
+
+                result = await Model.findOneAndUpdate(
+                    query,
+                    { $set: dataWithUser },
+                    { new: true, upsert: true }
+                );
+                results.push({ entity, localId, serverId: result._id, status: 'updated' });
+
+            } else if (operation === 'DELETE') {
+                const query = payload.serverId
+                    ? { _id: payload.serverId, userId }
+                    : { localId, userId };
+
+                await Model.deleteOne(query);
+                results.push({ entity, localId, status: 'deleted' });
+            }
+        } catch (error) {
+            console.error(`[Sync Push] Erreur ${op.entity}:`, error.message);
+            errors.push({ entity: op.entity, localId: op.localId, error: error.message });
+        }
+    }
+
+    // Mettre à jour lastSyncAt de l'utilisateur
+    try {
+        const User = req.getModel('User');
+        await User.findByIdAndUpdate(userId, { lastSyncAt: new Date() });
+    } catch (e) {
+        console.warn('[Sync] Impossible de mettre à jour lastSyncAt:', e.message);
+    }
+
+    console.log(`✅ [Sync Push] ${results.length} sync, ${errors.length} erreur(s)`);
+    sendResponse(res, { results, errors, syncedCount: results.length }, 'Synchronisation terminée');
+});
+
+// ─── Pull ─────────────────────────────────────────────────────────────────────
+exports.pull = asyncHandler(async (req, res) => {
+    const { since } = req.query;
+    const userId    = req.user._id;
+    const sinceDate = since ? new Date(parseInt(since)) : null;
+
+    console.log(`📤 [Sync Pull] depuis ${sinceDate || 'le début'} pour ${userId}`);
+
+    const changes = [];
+
+    for (const [entity, { modelName, schema }] of Object.entries(SCHEMA_MAP)) {
+        try {
+            const Model = req.getModel(modelName, schema);
+
+            const query = { userId };
+            if (sinceDate) {
+                query.$or = [
+                    { updatedAt: { $gte: sinceDate } },
+                    { createdAt: { $gte: sinceDate } },
+                ];
+            }
+
+            const docs = await Model.find(query).limit(100).lean();
+            docs.forEach(doc => {
+                changes.push({
+                    entity,
+                    operation: 'INSERT',
+                    data: doc,
+                    timestamp: doc.updatedAt || doc.createdAt,
+                });
+            });
+        } catch (error) {
+            console.error(`[Sync Pull] Erreur ${entity}:`, error.message);
+        }
+    }
+
+    console.log(`✅ [Sync Pull] ${changes.length} modification(s) à envoyer`);
+    sendResponse(res, changes, 'Modifications récupérées');
+});
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+exports.stats = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const stat   = {};
+
+    for (const [entity, { modelName, schema }] of Object.entries(SCHEMA_MAP)) {
+        try {
+            const Model = req.getModel(modelName, schema);
+            stat[entity] = await Model.countDocuments({ userId });
+        } catch (e) {
+            stat[entity] = 0;
+        }
+    }
+
+    sendResponse(res, { ...stat, lastSync: req.user.lastSyncAt || null }, 'Statistiques de synchronisation');
+});

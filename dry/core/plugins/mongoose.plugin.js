@@ -153,7 +153,7 @@ module.exports = function (schema, _options) {
 
         // Sinon on masque les supprimes par defaut
         if (currentFilter.status !== 'deleted') {
-            this.where({ status: { $ne: 'deleted' } });
+            this.and([{ status: { $ne: 'deleted' } }]);
         }
     });
 
