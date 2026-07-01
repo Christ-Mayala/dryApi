@@ -2,19 +2,29 @@ const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 // Chargement des schémas Trivida
-const TransactionSchema = require('../../transaction/model/transaction.schema');
-const CustomerSchema    = require('../../customer/model/customer.schema');
-const ActivitySchema    = require('../../activity/model/activity.schema');
-const DebtSchema        = require('../../debt/model/debt.schema');
-const SavingsGoalSchema = require('../../savings/model/savingsGoal.schema');
+const TransactionSchema     = require('../../transaction/model/transaction.schema');
+const CustomerSchema        = require('../../customer/model/customer.schema');
+const ActivitySchema        = require('../../activity/model/activity.schema');
+const DebtSchema            = require('../../debt/model/debt.schema');
+const SavingsGoalSchema     = require('../../savings/model/savingsGoal.schema');
+const InvoiceSchema         = require('../../invoice/model/invoice.schema');
+const ActivityRecetteSchema = require('../../activityRecette/model/activityRecette.schema');
+const StockSchema           = require('../../stock/model/stock.schema');
+const ProductCatalogSchema  = require('../../productCatalog/model/productCatalog.schema');
+const BusinessProfileSchema = require('../../businessProfile/model/businessProfile.schema');
 
 // Map nom d'entité → schéma
 const SCHEMA_MAP = {
-    transaction:  { modelName: 'TrividaTransaction',  schema: TransactionSchema },
-    customer:     { modelName: 'TrividaCustomer',     schema: CustomerSchema },
-    activity:     { modelName: 'TrividaActivity',     schema: ActivitySchema },
-    debt:         { modelName: 'TrividaDebt',         schema: DebtSchema },
-    savings_goal: { modelName: 'TrividaSavingsGoal',  schema: SavingsGoalSchema },
+    transaction:      { modelName: 'TrividaTransaction',      schema: TransactionSchema },
+    customer:         { modelName: 'TrividaCustomer',         schema: CustomerSchema },
+    activity:         { modelName: 'TrividaActivity',         schema: ActivitySchema },
+    debt:             { modelName: 'TrividaDebt',             schema: DebtSchema },
+    savings_goal:     { modelName: 'TrividaSavingsGoal',      schema: SavingsGoalSchema },
+    invoice:          { modelName: 'TrividaInvoice',          schema: InvoiceSchema },
+    activity_recette: { modelName: 'TrividaActivityRecette',  schema: ActivityRecetteSchema },
+    stock:            { modelName: 'TrividaStock',            schema: StockSchema },
+    product_catalog:  { modelName: 'TrividaProductCatalog',   schema: ProductCatalogSchema },
+    business_profile: { modelName: 'TrividaBusinessProfile',  schema: BusinessProfileSchema },
 };
 
 /**
