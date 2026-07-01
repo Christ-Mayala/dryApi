@@ -4,7 +4,7 @@ const AtelierSchema = require('../model/atelier.schema');
 
 const updateAtelier = asyncHandler(async (req, res) => {
     const Atelier = req.getModel('Atelier', AtelierSchema);
-    let updateData = { ...req.body };
+    const updateData = { ...req.body };
     
     if (req.files) {
         if (req.files.images) {

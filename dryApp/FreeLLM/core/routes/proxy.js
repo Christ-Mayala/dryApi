@@ -314,7 +314,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
           modelMap.set(String(model._id), model);
         }
         
-        let candidateModels = [];
+        const candidateModels = [];
         for (const entry of fallbackChain) {
           const model = modelMap.get(String(entry.modelDbId));
           if (model) {

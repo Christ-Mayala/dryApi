@@ -4,7 +4,7 @@ const FormationSchema = require('../model/formation.schema');
 
 const updateFormation = asyncHandler(async (req, res) => {
     const Formation = req.getModel('Formation', FormationSchema);
-    let updateData = { ...req.body };
+    const updateData = { ...req.body };
     if (req.file) updateData.image = req.file.path;
 
     const formation = await Formation.findByIdAndUpdate(req.params.id, updateData, { new: true });

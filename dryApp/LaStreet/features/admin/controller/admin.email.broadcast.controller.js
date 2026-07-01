@@ -61,7 +61,7 @@ module.exports = asyncHandler(async (req, res) => {
     const name = r.name || r.nom || 'Client';
     const html = emailService.generateAdminDirectEmailTemplate(message, name, req.appName);
 
-    // eslint-disable-next-line no-await-in-loop
+     
     const ok = await emailService.sendGenericEmail({ email, subject, html });
     if (ok) sent += 1;
     else failed += 1;

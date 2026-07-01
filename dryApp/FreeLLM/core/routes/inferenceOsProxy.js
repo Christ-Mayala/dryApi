@@ -234,8 +234,8 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     let finalStatus = 'error';
     let finalError = null;
-    let routeContext = { platform: null, modelId: null };
-    let isIdeMode = false;
+    const routeContext = { platform: null, modelId: null };
+    const isIdeMode = false;
     let tokensContext = { originalInput: 0, processedInput: 0, output: 0, total: 0, saved: 0, conversationUsed: 0 };
     let isFinalized = false;
 
@@ -444,7 +444,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
     const tokenBudget = tokenEstimator.getTokenBudget(taskType);
     
     if (isIdeMode) {
-      let newMessages = [...messages];
+      const newMessages = [...messages];
       const ideRulesPrompt = `Tu es un assistant de développement intégré à un IDE.
 
 Tu ne fonctionnes PAS comme un agent autonome en boucle infinie.
@@ -588,7 +588,7 @@ Sortie :
           modelMap.set(String(model._id), model);
         }
         
-        let candidateModels = [];
+        const candidateModels = [];
         for (const entry of fallbackChain) {
           const model = modelMap.get(String(entry.modelDbId));
           if (model) {

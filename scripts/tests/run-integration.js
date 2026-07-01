@@ -90,7 +90,7 @@ const main = async () => {
     for (const candidatePort of candidatePorts) {
       const candidateBaseUrl = buildLocalBaseUrl(candidatePort);
 
-      // eslint-disable-next-line no-await-in-loop
+       
       const alreadyRunning = await waitForReady(candidateBaseUrl, 1500);
       if (alreadyRunning) {
         baseUrl = candidateBaseUrl;
@@ -99,7 +99,7 @@ const main = async () => {
         break;
       }
 
-      // eslint-disable-next-line no-await-in-loop
+       
       const seemsAvailable = await isPortAvailable(candidatePort);
       if (!seemsAvailable) continue;
 
@@ -111,7 +111,7 @@ const main = async () => {
       });
 
       // Wait until ready or process exits early (EADDRINUSE, config error, etc.)
-      // eslint-disable-next-line no-await-in-loop
+       
       const outcome = await Promise.race([
         waitForReady(candidateBaseUrl, 30000).then((ready) => ({ type: 'ready', ready })),
         new Promise((resolve) =>

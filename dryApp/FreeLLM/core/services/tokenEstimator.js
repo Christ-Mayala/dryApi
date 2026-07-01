@@ -99,10 +99,10 @@ function checkTokenLimits(messages, platform, taskType = 'chat', maxOutputTokens
 
 function compressContext(messages, targetTokens) {
   const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
-  let remainingMessages = systemMessage ? messages.slice(1) : messages;
+  const remainingMessages = systemMessage ? messages.slice(1) : messages;
   
   // Keep the most recent messages
-  let compressed = [];
+  const compressed = [];
   let currentTokens = systemMessage ? estimateMessageTokens(systemMessage) : 0;
   
   for (let i = remainingMessages.length - 1; i >= 0; i--) {

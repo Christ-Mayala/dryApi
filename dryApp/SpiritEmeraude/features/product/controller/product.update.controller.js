@@ -8,7 +8,7 @@ const ProductSchema = require('../model/product.schema');
 const updateProduct = asyncHandler(async (req, res) => {
   const Product = req.getModel('Product', ProductSchema);
 
-  let update = { ...req.body };
+  const update = { ...req.body };
 
   if (req.files && req.files.length > 0) {
     update.images = req.files.map((file) => file.path);

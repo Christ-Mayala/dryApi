@@ -212,7 +212,7 @@ function generateLLMExecutionPlan(toolName, toolArgs, userRequest) {
  * @returns {string}
  */
 function formatLLMPrompt(toolName, toolArgs, userRequest, originalError) {
-  let prompt = `
+  const prompt = `
 # Demande utilisateur: ${userRequest}
 
 # Outil demandé: ${toolName}

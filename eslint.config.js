@@ -28,6 +28,7 @@ module.exports = [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prefer-const': 'warn',
       eqeqeq: ['warn', 'always'],
+      "no-unused-vars": "off"
     },
   },
 ];

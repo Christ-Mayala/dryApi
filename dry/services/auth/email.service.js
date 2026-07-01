@@ -94,7 +94,7 @@ class EmailService {
   }
 
   renderTemplate(raw, vars = {}) {
-    let out = raw || '';
+    const out = raw || '';
     return out.replace(/{{([^{}]+)}}/g, (match, key) => {
       const value = vars[key];
       return value === null || value === undefined ? match : String(value);
