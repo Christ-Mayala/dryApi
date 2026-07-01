@@ -3,7 +3,6 @@
  * @module tests/unit/middlewares/rateLimiter.test
  */
 
-const { describe, it, expect, beforeEach, jest } = require('@jest/globals');
 
 describe('Rate Limiter de sécurité', () => {
   let setupSecurity;

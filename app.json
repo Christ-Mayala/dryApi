@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6162bd8e-24ee-40c7-98b3-f78a55922d11"
+      }
+    },
+    "android": {
+      "package": "com.christ_mayala.dryapiframework"
+    }
+  }
+}

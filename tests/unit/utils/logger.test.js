@@ -3,7 +3,6 @@
  * @module tests/unit/utils/logger.test
  */
 
-const { describe, it, expect, beforeEach, jest } = require('@jest/globals');
 
 describe('Logger (Winston)', () => {
   beforeEach(() => {

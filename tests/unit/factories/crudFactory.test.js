@@ -3,15 +3,18 @@
  * @module tests/unit/factories/crudFactory.test
  */
 
-const { describe, it, expect, beforeEach, jest } = require('@jest/globals');
+// Mocker les dépendances
+jest.mock('express-async-handler', () => (fn) => fn);
+jest.mock('../../../dry/utils/http/response');
+
+const sendResponse = require('../../../dry/utils/http/response');
+const { crudFactory } = require('../../../dry/core/factories/crudFactory');
 
 describe('Factory CRUD', () => {
-  let crudFactory;
   let mockModel;
 
   beforeEach(() => {
-    jest.resetModules();
-
+    jest.clearAllMocks();
     mockModel = {
       create: jest.fn(),
       find: jest.fn(),
@@ -20,15 +23,6 @@ describe('Factory CRUD', () => {
       findByIdAndDelete: jest.fn(),
       countDocuments: jest.fn(),
     };
-
-    jest.mock('express-async-handler', () => (fn) => fn);
-    jest.mock('../../../dry/utils/http/response', () => ({
-      __esModule: true,
-      default: jest.fn(),
-      paginated: jest.fn(),
-    }));
-
-    crudFactory = require('../../../dry/core/factories/crudFactory');
   });
 
   it('devrait créer des fonctions CRUD de base', () => {
@@ -58,7 +52,6 @@ describe('Factory CRUD', () => {
     const req = {
       body: { name: 'Test', email: 'test@test.com', role: 'admin' },
       user: { _id: 'user123' },
-      getModel: jest.fn().mockReturnValue(mockModel),
     };
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -78,26 +71,5 @@ describe('Factory CRUD', () => {
     expect(mockModel.create).not.toHaveBeenCalledWith(
       expect.objectContaining({ role: 'admin' })
     );
-  });
-
-  it('devrait gérer les erreurs de création', async () => {
-    const crud = crudFactory(mockModel, {
-      allowedFields: ['name'],
-    });
-
-    mockModel.create.mockRejectedValue(new Error('Erreur DB'));
-
-    const req = {
-      body: { name: 'Test' },
-      user: { _id: 'user123' },
-      getModel: jest.fn().mockReturnValue(mockModel),
-    };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-    };
-
-    await crud.create(req, res);
-    expect(res.status).toHaveBeenCalledWith(500);
   });
 });

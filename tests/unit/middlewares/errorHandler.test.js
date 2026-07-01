@@ -3,7 +3,6 @@
  * @module tests/unit/middlewares/errorHandler.test
  */
 
-const { describe, it, expect, beforeEach, jest } = require('@jest/globals');
 
 describe('Gestionnaire d\'erreurs', () => {
   let errorHandler;

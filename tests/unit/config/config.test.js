@@ -3,7 +3,6 @@
  * @module tests/unit/config/config.test
  */
 
-const { describe, it, expect, beforeEach, jest } = require('@jest/globals');
 
 describe('Configuration', () => {
   const OLD_ENV = { ...process.env };

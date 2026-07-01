@@ -33,22 +33,24 @@ const resolveUserFromToken = async (req, res, token) => {
         if (req.user.isPremium && req.user.premiumUntil && req.user.premiumUntil < new Date()) {
             req.user.isPremium = false;
             req.user.premiumPlan = null;
-            await req.user.save();
+            if (typeof req.user.save === 'function') {
+                await req.user.save();
+            }
         }
 
         if (req.user.status === 'deleted' || req.user.status === 'banned') {
-            return sendResponse(res, null, 'Compte desactive', false, undefined, 403);
+            return sendResponse(res, null, 'Compte désactivé', false, undefined, 403);
         }
 
         return true;
     } catch {
-        return sendResponse(res, null, 'Non autorise, token invalide', false, undefined, 401);
+        return sendResponse(res, null, 'Non autorisé, token invalide', false, undefined, 401);
     }
 };
 
 const protect = asyncHandler(async (req, res, next) => {
     const token = getTokenFromRequest(req, false);
-    if (!token) return sendResponse(res, null, 'Non autorise, aucun token fourni', false, undefined, 401);
+    if (!token) return sendResponse(res, null, 'Non autorisé, aucun token fourni', false, undefined, 401);
 
     const ok = await resolveUserFromToken(req, res, token);
     if (ok === true) next();
@@ -60,9 +62,9 @@ const protectWithQueryToken = protect;
 
 const authorize = (...roles) => {
     return (req, res, next) => {
-        if (!req.user) return sendResponse(res, null, 'Non authentifie', false);
+        if (!req.user) return sendResponse(res, null, 'Non authentifié', false, undefined, 401);
         if (!roles.includes(req.user.role)) {
-            return sendResponse(res, null, `Role '${req.user.role}' non autorise`, false);
+            return sendResponse(res, null, `Rôle '${req.user.role}' non autorisé`, false, undefined, 403);
         }
         next();
     };

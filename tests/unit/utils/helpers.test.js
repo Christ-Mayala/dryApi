@@ -3,7 +3,6 @@
  * @module tests/unit/utils/helpers.test
  */
 
-const { describe, it, expect } = require('@jest/globals');
 
 describe('Utilitaires - Pagination', () => {
   let pagination;
@@ -14,7 +13,7 @@ describe('Utilitaires - Pagination', () => {
 
   it('devrait exporter les fonctions paginate et buildPaginationMeta', () => {
     expect(pagination).toBeDefined();
-    expect(typeof pagination.paginate === 'function' || typeof pagination === 'function').toBe(true);
+    expect(typeof pagination.getPagination).toBe('function');
   });
 
   it('devrait générer une métadonnée de pagination valide', () => {
@@ -59,7 +58,7 @@ describe('Utilitaires - Pick', () => {
 
   it('devrait extraire uniquement les champs demandés', () => {
     const obj = { name: 'Test', email: 'test@test.com', password: 'secret', role: 'admin' };
-    const result = pick(obj, ['name', 'email']);
+    const result = pick.pickDefined(obj, ['name', 'email']);
     expect(result).toEqual({ name: 'Test', email: 'test@test.com' });
     expect(result.password).toBeUndefined();
     expect(result.role).toBeUndefined();

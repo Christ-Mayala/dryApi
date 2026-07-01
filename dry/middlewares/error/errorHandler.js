@@ -131,31 +131,44 @@ const errorHandler = async (err, req, res, _next) => {
     const rid = req.requestId || req.headers['x-request-id'] || 'no-request-id';
     logger(`[${rid}] ${route}\n${stack}`, 'error');
 
-    let message = 'Une erreur est survenue. Veuillez reessayer.';
+    let message = 'Une erreur est survenue. Veuillez réessayer.';
+    let statusCode = 500;
 
     if (err?.code === 'LIMIT_FILE_SIZE') {
         message = 'Fichier trop volumineux (max 10MB).';
+        statusCode = 413;
     } else if (err?.type === 'entity.too.large' || err?.name === 'PayloadTooLargeError') {
-        message = 'Donnees envoyees trop volumineuses.';
+        message = 'Données envoyées trop volumineuses.';
+        statusCode = 413;
     } else if (err?.code === 11000) {
         const key = Object.keys(err?.keyValue || {})[0];
-        if (key === 'email') message = 'Cet email est deja utilise.';
-        else message = 'Valeur deja utilisee.';
+        if (key === 'email') message = 'Cet email est déjà utilisé.';
+        else message = 'Valeur déjà utilisée.';
+        statusCode = 409;
     } else if (err?.name === 'ValidationError') {
         message = formatMongooseValidation(err);
+        statusCode = 400;
     } else if (err?.name === 'CastError') {
         message = 'Identifiant invalide.';
+        statusCode = 400;
     } else if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') {
         message = 'Session invalide. Veuillez vous reconnecter.';
+        statusCode = 401;
     } else if (typeof err?.message === 'string' && err.message === 'Origin not allowed by CORS') {
-        message = 'Requete bloquee (CORS). Origine non autorisee.';
+        message = 'Requête bloquée (CORS). Origine non autorisée.';
+        statusCode = 403;
     } else if (typeof err?.message === 'string' && !looksTechnicalMessage(err.message)) {
         message = err.message;
+        statusCode = err?.status || err?.statusCode || 500;
+    } else if (typeof err?.status === 'number') {
+        statusCode = err.status;
+    } else if (typeof err?.statusCode === 'number') {
+        statusCode = err.statusCode;
     }
 
     dispatchApiErrorAlert(err, req, rid, message);
 
-    return sendResponse(res, null, message, false);
+    return sendResponse(res, null, message, false, undefined, statusCode);
 };
 
 module.exports = errorHandler;

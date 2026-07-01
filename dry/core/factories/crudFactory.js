@@ -14,6 +14,7 @@ const queryBuilder = require('../../middlewares/query/queryBuilder');
  * Options pour la construction des handlers CRUD.
  * @typedef {Object} CrudOptions
  * @property {function({req: Request, mode: string, payload: Object}): Promise<Object>} [transformInput] - Fonction pour transformer les données entrantes avant création/mise à jour.
+ * @property {string[]} [allowedFields] - Liste des champs autorisés pour la création/mise à jour.
  */
 
 /**
@@ -160,4 +161,72 @@ function buildCrudHandlers(modelName, schema, options = {}) {
   return { createOne, updateOne, deleteOne, getMany, getOne };
 }
 
-module.exports = { buildCrudHandlers };
+/**
+ * Fabrique de contrôleurs CRUD pour les tests (ancienne interface).
+ * @param {Model} Model - Le modèle Mongoose.
+ * @param {CrudOptions} [options={}] - Options.
+ * @returns {{
+ *   create: function(Request, Response, NextFunction): Promise<void>,
+ *   getAll: function(Request, Response, NextFunction): Promise<void>,
+ *   getById: function(Request, Response, NextFunction): Promise<void>,
+ *   update: function(Request, Response, NextFunction): Promise<void>,
+ *   delete: function(Request, Response, NextFunction): Promise<void>
+ * }}
+ */
+function crudFactory(Model, options = {}) {
+  const { allowedFields = [] } = options;
+
+  const filterFields = (data) => {
+    if (allowedFields.length === 0) return data;
+    const filtered = {};
+    for (const field of allowedFields) {
+      if (data[field] !== undefined) {
+        filtered[field] = data[field];
+      }
+    }
+    return filtered;
+  };
+
+  const create = asyncHandler(async (req, res) => {
+    const payload = filterFields(req.body);
+    const doc = await Model.create(payload);
+    sendResponse(res, doc, 'Créé avec succès', true, undefined, 201);
+  });
+
+  const getAll = asyncHandler(async (req, res) => {
+    const docs = await Model.find();
+    sendResponse(res, docs, 'Liste récupérée', true);
+  });
+
+  const getById = asyncHandler(async (req, res) => {
+    const doc = await Model.findById(req.params.id);
+    if (!doc) {
+      return sendResponse(res, null, 'Document introuvable', false, undefined, 404);
+    }
+    sendResponse(res, doc, 'Document récupéré', true);
+  });
+
+  const update = asyncHandler(async (req, res) => {
+    const payload = filterFields(req.body);
+    const doc = await Model.findByIdAndUpdate(req.params.id, payload, {
+      new: true,
+      runValidators: true,
+    });
+    if (!doc) {
+      return sendResponse(res, null, 'Document introuvable', false, undefined, 404);
+    }
+    sendResponse(res, doc, 'Mis à jour avec succès', true);
+  });
+
+  const deleteOne = asyncHandler(async (req, res) => {
+    const doc = await Model.findByIdAndDelete(req.params.id);
+    if (!doc) {
+      return sendResponse(res, null, 'Document introuvable', false, undefined, 404);
+    }
+    sendResponse(res, null, 'Supprimé avec succès', true);
+  });
+
+  return { create, getAll, getById, update, delete: deleteOne };
+}
+
+module.exports = { buildCrudHandlers, crudFactory };
