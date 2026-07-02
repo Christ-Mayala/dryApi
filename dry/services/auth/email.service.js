@@ -24,8 +24,8 @@ class EmailService {
       const provider = this.resolveProvider();
       const emailConfig = {
         host: config.EMAIL_HOST || 'smtp.gmail.com',
-        port: config.EMAIL_PORT || 587,
-        secure: config.EMAIL_SECURE === 'true',
+        port: parseInt(config.EMAIL_PORT || '587', 10),
+        secure: config.EMAIL_SECURE === 'true' || config.EMAIL_PORT === '465',
         auth: {
           user: config.EMAIL_USER,
           pass: config.EMAIL_PASS,
@@ -64,7 +64,14 @@ class EmailService {
         this.provider = 'ethereal';
         logger('Email service configure avec Ethereal (developpement)', 'info');
       } else if (config.EMAIL_USER && config.EMAIL_PASS) {
-        this.transporter = nodemailer.createTransport(emailConfig);
+        this.transporter = nodemailer.createTransport({
+          ...emailConfig,
+          // Timeouts explicites pour éviter les ETIMEDOUT sur Render
+          connectionTimeout: 10000,  // 10s pour établir la connexion
+          greetingTimeout: 10000,    // 10s pour le handshake SMTP
+          socketTimeout: 15000,      // 15s d'inactivité max
+          pool: false,               // Pas de pool — connexion fraîche à chaque envoi
+        });
         this.provider = 'smtp';
         logger('Email service configure avec SMTP', 'info');
       } else if (provider === 'auto' && config.RESEND_API_KEY) {
@@ -151,26 +158,41 @@ class EmailService {
       text: options.text,
     };
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    // Timeout de 10 secondes sur l'appel Resend API
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const data = await response.json().catch(() => null);
-    if (!response.ok) {
-      const message = data && (data.message || data.error);
-      const err = new Error(message || `Resend HTTP ${response.status}`);
-      err.code = 'RESEND_HTTP_ERROR';
-      err.httpStatus = response.status;
-      err.responseBody = data;
-      throw err;
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message = data && (data.message || data.error);
+        const err = new Error(message || `Resend HTTP ${response.status}`);
+        err.code = 'RESEND_HTTP_ERROR';
+        err.httpStatus = response.status;
+        err.responseBody = data;
+        throw err;
+      }
+
+      return true;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Resend API timeout après 10s');
+      }
+      throw error;
     }
-
-    return true;
   }
 
   async sendGenericEmail(options) {
