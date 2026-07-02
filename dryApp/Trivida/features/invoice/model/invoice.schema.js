@@ -6,7 +6,7 @@ const InvoiceSchema = new mongoose.Schema({
   invoiceNumber: { type: String, required: true },
   customerId: { type: mongoose.Schema.Types.Mixed }, // Mixed pour accepter nombres (SQLite)
   amount: { type: Number, required: true },
-  status: { type: String, required: true, default: 'impayé', enum: ['payé', 'impayé', 'en attente'] },
+  status: { type: String, required: true, default: 'impayée', enum: ['payée', 'impayée', 'payé', 'impayé', 'en attente'] },
   date: { type: Date, required: true },
   dueDate: { type: Date },
   notes: { type: String },

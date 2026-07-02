@@ -220,19 +220,20 @@ exports.requestPasswordReset = asyncHandler(async (req, res) => {
         passwordChangedAt: undefined // Marquer l'ancien mot de passe comme invalide
     });
 
-    // Envoyer email
-    try {
-        await emailService.sendGenericEmail({
-            email: user.email,
-            subject: `Code de réinitialisation - ${req.appName || config.APP_NAME || 'La STREET'}`,
-            html: emailService.generatePasswordResetTemplate(resetCode, req.appName || config.APP_NAME || 'user')   ,
-        });
-    } catch (emailError) {
-        console.error('Erreur envoi email reset:', emailError);
-        // Continuer mÃªme si l'email Ã©choue en dev
-    }
+    // Envoyer email — détaché pour ne pas bloquer la réponse HTTP
+    // L'email part en arrière-plan, la réponse est immédiate côté client
+    const appLabel = req.appName || config.APP_NAME || 'Trivida';
+    Promise.resolve(
+      emailService.sendGenericEmail({
+        email: user.email,
+        subject: `Code de vérification — ${appLabel}`,
+        html: emailService.generatePasswordResetTemplate(resetCode, appLabel),
+      })
+    ).catch((emailError) => {
+      console.error('Erreur envoi email reset (non-bloquant):', emailError.message);
+    });
 
-    // Répondre avec succès même si l'email échoue
+    // Répondre immédiatement — même si l'email met du temps ou échoue
     sendResponse(res, { message: 'Si cet email existe, un code de réinitialisation a été envoyé' }, 'Code envoyé');
 });
 
@@ -276,16 +277,17 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     user.passwordChangedAt = Date.now();
     await user.save();
 
-    // Envoyer email de confirmation
-    try {
-        await emailService.sendGenericEmail({
-            email: user.email,
-            subject: `Mot de passe réinitialisé - ${req.appName || config.APP_NAME || 'La STREET'}`,
-            html: emailService.generatePasswordResetConfirmationTemplate(req.appName || config.APP_NAME || 'user'),
-        });
-    } catch (emailError) {
-        console.error('Erreur envoi email confirmation:', emailError);
-    }
+    // Envoyer email confirmation — détaché pour ne pas bloquer la réponse HTTP
+    const appLabel = req.appName || config.APP_NAME || 'Trivida';
+    Promise.resolve(
+      emailService.sendGenericEmail({
+        email: user.email,
+        subject: `Mot de passe mis à jour — ${appLabel}`,
+        html: emailService.generatePasswordResetConfirmationTemplate(appLabel),
+      })
+    ).catch((emailError) => {
+      console.error('Erreur envoi email confirmation (non-bloquant):', emailError.message);
+    });
 
     sendResponse(res, { message: 'Mot de passe réinitialisé avec succès' }, 'Succès');
 });

@@ -298,8 +298,19 @@ class EmailService {
   generatePasswordResetTemplate(resetCode, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
-    const raw = this.loadTemplate('password-reset.html');
 
+    // Template dédié Trivida — OTP sans lien web, app mobile
+    if (String(tenantId).toLowerCase() === 'trivida') {
+      const raw = this.loadTemplate('trivida-password-reset.html');
+      if (raw) {
+        return this.renderTemplate(raw, {
+          RESET_CODE: resetCode,
+          YEAR: new Date().getFullYear(),
+        });
+      }
+    }
+
+    const raw = this.loadTemplate('password-reset.html');
     if (!raw) {
       return `Code: ${resetCode}`;
     }
@@ -315,8 +326,18 @@ class EmailService {
   generatePasswordResetConfirmationTemplate(tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
-    const raw = this.loadTemplate('password-reset-confirmation.html');
 
+    // Template dédié Trivida — confirmation sans bouton web, app mobile
+    if (String(tenantId).toLowerCase() === 'trivida') {
+      const raw = this.loadTemplate('trivida-password-reset-confirmation.html');
+      if (raw) {
+        return this.renderTemplate(raw, {
+          YEAR: new Date().getFullYear(),
+        });
+      }
+    }
+
+    const raw = this.loadTemplate('password-reset-confirmation.html');
     if (!raw) {
       return 'Mot de passe réinitialisé avec succès';
     }
@@ -331,8 +352,19 @@ class EmailService {
   generateWelcomeTemplate(name, tenantId) {
     const appName = tenantId || config.APP_NAME || 'DRY API';
     const appUrl = this.resolveAppUrl(tenantId);
-    const raw = this.loadTemplate('welcome.html');
 
+    // Template dédié Trivida — app mobile, pas de lien web
+    if (String(tenantId).toLowerCase() === 'trivida') {
+      const raw = this.loadTemplate('trivida-welcome.html');
+      if (raw) {
+        return this.renderTemplate(raw, {
+          NAME: name,
+          YEAR: new Date().getFullYear(),
+        });
+      }
+    }
+
+    const raw = this.loadTemplate('welcome.html');
     if (!raw) {
       return `Bienvenue ${name}`;
     }

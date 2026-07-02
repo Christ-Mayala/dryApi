@@ -129,7 +129,7 @@ exports.pull = asyncHandler(async (req, res) => {
         try {
             const Model = req.getModel(modelName, schema);
 
-            const query = { userId };
+            const query = { userId, deleted: { $ne: true } };
             if (sinceDate) {
                 query.$or = [
                     { updatedAt: { $gte: sinceDate } },
@@ -137,12 +137,24 @@ exports.pull = asyncHandler(async (req, res) => {
                 ];
             }
 
-            const docs = await Model.find(query).limit(100).lean();
+            const docs = await Model.find(query).limit(500).lean();
             docs.forEach(doc => {
+                // S'assurer que localId est toujours présent dans data —
+                // le client l'utilise pour mapper l'id local SQLite.
+                // Si localId manque (doc créé directement en MongoDB),
+                // on utilise le _id MongoDB converti en nombre comme fallback.
+                const data = { ...doc };
+                if (data.localId === undefined || data.localId === null) {
+                    // Fallback : utiliser les 8 derniers caractères du _id en base 16
+                    // pour générer un entier unique comme localId
+                    const idStr = String(doc._id);
+                    data.localId = parseInt(idStr.slice(-8), 16) || Date.now();
+                }
+
                 changes.push({
                     entity,
-                    operation: 'INSERT',
-                    data: doc,
+                    operation: doc.deleted ? 'DELETE' : 'INSERT',
+                    data,
                     timestamp: doc.updatedAt || doc.createdAt,
                 });
             });

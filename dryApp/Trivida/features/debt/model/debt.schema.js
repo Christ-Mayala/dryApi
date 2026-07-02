@@ -8,8 +8,8 @@ const DebtSchema = new mongoose.Schema({
     contactPhone: { type: String },
     
     amount: { type: Number, required: true },
-    type: { type: String, enum: ['i_owe', 'owes_me'], required: true }, // Je dois / On me doit
-    status: { type: String, enum: ['pending', 'paid', 'cancelled'], default: 'pending', index: true },
+    type: { type: String, enum: ['i_owe', 'owe_me', 'owes_me'], required: true }, // Je dois / On me doit (owes_me = alias legacy)
+    status: { type: String, enum: ['pending', 'paid', 'settled', 'cancelled'], default: 'pending', index: true },
     
     dueDate: { type: Date },
     notes: { type: String },
