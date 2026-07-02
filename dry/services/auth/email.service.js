@@ -121,7 +121,7 @@ class EmailService {
   renderTemplate(raw, vars = {}) {
     const out = raw || '';
     return out.replace(/{{([^{}]+)}}/g, (match, key) => {
-      const value = vars[key];
+      const value = vars[key.trim()];
       return value === null || value === undefined ? match : String(value);
     });
   }
@@ -405,8 +405,14 @@ class EmailService {
     if (String(tenantId).toLowerCase() === 'trivida') {
       const raw = this.loadTemplate('trivida-password-reset.html');
       if (raw) {
+        // Passer le code complet — plus simple et plus fiable que les digits séparés
+        const code = String(resetCode).padStart(6, '0');
+        // Aussi passer les digits individuels pour compatibilité template
+        const digits = code.split('');
         return this.renderTemplate(raw, {
-          RESET_CODE: resetCode,
+          RESET_CODE: code,
+          D1: digits[0], D2: digits[1], D3: digits[2],
+          D4: digits[3], D5: digits[4], D6: digits[5],
           YEAR: new Date().getFullYear(),
         });
       }
