@@ -97,6 +97,7 @@ const buildBaseConfig = () => ({
     fallback: env === 'test' ? 'false' : 'true',
   }),
   RESEND_API_KEY: readSetting('RESEND_API_KEY', { testFallback: 'test_resend_key' }),
+  BREVO_API_KEY: readSetting('BREVO_API_KEY', { testFallback: '' }),
   CLOUDINARY_CLOUD_NAME: readSetting('CLOUDINARY_CLOUD_NAME', { testFallback: 'test-cloud' }),
   CLOUDINARY_API_KEY: readSetting('CLOUDINARY_API_KEY', { testFallback: 'test-key' }),
   CLOUDINARY_API_SECRET: readSetting('CLOUDINARY_API_SECRET', { testFallback: 'test-secret' }),

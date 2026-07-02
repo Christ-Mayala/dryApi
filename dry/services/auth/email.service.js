@@ -15,7 +15,12 @@ class EmailService {
 
   resolveProvider() {
     const raw = (config.EMAIL_PROVIDER || 'auto').toLowerCase();
-    if (raw === 'smtp' || raw === 'resend') return raw;
+    if (raw === 'smtp' || raw === 'resend' || raw === 'brevo') return raw;
+    // Auto-détection : si BREVO_API_KEY présent → brevo, si RESEND_API_KEY → resend
+    if (raw === 'auto') {
+      if (config.BREVO_API_KEY) return 'brevo';
+      if (config.RESEND_API_KEY) return 'resend';
+    }
     return 'auto';
   }
 
@@ -31,6 +36,19 @@ class EmailService {
           pass: config.EMAIL_PASS,
         },
       };
+
+      if (provider === 'brevo') {
+        if (!config.BREVO_API_KEY) {
+          logger('Email service BREVO demande mais BREVO_API_KEY manquant', 'warning');
+          this.provider = 'none';
+          this.transporter = null;
+          return;
+        }
+        this.provider = 'brevo';
+        this.transporter = null;
+        logger('Email service configure avec Brevo API (HTTP)', 'info');
+        return;
+      }
 
       if (provider === 'resend') {
         if (!config.RESEND_API_KEY) {
@@ -195,6 +213,62 @@ class EmailService {
     }
   }
 
+  async sendViaBrevo(options) {
+    const apiKey = config.BREVO_API_KEY;
+    if (!apiKey) throw new Error('BREVO_API_KEY manquant');
+
+    const fromEmail = config.EMAIL_FROM || config.FROM_EMAIL || 'noreply@example.com';
+    // Brevo attend { email, name } séparément
+    // Supporte "Nom <email>" ou juste "email"
+    const fromMatch = fromEmail.match(/^(.+?)\s*<(.+?)>$/);
+    const senderEmail = fromMatch ? fromMatch[2].trim() : fromEmail.trim();
+    const senderName  = fromMatch ? fromMatch[1].trim() : (config.APP_NAME || 'Notification');
+
+    const payload = {
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email: options.email }],
+      subject: options.subject || 'Notification',
+      htmlContent: options.html || '<p>Notification</p>',
+      textContent: options.text,
+    };
+
+    // Timeout 10s
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': apiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message = data && (data.message || data.code);
+        const err = new Error(message || `Brevo HTTP ${response.status}`);
+        err.code = 'BREVO_HTTP_ERROR';
+        err.httpStatus = response.status;
+        throw err;
+      }
+
+      return true;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Brevo API timeout après 10s');
+      }
+      throw error;
+    }
+  }
+
   async sendGenericEmail(options) {
     try {
       if (!options || !options.email) {
@@ -204,6 +278,12 @@ class EmailService {
       }
 
       this.lastError = null;
+
+      if (this.provider === 'brevo') {
+        await this.sendViaBrevo(options);
+        logger(`Email envoye via Brevo API a ${options.email}`, 'info');
+        return true;
+      }
 
       if (this.provider === 'resend') {
         await this.sendViaResend(options);
