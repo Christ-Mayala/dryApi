@@ -73,7 +73,7 @@ exports.push = asyncHandler(async (req, res) => {
                 result = await Model.findOneAndUpdate(
                     { localId, userId },
                     { $set: dataWithUser },
-                    { new: true, upsert: true }
+                    { returnDocument: 'after', upsert: true }
                 );
                 results.push({ entity, localId, serverId: result._id, status: 'created' });
 
@@ -85,7 +85,7 @@ exports.push = asyncHandler(async (req, res) => {
                 result = await Model.findOneAndUpdate(
                     query,
                     { $set: dataWithUser },
-                    { new: true, upsert: true }
+                    { returnDocument: 'after', upsert: true }
                 );
                 results.push({ entity, localId, serverId: result._id, status: 'updated' });
 
@@ -94,7 +94,13 @@ exports.push = asyncHandler(async (req, res) => {
                     ? { _id: payload.serverId, userId }
                     : { localId, userId };
 
-                await Model.deleteOne(query);
+                // Soft delete — marque deleted:true au lieu de supprimer physiquement
+                // Cela permet au pull de notifier les autres appareils de supprimer ce document
+                await Model.findOneAndUpdate(
+                    query,
+                    { $set: { deleted: true, deletedAt: new Date() } },
+                    { returnDocument: 'after' }
+                );
                 results.push({ entity, localId, status: 'deleted' });
             }
         } catch (error) {
@@ -129,15 +135,23 @@ exports.pull = asyncHandler(async (req, res) => {
         try {
             const Model = req.getModel(modelName, schema);
 
-            const query = { userId, deleted: { $ne: true } };
+            let docs;
             if (sinceDate) {
-                query.$or = [
-                    { updatedAt: { $gte: sinceDate } },
-                    { createdAt: { $gte: sinceDate } },
-                ];
+                // Pull incrémental : inclure les docs modifiés ET les soft-deleted récents
+                // Model.collection bypasse le middleware pre-find pour accéder aux deleted:true
+                const query = {
+                    userId,
+                    $or: [
+                        { updatedAt: { $gte: sinceDate } },
+                        { createdAt: { $gte: sinceDate } },
+                        { deletedAt: { $gte: sinceDate } },
+                    ],
+                };
+                docs = await Model.collection.find(query).limit(500).toArray();
+            } else {
+                // Pull complet : seulement les docs actifs (non supprimés)
+                docs = await Model.find({ userId, deleted: { $ne: true } }).limit(500).lean();
             }
-
-            const docs = await Model.find(query).limit(500).lean();
             docs.forEach(doc => {
                 // S'assurer que localId est toujours présent dans data —
                 // le client l'utilise pour mapper l'id local SQLite.
