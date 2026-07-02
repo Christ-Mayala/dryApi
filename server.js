@@ -38,7 +38,7 @@ const startServer = async () => {
   startScimReservationReminderScheduler();
 
   await new Promise((resolve) => {
-    server.listen(config.PORT, async () => {
+    server.listen(config.PORT, '0.0.0.0', async () => {
       await printStartupBanner(config.PORT, allowedOrigins);
       resolve();
     });
