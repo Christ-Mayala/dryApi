@@ -18,23 +18,23 @@ const UserSchema = new mongoose.Schema({
     isPremium: { type: Boolean, default: false },
     premiumUntil: { type: Date },
     premiumPlan: { type: String, enum: ['free', 'premium', 'business', 'starter', 'standard'], default: 'free' },
-  aiRequestsToday: { type: Number, default: 0 },
-  aiRequestsResetAt: { type: Date },
-  trialUsed: { type: Boolean, default: false },
-  paymentHistory: [{
-    plan:          { type: String },
-    amount:        { type: Number },
-    currency:      { type: String, default: 'XAF' },
-    billingMode:   { type: String },
-    status:        { type: String, default: 'completed' },
-    orderReference:{ type: String },
-    transactionId: { type: String },
-    createdAt:     { type: Date, default: Date.now },
-  }],
-  activeDevices: [{
-    deviceId: { type: String },
-    lastSeen: { type: Date },
-  }],
+    aiRequestsToday: { type: Number, default: 0 },
+    aiRequestsResetAt: { type: Date },
+    trialUsed: { type: Boolean, default: false },
+    paymentHistory: [{
+        plan: { type: String },
+        amount: { type: Number },
+        currency: { type: String, default: 'XAF' },
+        billingMode: { type: String },
+        status: { type: String, default: 'completed' },
+        orderReference: { type: String },
+        transactionId: { type: String },
+        createdAt: { type: Date, default: Date.now },
+    }],
+    activeDevices: [{
+        deviceId: { type: String },
+        lastSeen: { type: Date },
+    }],
 
 
     googleId: { type: String, unique: true, sparse: true, select: false },
@@ -79,7 +79,7 @@ const UserSchema = new mongoose.Schema({
     versionKey: false,
     toJSON: {
         virtuals: true,
-        transform: function(doc, ret) {
+        transform: function (doc, ret) {
             delete ret.password;
             delete ret.refreshTokens;
             delete ret.resetCode;
@@ -97,7 +97,7 @@ const UserSchema = new mongoose.Schema({
 
 // --- MIDDLEWARES ---
 
-UserSchema.pre(/^find/, function() {
+UserSchema.pre(/^find/, function () {
     const q = this.getQuery() || {};
 
     if (q.includeDeleted === true) {
@@ -113,7 +113,7 @@ UserSchema.pre(/^find/, function() {
 });
 
 // Hashage du mot de passe avant sauvegarde
-UserSchema.pre('save', async function() {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) return;
 
     const salt = await bcrypt.genSalt(12);
@@ -121,7 +121,7 @@ UserSchema.pre('save', async function() {
 });
 
 // 🔥 NOUVEAU : Middleware pour synchroniser deleted et status
-UserSchema.pre('save', function() {
+UserSchema.pre('save', function () {
     // Si status devient 'deleted', on met aussi deleted à true
     if (this.isModified('status') && this.status === 'deleted') {
         this.deleted = true;
@@ -149,12 +149,12 @@ UserSchema.pre('save', function() {
 
 // --- MÉTHODES D'INSTANCE ---
 
-UserSchema.methods.matchPassword = async function(enteredPassword) {
+UserSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // 🔥 NOUVELLE MÉTHODE : Soft delete cohérent
-UserSchema.methods.softDelete = async function() {
+UserSchema.methods.softDelete = async function () {
     this.status = 'deleted';
     this.deleted = true;
     this.deletedAt = new Date();
@@ -162,14 +162,14 @@ UserSchema.methods.softDelete = async function() {
 };
 
 // 🔥 NOUVELLE MÉTHODE : Restaurer un utilisateur
-UserSchema.methods.restore = async function() {
+UserSchema.methods.restore = async function () {
     this.status = 'active';
     this.deleted = false;
     this.deletedAt = null;
     return await this.save();
 };
 
-UserSchema.methods.incLoginAttempts = async function() {
+UserSchema.methods.incLoginAttempts = async function () {
     if (this.lockUntil && this.lockUntil < Date.now()) {
         return this.constructor.updateOne(
             { _id: this._id },
