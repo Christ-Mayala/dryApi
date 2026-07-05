@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const { signAccessToken, signRefreshToken, verifyToken, hashToken } = require('../../utils/auth/jwt.util');
+const { signAccessToken, signRefreshToken, verifyToken, verifyRefreshToken, hashToken } = require('../../utils/auth/jwt.util');
 const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
@@ -130,7 +130,7 @@ exports.refresh = asyncHandler(async (req, res) => {
     if (!refreshToken) throw new Error('Refresh token manquant');
 
     try {
-        const decoded = verifyToken(refreshToken);
+        const decoded = verifyRefreshToken(refreshToken);
         const hashedRt = hashToken(refreshToken);
         const User = req.getModel('User');
         const user = await User.findById(decoded.id).select('+refreshTokens');

@@ -17,7 +17,24 @@ const UserSchema = new mongoose.Schema({
     subtype: { type: String, enum: [null, 'prestataire'], default: null },
     isPremium: { type: Boolean, default: false },
     premiumUntil: { type: Date },
-    premiumPlan: { type: String, enum: ['starter', 'standard', 'premium'], default: null },
+    premiumPlan: { type: String, enum: ['free', 'premium', 'business', 'starter', 'standard'], default: 'free' },
+  aiRequestsToday: { type: Number, default: 0 },
+  aiRequestsResetAt: { type: Date },
+  trialUsed: { type: Boolean, default: false },
+  paymentHistory: [{
+    plan:          { type: String },
+    amount:        { type: Number },
+    currency:      { type: String, default: 'XAF' },
+    billingMode:   { type: String },
+    status:        { type: String, default: 'completed' },
+    orderReference:{ type: String },
+    transactionId: { type: String },
+    createdAt:     { type: Date, default: Date.now },
+  }],
+  activeDevices: [{
+    deviceId: { type: String },
+    lastSeen: { type: Date },
+  }],
 
 
     googleId: { type: String, unique: true, sparse: true, select: false },

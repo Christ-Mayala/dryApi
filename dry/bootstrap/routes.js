@@ -4,6 +4,7 @@ const { handleCsrfError } = require('../middlewares/protection/csrf.middleware')
 const sendResponse = require('../utils/http/response');
 const healthService = require('../services/health/health.service');
 const systemActionsService = require('../services/system/system-actions.service');
+const getModel = require('../core/factories/modelFactory');
 const {
   swaggerUiMiddleware,
   swaggerUiSetup,
@@ -15,6 +16,8 @@ const { createMetrics, httpMetricsMiddleware } = require('../config/prometheus.c
 const healthRoutes = require('../routes/health.routes');
 const billingRoutes = require('../modules/billing/billing.routes');
 const licensingRoutes = require('../modules/licensing/licensing.routes');
+const googleAuthRoutes = require('../modules/auth/auth.routes');
+const senePayRoutes = require("../modules/senepay/senepay.routes");
 
 // Middleware de protection par mot de passe pour les routes système
 if (!process.env.SYSTEM_PASSWORD) {
@@ -179,10 +182,29 @@ const registerApplicationRoutes = async (app) => {
   registerHealthRoutes(app);
   registerDocumentationRoutes(app);
 
-  // Routes billing (monté dans l'espace API)
-  app.use('/api/v1/billing', billingRoutes);
+  // Middleware qui injecte req.getModel et req.appName pour les routes globales
+  // (senepay, billing) qui sont hors du scope du bootloader multi-tenant
+  const injectTrivida = (req, res, next) => {
+    if (!req.appName) req.appName = 'Trivida';
+    if (!req.getModel) req.getModel = (modelName, schema) => getModel('Trivida', modelName, schema);
+    next();
+  };
+
+  app.use("/api/v1/senepay", injectTrivida, senePayRoutes);
+  app.use('/api/v1/billing', injectTrivida, billingRoutes);
+
+  // Route de callback paiement — redirige vers le deep link de l'app mobile
+  // SenePay successUrl pointe vers cette URL HTTPS, qui redirige ensuite vers l'app
+  app.get('/payment/callback', (req, res) => {
+    const token = req.query.token || '';
+    // Redirection vers le deep link Trivida
+    const deepLink = `com.christ_mayala.trivida://payment/callback?token=${token}`;
+    res.redirect(302, deepLink);
+  });
 
   // Routes licensing
+  // Routes Google OAuth (multi-tenant, flux serveur)
+  app.use('/api', googleAuthRoutes);
   app.use('/api/v1/licensing', licensingRoutes);
 
   // 404

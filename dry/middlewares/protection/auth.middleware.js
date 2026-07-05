@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const { verifyToken } = require('../../utils/auth/jwt.util');
+const getModel = require('../../core/factories/modelFactory');
 // Mise a jour chemin response (On remonte de middlewares/protection -> middlewares -> dry -> utils)
 const sendResponse = require('../../utils/http/response');
 
@@ -23,7 +24,17 @@ const getTokenFromRequest = (req, allowQuery = false) => {
 const resolveUserFromToken = async (req, res, token) => {
     try {
         const decoded = verifyToken(token);
-        const User = req.getModel('User');
+
+        // Utiliser req.getModel si disponible (contexte multi-tenant)
+        // Sinon fallback sur getModel avec l'appName de la requête ou 'Trivida' par défaut
+        let User;
+        if (typeof req.getModel === 'function') {
+            User = req.getModel('User');
+        } else {
+            const appName = req.appName || 'Trivida';
+            console.warn(`[protect] req.getModel non injecté pour ${req.originalUrl} — fallback sur getModel('${appName}')`);
+            User = getModel(appName, 'User');
+        }
 
         req.user = await User.findById(decoded.id).select('-password');
 
@@ -43,7 +54,7 @@ const resolveUserFromToken = async (req, res, token) => {
         }
 
         return true;
-    } catch {
+    } catch (err) {
         return sendResponse(res, null, 'Non autorisé, token invalide', false, undefined, 401);
     }
 };

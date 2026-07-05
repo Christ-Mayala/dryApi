@@ -33,6 +33,7 @@ const SenePayProvider = require('../../services/payment/providers/senepay.provid
 const emailService = require('../../services/auth/email.service');
 const { sendAlert } = require('../../services/alert/alert.service');
 const notificationService = require('../../services/notification/notification.service');
+const getModel = require('../../core/factories/modelFactory');
 
 const router = express.Router();
 
@@ -99,6 +100,7 @@ router.post('/checkout/session', requireSenePayConfig, protect, async (req, res)
       currency = DEFAULT_CURRENCY,
       country  = DEFAULT_COUNTRY,
       description, successUrl, cancelUrl, webhookUrl, expiresInMinutes,
+      plan, billingMode,
     } = req.body;
 
     if (!amount) {
@@ -106,17 +108,20 @@ router.post('/checkout/session', requireSenePayConfig, protect, async (req, res)
     }
 
     const orderReference = generateOrderReference();
+    const subscriptionDays = billingMode === 'annual' ? 365 : 30;
 
     const result = await senepay.createCheckoutSession({
       amount, currency, orderReference, country, description,
       successUrl, cancelUrl,
       webhookUrl: webhookUrl || process.env.SENEPAY_WEBHOOK_URL,
       expiresInMinutes,
-      // userId dans metadata → SenePay le retourne dans le webhook
       metadata: {
         userId:    String(req.user._id),
         userName:  req.user.name  || '',
         userEmail: req.user.email || '',
+        plan:      plan || 'premium',
+        billingMode: billingMode || 'monthly',
+        subscriptionDays: String(subscriptionDays),
       },
     });
 
@@ -145,6 +150,65 @@ router.get('/checkout/:token', requireSenePayConfig, protect, async (req, res) =
     sendResponse(res, result, 'Statut session');
   } catch (err) {
     logger(`[SenePay] checkout status erreur : ${err.message}`, 'error');
+    sendResponse(res, null, 'Erreur serveur', false, undefined, 500);
+  }
+});
+
+/**
+ * POST /api/v1/senepay/checkout/:token/activate
+ * Vérifie le statut ET active le plan si Complete.
+ * En dev (forceSandbox=true), active même si statut = "Open".
+ * Body : { plan?, billingMode?, forceSandbox? }
+ * Auth : JWT requis
+ */
+router.post('/checkout/:token/activate', requireSenePayConfig, protect, async (req, res) => {
+  try {
+    const { plan = 'premium', billingMode = 'monthly', forceSandbox = false } = req.body;
+
+    const result = await senepay.getCheckoutStatus(req.params.token);
+    if (!result.success) {
+      return sendResponse(res, null, result.error || 'Session introuvable', false, undefined, 404);
+    }
+
+    const status     = result.status?.toLowerCase();
+    const isComplete = status === 'complete' || status === 'completed';
+    const isFailed   = status === 'failed' || status === 'cancelled' || status === 'expired';
+
+    if (isFailed) {
+      return sendResponse(res, { status: result.status }, 'Paiement échoué ou annulé', false, undefined, 400);
+    }
+
+    const shouldActivate = isComplete || (forceSandbox && process.env.NODE_ENV !== 'production');
+
+    if (shouldActivate && req.user?._id) {
+      const subscriptionDays = billingMode === 'annual' ? 365 : 30;
+      const premiumUntil     = new Date(Date.now() + subscriptionDays * 24 * 60 * 60 * 1000);
+      const amount           = result.raw?.amount || 0;
+      const orderReference   = result.raw?.orderReference || req.params.token;
+      const transactionId    = result.raw?.payment?.transactionId || result.raw?.transactionId || null;
+
+      const User = req.getModel ? req.getModel('User') : getModel('Trivida', 'User');
+      await User.findByIdAndUpdate(req.user._id, {
+        $set:  { isPremium: true, premiumPlan: plan, premiumUntil },
+        $push: {
+          paymentHistory: {
+            $each: [{
+              plan, amount, currency: result.raw?.currency || 'XAF',
+              billingMode, status: 'completed',
+              orderReference, transactionId,
+              createdAt: new Date(),
+            }],
+            $slice: -50, // Garder les 50 derniers paiements max
+          },
+        },
+      });
+      logger(`[SenePay] Plan "${plan}" activé pour userId=${req.user._id} (forceSandbox=${forceSandbox})`, 'info');
+      return sendResponse(res, { activated: true, plan, premiumUntil, status: result.status }, 'Plan activé');
+    }
+
+    return sendResponse(res, { activated: false, status: result.status }, 'Paiement en attente');
+  } catch (err) {
+    logger(`[SenePay] activate erreur : ${err.message}`, 'error');
     sendResponse(res, null, 'Erreur serveur', false, undefined, 500);
   }
 });
@@ -409,6 +473,35 @@ router.post('/webhooks/payin', express.raw({ type: 'application/json' }), async 
       const { orderReference, transactionId, amount, currency, fees, netAmount } = payload;
       const operator = payload.payment?.operator || '-';
       const paidAt   = payload.payment?.paidAt   || payload.timestamp || new Date().toISOString();
+
+      // 0. Activer le plan Premium sur l'utilisateur + historique
+      if (userId) {
+        try {
+          const plan             = payload.metadata?.plan             || 'premium';
+          const billingMode      = payload.metadata?.billingMode      || 'monthly';
+          const subscriptionDays = parseInt(payload.metadata?.subscriptionDays || '30', 10);
+          const premiumUntil     = new Date(Date.now() + subscriptionDays * 24 * 60 * 60 * 1000);
+
+          const User = getModel('Trivida', 'User');
+          await User.findByIdAndUpdate(userId, {
+            $set:  { isPremium: true, premiumPlan: plan, premiumUntil },
+            $push: {
+              paymentHistory: {
+                $each: [{
+                  plan, amount, currency: currency || DEFAULT_CURRENCY,
+                  billingMode, status: 'completed',
+                  orderReference, transactionId,
+                  createdAt: new Date(paidAt),
+                }],
+                $slice: -50,
+              },
+            },
+          });
+          logger(`[SenePay] Plan "${plan}" activé pour userId=${userId} jusqu'au ${premiumUntil.toISOString()}`, 'info');
+        } catch (activationErr) {
+          logger(`[SenePay] Erreur activation plan pour userId=${userId}: ${activationErr.message}`, 'error');
+        }
+      }
 
       // 1. Envoyer le reçu par email
       if (userEmail) {

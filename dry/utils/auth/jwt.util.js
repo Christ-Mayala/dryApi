@@ -28,7 +28,15 @@ const verifyToken = (token) => {
 
 const verifyRefreshToken = (token) => {
   const secret = config.JWT_REFRESH_SECRET || config.JWT_SECRET;
-  return jwt.verify(token, secret);
+  try {
+    return jwt.verify(token, secret);
+  } catch (err) {
+    // Fallback : anciens tokens signés avec JWT_SECRET (avant migration)
+    if (secret !== config.JWT_SECRET) {
+      return jwt.verify(token, config.JWT_SECRET);
+    }
+    throw err;
+  }
 };
 
 module.exports = { signAccessToken, signRefreshToken, verifyToken, verifyRefreshToken, hashToken };

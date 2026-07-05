@@ -3,6 +3,7 @@ const router = express.Router();
 
 // 1. Import des contrôleurs (login, register, profil)
 const { login, register, getMe, updateMe, changePassword, requestPasswordReset, verifyResetCode, resetPassword, refresh, logout } = require('./auth.controller');
+const { getAiQuota, consumeAiRequest } = require('./aiQuota.controller');
 
 
 const upload = require('../../services/cloudinary/cloudinary.service');
@@ -32,6 +33,24 @@ router.post('/password-reset/request', authLimiter, requestPasswordReset);
 router.post('/password-reset/verify', verifyResetCode);
 router.post('/password-reset/reset', authLimiter, resetPassword);
 
+
+// IA Quota (protege par JWT + audit)
+router.get('/ai-quota', protect, withAudit('TRIVIDA_AI_QUOTA'), getAiQuota);
+router.post('/ai-request', protect, withAudit('TRIVIDA_AI_REQUEST'), consumeAiRequest);
+
+// Historique des paiements
+router.get('/payments', protect, async (req, res) => {
+  try {
+    const User = req.getModel('User');
+    const user = await User.findById(req.user._id).select('paymentHistory').lean();
+    const history = (user?.paymentHistory || []).slice().reverse(); // plus récent en premier
+    const sendResponse = require('../../utils/http/response');
+    sendResponse(res, history, 'Historique des paiements');
+  } catch (err) {
+    const sendResponse = require('../../utils/http/response');
+    sendResponse(res, null, 'Erreur serveur', false, undefined, 500);
+  }
+});
 
 
 module.exports = router;
