@@ -103,7 +103,14 @@ const createApp = () => {
   app.use(cookieParser());
 
   // Body parsers
-  app.use(express.json({ limit: '10mb' }));
+  // ⚠️ verify() capture le raw body AVANT parsing JSON → nécessaire pour vérifier
+  //    les signatures HMAC des webhooks (SenePay, Stripe, etc.)
+  app.use(express.json({
+    limit: '10mb',
+    verify: (req, _res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // ── Middleware: Request ID (tracing distribué) ──

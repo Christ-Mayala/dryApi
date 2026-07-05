@@ -440,9 +440,10 @@ router.get('/wallet/balance', requireSenePayConfig, protect, authorize('admin'),
  * → SenePay retourne le metadata tel quel dans le webhook
  * → on retrouve userId sans aucune DB supplémentaire
  *
- * ⚠️ express.raw() obligatoire — HMAC calculé sur le corps brut
+ * ⚠️ req.rawBody obligatoire — HMAC calculé sur le corps brut
+ *    (capturé par le verify() d'express.json dans http.js)
  */
-router.post('/webhooks/payin', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhooks/payin', async (req, res) => {
   try {
     const signature = req.headers['x-senepay-signature'];
     const event     = req.headers['x-senepay-event'];
@@ -452,7 +453,7 @@ router.post('/webhooks/payin', express.raw({ type: 'application/json' }), async 
       return res.status(401).json({ success: false, message: 'Signature manquante' });
     }
 
-    if (!senepay.verifyWebhookSignature(req.body, signature)) {
+    if (!senepay.verifyWebhookSignature(req.rawBody, signature)) {
       logger('[SenePay] Webhook payin : signature invalide', 'warning');
       return res.status(401).json({ success: false, message: 'Signature invalide' });
     }
@@ -460,7 +461,7 @@ router.post('/webhooks/payin', express.raw({ type: 'application/json' }), async 
     // Répondre 200 immédiatement — SenePay réessaie 3x si non-2xx
     res.status(200).json({ received: true });
 
-    const payload = JSON.parse(req.body.toString('utf8'));
+    const payload = req.body;
     logger(`[SenePay] Webhook payin : ${event} | ref=${payload.orderReference} | status=${payload.status}`, 'info');
 
     // userId récupéré directement depuis metadata — zéro DB
@@ -578,7 +579,7 @@ router.post('/webhooks/payin', express.raw({ type: 'application/json' }), async 
  * ⚠️ Ne pas traiter pending_verification comme un échec.
  *    Attendre disbursement.failed CONFIRMÉ.
  */
-router.post('/webhooks/payout', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhooks/payout', async (req, res) => {
   try {
     const signature = req.headers['x-senepay-signature'];
     const event     = req.headers['x-senepay-event'];
@@ -588,14 +589,14 @@ router.post('/webhooks/payout', express.raw({ type: 'application/json' }), async
       return res.status(401).json({ success: false, message: 'Signature manquante' });
     }
 
-    if (!senepay.verifyWebhookSignature(req.body, signature)) {
+    if (!senepay.verifyWebhookSignature(req.rawBody, signature)) {
       logger('[SenePay] Webhook payout : signature invalide', 'warning');
       return res.status(401).json({ success: false, message: 'Signature invalide' });
     }
 
     res.status(200).json({ received: true });
 
-    const payload = JSON.parse(req.body.toString('utf8'));
+    const payload = req.body;
     logger(`[SenePay] Webhook payout : ${event} | id=${payload.disbursement_id} | status=${payload.status}`, 'info');
 
     // ── Décaissement réussi ───────────────────────────────────────
