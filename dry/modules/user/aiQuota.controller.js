@@ -35,8 +35,33 @@ const getNextMidnight = () => {
   return midnight;
 };
 
-const PLAN_LIMITS = { free: 3, premium: 20, business: 100 };
-const getDailyLimit = (plan) => PLAN_LIMITS[plan] || 3;
+// ── Limite globale actuelle : 5 requêtes/jour pour tous les utilisateurs
+// utilisant la clé globale (FREELLM_API_KEY).
+// Si l'utilisateur a sa propre clé FreeLLM → illimité côté serveur,
+// FreeLLM utilise son propre quota.
+//
+// ── Ancienne logique par plans (à réactiver quand le freemium sera relancé) ──
+/*
+const PLAN_LIMITS = {
+  community: 20,
+  pro:       100,
+  enterprise: -1,  // Illimité
+  starter:   50,
+  free:      20,
+  premium:   100,
+  business:  200,
+  standard:  50,
+};
+const _getDailyLimitByPlan = (plan) => {
+  const limit = PLAN_LIMITS[plan];
+  if (limit === -1) return Infinity;
+  return limit !== undefined ? limit : PLAN_LIMITS.community;
+};
+*/
+
+// ── Mode ouvert Play Store : limite fixe 5 req/jour par utilisateur ──
+const GLOBAL_DAILY_LIMIT = 5;
+const getDailyLimit = (_plan) => GLOBAL_DAILY_LIMIT;
 
 /**
  * GET /ai-quota
@@ -83,8 +108,13 @@ exports.getAiQuota = asyncHandler(async (req, res) => {
   }
 
   const dailyLimit = getDailyLimit(user.premiumPlan);
-  const remaining = Math.max(0, dailyLimit - (user.aiRequestsToday || 0));
 
+  // Plan illimité (Enterprise) : on envoie -1 comme indicateur
+  if (dailyLimit === Infinity) {
+    return sendResponse(res, { remaining: -1, dailyLimit: -1, resetAt: user.aiRequestsResetAt, unlimited: true });
+  }
+
+  const remaining = Math.max(0, dailyLimit - (user.aiRequestsToday || 0));
   return sendResponse(res, { remaining, dailyLimit, resetAt: user.aiRequestsResetAt });
 });
 
@@ -142,6 +172,11 @@ exports.consumeAiRequest = asyncHandler(async (req, res) => {
       },
     }
   );
+
+  // ── Plan illimité (Enterprise) : pas d'incrémentation, toujours OK ──
+  if (dailyLimit === Infinity) {
+    return sendResponse(res, { remaining: -1, dailyLimit: -1, unlimited: true });
+  }
 
   // ── Etape 2 : Incrementation atomique du compteur ──
   // findOneAndUpdate avec $lt: dailyLimit fait office de verrou :

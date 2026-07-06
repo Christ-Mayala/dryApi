@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema({
     subtype: { type: String, enum: [null, 'prestataire'], default: null },
     isPremium: { type: Boolean, default: false },
     premiumUntil: { type: Date },
-    premiumPlan: { type: String, enum: ['free', 'premium', 'business', 'starter', 'standard'], default: 'free' },
+    premiumPlan: { type: String, enum: ['free', 'starter', 'community', 'pro', 'enterprise', 'premium', 'business', 'standard'], default: 'community' },
     aiRequestsToday: { type: Number, default: 0 },
     aiRequestsResetAt: { type: Date },
     trialUsed: { type: Boolean, default: false },

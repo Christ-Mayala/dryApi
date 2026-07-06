@@ -41,4 +41,14 @@ router.post('/password-reset/reset', authLimiter, resetPassword);
 // Déconnexion
 router.post('/logout', protect, withAudit('TRIVIDA_LOGOUT'), logout);
 
+// Clé API FreeLLM globale (protégée par JWT)
+router.get('/api-key', protect, async (req, res) => {
+  const sendResponse = require('../../../../../dry/utils/http/response');
+  const key = process.env.FREELLM_API_KEY;
+  if (!key) {
+    return sendResponse(res, null, 'Clé API FreeLLM non configurée', false, undefined, 404);
+  }
+  sendResponse(res, { key }, 'Clé API récupérée');
+});
+
 module.exports = router;
