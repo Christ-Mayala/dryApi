@@ -161,58 +161,53 @@ const redirectToFrontendCallback = async (req, res, provider, appName, stateCont
   return res.redirect(url.toString());
 };
 
-// Google OAuth
-router.get('/google', (req, res, next) => {
-  if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
-
-  const { ok, state, error } = getOAuthContext(req);
-  if (!ok) {
-    if (wantsJson(req)) return res.status(400).json({ success: false, message: error, provider: 'google' });
-    try {
-      const url = new URL('/login', getFrontendUrl(req));
-      url.searchParams.set('error', 'missing_app');
-      url.searchParams.set('provider', 'google');
-      return res.redirect(url.toString());
-    } catch (err) {
-      return res.status(400).send(err.message);
-    }
-  }
-
-  return passport.authenticate('google', { 
-    scope: ['profile', 'email'],
-    state // On passe le contexte dans le state OAuth
-  })(req, res, next);
-});
-
-router.get('/google/callback', (req, res, next) => {
-  if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
-  
-  return passport.authenticate('google', { session: false }, async (error, user) => {
-    let stateContext = {};
-    try {
-      if (req.query.state) stateContext = JSON.parse(req.query.state);
-    } catch (_) {}
-
-    if (error || !user) {
-      const message = error?.message || 'OAuth error';
-      if (wantsJson(req)) return res.status(401).json({ success: false, provider: 'google', message });
-      
-      try {
-        const frontendUrl = getFrontendUrl(req, stateContext);
-        const url = new URL('/login', frontendUrl);
-        url.searchParams.set('error', 'google');
-        url.searchParams.set('message', message);
-        return res.redirect(url.toString());
-      } catch (err) {
-        return res.status(401).send(message);
-      }
-    }
-
-    req.user = user;
-    const appName = stateContext.app;
-    return await redirectToFrontendCallback(req, res, 'google', appName, stateContext);
-  })(req, res, next);
-});
+// ─── Google OAuth — COMMENTÉ ─────────────────────────────────────
+// router.get('/google', (req, res, next) => {
+//   if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
+//   const { ok, state, error } = getOAuthContext(req);
+//   if (!ok) {
+//     if (wantsJson(req)) return res.status(400).json({ success: false, message: error, provider: 'google' });
+//     try {
+//       const url = new URL('/login', getFrontendUrl(req));
+//       url.searchParams.set('error', 'missing_app');
+//       url.searchParams.set('provider', 'google');
+//       return res.redirect(url.toString());
+//     } catch (err) {
+//       return res.status(400).send(err.message);
+//     }
+//   }
+//   return passport.authenticate('google', {
+//     scope: ['profile', 'email'],
+//     state
+//   })(req, res, next);
+// });
+//
+// router.get('/google/callback', (req, res, next) => {
+//   if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
+//   return passport.authenticate('google', { session: false }, async (error, user) => {
+//     let stateContext = {};
+//     try {
+//       if (req.query.state) stateContext = JSON.parse(req.query.state);
+//     } catch (_) {}
+//     if (error || !user) {
+//       const message = error?.message || 'OAuth error';
+//       if (wantsJson(req)) return res.status(401).json({ success: false, provider: 'google', message });
+//       try {
+//         const frontendUrl = getFrontendUrl(req, stateContext);
+//         const url = new URL('/login', frontendUrl);
+//         url.searchParams.set('error', 'google');
+//         url.searchParams.set('message', message);
+//         return res.redirect(url.toString());
+//       } catch (err) {
+//         return res.status(401).send(message);
+//       }
+//     }
+//     req.user = user;
+//     const appName = stateContext.app;
+//     return await redirectToFrontendCallback(req, res, 'google', appName, stateContext);
+//   })(req, res, next);
+// });
+// ─── Fin Google OAuth COMMENTÉ ──────────────────────────────────
 
 // Facebook OAuth
 router.get('/facebook', (req, res, next) => {

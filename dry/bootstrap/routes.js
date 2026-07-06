@@ -16,7 +16,7 @@ const { createMetrics, httpMetricsMiddleware } = require('../config/prometheus.c
 const healthRoutes = require('../routes/health.routes');
 const billingRoutes = require('../modules/billing/billing.routes');
 const licensingRoutes = require('../modules/licensing/licensing.routes');
-const googleAuthRoutes = require('../modules/auth/auth.routes');
+// const googleAuthRoutes = require('../modules/auth/auth.routes'); // COMMENTÉ
 const senePayRoutes = require("../modules/senepay/senepay.routes");
 
 // Middleware de protection par mot de passe pour les routes système
@@ -203,8 +203,8 @@ const registerApplicationRoutes = async (app) => {
   });
 
   // Routes licensing
-  // Routes Google OAuth (multi-tenant, flux serveur)
-  app.use('/api', googleAuthRoutes);
+  // // Routes Google OAuth (multi-tenant, flux serveur) — COMMENTÉ
+  // app.use('/api', googleAuthRoutes);
   app.use('/api/v1/licensing', licensingRoutes);
 
   // 404

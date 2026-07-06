@@ -62,7 +62,7 @@ const bootstrapApps = async (app) => {
   app.use('/api/auth', socialAuthRoutes);
   console.log(
     `   ${C.GREEN}✅ social-auth`.padEnd(21) +
-      ` → ${C.DIM}/api/auth/google?app=SCIM , /api/auth/facebook?app=SCIM${C.RESET}`
+      ` → ${C.DIM}/api/auth/facebook?app=SCIM${C.RESET}`
   );
 
   // ==========================================

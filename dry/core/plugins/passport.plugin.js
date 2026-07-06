@@ -1,5 +1,5 @@
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+// const GoogleStrategy = require('passport-google-oauth20').Strategy; // COMMENTÉ
 const FacebookStrategy = require('passport-facebook').Strategy;
 
 const config = require('../../../config/database');
@@ -133,45 +133,45 @@ const initialize = (app) => {
   // - Config comes from `config/database.js` (supports *_DEV / *_TEST / fallback).
   // - Avoid placeholders like "YOUR_*" because providers return opaque errors.
 
-  const googleClientId = config.GOOGLE_CLIENT_ID;
-  const googleClientSecret = config.GOOGLE_CLIENT_SECRET;
-  const googleCallbackUrl = buildCallbackUrl(config.GOOGLE_CALLBACK_URL, '/api/auth/google/callback');
-
-  if (isConfigured(googleClientId) && isConfigured(googleClientSecret)) {
-    passport.use(
-      new GoogleStrategy(
-        {
-          clientID: googleClientId,
-          clientSecret: googleClientSecret,
-          callbackURL: googleCallbackUrl,
-          // On désactive la gestion automatique du state par session de Passport 
-          // pour utiliser notre propre 'state' JSON stateless passé dans authenticate().
-          state: false, 
-          passReqToCallback: true,
-        },
-        async (req, accessToken, refreshToken, profile, done) => {
-          try {
-            const appName = resolveTenantAppName(req);
-            if (!appName) {
-              return done(
-                new Error('Tenant manquant: utilise /api/auth/google?app=SCIM (ou autre).'),
-                false
-              );
-            }
-
-            const user = await upsertGoogleUser(appName, profile);
-            return done(null, user);
-          } catch (err) {
-            return done(err, false);
-          }
-        }
-      )
-    );
-  } else {
-    console.warn(
-      '[passport] Google OAuth desactive: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET manquants.'
-    );
-  }
+  // ─── Google OAuth — COMMENTÉ ──────────────────────────────────────
+  // const googleClientId = config.GOOGLE_CLIENT_ID;
+  // const googleClientSecret = config.GOOGLE_CLIENT_SECRET;
+  // const googleCallbackUrl = buildCallbackUrl(config.GOOGLE_CALLBACK_URL, '/api/auth/google/callback');
+  //
+  // if (isConfigured(googleClientId) && isConfigured(googleClientSecret)) {
+  //   passport.use(
+  //     new GoogleStrategy(
+  //       {
+  //         clientID: googleClientId,
+  //         clientSecret: googleClientSecret,
+  //         callbackURL: googleCallbackUrl,
+  //         state: false, 
+  //         passReqToCallback: true,
+  //       },
+  //       async (req, accessToken, refreshToken, profile, done) => {
+  //         try {
+  //           const appName = resolveTenantAppName(req);
+  //           if (!appName) {
+  //             return done(
+  //               new Error('Tenant manquant: utilise /api/auth/google?app=SCIM (ou autre).'),
+  //               false
+  //             );
+  //           }
+  //           const user = await upsertGoogleUser(appName, profile);
+  //           return done(null, user);
+  //         } catch (err) {
+  //           return done(err, false);
+  //         }
+  //       }
+  //     )
+  //   );
+  // } else {
+  //   console.warn(
+  //     '[passport] Google OAuth desactive: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET manquants.'
+  //   );
+  // }
+  console.log('[passport] Google OAuth volontairement désactivé (commenté).');
+  // ─── Fin Google OAuth COMMENTÉ ────────────────────────────────────
 
   const facebookAppId = config.FACEBOOK_APP_ID;
   const facebookAppSecret = config.FACEBOOK_APP_SECRET;
