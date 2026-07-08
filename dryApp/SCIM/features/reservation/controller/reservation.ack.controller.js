@@ -3,7 +3,7 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
 const MessageSchema = require('../../message/model/message.schema');
-const { buildStatusHistoryEntry, decorateReservationForClient, findAdminContact, formatVisitDate } = require('./reservation.support.util');
+const { buildStatusHistoryEntry, decorateReservationForClient, findAdminContact, formatVisitDate, notifyNewMessage } = require('./reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -46,16 +46,19 @@ module.exports = asyncHandler(async (req, res) => {
         if (admin && String(admin._id) !== String(req.user.id)) {
             const reference = reservation.reference || reservation._id;
             const dateLabel = formatVisitDate(reservation.date);
-            await Message.create({
+            const msg = await Message.create({
                 expediteur: req.user.id,
                 destinataire: admin._id,
-                sujet: `Accuse reception ${reference}`,
+                sujet: `Réception confirmée — ${reservation.property?.titre || 'visite'}`,
                 contenu: [
-                    `Le client a accuse reception pour la reservation ${reference}.`,
-                    `Date de visite: ${dateLabel}.`,
-                    `Bien: "${reservation.property?.titre || 'le bien'}".`,
+                    `Le client a confirmé la réception de la notification de visite.`,
+                    ``,
+                    `📋 Référence : ${reference}`,
+                    `🏠 Bien : ${reservation.property?.titre || '—'}`,
+                    `📅 Date prévue : ${dateLabel}`,
                 ].join('\n'),
             });
+            await notifyNewMessage(req, Message, msg);
         }
     } catch (_) {}
 

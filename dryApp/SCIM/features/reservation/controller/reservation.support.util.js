@@ -206,32 +206,59 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
     const dateLabel = formatVisitDate(visitDate || reservation?.date);
     const title = propertyTitle || reservation?.property?.titre || 'le bien';
 
-    const baseText = stage === 'reminder'
-        ? `Rappel SCIM: merci de confirmer la reservation ${reference} pour "${title}" (${dateLabel}).`
-        : `SCIM: votre reservation ${reference} pour "${title}" est confirmee (${dateLabel}).`;
+    let subject, baseText, ackText;
 
-    const ackText = `Repondez OUI ${reference} pour accuser reception.`;
-
-    const subject = stage === 'reminder'
-        ? `Rappel reservation ${reference}`
-        : `Reservation ${reference} confirmee`;
+    if (stage === 'reminder') {
+        subject = `Rappel — Votre visite "${title}" (${reference})`;
+        baseText = `Rappel SCIM : votre visite pour "${title}" (réf. ${reference}) est prévue le ${dateLabel}. Merci de confirmer votre présence.`;
+        ackText = '';
+    } else if (stage === 'cancellation') {
+        subject = `Votre visite a été annulée — ${title}`;
+        baseText = `Nous vous informons que votre demande de visite (réf. ${reference}) pour "${title}" prévue le ${dateLabel} a été annulée.`;
+        ackText = `Si vous souhaitez planifier une nouvelle visite, n'hésitez pas à nous contacter.`;
+    } else {
+        subject = `✅ Visite confirmée — ${title} (${reference})`;
+        baseText = `Bonne nouvelle ! Votre demande de visite pour "${title}" a été confirmée.`;
+        ackText = `Nous vous attendons le ${dateLabel}. Merci de répondre à ce message pour confirmer la réception.`;
+    }
 
     const html = `
-        <div style="font-family:Arial,sans-serif;line-height:1.6">
-          <h2>${stage === 'reminder' ? 'Rappel de reservation' : 'Confirmation de reservation'}</h2>
-          <p><strong>Reference:</strong> ${reference}</p>
-          <p><strong>Bien:</strong> ${title}</p>
-          <p><strong>Date de visite:</strong> ${dateLabel}</p>
-          <p>${ackText}</p>
-          <p>Merci,<br/>Equipe SCIM</p>
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#09090b;color:#f4f4f5;border-radius:16px;overflow:hidden">
+          <div style="background:${stage === 'cancellation' ? '#27272a' : 'linear-gradient(135deg,#d4af37,#92700a)'};padding:28px;text-align:center">
+            <h1 style="margin:0;color:${stage === 'cancellation' ? '#d4af37' : '#09090b'};font-size:22px;font-weight:900">SCIM Immobilier</h1>
+            <p style="margin:8px 0 0;color:${stage === 'cancellation' ? '#a1a1aa' : '#09090b'};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:0.8">
+              ${stage === 'cancellation' ? 'Visite annulée' : stage === 'reminder' ? 'Rappel de visite' : 'Visite confirmée'}
+            </p>
+          </div>
+          <div style="padding:28px">
+            <p style="font-size:15px;color:#a1a1aa;line-height:1.7">${baseText}</p>
+            ${ackText ? `<p style="font-size:14px;color:#a1a1aa;line-height:1.7">${ackText}</p>` : ''}
+            <div style="background:#18181b;border:1px solid #3f3f46;border-radius:12px;padding:18px;margin:20px 0">
+              <table style="width:100%;border-collapse:collapse">
+                <tr><td style="padding:7px 0;color:#71717a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;width:110px">Référence</td><td style="color:#fff;font-weight:700">${reference}</td></tr>
+                <tr><td style="padding:7px 0;color:#71717a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Bien</td><td style="color:#fff">${title}</td></tr>
+                <tr><td style="padding:7px 0;color:#71717a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Date</td><td style="color:#d4af37;font-weight:700">${dateLabel}</td></tr>
+              </table>
+            </div>
+            <p style="font-size:13px;color:#71717a;margin-top:24px">L'équipe SCIM Immobilier<br/><span style="color:#52525b">Congo-Brazzaville</span></p>
+          </div>
+          <div style="background:#18181b;padding:14px;text-align:center">
+            <p style="margin:0;color:#52525b;font-size:11px">© ${new Date().getFullYear()} SCIM Immobilier</p>
+          </div>
         </div>
     `;
+
+    const smsBaseText = stage === 'cancellation'
+        ? `SCIM: Votre visite (réf. ${reference}) pour "${title}" le ${dateLabel} a été annulée. Contactez-nous pour en planifier une nouvelle.`
+        : stage === 'reminder'
+        ? `Rappel SCIM: visite pour "${title}" le ${dateLabel} (réf. ${reference}). Confirmez votre présence.`
+        : `SCIM: Visite confirmée pour "${title}" le ${dateLabel} (réf. ${reference}). Merci de confirmer réception.`;
 
     return {
         reference,
         subject,
-        smsBody: `${baseText} ${ackText}`,
-        whatsappBody: `${baseText}\n${ackText}`,
+        smsBody: smsBaseText,
+        whatsappBody: smsBaseText,
         emailHtml: html,
     };
 };
@@ -401,6 +428,27 @@ const sendAdminWhatsAppNotification = async ({ reservation, propertyTitle, reque
     });
 };
 
+// Pousse le message créé en temps réel via Socket.io (même mécanisme que la messagerie
+// classique — voir message.send.controller.js) afin que l'expéditeur ET le destinataire
+// voient leur badge/inbox se mettre à jour instantanément, sans devoir rafraîchir.
+const notifyNewMessage = async (req, Message, message) => {
+    try {
+        if (!message?._id) return;
+        const populated = await Message.findById(message._id)
+            .populate('expediteur', 'name nom email telephone')
+            .populate('destinataire', 'name nom email telephone');
+        if (!populated) return;
+
+        const io = req.app?.get('io');
+        if (!io) return;
+
+        const from = String(populated.expediteur?._id || populated.expediteur || '');
+        const to = String(populated.destinataire?._id || populated.destinataire || '');
+        if (from) io.to(from).emit('message:new', populated);
+        if (to) io.to(to).emit('message:new', populated);
+    } catch (_) {}
+};
+
 module.exports = {
     normalizeWhatsappPhone,
     normalizePhoneE164,
@@ -422,4 +470,5 @@ module.exports = {
     formatVisitDate,
     sendReservationContactNotifications,
     sendAdminWhatsAppNotification,
+    notifyNewMessage,
 };

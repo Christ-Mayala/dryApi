@@ -8,6 +8,7 @@ const {
     decorateReservationForClient,
     formatVisitDate,
     sendReservationContactNotifications,
+    notifyNewMessage,
 } = require('./reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
@@ -55,21 +56,26 @@ module.exports = asyncHandler(async (req, res) => {
         const dateLabel = formatVisitDate(reservation.date);
         const ref = reservation.reference || reservation._id;
         const lines = [
-            `Votre reservation ${ref} pour "${reservation.property?.titre || 'le bien'}" est confirmee.`,
-            `Date de visite: ${dateLabel}.`,
-            `Merci de repondre OUI ${ref} pour confirmer la reception.`,
+            `Bonjour, votre demande de visite a été confirmée ! ✅`,
+            ``,
+            `📋 Référence : ${ref}`,
+            `🏠 Bien : ${reservation.property?.titre || 'le bien'}`,
+            `📅 Date confirmée : ${dateLabel}`,
+            ``,
+            `Merci de nous confirmer la réception de ce message en répondant à cette conversation.`,
         ];
 
         if (reservation.support?.whatsappUrl) {
-            lines.push(`Pour un echange rapide: ${reservation.support.whatsappUrl}`);
+            lines.push(``, `Vous pouvez aussi nous contacter via WhatsApp : ${reservation.support.whatsappUrl}`);
         }
 
-        await Message.create({
+        const msg = await Message.create({
             expediteur: req.user.id,
             destinataire: reservation.user?._id || reservation.user,
-            sujet: `Reservation ${ref} confirmee`,
+            sujet: `Visite confirmée — ${reservation.property?.titre || 'votre bien'}`,
             contenu: lines.join('\n'),
         });
+        await notifyNewMessage(req, Message, msg);
     } catch (_) {}
 
     try {

@@ -61,15 +61,19 @@ module.exports = asyncHandler(async (req, res) => {
         await Message.create({
             expediteur: admin._id,
             destinataire: admin._id,
-            sujet: `Nouvelle soumission bien - ${submission.propertyDraft?.titre || 'Sans titre'}`,
-            contenu:
-                `Soumission #${submission._id}\n` +
-                `Client: ${submission.submitter?.nomComplet}\n` +
-                `Email: ${submission.submitter?.email}\n` +
-                `Telephone: ${submission.submitter?.telephone}\n` +
-                `Ville: ${submission.propertyDraft?.ville}\n` +
-                `Transaction: ${submission.propertyDraft?.transactionType}\n` +
-                `A valider dans le panel admin.`,
+            sujet: `Nouvelle soumission à traiter — ${submission.propertyDraft?.titre || 'Sans titre'}`,
+            contenu: [
+                `Une nouvelle soumission de bien a été reçue et est en attente de validation.`,
+                ``,
+                `👤 Client : ${submission.submitter?.nomComplet}`,
+                `✉️  Email : ${submission.submitter?.email}`,
+                `📞 Téléphone : ${submission.submitter?.telephone}`,
+                `🏠 Bien : ${submission.propertyDraft?.titre || '—'}`,
+                `📍 Ville : ${submission.propertyDraft?.ville || '—'}`,
+                `🔄 Type : ${submission.propertyDraft?.transactionType || '—'}`,
+                ``,
+                `Traitez cette demande depuis le panel d'administration → Soumissions.`,
+            ].join('\n'),
         });
     } catch (_) {}
 

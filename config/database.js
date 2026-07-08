@@ -107,6 +107,8 @@ const buildBaseConfig = () => ({
   FACEBOOK_APP_ID: readSetting('FACEBOOK_APP_ID'),
   FACEBOOK_APP_SECRET: readSetting('FACEBOOK_APP_SECRET'),
   FACEBOOK_CALLBACK_URL: readSetting('FACEBOOK_CALLBACK_URL'),
+  // Schémas d'URI des apps mobiles (OAuth) autorisés comme redirection, ex: "trivida"
+  MOBILE_APP_SCHEMES: readSetting('MOBILE_APP_SCHEMES', { fallback: 'trivida' }),
   ALERT_WEBHOOK_URL: readSetting('ALERT_WEBHOOK_URL'),
   SLACK_WEBHOOK_URL: readSetting('SLACK_WEBHOOK_URL'),
   DISCORD_WEBHOOK_URL: readSetting('DISCORD_WEBHOOK_URL'),
@@ -148,6 +150,10 @@ const buildBaseConfig = () => ({
   SCIM_REMINDER_BATCH_SIZE: readSetting('SCIM_REMINDER_BATCH_SIZE', {
     fallback: env === 'test' ? '20' : '50',
   }),
+  SCIM_BONPLAN_EXPIRY_ENABLED: readSetting('SCIM_BONPLAN_EXPIRY_ENABLED', {
+    fallback: env === 'test' ? 'false' : 'true',
+  }),
+  SCIM_BONPLAN_EXPIRY_CRON: readSetting('SCIM_BONPLAN_EXPIRY_CRON', { fallback: '*/5 * * * *' }),
   SCIM_ENABLE_EMAIL_NOTIFICATIONS: readSetting('SCIM_ENABLE_EMAIL_NOTIFICATIONS', {
     fallback: env === 'production' ? 'true' : 'false',
   }),

@@ -13,6 +13,12 @@ module.exports = asyncHandler(async (req, res) => {
     const property = await Property.findById(req.params.id).populate('utilisateur', 'name nom email telephone');
     if (!property || property.isDeleted) return sendResponse(res, null, 'Bien introuvable.', false);
 
+    // Un bon plan expiré ne doit plus s'afficher comme tel, même si le job de nettoyage
+    // périodique n'est pas encore passé sur ce document.
+    if (property.isBonPlan && property.bonPlanExpiresAt && property.bonPlanExpiresAt < new Date()) {
+        property.isBonPlan = false;
+    }
+
     const ip = getClientIp(req);
     const ipHash = hashIp(ip || 'unknown');
 

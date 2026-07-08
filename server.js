@@ -10,6 +10,9 @@ const {
   startScimReservationReminderScheduler,
 } = require('./dry/services/notification/scimReservationReminder.scheduler');
 const {
+  startScimBonPlanExpiryScheduler,
+} = require('./dry/services/cleanup/scimBonPlanExpiry.scheduler');
+const {
   registerProcessHandlers,
   scheduleFatalExit,
   sendProcessAlert,
@@ -36,6 +39,7 @@ const startServer = async () => {
   startPurgeScheduler();
   startHealthMonitor();
   startScimReservationReminderScheduler();
+  startScimBonPlanExpiryScheduler();
 
   await new Promise((resolve) => {
     server.listen(config.PORT, '0.0.0.0', async () => {

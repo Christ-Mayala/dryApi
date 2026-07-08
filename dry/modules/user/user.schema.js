@@ -109,6 +109,13 @@ UserSchema.pre(/^find/, function () {
         return;
     }
 
+    if (q.status) {
+        // Un filtre status explicite (ex: 'active', 'inactive') a été demandé.
+        // On ne l'écrase pas, on exclut juste les soft-deleted par le flag `deleted`.
+        this.where({ deleted: { $ne: true } });
+        return;
+    }
+
     this.where({ status: { $ne: 'deleted' }, deleted: { $ne: true } });
 });
 

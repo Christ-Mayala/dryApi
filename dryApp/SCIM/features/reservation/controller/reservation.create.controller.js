@@ -17,6 +17,7 @@ const {
     isValidContactPhone,
     normalizePhoneE164,
     sendAdminWhatsAppNotification,
+    notifyNewMessage,
 } = require('./reservation.support.util');
 const config = require('../../../../../config/database');
 
@@ -130,17 +131,19 @@ module.exports = asyncHandler(async (req, res) => {
         if (property.utilisateur && property.utilisateur._id.toString() !== userId.toString()) {
             const dateLabel = formatVisitDate(when);
             const ownerContent = [
-                `Nouvelle demande de reservation ${reservation.reference}.`,
-                `Bien: "${property.titre}".`,
-                `Date demandee: ${dateLabel}.`,
+                `Nouvelle demande de visite reçue.`,
+                `Un client souhaite visiter votre bien "${property.titre}".`,
+                `Date demandée : ${dateLabel}.`,
+                `Référence de la demande : ${reservation.reference}.`,
             ].join('\n');
 
-            await Message.create({
+            const msg = await Message.create({
                 expediteur: userId,
                 destinataire: property.utilisateur._id,
-                sujet: `Reservation ${reservation.reference}`,
+                sujet: `Nouvelle demande de visite — ${property.titre}`,
                 contenu: ownerContent,
             });
+            await notifyNewMessage(req, Message, msg);
         }
     } catch (_) {}
 
@@ -148,21 +151,26 @@ module.exports = asyncHandler(async (req, res) => {
         const adminUser = await findAdminContact(User);
         if (adminUser && String(adminUser._id) !== String(userId)) {
             const lines = [
-                `Votre reservation ${reservation.reference} a bien ete enregistree.`,
-                `Bien: "${property.titre}".`,
-                support.asyncNotice,
+                `Bonjour, votre demande de visite a bien été enregistrée.`,
+                ``,
+                `📋 Référence : ${reservation.reference}`,
+                `🏠 Bien : ${property.titre}`,
+                `📅 Date souhaitée : ${formatVisitDate(when)}`,
+                ``,
+                `Notre équipe va traiter votre demande et revenir vers vous dans les plus brefs délais (délai cible : ${support.expectedResponseMinutes} min).`,
             ];
 
             if (support.whatsappUrl) {
-                lines.push(`Si besoin urgent, continuez sur WhatsApp: ${support.whatsappUrl}`);
+                lines.push(``, `Pour un suivi rapide, vous pouvez également nous contacter via WhatsApp : ${support.whatsappUrl}`);
             }
 
-            await Message.create({
+            const msg = await Message.create({
                 expediteur: adminUser._id,
                 destinataire: userId,
-                sujet: `Confirmation ${reservation.reference}`,
+                sujet: `Demande de visite reçue — ${property.titre}`,
                 contenu: lines.join('\n'),
             });
+            await notifyNewMessage(req, Message, msg);
         }
 
         // Envoyer notification WhatsApp à l'admin
@@ -179,27 +187,29 @@ module.exports = asyncHandler(async (req, res) => {
 
         // Envoyer message interne à l'admin
         try {
-            const adminUser = await User.findOne({ role: 'admin' }).select('_id');
-            if (adminUser) {
+            const adminUserInternal = await User.findOne({ role: 'admin' }).select('_id');
+            if (adminUserInternal) {
                 const requesterName = requester?.name || requester?.nom || 'Client';
                 const phoneLabel = requesterPhone || bodyPhoneRaw || fallbackPhoneRaw || '';
-                const messageContent = `🏠 NOUVELLE RÉSERVATION\n\n` +
-                    `📋 Référence: ${reservation.reference}\n` +
-                    `🏠 Bien: ${property.titre}\n` +
-                    `📅 Date: ${formatVisitDate(when)}\n` +
-                    `📞 Téléphone: ${phoneLabel}${isWhatsapp ? ' (WhatsApp)' : ''}\n` +
-                    `👤 Client: ${requesterName}\n` +
-                    `📊 Statut: En attente de confirmation\n\n` +
-                    `Veuillez traiter cette demande dans le panel d'administration.`;
+                const messageContent = [
+                    `Nouvelle demande de visite reçue depuis le site.`,
+                    ``,
+                    `📋 Référence : ${reservation.reference}`,
+                    `🏠 Bien : ${property.titre}`,
+                    `📅 Date souhaitée : ${formatVisitDate(when)}`,
+                    `📞 Téléphone : ${phoneLabel}${isWhatsapp ? ' (WhatsApp)' : ''}`,
+                    `👤 Client : ${requesterName}`,
+                    ``,
+                    `Veuillez traiter cette demande dans le panel d'administration.`,
+                ].join('\n');
 
-                await Message.create({
+                const msg = await Message.create({
                     expediteur: requester._id,
-                    destinataire: adminUser._id,
-                    sujet: `Nouvelle réservation - ${property.titre}`,
+                    destinataire: adminUserInternal._id,
+                    sujet: `Nouvelle demande de visite — ${property.titre}`,
                     contenu: messageContent,
-                    type: 'reservation',
-                    referenceId: reservation._id
                 });
+                await notifyNewMessage(req, Message, msg);
             }
         } catch (error) {
             logger(`Erreur message interne admin pour reservation ${reservation.reference}: ${error?.message || error}`, 'warning');

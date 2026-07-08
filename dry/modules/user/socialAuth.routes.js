@@ -41,6 +41,27 @@ const isUrlAllowed = (url) => {
   }
 };
 
+// Schémas d'URI mobiles autorisés (apps natives type Trivida) — ex: "trivida://auth".
+// Ne PAS valider ces schémas via `new URL(...).origin` : contrairement aux URLs web,
+// un schéma d'appli mobile n'a pas d'origine http(s) ; on vérifie juste le préfixe "scheme://".
+const MOBILE_APP_SCHEMES = String(config.MOBILE_APP_SCHEMES || 'trivida')
+  .split(',')
+  .map(s => s.trim().toLowerCase())
+  .filter(Boolean);
+
+const isMobileSchemeAllowed = (url) => {
+  if (!url) return false;
+  const lower = String(url).trim().toLowerCase();
+
+  // Expo Go (dev uniquement) : redirect_uri dynamique du type exp://<ip>:8081/--/auth.
+  // Pas de schéma fixe possible ici (IP/port variables) — autorisé seulement hors production.
+  if (config.NODE_ENV !== 'production' && lower.startsWith('exp://')) return true;
+
+  return MOBILE_APP_SCHEMES.some(scheme => lower.startsWith(`${scheme}://`));
+};
+
+const isRedirectAllowed = (url) => isUrlAllowed(url) || isMobileSchemeAllowed(url);
+
 /**
  * Prépare le contexte OAuth pour le transporter via le paramètre 'state' (stateless).
  */
@@ -56,7 +77,7 @@ const getOAuthContext = (req) => {
   // 2. Détection automatique du site actuel (Origin ou Referer)
   const currentSite = req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : null);
 
-  if (customRedirect && isUrlAllowed(customRedirect)) {
+  if (customRedirect && isRedirectAllowed(customRedirect)) {
     context.redirect = customRedirect;
   } else if (currentSite && isUrlAllowed(currentSite)) {
     // Si on détecte d'où vient l'utilisateur, on le renvoie là-bas
@@ -73,6 +94,13 @@ const wantsJson = (req) => {
 
 const isStrategyAvailable = (name) => Boolean(passport?._strategies?.[name]);
 
+// Construit l'URL de retour vers le frontend. Pour une appli mobile (schéma custom
+// type "trivida://auth"), on redirige directement dessus (pas de path web à greffer) ;
+// pour un frontend web, on garde le comportement existant (path relatif à l'origine).
+const buildCallbackUrl = (frontendUrl, webPath) => {
+  return isMobileSchemeAllowed(frontendUrl) ? new URL(frontendUrl) : new URL(webPath, frontendUrl);
+};
+
 const handleProviderUnavailable = (req, res, provider) => {
   const message = `${provider} OAuth non configuré. Vérifie les variables d'environnement.`;
   if (wantsJson(req)) {
@@ -81,7 +109,7 @@ const handleProviderUnavailable = (req, res, provider) => {
 
   try {
     const frontendUrl = getFrontendUrl(req);
-    const url = new URL('/login', frontendUrl);
+    const url = buildCallbackUrl(frontendUrl, '/login');
     url.searchParams.set('error', 'provider_not_configured');
     url.searchParams.set('provider', provider);
     return res.redirect(url.toString());
@@ -107,7 +135,7 @@ const redirectToFrontendCallback = async (req, res, provider, appName, stateCont
         message: 'authentication_failed',
       });
     }
-    const url = new URL('/login', frontendUrl);
+    const url = buildCallbackUrl(frontendUrl, '/login');
     url.searchParams.set('error', 'authentication_failed');
     url.searchParams.set('provider', provider);
     return res.redirect(url.toString());
@@ -147,7 +175,7 @@ const redirectToFrontendCallback = async (req, res, provider, appName, stateCont
     });
   }
 
-  const url = new URL('/auth/callback', frontendUrl);
+  const url = buildCallbackUrl(frontendUrl, '/auth/callback');
   url.searchParams.set('token', token);
   url.searchParams.set('refreshToken', refreshToken);
   url.searchParams.set('provider', provider);
@@ -161,53 +189,52 @@ const redirectToFrontendCallback = async (req, res, provider, appName, stateCont
   return res.redirect(url.toString());
 };
 
-// ─── Google OAuth — COMMENTÉ ─────────────────────────────────────
-// router.get('/google', (req, res, next) => {
-//   if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
-//   const { ok, state, error } = getOAuthContext(req);
-//   if (!ok) {
-//     if (wantsJson(req)) return res.status(400).json({ success: false, message: error, provider: 'google' });
-//     try {
-//       const url = new URL('/login', getFrontendUrl(req));
-//       url.searchParams.set('error', 'missing_app');
-//       url.searchParams.set('provider', 'google');
-//       return res.redirect(url.toString());
-//     } catch (err) {
-//       return res.status(400).send(err.message);
-//     }
-//   }
-//   return passport.authenticate('google', {
-//     scope: ['profile', 'email'],
-//     state
-//   })(req, res, next);
-// });
-//
-// router.get('/google/callback', (req, res, next) => {
-//   if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
-//   return passport.authenticate('google', { session: false }, async (error, user) => {
-//     let stateContext = {};
-//     try {
-//       if (req.query.state) stateContext = JSON.parse(req.query.state);
-//     } catch (_) {}
-//     if (error || !user) {
-//       const message = error?.message || 'OAuth error';
-//       if (wantsJson(req)) return res.status(401).json({ success: false, provider: 'google', message });
-//       try {
-//         const frontendUrl = getFrontendUrl(req, stateContext);
-//         const url = new URL('/login', frontendUrl);
-//         url.searchParams.set('error', 'google');
-//         url.searchParams.set('message', message);
-//         return res.redirect(url.toString());
-//       } catch (err) {
-//         return res.status(401).send(message);
-//       }
-//     }
-//     req.user = user;
-//     const appName = stateContext.app;
-//     return await redirectToFrontendCallback(req, res, 'google', appName, stateContext);
-//   })(req, res, next);
-// });
-// ─── Fin Google OAuth COMMENTÉ ──────────────────────────────────
+// Google OAuth
+router.get('/google', (req, res, next) => {
+  if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
+  const { ok, state, error } = getOAuthContext(req);
+  if (!ok) {
+    if (wantsJson(req)) return res.status(400).json({ success: false, message: error, provider: 'google' });
+    try {
+      const url = new URL('/login', getFrontendUrl(req));
+      url.searchParams.set('error', 'missing_app');
+      url.searchParams.set('provider', 'google');
+      return res.redirect(url.toString());
+    } catch (err) {
+      return res.status(400).send(err.message);
+    }
+  }
+  return passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    state
+  })(req, res, next);
+});
+
+router.get('/google/callback', (req, res, next) => {
+  if (!isStrategyAvailable('google')) return handleProviderUnavailable(req, res, 'google');
+  return passport.authenticate('google', { session: false }, async (error, user) => {
+    let stateContext = {};
+    try {
+      if (req.query.state) stateContext = JSON.parse(req.query.state);
+    } catch (_) {}
+    if (error || !user) {
+      const message = error?.message || 'OAuth error';
+      if (wantsJson(req)) return res.status(401).json({ success: false, provider: 'google', message });
+      try {
+        const frontendUrl = getFrontendUrl(req, stateContext);
+        const url = buildCallbackUrl(frontendUrl, '/login');
+        url.searchParams.set('error', 'google');
+        url.searchParams.set('message', message);
+        return res.redirect(url.toString());
+      } catch (err) {
+        return res.status(401).send(message);
+      }
+    }
+    req.user = user;
+    const appName = stateContext.app;
+    return await redirectToFrontendCallback(req, res, 'google', appName, stateContext);
+  })(req, res, next);
+});
 
 // Facebook OAuth
 router.get('/facebook', (req, res, next) => {

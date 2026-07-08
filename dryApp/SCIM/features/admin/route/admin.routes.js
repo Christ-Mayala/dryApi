@@ -115,8 +115,16 @@ router.patch('/users/:id/restore', validateId, restoreUser);
 // Middleware de transformation : le frontend envoie status=unread/read, le schema Message utilise lu (boolean)
 const mapMessageStatus = (req, res, next) => {
     if (req.query.status && req.query.status !== 'all') {
-        req.query.lu = req.query.status === 'unread' ? false : true;
-        delete req.query.status;
+        // req.query est un getter (Express re-parse l'URL à chaque accès) : muter ses
+        // propriétés ne persiste pas. On redéfinit la propriété avec une valeur figée.
+        const nextQuery = { ...req.query, lu: req.query.status === 'unread' ? false : true };
+        delete nextQuery.status;
+        Object.defineProperty(req, 'query', {
+            value: nextQuery,
+            writable: true,
+            configurable: true,
+            enumerable: true,
+        });
     }
     next();
 };
