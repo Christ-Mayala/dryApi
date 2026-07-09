@@ -145,7 +145,7 @@ function normalizeChoices(data) {
         .join('');
     }
     const hasToolCalls = Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0;
-    if (!hasToolCalls && (msg.content === '' || msg.content == null)) {
+    if (!hasToolCalls && (msg.content === '' || msg.content === null || msg.content === undefined)) {
       const fold = (typeof msg.reasoning_content === 'string' && msg.reasoning_content.length > 0)
         ? msg.reasoning_content
         : (typeof msg.reasoning === 'string' && msg.reasoning.length > 0 ? msg.reasoning : null);

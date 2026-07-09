@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('./loadTestEnv');
 
 const { spawn } = require('node:child_process');
 const net = require('node:net');

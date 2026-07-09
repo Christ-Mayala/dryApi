@@ -9,6 +9,7 @@ const { randomUUID } = require('crypto');
 
 const config = require('../../config/database');
 const logger = require('../utils/logging/logger');
+const { maskSensitiveData } = require('../config/logger.config');
 const setupSecurity = require('../middlewares/protection/security.middleware');
 
 // Nouveaux middlewares (Phase 2, 3)
@@ -68,7 +69,15 @@ const attachRequestLogging = (app) => {
       res.on('finish', () => {
         const duration = Date.now() - startedAt;
         const requestId = req.requestId || 'no-request-id';
-        const logMessage = `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`;
+        let logMessage = `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`;
+
+        const hasBody = req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0;
+        if (hasBody) {
+          const safeBody = JSON.stringify(maskSensitiveData(req.body));
+          const truncated = safeBody.length > 2000 ? `${safeBody.slice(0, 2000)}… [TRUNCATED]` : safeBody;
+          logMessage += ` body=${truncated}`;
+        }
+
         logger(logMessage, res.statusCode >= 400 ? 'error' : 'info');
       });
       next();

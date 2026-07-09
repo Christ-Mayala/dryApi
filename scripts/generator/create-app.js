@@ -1106,7 +1106,8 @@ const askForAddons = async () => {
 };
 
 const createApp = async (config) => {
-  let { name, features, addons } = config;
+  const { name, features } = config;
+  let { addons } = config;
   
   // Si les addons ne sont pas fournis (ex: via template/custom mode sans modif), on demande
   if (!addons && config.askAddons !== false) {
