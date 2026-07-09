@@ -12,11 +12,13 @@ Ce document liste toutes les commandes disponibles via `npm run` dans le framewo
 
 ## 📊 Monitoring et Statut
 
-| Commande                       | Script                                         | Description                                                                                    |
-| :----------------------------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------------- |
-| `npm run status`               | `scripts/system/status.js`                     | Affiche un résumé complet de l'état du système (DB, Redis, Apps) directement dans le terminal. |
-| `npm run monitor:health`       | `scripts/maintenance/monitor-health.js`        | Effectue un check de santé unique sur les endpoints `/health/ready`.                           |
-| `npm run monitor:health:watch` | `scripts/maintenance/monitor-health-runner.js` | Lance un monitoring en continu de la santé du serveur avec alertes.                            |
+| Commande                       | Script                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
+| :----------------------------- | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run status`               | `scripts/system/status.js`                     | Affiche un résumé complet de l'état du système (DB, Redis, Apps) directement dans le terminal.                                                                                                                                                                                                                                                                                                                             |
+| `npm run monitor:health`       | `scripts/maintenance/monitor-health.js`        | Effectue un check de santé unique sur les endpoints `/health/ready`.                                                                                                                                                                                                                                                                                                                                                       |
+| `npm run monitor:health:watch` | `scripts/maintenance/monitor-health-runner.js` | Lance un monitoring en continu de la santé du serveur avec alertes.                                                                                                                                                                                                                                                                                                                                                        |
+| `npm run health`               | `curl http://localhost:5000/health/ready`      | Ping rapide du serveur en cours d'exécution.                                                                                                                                                                                                                                                                                                                                                                               |
+| `npm run logs`                 | `tail -f logs/info.log logs/error.log`         | Suit en direct les logs applicatifs (requêtes HTTP, erreurs). Nécessite `LOG_REQUESTS=true` dans `.env` pour voir chaque requête (méthode, URL, statut, durée, et le body — avec les champs sensibles automatiquement masqués via `maskSensitiveData`, voir `dry/config/logger.config.js`). Les logs Winston structurés (JSON, avec rotation quotidienne) sont dans `logs/combined-<date>.log` et `logs/error-<date>.log`. |
 
 ## 🧪 Tests et Qualité
 
@@ -34,21 +36,22 @@ Ce document liste toutes les commandes disponibles via `npm run` dans le framewo
 
 ## 🛠️ Génération et Outils
 
-| Commande                   | Description                                                                                 |
-| :------------------------- | :------------------------------------------------------------------------------------------ |
-| `npm run create-app`       | Assistant interactif pour générer une nouvelle application cliente ou une nouvelle feature. |
-| `npm run swagger:generate` | Analyse le code et génère la documentation Swagger.                                         |
-| `npm run swagger:reset`    | Supprime et régénère proprement toute la documentation API.                                 |
-| `npm run client:gen`       | Génère un client SDK frontend à partir de la spécification Swagger.                         |
-| `npm run postman:generate` | Exporte la documentation API sous forme de collection Postman.                              |
+| Commande                   | Description                                                                                                                                                                                                                                                                           |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run create-app`       | Assistant interactif (`scripts/generator/create-app.js`) pour générer une nouvelle application cliente (modèle, contrôleurs CRUD, routes, validation, tests, seed).                                                                                                                   |
+| `npm run create-frontend`  | Génère un frontend (React/Vite, Angular ou React Native) pour une app existante de `dryApp/`. Interactif par défaut, ou non-interactif : `-- --app <app> --stack react --all` (ou `--feature <route>` pour une seule feature). Sortie dans `frontend/<stack>/<app>/` (non versionné). |
+| `npm run swagger:generate` | Analyse le code et génère la documentation Swagger.                                                                                                                                                                                                                                   |
+| `npm run swagger:reset`    | Supprime et régénère proprement toute la documentation API.                                                                                                                                                                                                                           |
+| `npm run client:gen`       | Génère un client SDK frontend à partir de la spécification Swagger (`scripts/clients/generate-frontend-client.js` — différent de `create-frontend`, qui génère un projet complet plutôt qu'un simple SDK).                                                                            |
+| `npm run postman:generate` | Exporte la documentation API sous forme de collection Postman.                                                                                                                                                                                                                        |
 
 ## 🧹 Maintenance et Données
 
-| Commande               | Description                                                                     |
-| :--------------------- | :------------------------------------------------------------------------------ |
-| `npm run seed`         | Injecte les données initiales (utilisateurs, configs) dans la base de données.  |
-| `npm run purge`        | Supprime définitivement les entrées marquées comme "soft-deleted" dans la base. |
-| `npm run backup:mongo` | Crée une sauvegarde (dump) de la base de données MongoDB.                       |
+| Commande               | Description                                                                                                                                                                                                                                                                                                                                            |
+| :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run seed`         | Injecte les données initiales (admin + `seed.js` propre à chaque app) dans la base pointée par `.env`. ⚠️ Certains seeders d'app sont destructeurs (ex: SCIM vide ses collections avant de reseeder) — ne jamais lancer contre une base de production sans vérifier `dryApp/<App>/seed.js` d'abord. Voir [04_TESTING_GUIDE.md](./04_TESTING_GUIDE.md). |
+| `npm run purge`        | Supprime définitivement les entrées marquées comme "soft-deleted" dans la base.                                                                                                                                                                                                                                                                        |
+| `npm run backup:mongo` | Crée une sauvegarde (dump) de la base de données MongoDB.                                                                                                                                                                                                                                                                                              |
 
 ---
 

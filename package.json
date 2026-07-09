@@ -27,6 +27,7 @@
     "swagger:generate": "node scripts/swagger/simple-swagger-generate.js",
     "swagger:reset": "node scripts/swagger/complete-swagger-reset.js",
     "create-app": "node scripts/generator/create-app.js",
+    "create-frontend": "node scripts/generator/create-frontend.js",
     "docs:build": "npm run swagger:reset",
     "client:gen": "node scripts/clients/generate-frontend-client.js",
     "postman:generate": "node scripts/swagger/generate-postman-collection.js",
@@ -56,7 +57,7 @@
     "k8s:deploy": "kubectl apply -f k8s/",
     "k8s:delete": "kubectl delete -f k8s/",
     "health": "curl http://localhost:5000/health/ready",
-    "logs": "tail -f logs/combined.log"
+    "logs": "tail -f logs/info.log logs/error.log"
   },
   "nodemonConfig": {
     "watch": [

@@ -14,26 +14,26 @@
 
 ## 📋 Tableau des Features
 
-| Fonctionnalité | Community | Pro | Enterprise |
-|---------------|:---------:|:---:|:----------:|
-| API REST complète | ✅ | ✅ | ✅ |
-| Documentation Swagger | ✅ | ✅ | ✅ |
-| Multi-tenant (6 apps) | ✅ | ✅ | ✅ |
-| Authentification JWT | ✅ | ✅ | ✅ |
-| Rate limiting | 100 req/h | 1 000 req/h | Illimité |
-| Monitoring Prometheus | ❌ | ✅ | ✅ |
-| Winston Logger structuré | ❌ | ✅ | ✅ |
-| Health checks (/live/ready/startup) | ❌ | ✅ | ✅ |
-| Métriques performance | ❌ | ✅ | ✅ |
-| Validation entrées XSS/NoSQL | ✅ | ✅ | ✅ |
-| Versioning API | ✅ | ✅ | ✅ |
-| Piste d'audit | ❌ | ✅ | ✅ |
-| Sauvegardes automatisées | ❌ | ✅ | ✅ |
-| Module billing Stripe | ❌ | ✅ | ✅ |
-| Système de licences | ❌ | ✅ | ✅ |
-| Support prioritaire | ❌ | ✅ | ✅ |
-| SLA 99.9% | ❌ | ❌ | ✅ |
-| Support dédié 24/7 | ❌ | ❌ | ✅ |
+| Fonctionnalité                      | Community |     Pro     | Enterprise |
+| ----------------------------------- | :-------: | :---------: | :--------: |
+| API REST complète                   |    ✅     |     ✅      |     ✅     |
+| Documentation Swagger               |    ✅     |     ✅      |     ✅     |
+| Multi-tenant (6 apps)               |    ✅     |     ✅      |     ✅     |
+| Authentification JWT                |    ✅     |     ✅      |     ✅     |
+| Rate limiting                       | 100 req/h | 1 000 req/h |  Illimité  |
+| Monitoring Prometheus               |    ❌     |     ✅      |     ✅     |
+| Winston Logger structuré            |    ❌     |     ✅      |     ✅     |
+| Health checks (/live/ready/startup) |    ❌     |     ✅      |     ✅     |
+| Métriques performance               |    ❌     |     ✅      |     ✅     |
+| Validation entrées XSS/NoSQL        |    ✅     |     ✅      |     ✅     |
+| Versioning API                      |    ✅     |     ✅      |     ✅     |
+| Piste d'audit                       |    ❌     |     ✅      |     ✅     |
+| Sauvegardes automatisées            |    ❌     |     ✅      |     ✅     |
+| Module billing Stripe               |    ❌     |     ✅      |     ✅     |
+| Système de licences                 |    ❌     |     ✅      |     ✅     |
+| Support prioritaire                 |    ❌     |     ✅      |     ✅     |
+| SLA 99.9%                           |    ❌     |     ❌      |     ✅     |
+| Support dédié 24/7                  |    ❌     |     ❌      |     ✅     |
 
 ---
 
@@ -74,16 +74,16 @@ Le serveur démarrera et affichera **toutes les URLs disponibles** dans la conso
       → Health (Live)     /health/live
       → Health (Ready)    /health/ready
       → Métriques         /health/metrics
-  
+
   📖 Documentation
       → Swagger UI        /api-docs
-  
+
   📊 Monitoring
       → Dashboard         /system/status
-  
+
   💳 Billing
       → Plans             /api/v1/billing/plans
-  
+
   🔌 Applications
       → Freellm           /api/v1/freellm
       → Lastreet          /api/v1/lastreet
@@ -104,8 +104,15 @@ npm test                 # Tests d'intégration
 npm run test:unit        # Tests unitaires
 npm run test:integration # Tests d'intégration complets
 npm run test:smoke       # Tests de fumée
-npm run test:coverage    # Rapport de couverture
+npm run coverage         # Rapport de couverture
 npm run ci:check         # CI complète (lint + format + tests)
+# ⚠️ test:integration/e2e/smoke lancent un seed sur toutes les apps — certains
+# seeders (ex: SCIM) sont destructeurs. Copier .env.test.example en .env.test
+# avec une base isolée avant de lancer ces commandes (voir docs/04_TESTING_GUIDE.md).
+
+# Génération
+npm run create-app       # Assistant pour générer une nouvelle app backend
+npm run create-frontend  # Génère un frontend (React/Angular/RN) pour une app existante
 
 # Base de données
 npm run migrate:up       # Exécuter les migrations
@@ -165,17 +172,17 @@ docs/           → Documentation complète (10+ fichiers)
 
 DRY implémente des mesures de sécurité robustes :
 
-| Protection | Technologie |
-|-----------|-------------|
-| Headers HTTP | `helmet` (CSP, HSTS, XSS, X-Frame) |
-| Rate limiting | Fenêtre glissante Redis + fallback mémoire |
+| Protection     | Technologie                                   |
+| -------------- | --------------------------------------------- |
+| Headers HTTP   | `helmet` (CSP, HSTS, XSS, X-Frame)            |
+| Rate limiting  | Fenêtre glissante Redis + fallback mémoire    |
 | Anti-injection | `express-mongo-sanitize` + patterns NoSQL/SQL |
-| Anti-XSS | Nettoyage automatique des entrées |
-| CORS | Gestion stricte des origines autorisées |
-| JWT | Tokens avec rotation automatique |
-| Validation | Zod + Joi (double couche) |
-| Audit | Logs complets de toutes les opérations |
-| Masquage | Données sensibles masquées dans les logs |
+| Anti-XSS       | Nettoyage automatique des entrées             |
+| CORS           | Gestion stricte des origines autorisées       |
+| JWT            | Tokens avec rotation automatique              |
+| Validation     | Zod + Joi (double couche)                     |
+| Audit          | Logs complets de toutes les opérations        |
+| Masquage       | Données sensibles masquées dans les logs      |
 
 ---
 
@@ -194,23 +201,27 @@ DRY implémente des mesures de sécurité robustes :
 ## 🐳 Déploiement
 
 ### Docker
+
 ```bash
 npm run docker:build
 npm run docker:run       # App + MongoDB + Redis + Nginx
 ```
 
 ### Docker Compose (complet)
+
 ```bash
 docker-compose up -d
 ```
 
 ### Kubernetes
+
 ```bash
 kubectl create namespace dryapi
 npm run k8s:deploy
 ```
 
 ### Render (recommandé)
+
 ```bash
 # 1. Connecter le repo GitHub
 # 2. Build: npm install
@@ -222,14 +233,14 @@ npm run k8s:deploy
 
 ## 🔌 Applications Multi-Tenant
 
-| Application | Description | Routes |
-|------------|-------------|--------|
-| **FreeLLM** | API IA multi-modèle | `/api/v1/freellm/*` |
-| **LaStreet** | Mise en relation pro | `/api/v1/lastreet/*` |
-| **MediaDL** | Téléchargement média | `/api/v1/mediadl/*` |
-| **SCIM** | Gestion immobilière | `/api/v1/scim/*` |
-| **SkillForge** | E-learning & formation | `/api/v1/skillforge/*` |
-| **SpiritEmeraude** | Artisanat & boutique | `/api/v1/spiritemeraude/*` |
+| Application        | Description            | Routes                     |
+| ------------------ | ---------------------- | -------------------------- |
+| **FreeLLM**        | API IA multi-modèle    | `/api/v1/freellm/*`        |
+| **LaStreet**       | Mise en relation pro   | `/api/v1/lastreet/*`       |
+| **MediaDL**        | Téléchargement média   | `/api/v1/mediadl/*`        |
+| **SCIM**           | Gestion immobilière    | `/api/v1/scim/*`           |
+| **SkillForge**     | E-learning & formation | `/api/v1/skillforge/*`     |
+| **SpiritEmeraude** | Artisanat & boutique   | `/api/v1/spiritemeraude/*` |
 
 ---
 
@@ -270,4 +281,4 @@ DRY API Framework — Licence ISC
 
 ---
 
-*🚀 Prêt pour la production. Sécurisé, scalable, documenté.*
+_🚀 Prêt pour la production. Sécurisé, scalable, documenté._
