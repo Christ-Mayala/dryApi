@@ -683,6 +683,16 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   await Property.deleteMany({});
   console.log('   🗑️  Anciens biens supprimés');
 
+  // Pré-assigner un slug unique (le suffixe auto-généré par le plugin DRY partagé
+  // n'utilise que les 4 derniers chiffres du timestamp ms, ce qui collisionne
+  // presque à coup sûr sur un insertMany() de dizaines de documents synchrones)
+  const slugify = require('slugify');
+  allPropertyDocs.forEach((doc, i) => {
+    if (!doc.slug) {
+      doc.slug = `${slugify(doc.titre || 'bien', { lower: true, strict: true })}-${i}`;
+    }
+  });
+
   const propertyCreated = await Property.insertMany(allPropertyDocs);
   count += propertyCreated.length;
   console.log(`   ✓ ${propertyCreated.length} biens créés au total`);
@@ -875,6 +885,12 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   await Reservation.deleteMany({});
   console.log('   🗑️  Anciennes réservations supprimées');
 
+  // Pré-assigner un slug unique (même raison que pour les biens : évite les
+  // collisions du suffixe timestamp trop court généré par le plugin DRY partagé)
+  reservationDocs.forEach((doc, i) => {
+    if (!doc.slug) doc.slug = `reservation-seed-${i}-${Date.now()}`;
+  });
+
   const reservationCreated = await Reservation.insertMany(reservationDocs);
   count += reservationCreated.length;
   console.log(`   ✓ ${reservationCreated.length} réservations créées`);
@@ -1065,6 +1081,11 @@ L'équipe SCIM Immobilier`,
 
   await Message.deleteMany({});
   console.log('   🗑️  Anciens messages supprimés');
+
+  // Pré-assigner un slug unique (même raison que pour les biens/réservations)
+  messageDocs.forEach((doc, i) => {
+    if (!doc.slug) doc.slug = `message-seed-${i}-${Date.now()}`;
+  });
 
   const messageCreated = await Message.insertMany(messageDocs);
   count += messageCreated.length;

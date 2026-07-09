@@ -1,5 +1,11 @@
 require('dotenv').config();
 
+// Le DNS du réseau local ne relaie pas les enregistrements SRV (requis par mongodb+srv://),
+// alors qu'un résolveur public le fait sans problème → on force Node à l'utiliser pour Atlas.
+if (process.env.MONGO_URI && process.env.MONGO_URI.startsWith('mongodb+srv://')) {
+  require('dns').setServers(['8.8.8.8', '1.1.1.1']);
+}
+
 const http = require('http');
 
 const config = require('./config/database');

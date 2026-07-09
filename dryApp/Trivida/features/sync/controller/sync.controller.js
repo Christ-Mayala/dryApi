@@ -27,6 +27,8 @@ const SCHEMA_MAP = {
     business_profile: { modelName: 'TrividaBusinessProfile',  schema: BusinessProfileSchema },
 };
 
+exports.SCHEMA_MAP = SCHEMA_MAP;
+
 /**
  * Utilitaire — Obtenir le modèle MongoDB pour une entité
  */

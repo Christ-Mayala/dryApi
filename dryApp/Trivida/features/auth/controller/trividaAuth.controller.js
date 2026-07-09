@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const emailService = require('../../../../../dry/services/auth/email.service');
 const config = require('../../../../../config/database');
+const { SCHEMA_MAP } = require('../../sync/controller/sync.controller');
 
 // --- LOGIN (réutilise le kernel) ---
 exports.login = require('../../../../../dry/modules/user/auth.controller').login;
@@ -79,3 +80,22 @@ exports.resetPassword = require('../../../../../dry/modules/user/auth.controller
 
 // --- LOGOUT (réutilise le kernel) ---
 exports.logout = require('../../../../../dry/modules/user/auth.controller').logout;
+
+// --- DELETE ACCOUNT (suppression définitive du compte + données Trivida, exigence Google Play) ---
+exports.deleteMe = asyncHandler(async (req, res) => {
+    const User = req.getModel('User');
+    const userId = req.user._id;
+
+    for (const [entity, { modelName, schema }] of Object.entries(SCHEMA_MAP)) {
+        try {
+            const Model = req.getModel(modelName, schema);
+            await Model.deleteMany({ userId });
+        } catch (error) {
+            console.error(`[DeleteAccount] Erreur suppression ${entity}:`, error.message);
+        }
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    sendResponse(res, null, 'Compte supprimé définitivement');
+});

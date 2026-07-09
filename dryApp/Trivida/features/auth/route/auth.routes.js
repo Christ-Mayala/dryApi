@@ -12,7 +12,8 @@ const {
     requestPasswordReset,
     verifyResetCode,
     resetPassword,
-    logout
+    logout,
+    deleteMe
 } = require('../controller/trividaAuth.controller');
 
 // Import du middleware d'auth et du rate limit
@@ -40,6 +41,9 @@ router.post('/password-reset/reset', authLimiter, resetPassword);
 
 // Déconnexion
 router.post('/logout', protect, withAudit('TRIVIDA_LOGOUT'), logout);
+
+// Suppression définitive du compte et des données associées
+router.delete('/account', protect, withAudit('TRIVIDA_DELETE_ACCOUNT'), deleteMe);
 
 // Clé API FreeLLM globale (protégée par JWT)
 router.get('/api-key', protect, async (req, res) => {

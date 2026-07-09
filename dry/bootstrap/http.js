@@ -150,6 +150,9 @@ const createApp = () => {
   app.get('/pricing', (req, res) => {
     res.sendFile(path.join(landingDir, 'pricing.html'));
   });
+  app.get('/trivida/privacy', (req, res) => {
+    res.sendFile(path.join(landingDir, 'trivida-privacy.html'));
+  });
 
   return { app, allowedOrigins };
 };
