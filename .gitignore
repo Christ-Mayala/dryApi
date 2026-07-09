@@ -18,3 +18,10 @@ client_secret_*.json
 *.key
 downloads/
 uploads/
+_ci_logs/
+nul
+.idea/
+.continue/
+.trae/
+.amazonq/
+.kilocode/
