@@ -4,7 +4,28 @@
 
 ---
 
-## 📋 CHECKLIST COMPLÈTE
+## ✅ Statut réel (audité, 2026-07-10)
+
+La quasi-totalité de ce guide est déjà implémentée dans le code actuel. Détail par phase :
+
+| Phase                      | Statut                | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Tests                   | ✅ Fait               | Jest (`tests/unit/`), tests par app (`tests/<App>/`), `scripts/tests/smoke-runner.js`, couverture via `npm run coverage` (c8). Implémenté différemment du plan d'origine (pas de jest-mongodb/tests/smoke en Jest) mais objectif atteint.                                                                                                                                                                                                                  |
+| 2. Monitoring/Logging      | ✅ Fait               | Winston (`dry/config/logger.config.js`), request ID, performance monitor, Prometheus (`/health/metrics`), `/health/ready`\|`/live`\|`/startup`.                                                                                                                                                                                                                                                                                                            |
+| 3. Sécurité                | ✅ Fait, 1 gap comblé | Versioning API, rate limiting, validation entrées, headers sécurité (helmet) — tous en place. **Tâche 3.5 (clés API) était un stub non fonctionnel** (`validateApiKey` vide) et sans persistance ni endpoints — complété le 2026-07-10 : `dry/models/apiKey/ApiKey.schema.js`, `dry/services/auth/apiKey.service.js`, `dry/modules/apiKeys/apiKeys.routes.js` (CRUD complet sur `/api/v1/apikeys`).                                                        |
+| 4. Base de données         | ✅ Fait, 1 gap comblé | Migrations 001/002 en place (003-encryption jamais créée — les mots de passe sont déjà hashés bcrypt, aucun champ nécessitant un chiffrement supplémentaire identifié). Sauvegardes (`scripts/backup.js`, `backup:mongo`). Schémas Zod (`dry/schemas/`). Piste d'audit : le _logging_ existait (`audit.middleware.js`) mais **aucun endpoint pour la consulter** — ajouté : `dry/modules/audit/audit.routes.js` (`GET /api/v1/audit/logs`, réservé admin). |
+| 5. Documentation           | ✅ Fait, dépassé      | `docs/` largement étoffé, dont [00_PROJECT_MAP.md](./00_PROJECT_MAP.md) (cartographie complète, pas prévue à l'origine).                                                                                                                                                                                                                                                                                                                                   |
+| 6. SLA & Support           | ✅ Fait               | `docs/SLA.md`, `docs/SUPPORT.md`.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 7. DevOps                  | ✅ Fait               | Dockerfile, docker-compose, k8s/, CI (`.github/workflows/ci.yml` — nommé différemment de `ci-cd.yml` mais fait le même travail ; pas de job de déploiement car Render déploie automatiquement depuis GitHub).                                                                                                                                                                                                                                              |
+| 8. Monitoring dashboard    | ⚠️ Partiel            | Dashboard Grafana présent (`monitoring/grafana/`). La page de statut publique (`status.dryapi.onrender.com`) est un service externe (type Statuspage.io) — hors du périmètre du code, à mettre en place séparément si souhaité.                                                                                                                                                                                                                            |
+| 9. Tarification/Commercial | ✅ Fait               | `landing/pricing.html`, `dry/modules/billing/` (Stripe), `dry/modules/licensing/`.                                                                                                                                                                                                                                                                                                                                                                         |
+| 10. Finitions              | ✅ Fait               | README à jour, CHANGELOG, `.env.example`, scripts npm corrigés (`logs`, `test:coverage`→`coverage`), [CONTRIBUTING.md](../CONTRIBUTING.md) ajouté.                                                                                                                                                                                                                                                                                                         |
+
+**Ce qui reste vraiment ouvert :** la page de statut publique externe (phase 8) — tout le reste de ce document est soit fait, soit adapté différemment du plan d'origine avec le même résultat.
+
+---
+
+## 📋 CHECKLIST COMPLÈTE (plan d'origine, conservé tel quel ci-dessous)
 
 ### OBJECTIF: Transformer dryApi de 4.6/10 → 9/10 prêt pour la production
 
@@ -229,11 +250,11 @@ Endpoints:
 1. GET /health/ready (Readiness probe)
    - Retourne 200 si l'app prête à accepter du trafic
    - Vérifie: Connexion DB, Cache, Environnement
-   
+
 2. GET /health/live (Liveness probe)
    - Retourne 200 si l'app tourne
    - Vérification rapide seulement
-   
+
 3. GET /health/startup (Startup probe)
    - Retourne 200 quand l'app entièrement initialisée
    - Utilisé par Kubernetes
@@ -361,10 +382,10 @@ Migrations à créer:
 1. 001-initial-schema.js
    - Créer les collections avec schémas
    - Créer les indexes
-   
+
 2. 002-add-audit-fields.js
    - Ajouter createdBy, updatedBy, deletedAt
-   
+
 3. 003-add-encryption.js
    - Chiffrer les champs sensibles
 
@@ -461,123 +482,134 @@ swagger.config.js doit inclure:
 
 Exemple pour POST /api/v1/freellm/conversations:
 ```
+
 requestBody:
-  required: true
-  content:
-    application/json:
-      schema:
-        type: object
-        properties:
-          title:
-            type: string
-            example: "Déboguer mon code"
-          description:
-            type: string
-          model:
-            type: string
-            enum: [gpt-4, claude-3, gemini]
-      examples:
-        create_chat:
-          summary: Créer une nouvelle conversation
-          value:
-            title: "Corriger TypeError"
-            model: "gpt-4"
+required: true
+content:
+application/json:
+schema:
+type: object
+properties:
+title:
+type: string
+example: "Déboguer mon code"
+description:
+type: string
+model:
+type: string
+enum: [gpt-4, claude-3, gemini]
+examples:
+create_chat:
+summary: Créer une nouvelle conversation
+value:
+title: "Corriger TypeError"
+model: "gpt-4"
+
 ```
 
 ### Tâche 5.2: Documentation des erreurs
 
 ```
+
 Crée: docs/ERRORS.md
 
 Documente tous les codes d'erreur:
 
 400 Bad Request:
+
 - INVALID_INPUT
 - MISSING_REQUIRED_FIELD
 - INVALID_JSON
 
 401 Unauthorized:
+
 - NO_TOKEN
 - INVALID_TOKEN
 - EXPIRED_TOKEN
 
 403 Forbidden:
+
 - INSUFFICIENT_PERMISSIONS
 - RESOURCE_NOT_OWNED
 
 409 Conflict:
+
 - DUPLICATE_KEY
 - VERSION_MISMATCH
 
 429 Too Many Requests:
+
 - RATE_LIMIT_EXCEEDED
 
 500 Internal Server Error:
+
 - DATABASE_ERROR
 - EXTERNAL_API_ERROR
 
 Chaque erreur doit avoir:
+
 - Code d'erreur
 - Statut HTTP
 - Description
 - Comment le corriger
 - Exemple de réponse
+
 ```
 
 ### Tâche 5.3: Guide de déploiement
 
 ```
+
 Crée: docs/DEPLOYMENT.md
 
 Sections:
+
 1. Configuration Docker
    - Dockerfile
    - Build multi-stage
    - Health checks dans Docker
-   
 2. Docker Compose
    - Conteneur app
    - Conteneur MongoDB
    - Conteneur Redis
    - Proxy nginx reverse
-   
 3. Kubernetes
    - deployment.yaml
    - service.yaml
    - configmap.yaml
    - secret.yaml
    - ingress.yaml
-   
 4. Déploiement Vercel
    - Configuration des routes API
    - Variables d'environnement
    - Output de build
-   
 5. Déploiement Netlify
    - Configuration zéro-config
    - Variables d'environnement
-   
 6. Variables d'environnement
    - Lister toutes les vars
    - Valeurs par défaut
    - Ce que chacune fait
    - Notes de sécurité
+
 ```
 
 ### Tâche 5.4: Documentation architecture
 
 ```
+
 Crée: docs/ARCHITECTURE.md
 
 Inclure:
+
 1. Diagramme système (ASCII art ou référence image)
    [Client] → [API Gateway] → [Express App]
-                                    ↓
-                            [Routeur multi-tenant]
-                                    ↓
-                            [Gestionnaires de features]
-                                    ↓
-                            [MongoDB]
+   ↓
+   [Routeur multi-tenant]
+   ↓
+   [Gestionnaires de features]
+   ↓
+   [MongoDB]
 
 2. Flux de données
    Requête → Auth → Validation → Autorisation → Handler → Réponse
@@ -595,11 +627,13 @@ Inclure:
 5. Pattern d'injection de dépendances
    - Aperçu des factories
    - Comment fonctionne la factory CRUD
+
 ```
 
 ### Tâche 5.5: Guide de dépannage
 
 ```
+
 Crée: docs/TROUBLESHOOTING.md
 
 Problèmes courants:
@@ -608,7 +642,7 @@ Q: La connexion MongoDB échoue
 R: Vérifier MONGO_URI, assurer MongoDB en cours d'exécution, vérifier firewall
 
 Q: Rate limiting bloque mes requêtes
-R: Vérifier les headers X-RateLimit-*, demander mise à jour clé API
+R: Vérifier les headers X-RateLimit-\*, demander mise à jour clé API
 
 Q: Erreur "Unauthorized" malgré token valide
 R: Vérifier JWT_SECRET correspond, vérifier l'expiration du token
@@ -620,9 +654,11 @@ Q: Dégradation de performance
 R: Vérifier logs pour requêtes lentes, vérifier indexes, vérifier cache
 
 Inclure:
+
 - Health check: curl http://localhost:5000/health/ready
 - Inspection logs: tail -f logs/combined.log
 - Inspection DB: comment interroger MongoDB directement
+
 ```
 
 ---
@@ -632,6 +668,7 @@ Inclure:
 ### Tâche 6.1: Créer un document SLA
 
 ```
+
 Crée: docs/SLA.md
 
 Inclure:
@@ -669,15 +706,17 @@ Inclure:
    - 99,0-99,89% de disponibilité: crédit 10%
    - 98,0-98,99% de disponibilité: crédit 25%
    - < 98% de disponibilité: crédit 50%
+
 ```
 
 ### Tâche 6.2: Processus de support
 
 ```
+
 Crée: docs/SUPPORT.md
 
 1. CANAUX DE SUPPORT
-   - Email: cyberfusion2012@gmail.com 
+   - Email: cyberfusion2012@gmail.com
    - GitHub Issues: pour les bugs
    - Hotline prioritaire: pour clients payants
 
@@ -696,6 +735,7 @@ Crée: docs/SUPPORT.md
    - Client confirme le correctif
    - Fermer le problème
    - Ajouter au changelog
+
 ```
 
 ---
@@ -705,14 +745,15 @@ Crée: docs/SUPPORT.md
 ### Tâche 7.1: Créer un Dockerfile
 
 ```
+
 Crée: Dockerfile
 
 Build multi-stage:
+
 1. Étape de build
    - Installer les dépendances
    - Lancer les tests
    - Build/compiler
-   
 2. Étape de production
    - Copier seulement les fichiers de prod
    - Définir l'environnement
@@ -722,7 +763,7 @@ Build multi-stage:
 Exemple:
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package\*.json ./
 RUN npm ci
 COPY . .
 RUN npm run test
@@ -731,20 +772,23 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package\*.json ./
 RUN npm ci --only=production
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health/live', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+ CMD node -e "require('http').get('http://localhost:5000/health/live', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 EXPOSE 5000
 CMD ["node", "dist/index.js"]
+
 ```
 
 ### Tâche 7.2: Créer Docker Compose
 
 ```
+
 Crée: docker-compose.yml
 
 Services:
+
 1. app
    - Build depuis Dockerfile
    - Port: 5000
@@ -758,7 +802,6 @@ Services:
    - Volume: mongodata
    - Port: 27017
    - Auth activé
-   
 3. redis
    - Image: redis:alpine
    - Port: 6379
@@ -772,14 +815,17 @@ Services:
 
 Volumes: mongodata, redisdata
 Networks: dryapi-network
+
 ```
 
 ### Tâche 7.3: Créer les manifests Kubernetes
 
 ```
+
 Crée: k8s/
 
 Fichiers:
+
 1. namespace.yaml
    - Créer l'espace de noms dryapi
 
@@ -810,16 +856,19 @@ Fichiers:
    - Max replicas: 10
    - Target CPU: 70%
    - Target Memory: 80%
+
 ```
 
 ### Tâche 7.4: Pipeline CI/CD
 
 ```
+
 Crée: .github/workflows/ci-cd.yml
 
 Déclencheurs: push, pull_request
 
 Jobs:
+
 1. Lint
    - Vérification ESLint
    - Vérification Prettier
@@ -848,9 +897,11 @@ Jobs:
    - Rollback en cas d'échec
 
 Secrets:
+
 - DOCKER_USERNAME
 - DOCKER_PASSWORD
 - DEPLOYMENT_KEY
+
 ```
 
 ---
@@ -860,9 +911,11 @@ Secrets:
 ### Tâche 8.1: Tableau de bord Grafana
 
 ```
+
 Crée: monitoring/grafana/
 
 Tableaux de bord:
+
 1. Aperçu
    - Disponibilité (%)
    - Requêtes par seconde
@@ -890,14 +943,17 @@ Tableaux de bord:
    - Taux de création de tenant
 
 Source de données: Prometheus
+
 ```
 
 ### Tâche 8.2: Page de statut
 
 ```
+
 Crée: status.dryapi.onrender.com (ou utilise Statuspage.io)
 
 Afficher:
+
 - Statut actuel: Opérationnel / Dégradé / Bas
 - Historique de disponibilité 30 jours
 - Statut des composants:
@@ -908,6 +964,7 @@ Afficher:
 - Historique des incidents
 - Calendrier de maintenance
 - S'abonner aux mises à jour
+
 ```
 
 ---
@@ -917,9 +974,11 @@ Afficher:
 ### Tâche 9.1: Créer une page de tarification
 
 ```
+
 Crée: landing/pricing.html ou page Next.js
 
 Niveaux:
+
 1. Community (Gratuit)
    - Features listées
    - Limites
@@ -936,20 +995,24 @@ Niveaux:
    - Support dédié
 
 Inclure:
+
 - Tableau de comparaison
 - Section FAQ
 - CTA "Contacter la vente"
 - Option de discount annuel
+
 ```
 
 ### Tâche 9.2: Intégration Stripe
 
 ```
+
 npm install --save stripe
 
 Crée: dry/modules/billing/
 
 Fonctionnalités:
+
 - Création client Stripe
 - Gestion des abonnements
 - Génération des factures
@@ -957,18 +1020,22 @@ Fonctionnalités:
 - Historique des paiements
 
 Endpoints:
+
 - POST /api/v1/billing/checkout-session
 - GET /api/v1/billing/invoices
 - POST /api/v1/billing/update-subscription
 - Webhook: /api/v1/webhooks/stripe
+
 ```
 
 ### Tâche 9.3: Système de clés de licence
 
 ```
+
 Crée: dry/modules/licensing/
 
 Fonctionnalités:
+
 - Générer les clés de licence
 - Validation des licences
 - Expiration des licences
@@ -976,9 +1043,11 @@ Fonctionnalités:
 - Suivi d'utilisation
 
 Validation au démarrage:
+
 - Vérifier licence valide
 - Vérifier non expirée
 - Vérifier contre les limites de taux
+
 ```
 
 ---
@@ -988,9 +1057,11 @@ Validation au démarrage:
 ### Tâche 10.1: Améliorations README
 
 ```
+
 Mets à jour le README principal:
 
 Sections:
+
 1. Rangée de badges rapide
    - Statut de build
    - Couverture
@@ -1028,11 +1099,13 @@ Sections:
 
 8. Licence
    - MIT / Commercial dual license
+
 ```
 
 ### Tâche 10.2: CHANGELOG
 
 ```
+
 Crée: CHANGELOG.md
 
 Format (Semantic Versioning):
@@ -1040,6 +1113,7 @@ Format (Semantic Versioning):
 ## [1.0.0] - 2026-06-06
 
 ### Ajouté
+
 - Suite de tests complète (jest)
 - Monitoring avec Prometheus/Grafana
 - Support Kubernetes
@@ -1047,110 +1121,130 @@ Format (Semantic Versioning):
 - Document SLA
 
 ### Corrigé
+
 - Problèmes de sécurité dans le rate limiting
 - Connection pooling DB
 
 ### Modifié
+
 - Migration vers winston pour le logging
 - Mise à jour des dépendances
 
 ### Cassant
+
 - Avis de dépréciation API v1
 
 ### Déprécié
+
 - Ancienne méthode d'authentification
 
 ### Sécurité
+
 - Ajout de validation d'entrée
 - Correctif vulnérabilité XSS
+
 ```
 
 ### Tâche 10.3: Fichier d'environnement template
 
 ```
+
 Crée/Mets à jour: .env.example
 
 Inclure avec commentaires:
+
 # Base de données
+
 MONGO_URI=mongodb://localhost:27017/dryapi
 MONGO_MAX_POOL_SIZE=10
 
 # Serveur
+
 PORT=5000
 NODE_ENV=production
 ENCRYPTION_KEY=<genere-nouvelle-cle>
 
 # JWT
+
 JWT_SECRET=<genere-nouveau-secret>
 JWT_EXPIRY=24h
 
 # Session
+
 SESSION_SECRET=<genere-nouveau-secret>
 SESSION_TIMEOUT=86400000
 
 # Redis
+
 REDIS_URL=redis://localhost:6379
 REDIS_TTL=3600
 
 # Monitoring
+
 PROMETHEUS_ENABLED=true
 LOG_LEVEL=info
 
 # Sécurité
+
 ALLOWED_ORIGINS=https://votreapp.com
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 
 # Stripe
+
 STRIPE_SECRET_KEY=<obtenir-de-stripe>
 STRIPE_WEBHOOK_SECRET=<obtenir-de-stripe>
 
 # Support
+
 SUPPORT_EMAIL=support@dryapi.io
+
 ```
 
 ### Tâche 10.4: Scripts package.json
 
 ```
+
 Mets à jour: package.json
 
 Scripts:
 {
-  "dev": "NODE_ENV=development nodemon",
-  "build": "tsc",
-  "start": "node dist/index.js",
-  
-  "test": "jest",
-  "test:unit": "jest tests/unit",
-  "test:integration": "jest tests/integration",
-  "test:smoke": "jest tests/smoke",
-  "test:watch": "jest --watch",
-  "test:coverage": "jest --coverage",
-  
-  "lint": "eslint .",
-  "lint:fix": "eslint . --fix",
-  "format": "prettier --write .",
-  
-  "migrate:up": "db-migrate up",
-  "migrate:down": "db-migrate down",
-  "migrate:status": "db-migrate status",
-  
-  "backup:create": "node scripts/backup.js",
-  "backup:restore": "node scripts/restore.js",
-  
-  "docker:build": "docker build -t dryapi:latest .",
-  "docker:run": "docker-compose up -d",
-  
-  "k8s:deploy": "kubectl apply -f k8s/",
-  "k8s:delete": "kubectl delete -f k8s/",
-  
-  "generate:keys": "node scripts/generateKeys.js",
-  "seed:db": "node scripts/seed.js",
-  
-  "health": "curl http://localhost:5000/health/ready",
-  "logs": "tail -f logs/combined.log"
+"dev": "NODE_ENV=development nodemon",
+"build": "tsc",
+"start": "node dist/index.js",
+
+"test": "jest",
+"test:unit": "jest tests/unit",
+"test:integration": "jest tests/integration",
+"test:smoke": "jest tests/smoke",
+"test:watch": "jest --watch",
+"test:coverage": "jest --coverage",
+
+"lint": "eslint .",
+"lint:fix": "eslint . --fix",
+"format": "prettier --write .",
+
+"migrate:up": "db-migrate up",
+"migrate:down": "db-migrate down",
+"migrate:status": "db-migrate status",
+
+"backup:create": "node scripts/backup.js",
+"backup:restore": "node scripts/restore.js",
+
+"docker:build": "docker build -t dryapi:latest .",
+"docker:run": "docker-compose up -d",
+
+"k8s:deploy": "kubectl apply -f k8s/",
+"k8s:delete": "kubectl delete -f k8s/",
+
+"generate:keys": "node scripts/generateKeys.js",
+"seed:db": "node scripts/seed.js",
+
+"health": "curl http://localhost:5000/health/ready",
+"logs": "tail -f logs/combined.log"
 }
-```
+
+````
 
 ---
 
@@ -1164,7 +1258,7 @@ npm install --save stripe nodemailer node-cron
 npm install --save-dev jest @types/jest jest-mongodb ts-jest ts-node eslint prettier husky @testing-library/node
 npm install --save-dev mongodb-memory-server
 npm install --save-dev db-migrate db-migrate-mongodb
-```
+````
 
 ---
 

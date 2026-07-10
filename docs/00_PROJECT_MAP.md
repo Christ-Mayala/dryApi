@@ -102,24 +102,24 @@ Tout ce qui est ici est **partagé par toutes les apps**. Une modification dans 
 
 ### `dry/middlewares/` — la chaîne de traitement des requêtes
 
-| Fichier                                        | Rôle                                                                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `protection/security.middleware.js`            | Helmet, rate-limiting global, sanitization NoSQL.                                                                               |
-| `protection/auth.middleware.js`                | Vérifie le JWT (`protect`), attache `req.user`.                                                                                 |
-| `protection/authRateLimit.js`                  | Rate-limit spécifique login/register (anti-bruteforce).                                                                         |
-| `protection/csrf.middleware.js`                | Protection CSRF (`csurf`) pour les routes qui en ont besoin.                                                                    |
-| `apiKey/apiKey.middleware.js`                  | Valide une clé API (header `x-api-key`) — utilisé pour les routes générées automatiquement.                                     |
-| `audit/audit.middleware.js` + `audit/index.js` | `withAudit('NOM_ACTION')` — enregistre qui a fait quoi, avec masquage des champs sensibles.                                     |
-| `cache/cache.middleware.js`                    | Cache Redis des réponses GET (si Redis actif).                                                                                  |
-| `query/queryBuilder.js`                        | Pagination, tri, filtres avancés (`?price[gt]=100`) sur les routes `GET /` — voir [05_API_REFERENCE.md](./05_API_REFERENCE.md). |
-| `validation/validation.middleware.js`          | Validation Joi générique pour les routes d'auth.                                                                                |
-| `error/errorHandler.js`                        | Gestionnaire d'erreurs global : formate la réponse, masque les messages techniques en prod, envoie une alerte si critique.      |
-| `inputValidation.middleware.js`                | Détecte/nettoie XSS et injections NoSQL/SQL sur toutes les requêtes entrantes.                                                  |
-| `apiVersion.middleware.js`                     | Ajoute les headers `API-Version`/`API-Deprecated`/`API-Sunset`.                                                                 |
-| `performanceMonitor.middleware.js`             | Mesure temps de réponse/mémoire, détecte les endpoints lents.                                                                   |
-| `rateLimiterEnhanced.middleware.js`            | Rate-limit générique configurable (fenêtre, multiplicateurs admin/authentifié).                                                 |
-| `requestId.middleware.js`                      | Génère un `req.requestId` unique, utilisé dans tous les logs pour tracer une requête de bout en bout.                           |
-| `maintenance.middleware.js`                    | Bloque les requêtes non-admin si le système est en mode maintenance.                                                            |
+| Fichier                                        | Rôle                                                                                                                                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `protection/security.middleware.js`            | Helmet, rate-limiting global, sanitization NoSQL.                                                                                                                                  |
+| `protection/auth.middleware.js`                | Vérifie le JWT (`protect`), attache `req.user`.                                                                                                                                    |
+| `protection/authRateLimit.js`                  | Rate-limit spécifique login/register (anti-bruteforce).                                                                                                                            |
+| `protection/csrf.middleware.js`                | Protection CSRF (`csurf`) pour les routes qui en ont besoin.                                                                                                                       |
+| `apiKey/apiKey.middleware.js`                  | Valide une clé API (header `x-api-key`) via `dry/services/auth/apiKey.service.js`. Opt-in : à ajouter sur les routes qui doivent accepter une clé API en plus/à la place d'un JWT. |
+| `audit/audit.middleware.js` + `audit/index.js` | `withAudit('NOM_ACTION')` — enregistre qui a fait quoi, avec masquage des champs sensibles.                                                                                        |
+| `cache/cache.middleware.js`                    | Cache Redis des réponses GET (si Redis actif).                                                                                                                                     |
+| `query/queryBuilder.js`                        | Pagination, tri, filtres avancés (`?price[gt]=100`) sur les routes `GET /` — voir [05_API_REFERENCE.md](./05_API_REFERENCE.md).                                                    |
+| `validation/validation.middleware.js`          | Validation Joi générique pour les routes d'auth.                                                                                                                                   |
+| `error/errorHandler.js`                        | Gestionnaire d'erreurs global : formate la réponse, masque les messages techniques en prod, envoie une alerte si critique.                                                         |
+| `inputValidation.middleware.js`                | Détecte/nettoie XSS et injections NoSQL/SQL sur toutes les requêtes entrantes.                                                                                                     |
+| `apiVersion.middleware.js`                     | Ajoute les headers `API-Version`/`API-Deprecated`/`API-Sunset`.                                                                                                                    |
+| `performanceMonitor.middleware.js`             | Mesure temps de réponse/mémoire, détecte les endpoints lents.                                                                                                                      |
+| `rateLimiterEnhanced.middleware.js`            | Rate-limit générique configurable (fenêtre, multiplicateurs admin/authentifié).                                                                                                    |
+| `requestId.middleware.js`                      | Génère un `req.requestId` unique, utilisé dans tous les logs pour tracer une requête de bout en bout.                                                                              |
+| `maintenance.middleware.js`                    | Bloque les requêtes non-admin si le système est en mode maintenance.                                                                                                               |
 
 ### `dry/modules/` — modules natifs montés pour toutes les apps
 
@@ -130,15 +130,19 @@ Chargés automatiquement sur `/api/v1/<nom-du-dossier>` (voir `dry/bootstrap/rou
 | `billing/` | `/api/v1/billing` | Abonnements et paiements Stripe. |
 | `licensing/` | `/api/v1/licensing` | Génération/validation de licences et clés API. |
 | `senepay/` (racine `dry/modules/senepay`) | `/api/v1/senepay` | Paiements Mobile Money via l'agrégateur SenePay (14 pays africains) — utilisé par Trivida. |
+| `apiKeys/apiKeys.routes.js` | `/api/v1/apikeys` | CRUD des clés API de l'utilisateur connecté (create/list/revoke/rotate/update) — voir `dry/services/auth/apiKey.service.js`. |
+| `audit/audit.routes.js` | `/api/v1/audit` | Consultation de la piste d'audit, réservé aux admins (`GET /logs`, `GET /logs/:id`). |
 | `auth/auth.routes.js` | `/api/auth` (social) | Routes OAuth sociales génériques (Google commenté, voir `docs/REACTIVER_GOOGLE_OAUTH.md`). |
 | `log/log.schema.js` | — | Schéma utilisé par le plugin Mongoose pour l'historique des modifications. |
+
+> Les modules montés globalement (billing, licensing, senepay, apiKeys, audit) n'ont `req.getModel`/`req.appName` injecté que s'ils sont explicitement enveloppés (voir `injectTrivida` dans `dry/bootstrap/routes.js`) — sinon ils retombent sur le tenant `'Trivida'` par défaut (limitation connue, pas spécifique à un module).
 
 ### `dry/services/` — logique métier transverse
 
 | Dossier                            | Rôle                                                                                                                                                              |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `alert/`                           | Envoie des alertes (email/Slack/Discord/webhook) sur erreurs critiques, avec dédoublonnage et masquage de données sensibles.                                      |
-| `auth/`                            | Clés API, emails transactionnels (Brevo), reset de mot de passe, validation des tenants.                                                                          |
+| `auth/`                            | `apiKey.service.js` (génération/hachage SHA-256/validation des clés API), emails transactionnels (Brevo), reset de mot de passe, validation des tenants.          |
 | `cache/redis.service.js`           | Client Redis partagé (no-op si `REDIS_ENABLED=false`).                                                                                                            |
 | `cleanup/`                         | Purge des documents soft-deleted (cron), expiration des "bons plans" SCIM.                                                                                        |
 | `cloudinary/cloudinary.service.js` | Upload d'images/fichiers vers Cloudinary (avatars, etc.).                                                                                                         |
@@ -168,7 +172,8 @@ Chargés automatiquement sur `/api/v1/<nom-du-dossier>` (voir `dry/bootstrap/rou
 | `config/logger.config.js`             | Logger Winston structuré (JSON, rotation quotidienne, masquage des données sensibles via `maskSensitiveData`) → `logs/combined-<date>.log`, `logs/error-<date>.log`, `logs/debug-<date>.log`. |
 | `config/prometheus.config.js`         | Métriques exposées sur `/health/metrics`.                                                                                                                                                     |
 | `schemas/`                            | Schémas de validation Zod par domaine (user, tenant, apiKey, audit, conversation).                                                                                                            |
-| `models/audit/AuditLog.schema.js`     | Schéma Mongoose de la collection d'audit (utilisée par `audit.middleware.js`).                                                                                                                |
+| `models/audit/AuditLog.schema.js`     | Schéma Mongoose de la collection d'audit (utilisée par `audit.middleware.js`, consultable via `dry/modules/audit/audit.routes.js`).                                                           |
+| `models/apiKey/ApiKey.schema.js`      | Schéma Mongoose des clés API (stocke un hash SHA-256, jamais la clé en clair).                                                                                                                |
 | `routes/health.routes.js`             | `/health/live`, `/health/ready`, `/health/startup`, `/health/metrics`.                                                                                                                        |
 | `scripts/maintenance/purgeDeleted.js` | Point d'entrée CLI de `npm run purge`.                                                                                                                                                        |
 | `ui/index.js`                         | Bibliothèque de composants front réutilisables, copiée par `create-frontend.js` dans chaque projet généré (`src/components/dry-ui/`).                                                         |

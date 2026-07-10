@@ -278,6 +278,8 @@ Références ponctuelles (non séquentielles) :
 
 ## 🤝 Contribution
 
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour le workflow complet (setup, tests, conventions).
+
 1. Fork le projet
 2. Créer une branche (`git checkout -b feature/ma-feature`)
 3. Commit (`git commit -m 'feat: ajout de ma feature'`)
