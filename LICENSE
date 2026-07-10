@@ -1,0 +1,47 @@
+DRY API Framework — Proprietary License
+
+Copyright (c) 2026 Cyberfusion Group. Tous droits réservés.
+
+Ce logiciel ("DRY API") et sa documentation associée sont la propriété de
+Cyberfusion Group. Ce n'est PAS un logiciel open source : ce fichier définit
+les conditions d'usage à défaut de contrat commercial séparé.
+
+1. NIVEAU COMMUNITY (gratuit)
+
+   Une licence limitée, non-exclusive et non-transférable est accordée pour
+   utiliser DRY API dans le cadre du niveau "Community" décrit dans le
+   README : usage personnel, évaluation, ou déploiement interne à une seule
+   organisation, sans redistribution ni revente.
+
+   Cette licence Community N'AUTORISE PAS :
+   - la redistribution, la revente ou la sous-licence de tout ou partie du
+     code source à des tiers ;
+   - l'hébergement de DRY API en tant que service (SaaS) proposé à des
+     tiers, en marque blanche ou non ;
+   - la suppression ou modification des mentions de copyright ;
+   - l'usage du nom "DRY API" ou "Cyberfusion Group" à des fins de
+     promotion sans autorisation écrite préalable.
+
+2. NIVEAUX PRO / ENTERPRISE (payants)
+
+   L'accès aux fonctionnalités Pro et Enterprise (voir le tableau des
+   fonctionnalités dans README.md) et les droits d'usage étendus associés
+   (multi-organisation, hébergement pour compte de tiers, marque blanche,
+   support dédié) sont régis par un contrat commercial séparé conclu avec
+   Cyberfusion Group. En l'absence d'un tel contrat, seule la licence
+   Community ci-dessus s'applique.
+
+3. ABSENCE DE GARANTIE
+
+   CE LOGICIEL EST FOURNI "EN L'ÉTAT", SANS GARANTIE D'AUCUNE SORTE,
+   EXPRESSE OU IMPLICITE, Y COMPRIS MAIS SANS S'Y LIMITER LES GARANTIES
+   DE QUALITÉ MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER ET
+   D'ABSENCE DE CONTREFAÇON. EN AUCUN CAS CYBERFUSION GROUP NE POURRA
+   ÊTRE TENU RESPONSABLE DE TOUT DOMMAGE DÉCOULANT DE L'UTILISATION DE
+   CE LOGICIEL.
+
+4. CONTACT
+
+   Pour toute demande de licence commerciale (Pro/Enterprise), de
+   redistribution, ou de clarification sur les conditions d'usage,
+   contacter Cyberfusion Group.

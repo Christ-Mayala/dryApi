@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const emailService = require('../../../../../dry/services/auth/email.service');
 const config = require('../../../../../config/database');
+const { httpError } = require('../../../../../dry/utils/http/httpError');
 const { SCHEMA_MAP } = require('../../sync/controller/sync.controller');
 
 // --- LOGIN (réutilise le kernel) ---
@@ -23,7 +24,7 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     const userExists = await User.findOne({ email: payload.email });
-    if (userExists) throw new Error('Cet email est déjà utilisé');
+    if (userExists) throw httpError('Cet email est déjà utilisé', 409);
 
     // Pas de Premium automatique pour Trivida
     // premiumPlan reste à null (valeur par défaut du kernel)

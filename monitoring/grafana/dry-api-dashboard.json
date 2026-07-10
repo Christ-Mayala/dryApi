@@ -138,6 +138,49 @@
         "format": "table",
         "legendFormat": ""
       }]
+    },
+    {
+      "title": "Requêtes par application (tenant)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 28 },
+      "datasource": "Prometheus",
+      "description": "Charge par app multi-tenant — permet de repérer quelle app consomme le plus de requêtes.",
+      "targets": [{
+        "expr": "sum(rate(dry_http_requests_total[5m])) by (app)",
+        "legendFormat": "{{app}}"
+      }]
+    },
+    {
+      "title": "Échecs de connexion (401 sur /login)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 28 },
+      "datasource": "Prometheus",
+      "description": "Volume de mauvais mots de passe / tentatives de connexion refusées, par app. Informatif seulement — ne déclenche PAS d'alerte email (voir dry/middlewares/error/errorHandler.js#isClientError). Un pic soutenu peut indiquer une attaque par force brute.",
+      "targets": [{
+        "expr": "sum(rate(dry_http_requests_total{route=~\".*login.*\", status=\"401\"}[5m])) by (app)",
+        "legendFormat": "{{app}}"
+      }]
+    },
+    {
+      "title": "Connexions actives",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 28 },
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "sum(dry_db_connections)", "legendFormat": "DB" },
+        { "expr": "dry_ws_connections", "legendFormat": "WebSocket" }
+      ]
+    },
+    {
+      "title": "Cache hit ratio",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 28 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "sum(rate(dry_cache_hits_total[5m])) / (sum(rate(dry_cache_hits_total[5m])) + sum(rate(dry_cache_misses_total[5m]))) * 100",
+        "legendFormat": "Hit %"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
     }
   ],
   "rows": [],

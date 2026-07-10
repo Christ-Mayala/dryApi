@@ -43,9 +43,18 @@ curl -X POST http://admin:admin@localhost:3000/api/dashboards/db \
 GET /health/metrics
 ```
 
-## Alertes recommandées
+## Alertes
 
-1. **Disponibilité < 99.9%** → Notification équipe
-2. **Temps de réponse p95 > 2s** → Investigation performance
-3. **Taux d'erreur > 5%** → Alerte critique
-4. **Mémoire > 80%** → Scaling nécessaire
+Les 4 seuils recommandés ci-dessous sont maintenant fournis comme règles Grafana **réellement importables** dans `alerting-rules.yml` (avant, c'était uniquement cette liste en texte — jamais configuré) :
+
+1. **Disponibilité < 99.9%** pendant 5 min → warning
+2. **Taux d'erreur 5xx > 5%** pendant 5 min → critical
+3. **Latence p95 > 2s** pendant 5 min → warning
+4. **Mémoire RSS > 1024 MB** pendant 10 min → warning (**ajuster ce seuil à la taille réelle de votre instance**, 1024 MB est un point de départ arbitraire)
+
+Import (Grafana v9+, unified alerting) :
+1. Adapter `datasourceUid: Prometheus` dans `alerting-rules.yml` avec l'UID réel de votre datasource Prometheus (Grafana → Connections → Data sources → Prometheus → l'UID est dans l'URL).
+2. Copier le fichier dans le dossier de provisioning Grafana (`/etc/grafana/provisioning/alerting/`), ou l'importer via **Alerting → Alert rules → Import**.
+3. Configurer un contact point (email/Slack/webhook) dans Grafana pour recevoir ces alertes — distinct du système d'alerte applicatif déjà en place (`dry/services/alert/alert.service.js`, qui couvre les crashs/exceptions, pas les métriques d'infra).
+
+**Volontairement absent de ces règles** : les erreurs 4xx métier attendues (mauvais mot de passe, email déjà utilisé, etc.) — visibles dans le panel "Échecs de connexion (401 sur /login)" du dashboard à titre informatif, mais ne déclenchent aucune alerte (ni ici, ni côté email — voir `dry/middlewares/error/errorHandler.js#isClientError`).

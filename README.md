@@ -3,7 +3,7 @@
 **🚀 Framework Node.js multi-tenant pour construire et opérer des APIs métier sécurisées, documentées et scalable.**
 
 [![Status](https://img.shields.io/badge/status-production-ready-brightgreen)](https://dryapi.onrender.com)
-[![License](https://img.shields.io/badge/license-ISC-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-proprietary-lightgrey)](LICENSE)
 [![Node](https://img.shields.io/badge/node-20+-339933?logo=node.js)](package.json)
 [![Tests](https://img.shields.io/badge/tests-✔-brightgreen)](.github/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-70%25+-yellowgreen)](https://dryapi.onrender.com/coverage)
@@ -292,7 +292,7 @@ Les commits doivent suivre la convention [Conventional Commits](https://www.conv
 
 ## 📄 Licence
 
-DRY API Framework — Licence ISC
+DRY API Framework — Licence propriétaire (voir [LICENSE](LICENSE)). Niveau Community gratuit pour usage personnel/interne ; les niveaux Pro/Enterprise (hébergement pour tiers, marque blanche) nécessitent un contrat commercial séparé.
 
 **Auteur:** [Cyberfusion](https://github.com/cyberfusion) — cybertouch2012@gmail.com
 

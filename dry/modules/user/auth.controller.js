@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const sendResponse = require('../../utils/http/response');
 const emailService = require('../../services/auth/email.service');
 const config = require('../../../config/database');
+const { httpError } = require('../../utils/http/httpError');
 
 // --- LOGIN ---
 exports.login = asyncHandler(async (req, res) => {
@@ -14,22 +15,22 @@ exports.login = asyncHandler(async (req, res) => {
 
     if (!user) {
         // Anti-timing attack
-        await new Promise(resolve => setTimeout(resolve, 500)); 
-        throw new Error('Identifiants invalides');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        throw httpError('Identifiants invalides', 401);
     }
 
     // Vérif Verrouillage (sauf pour admin)
     if (user.role !== 'admin' && user.lockUntil && user.lockUntil > Date.now()) {
-        throw new Error('Compte temporairement verrouillé. Trop de tentatives.');
+        throw httpError('Compte temporairement verrouillé. Trop de tentatives.', 423);
     }
 
-    // Vérif Password       
+    // Vérif Password
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
         if (user.role !== 'admin') {
             await user.incLoginAttempts();
         }
-        throw new Error('Identifiants invalides');
+        throw httpError('Identifiants invalides', 401);
     }
 
     // Reset tentatives
@@ -86,7 +87,7 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     const userExists = await User.findOne({ email: payload.email });
-    if (userExists) throw new Error('Cet email est déjà utilisé');
+    if (userExists) throw httpError('Cet email est déjà utilisé', 409);
 
     // Auto-assign subtype: les 'professional' sont automatiquement prestataires
     if (payload.role === 'professional' || payload.role === 'prestataire') {
@@ -127,7 +128,7 @@ exports.register = asyncHandler(async (req, res) => {
 // --- REFRESH TOKEN ---
 exports.refresh = asyncHandler(async (req, res) => {
     const { refreshToken } = req.body;
-    if (!refreshToken) throw new Error('Refresh token manquant');
+    if (!refreshToken) throw httpError('Refresh token manquant', 400);
 
     try {
         const decoded = verifyRefreshToken(refreshToken);
@@ -135,11 +136,11 @@ exports.refresh = asyncHandler(async (req, res) => {
         const User = req.getModel('User');
         const user = await User.findById(decoded.id).select('+refreshTokens');
 
-        if (!user) throw new Error('Utilisateur introuvable');
+        if (!user) throw httpError('Utilisateur introuvable', 404);
 
         // Vérification du RT haché dans la liste
         if (!user.refreshTokens || !user.refreshTokens.includes(hashedRt)) {
-            throw new Error('Refresh token invalide ou révoqué');
+            throw httpError('Refresh token invalide ou révoqué', 401);
         }
 
         // Rotation du token
@@ -157,18 +158,20 @@ exports.refresh = asyncHandler(async (req, res) => {
 
         sendResponse(res, { token: newToken, refreshToken: newRefreshToken }, 'Token rafraîchi');
     } catch (error) {
-        throw new Error(error.message || 'Refresh token invalide ou expiré');
+        // Préserve le statusCode s'il existe déjà (ex: httpError ci-dessus) —
+        // sinon un token JWT malformé/expiré reste une erreur client (401).
+        throw httpError(error.message || 'Refresh token invalide ou expiré', error.statusCode || 401);
     }
 });
 
-// --- GET ME (Profil) --- 
+// --- GET ME (Profil) ---
 exports.getMe = asyncHandler(async (req, res) => {
     sendResponse(res, req.user, 'Profil utilisateur');
 });
 
 // --- UPDATE ME ---
 exports.updateMe = asyncHandler(async (req, res) => {
-    if (!req.user?._id) throw new Error('Non autorisé');
+    if (!req.user?._id) throw httpError('Non autorisé', 401);
 
     const User = req.getModel('User');
 
@@ -189,7 +192,7 @@ exports.updateMe = asyncHandler(async (req, res) => {
     }
 
     const updated = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true, runValidators: true });
-    if (!updated) throw new Error('Utilisateur introuvable');
+    if (!updated) throw httpError('Utilisateur introuvable', 404);
 
     const userData = updated.toObject();
     delete userData.password;
@@ -249,7 +252,7 @@ exports.verifyResetCode = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new Error('Code invalide ou expiré');
+        throw httpError('Code invalide ou expiré', 400);
     }
 
     sendResponse(res, { valid: true }, 'Code valide');
@@ -267,7 +270,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new Error('Code invalide ou expiré');
+        throw httpError('Code invalide ou expiré', 400);
     }
 
     // Mettre Ã  jour le mot de passe
@@ -299,13 +302,13 @@ exports.changePassword = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id).select('+password');
     if (!user) {
-        throw new Error('Utilisateur introuvable');
+        throw httpError('Utilisateur introuvable', 404);
     }
 
     // Vérif password actuel
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
-        throw new Error('Mot de passe actuel incorrect');
+        throw httpError('Mot de passe actuel incorrect', 401);
     }
 
     // Maj password
