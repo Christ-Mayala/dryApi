@@ -43,14 +43,19 @@ const systemPasswordMiddleware = (req, res, next) => {
     return next();
   }
   
-  // Si la requête attend du JSON (API), renvoyer 401
-  if (req.accepts('json')) {
+  // Si la requête PRÉFÈRE explicitement JSON (API/fetch), renvoyer 401 JSON.
+  // req.accepts('json') seul est trompeur : un navigateur classique envoie
+  // "Accept: text/html,...,*/*" — le "*/*" matche JSON aussi, donc
+  // req.accepts('json') renvoyait vrai même pour une navigation normale,
+  // qui n'a jamais le formulaire de connexion en résultat.
+  // req.accepts(['html','json']) choisit le type réellement préféré.
+  if (req.accepts(['html', 'json']) === 'json') {
     return res.status(401).json({
       success: false,
       message: 'Mot de passe requis. Ouvrez cette URL dans un navigateur pour voir le formulaire de connexion, ou envoyez un POST avec { "password": "VOTRE_MOT_DE_PASSE" } dans le corps JSON (jamais en query string, pour ne pas l\'exposer dans les logs).',
     });
   }
-  
+
   // Afficher une page de connexion simple
   res.status(401).send(`<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
