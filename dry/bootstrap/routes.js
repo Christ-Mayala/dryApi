@@ -47,7 +47,7 @@ const systemPasswordMiddleware = (req, res, next) => {
   if (req.accepts('json')) {
     return res.status(401).json({
       success: false,
-      message: 'Mot de passe requis. Ajoutez ?password=VOTRE_MOT_DE_PASSE à l\'URL ou configurez SYSTEM_PASSWORD dans les variables d\'environnement.',
+      message: 'Mot de passe requis. Ouvrez cette URL dans un navigateur pour voir le formulaire de connexion, ou envoyez un POST avec { "password": "VOTRE_MOT_DE_PASSE" } dans le corps JSON (jamais en query string, pour ne pas l\'exposer dans les logs).',
     });
   }
   
