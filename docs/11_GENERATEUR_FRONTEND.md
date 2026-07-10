@@ -1,5 +1,11 @@
 # 🚀 Générateur de Frontend DRY
 
+<!-- nav:start -->
+
+[⬅ Précédent : 10 · Social Auth](./10_SOCIAL_AUTH.md) · **11 · Générateur Frontend** · [Retour à la doc ➡](../README.md)
+
+<!-- nav:end -->
+
 ## Présentation
 
 Le générateur de frontend DRY (`scripts/generator/create-frontend.js`) crée automatiquement un projet frontend CRUD complet connecté à une application DRY existante. Il supporte **3 stacks** et **2 modes** de génération.
@@ -32,6 +38,7 @@ node scripts/generator/create-frontend.js
 ```
 
 Le CLI pose 4 questions :
+
 1. **Application** — Choisir parmi les apps disponibles dans `dryApp/`
 2. **Feature** — Choisir une feature spécifique **ou** sélectionner "Toutes les features" (option 0)
 3. **Stack** — React, Angular ou React Native
@@ -44,15 +51,15 @@ node scripts/generator/create-frontend.js --app <app> --feature <feature> --stac
 node scripts/generator/create-frontend.js --app <app> --stack <stack> --all [--role <role>]
 ```
 
-| Flag | Description | Obligatoire |
-|------|-------------|:-----------:|
-| `--app` | Nom de l'application DRY (ex: `scim`, `FreeLLM`) | ✅ |
-| `--feature` | Nom de la feature (ex: `property`, `users`) | ⚠️* |
-| `--stack` | Stack frontend (`react`, `angular`, `react-native`) | ✅ |
-| `--all` | Génère toutes les features de l'app | ⚠️* |
-| `--role` | Rôle (`admin` ou `client`, défaut: `admin`) | ❌ |
+| Flag        | Description                                         | Obligatoire |
+| ----------- | --------------------------------------------------- | :---------: |
+| `--app`     | Nom de l'application DRY (ex: `scim`, `FreeLLM`)    |     ✅      |
+| `--feature` | Nom de la feature (ex: `property`, `users`)         |    ⚠️\*     |
+| `--stack`   | Stack frontend (`react`, `angular`, `react-native`) |     ✅      |
+| `--all`     | Génère toutes les features de l'app                 |    ⚠️\*     |
+| `--role`    | Rôle (`admin` ou `client`, défaut: `admin`)         |     ❌      |
 
-*Soit `--feature` soit `--all` est requis.*
+_Soit `--feature` soit `--all` est requis._
 
 ---
 
@@ -60,11 +67,12 @@ node scripts/generator/create-frontend.js --app <app> --stack <stack> --all [--r
 
 | Stack | Commande | Description |
 |---
+
 > ⚠️ **Note :** Le mode multi-features (`--all`) est optimise pour React. Angular et React Native generent la premiere feature uniquement.
-----|----------|-------------|
-| **React (Vite)** | `--stack react` | SPA moderne avec Vite, axios, react-router-dom |
-| **Angular** | `--stack angular` | Angular 17 avec HttpClient, FormsModule |
-| **React Native** | `--stack react-native` | Expo SDK 50, React Navigation, AsyncStorage |
+> ----|----------|-------------|
+> | **React (Vite)** | `--stack react` | SPA moderne avec Vite, axios, react-router-dom |
+> | **Angular** | `--stack angular` | Angular 17 avec HttpClient, FormsModule |
+> | **React Native** | `--stack react-native` | Expo SDK 50, React Navigation, AsyncStorage |
 
 ---
 
@@ -109,6 +117,7 @@ frontend/react/<appName>/
 ```
 
 L'`App.jsx` multi-features contient :
+
 - **`DashboardPage`** — Grille de cartes (DryCard) avec compteurs (DryBadge) pour chaque feature
 - **`FeatureListPage`** — DryTable avec colonnes auto-détectées, boutons Edit/Delete
 - **`FeatureCreatePage`** — DryInput pour chaque champ
@@ -165,21 +174,21 @@ frontend/react-native/<appName>/
 
 La bibliothèque `dry/ui/` contient **15 composants React** réutilisables, copiés automatiquement dans `src/components/dry-ui/` du projet généré.
 
-| Composant | Fichier | Props principales |
-|-----------|---------|-------------------|
-| **DryButton** | `DryButton.jsx` | `variant`, `size`, `loading`, `fullWidth`, `type` |
-| **DryInput** | `DryInput.jsx` | `label`, `type`, `value`, `onChange`, `placeholder`, `error`, `required` |
-| **DrySelect** | `DrySelect.jsx` | `label`, `options`, `value`, `onChange`, `placeholder` |
-| **DryTable** | `DryTable.jsx` | `data`, `loading`, `exclude`, `onEdit`, `onDelete`, `emptyText` |
-| **DryCard** | `DryCard.jsx` | `padding`, `hoverable`, `className` |
-| **DryBadge** | `DryBadge.jsx` | `variant` (success, warning, error, info) |
-| **DryModal** | `DryModal.jsx` | `isOpen`, `onClose`, `title`, `children` |
-| **DryForm** | `DryForm.jsx` | `onSubmit`, `loading`, `children` |
-| **DryNavbar** | `DryNavbar.jsx` | `brand`, `links`, `user`, `role`, `onLogout`, `onRoleSwitch` |
-| **DrySpinner** | `DrySpinner.jsx` | `variant` (default, overlay, inline, button), `text` |
-| **DryAlert** | `DryAlert.jsx` | `variant` (success, error, warning, info), `message`, `dismissible` |
-| **DryLayout** | `DryLayout.jsx` | `children`, `role` (intègre Navbar + RoleGuard) |
-| **DryRoleGuard** | `DryRoleGuard.jsx` | `role`, `userRole`, `children` |
+| Composant        | Fichier            | Props principales                                                        |
+| ---------------- | ------------------ | ------------------------------------------------------------------------ |
+| **DryButton**    | `DryButton.jsx`    | `variant`, `size`, `loading`, `fullWidth`, `type`                        |
+| **DryInput**     | `DryInput.jsx`     | `label`, `type`, `value`, `onChange`, `placeholder`, `error`, `required` |
+| **DrySelect**    | `DrySelect.jsx`    | `label`, `options`, `value`, `onChange`, `placeholder`                   |
+| **DryTable**     | `DryTable.jsx`     | `data`, `loading`, `exclude`, `onEdit`, `onDelete`, `emptyText`          |
+| **DryCard**      | `DryCard.jsx`      | `padding`, `hoverable`, `className`                                      |
+| **DryBadge**     | `DryBadge.jsx`     | `variant` (success, warning, error, info)                                |
+| **DryModal**     | `DryModal.jsx`     | `isOpen`, `onClose`, `title`, `children`                                 |
+| **DryForm**      | `DryForm.jsx`      | `onSubmit`, `loading`, `children`                                        |
+| **DryNavbar**    | `DryNavbar.jsx`    | `brand`, `links`, `user`, `role`, `onLogout`, `onRoleSwitch`             |
+| **DrySpinner**   | `DrySpinner.jsx`   | `variant` (default, overlay, inline, button), `text`                     |
+| **DryAlert**     | `DryAlert.jsx`     | `variant` (success, error, warning, info), `message`, `dismissible`      |
+| **DryLayout**    | `DryLayout.jsx`    | `children`, `role` (intègre Navbar + RoleGuard)                          |
+| **DryRoleGuard** | `DryRoleGuard.jsx` | `role`, `userRole`, `children`                                           |
 
 ### Utilisation dans un projet généré
 
@@ -210,7 +219,6 @@ import { ROLES, ROLE_LABELS } from '../components/dry-ui';
 
 > ⚠️ **Note :** Le systeme de roles (`--role`, `DryRoleGuard`, `DryNavbar`) est **uniquement supporte pour React**. Les stacks Angular et React Native generent un CRUD simple sans gestion de roles.
 
-
 Le flag `--role` (admin/client) a un **effet concret** sur le code généré :
 
 ### 1. Template variable `{{userRole}}`
@@ -218,7 +226,7 @@ Le flag `--role` (admin/client) a un **effet concret** sur le code généré :
 Le rôle est injecté dans `App.jsx` via `DEFAULT_ROLE` :
 
 ```jsx
-const DEFAULT_ROLE = 'admin';  // ou 'client' selon --role
+const DEFAULT_ROLE = 'admin'; // ou 'client' selon --role
 const [userRole, setUserRole] = useState(DEFAULT_ROLE);
 ```
 
@@ -244,10 +252,10 @@ Le `DryNavbar` inclut un sélecteur de rôle (Admin/Client) qui met à jour `use
 
 ### 4. Effets du rôle
 
-| Rôle | Accès |
-|------|-------|
-| **Admin** | Accès complet à toutes les fonctionnalités (lecture, création, modification, suppression) |
-| **Client** | Accès limité défini par `canAccess()` dans `DryRoleGuard` |
+| Rôle       | Accès                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| **Admin**  | Accès complet à toutes les fonctionnalités (lecture, création, modification, suppression) |
+| **Client** | Accès limité défini par `canAccess()` dans `DryRoleGuard`                                 |
 
 ---
 
@@ -261,26 +269,26 @@ node scripts/generator/create-frontend.js [options]
 
 ### Options
 
-| Option | Description | Exemple |
-|--------|-------------|---------|
-| `--app` | Application DRY cible | `--app scim` |
-| `--feature` | Feature spécifique | `--feature property` |
-| `--stack` | Stack frontend | `--stack react` |
-| `--all` | Toutes les features | `--all` |
-| `--role` | Rôle utilisateur | `--role admin` |
+| Option      | Description           | Exemple              |
+| ----------- | --------------------- | -------------------- |
+| `--app`     | Application DRY cible | `--app scim`         |
+| `--feature` | Feature spécifique    | `--feature property` |
+| `--stack`   | Stack frontend        | `--stack react`      |
+| `--all`     | Toutes les features   | `--all`              |
+| `--role`    | Rôle utilisateur      | `--role admin`       |
 
 ### Applications disponibles
 
 Liste des applications dans `dryApp/` :
 
-| App | Features |
-|-----|----------|
-| `FreeLLM` | API keys, conversations, models, settings |
-| `LaStreet` | Categories, leads, professionals, subscriptions |
-| `MediaDL` | Batches, downloads, presets |
-| `SCIM` | Admin, Favoris, Message, Property, Reservation, Users |
-| `SkillForge` | Categories, courses, ebooks, orders, reviews, students |
-| `SpiritEmeraude` | Atelier, contact, formation, gallery, impact, product |
+| App              | Features                                               |
+| ---------------- | ------------------------------------------------------ |
+| `FreeLLM`        | API keys, conversations, models, settings              |
+| `LaStreet`       | Categories, leads, professionals, subscriptions        |
+| `MediaDL`        | Batches, downloads, presets                            |
+| `SCIM`           | Admin, Favoris, Message, Property, Reservation, Users  |
+| `SkillForge`     | Categories, courses, ebooks, orders, reviews, students |
+| `SpiritEmeraude` | Atelier, contact, formation, gallery, impact, product  |
 
 ---
 
@@ -362,18 +370,19 @@ npx expo start
 
 Le frontend généré communique avec l'API DRY via Axios :
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| `api.list(params)` | `GET /api/v1/<app>/<feature>` | Liste des éléments |
-| `api.get(id)` | `GET /api/v1/<app>/<feature>/:id` | Détail d'un élément |
-| `api.create(data)` | `POST /api/v1/<app>/<feature>` | Création |
-| `api.update(id, data)` | `PUT /api/v1/<app>/<feature>/:id` | Mise à jour |
-| `api.delete(id)` | `DELETE /api/v1/<app>/<feature>/:id` | Suppression |
-| `auth.login(email, password)` | `POST /api/v1/user/login` | Connexion |
+| Méthode                       | Endpoint                             | Description         |
+| ----------------------------- | ------------------------------------ | ------------------- |
+| `api.list(params)`            | `GET /api/v1/<app>/<feature>`        | Liste des éléments  |
+| `api.get(id)`                 | `GET /api/v1/<app>/<feature>/:id`    | Détail d'un élément |
+| `api.create(data)`            | `POST /api/v1/<app>/<feature>`       | Création            |
+| `api.update(id, data)`        | `PUT /api/v1/<app>/<feature>/:id`    | Mise à jour         |
+| `api.delete(id)`              | `DELETE /api/v1/<app>/<feature>/:id` | Suppression         |
+| `auth.login(email, password)` | `POST /api/v1/user/login`            | Connexion           |
 
 ### Authentification JWT
 
 Le token est automatiquement :
+
 - 🔐 Injecté dans chaque requête (intercepteur Axios)
 - 💾 Stocké dans `localStorage` (`dry_token`)
 - 🔄 Récupéré au refresh de page
@@ -449,10 +458,20 @@ scripts/generator/create-frontend.js
 Les templates sont des tableaux de strings concaténés avec `.join('\n')`. Les variables `{{var}}` sont remplacées par `writeTemplate()`.
 
 ```javascript
-writeTemplate(dir('src/pages/MaPage.jsx'), [
-  "import React from 'react';",
-  "export default function MaPage() {",
-  "  return <h1>{{titre}}</h1>;",
-  "}",
-].join('\n'), { titre: 'Bonjour' });
+writeTemplate(
+  dir('src/pages/MaPage.jsx'),
+  [
+    "import React from 'react';",
+    'export default function MaPage() {',
+    '  return <h1>{{titre}}</h1>;',
+    '}',
+  ].join('\n'),
+  { titre: 'Bonjour' }
+);
 ```
+
+<!-- nav:start -->
+
+[⬅ Précédent : 10 · Social Auth](./10_SOCIAL_AUTH.md) · **11 · Générateur Frontend** · [Retour à la doc ➡](../README.md)
+
+<!-- nav:end -->

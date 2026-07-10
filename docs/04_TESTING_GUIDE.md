@@ -1,5 +1,11 @@
 # Guide de test
 
+<!-- nav:start -->
+
+[⬅ Précédent : 03 · Architecture](./03_ARCHITECTURE.md) · **04 · Testing Guide** · [Suivant : 05 · API Reference ➡](./05_API_REFERENCE.md)
+
+<!-- nav:end -->
+
 Les tests sont maintenant separes par niveau:
 
 ```text
@@ -70,3 +76,9 @@ conteneur `mongo:7` éphémère.
 ## Objectif de couverture
 
 La couverture prioritaire doit porter sur `dry/` et `config/`, car c'est le moteur commun du framework.
+
+<!-- nav:start -->
+
+[⬅ Précédent : 03 · Architecture](./03_ARCHITECTURE.md) · **04 · Testing Guide** · [Suivant : 05 · API Reference ➡](./05_API_REFERENCE.md)
+
+<!-- nav:end -->

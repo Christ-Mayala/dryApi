@@ -1,5 +1,11 @@
 # Social Auth (Google + Facebook)
 
+<!-- nav:start -->
+
+[⬅ Précédent : 09 · Product Scope](./09_PRODUCT_SCOPE.md) · **10 · Social Auth** · [Suivant : 11 · Générateur Frontend ➡](./11_GENERATEUR_FRONTEND.md)
+
+<!-- nav:end -->
+
 Ce document decrit ce qui est **deja implemente** dans le backend DRY, et ce qu'il reste a faire cote frontend/config pour que l'authentification Google/Facebook fonctionne de bout en bout.
 
 ## Statut
@@ -59,3 +65,8 @@ Implementer une page/route `GET /auth/callback` qui:
 - Facebook ne fournit pas toujours l'email: il faut que l'app Facebook soit configuree avec la permission email et que le compte possede un email.
 - OAuth utilise la session Express pour transporter le tenant pendant la redirection (cookie `sameSite=lax`).
 
+<!-- nav:start -->
+
+[⬅ Précédent : 09 · Product Scope](./09_PRODUCT_SCOPE.md) · **10 · Social Auth** · [Suivant : 11 · Générateur Frontend ➡](./11_GENERATEUR_FRONTEND.md)
+
+<!-- nav:end -->

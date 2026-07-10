@@ -1,5 +1,11 @@
 # Conventions kernel vs app
 
+<!-- nav:start -->
+
+[⬅ Précédent : 07 · Commands Reference](./07_COMMANDS_REFERENCE.md) · **08 · Kernel Boundaries** · [Suivant : 09 · Product Scope ➡](./09_PRODUCT_SCOPE.md)
+
+<!-- nav:end -->
+
 Ce document formalise la frontiere entre `dry/` et `dryApp/`.
 
 ## Mettre dans `dry/`
@@ -42,3 +48,9 @@ Ce document formalise la frontiere entre `dry/` et `dryApp/`.
 
 Si c'est transverse, `dry/`.
 Si c'est metier, `dryApp/`.
+
+<!-- nav:start -->
+
+[⬅ Précédent : 07 · Commands Reference](./07_COMMANDS_REFERENCE.md) · **08 · Kernel Boundaries** · [Suivant : 09 · Product Scope ➡](./09_PRODUCT_SCOPE.md)
+
+<!-- nav:end -->

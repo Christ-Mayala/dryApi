@@ -1,5 +1,11 @@
 # 🚀 Guide de Déploiement (Production Hardening)
 
+<!-- nav:start -->
+
+[⬅ Précédent : 05 · API Reference](./05_API_REFERENCE.md) · **06 · Deployment** · [Suivant : 07 · Commands Reference ➡](./07_COMMANDS_REFERENCE.md)
+
+<!-- nav:end -->
+
 Mettre une API en ligne est une responsabilité. Ce guide t'assure que ton déploiement est **sécurisé**, **rapide** et **auto-reparable**.
 
 ---
@@ -23,6 +29,7 @@ ALLOWED_ORIGINS=https://mon-app.com,https://admin.mon-app.com
 ## 2. Hardening (Sécurité Maximale) 🔒
 
 DRY active automatiquement ces protections en mode production :
+
 - **HSTS (HTTP Strict Transport Security)** : Force le HTTPS.
 - **CSP (Content Security Policy)** : Bloque les scripts malveillants (XSS).
 - **Rate Limiting Hardened** : Réduit le nombre de requêtes autorisées par minute pour prévenir les attaques par déni de service (DoS).
@@ -33,6 +40,7 @@ DRY active automatiquement ces protections en mode production :
 ## 3. Déploiement sur Cloud (Render, Vercel, Railway) ☁️
 
 ### Recommandation : Render.com
+
 1.  **Crée un "Web Service"**.
 2.  Connecte ton repo GitHub.
 3.  **Build Command** : `npm install`
@@ -40,6 +48,7 @@ DRY active automatiquement ces protections en mode production :
 5.  Ajoute tes variables d'environnement (`.env`).
 
 ### Pourquoi Render ?
+
 Le système de **Surgical Alerting** est optimisé pour Render. Si ton API sature sa mémoire ou crash, Render la redémarrera instantanément, et tu recevras le rapport complet de l'erreur par mail juste avant le redémarrage.
 
 ---
@@ -47,13 +56,22 @@ Le système de **Surgical Alerting** est optimisé pour Render. Si ton API satur
 ## 4. Monitoring & Santé Continue 🚑
 
 Une fois déployée, ton API se surveille elle-même.
+
 - **Health Check** : Configure un outil comme `UptimeRobot` sur `https://ton-api.com/status`.
 - **Alertes** : Assure-toi que `ALERT_EMAIL_TO` est bien configuré pour recevoir les notifications "Chirurgicales".
 
 ---
 
 ## 💡 Astuce de Scalabilité
+
 Si ton trafic explose, tu n'as pas besoin de recoder. Augmente simplement le nombre d'instances (Scaling horizontal) sur ton hébergeur. Le Kernel de DRY est **stateless**, ce qui signifie qu'il peut tourner sur 100 serveurs en même temps sans conflit.
 
 ---
-*Déployer, c'est bien. Déployer en toute confiance, c'est mieux.*
+
+_Déployer, c'est bien. Déployer en toute confiance, c'est mieux._
+
+<!-- nav:start -->
+
+[⬅ Précédent : 05 · API Reference](./05_API_REFERENCE.md) · **06 · Deployment** · [Suivant : 07 · Commands Reference ➡](./07_COMMANDS_REFERENCE.md)
+
+<!-- nav:end -->

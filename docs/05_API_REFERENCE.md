@@ -1,5 +1,11 @@
 # 📚 Référence API & Standardisation
 
+<!-- nav:start -->
+
+[⬅ Précédent : 04 · Testing Guide](./04_TESTING_GUIDE.md) · **05 · API Reference** · [Suivant : 06 · Deployment ➡](./06_DEPLOYMENT.md)
+
+<!-- nav:end -->
+
 Ce document définit les standards de communication de l'API DRY. Toutes les features respectent ces règles sans exception.
 
 ---
@@ -29,11 +35,13 @@ Toutes les réponses suivent cette structure pour faciliter l'intégration front
 Grâce au `queryBuilder` intégré dans la `crudFactory`, toutes tes routes `GET /` supportent des filtres ultra-puissants sans coder une seule ligne supplémentaire.
 
 ### Paramètres de base :
+
 - **Pagination** : `?page=2&limit=20`
 - **Tri** : `?sort=-createdAt` (Le signe `-` inverse l'ordre).
 - **Sélection de champs** : `?select=title,price` (Réduit la taille de la réponse).
 
 ### Filtres Avancés :
+
 - **Comparaison** : `?price[gt]=100` (plus grand que), `?price[lte]=50` (plus petit ou égal).
 - **Recherche textuelle** : `?label[regex]=TermeDeRecherche&label[options]=i` (insensible à la casse).
 
@@ -54,6 +62,7 @@ Grâce au `queryBuilder` intégré dans la `crudFactory`, toutes tes routes `GET
 ## 4. Champs Automatiques (DRY Meta) 🧬
 
 Chaque objet retourné par l'API contient des métadonnées générées par le Kernel :
+
 - `_id` : Identifiant unique MongoDB.
 - `slug` : URL propre (ex: `mon-super-produit`).
 - `status` : État (`active`, `deleted`).
@@ -62,7 +71,15 @@ Chaque objet retourné par l'API contient des métadonnées générées par le K
 ---
 
 ## 💡 Conseil pour le Frontend
+
 Utilise toujours le champ `slug` pour tes URLs côté client (ex: `/product/mon-super-produit`) plutôt que l'ID (`/product/64f1a2...`). C'est bien meilleur pour le SEO et l'expérience utilisateur.
 
 ---
-*L'API est ton langage, la standardisation est ta grammaire.*
+
+_L'API est ton langage, la standardisation est ta grammaire._
+
+<!-- nav:start -->
+
+[⬅ Précédent : 04 · Testing Guide](./04_TESTING_GUIDE.md) · **05 · API Reference** · [Suivant : 06 · Deployment ➡](./06_DEPLOYMENT.md)
+
+<!-- nav:end -->

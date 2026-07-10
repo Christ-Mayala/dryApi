@@ -1,5 +1,11 @@
 # Architecture
 
+<!-- nav:start -->
+
+[⬅ Précédent : 02 · Developer Guide](./02_DEVELOPER_GUIDE.md) · **03 · Architecture** · [Suivant : 04 · Testing Guide ➡](./04_TESTING_GUIDE.md)
+
+<!-- nav:end -->
+
 DRY repose sur une separation nette entre le noyau technique et les applications metier.
 
 ## 1. Separation des responsabilites
@@ -118,3 +124,9 @@ Cette distinction aide a garder le framework comprehensible et a eviter un noyau
 - toute nouvelle variable d'environnement doit etre declaree et validee de facon centralisee
 - toute nouvelle feature doit avoir au minimum un test d'integration
 - toute evolution du noyau doit viser une couverture unitaire
+
+<!-- nav:start -->
+
+[⬅ Précédent : 02 · Developer Guide](./02_DEVELOPER_GUIDE.md) · **03 · Architecture** · [Suivant : 04 · Testing Guide ➡](./04_TESTING_GUIDE.md)
+
+<!-- nav:end -->

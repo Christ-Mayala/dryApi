@@ -1,5 +1,11 @@
 # Demarrage rapide
 
+<!-- nav:start -->
+
+[⬅ Précédent : 00 · Cartographie du projet](./00_PROJECT_MAP.md) · **01 · Getting Started** · [Suivant : 02 · Developer Guide ➡](./02_DEVELOPER_GUIDE.md)
+
+<!-- nav:end -->
+
 Ce guide te permet de lancer DRY API localement, creer une app, verifier les endpoints critiques et ouvrir Swagger en moins de 10 minutes.
 
 ## Prerequis
@@ -96,3 +102,9 @@ npm run test:smoke
 - [Guide developpeur](./02_DEVELOPER_GUIDE.md)
 - [Architecture](./03_ARCHITECTURE.md)
 - [Conventions kernel vs app](./08_KERNEL_BOUNDARIES.md)
+
+<!-- nav:start -->
+
+[⬅ Précédent : 00 · Cartographie du projet](./00_PROJECT_MAP.md) · **01 · Getting Started** · [Suivant : 02 · Developer Guide ➡](./02_DEVELOPER_GUIDE.md)
+
+<!-- nav:end -->

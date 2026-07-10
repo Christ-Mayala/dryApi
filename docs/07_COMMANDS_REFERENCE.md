@@ -1,5 +1,11 @@
 # Référence des commandes DRY API
 
+<!-- nav:start -->
+
+[⬅ Précédent : 06 · Deployment](./06_DEPLOYMENT.md) · **07 · Commands Reference** · [Suivant : 08 · Kernel Boundaries ➡](./08_KERNEL_BOUNDARIES.md)
+
+<!-- nav:end -->
+
 Ce document liste toutes les commandes disponibles via `npm run` dans le framework DRY API. Chaque commande est conçue pour automatiser une partie du cycle de vie du développement, du test ou de la maintenance.
 
 ## 🚀 Développement et Lancement
@@ -57,3 +63,9 @@ Ce document liste toutes les commandes disponibles via `npm run` dans le framewo
 
 > [!TIP]
 > Vous pouvez retrouver l'état visuel de ces services sur la page [System Status](http://localhost:5000/system/status) une fois le serveur lancé.
+
+<!-- nav:start -->
+
+[⬅ Précédent : 06 · Deployment](./06_DEPLOYMENT.md) · **07 · Commands Reference** · [Suivant : 08 · Kernel Boundaries ➡](./08_KERNEL_BOUNDARIES.md)
+
+<!-- nav:end -->

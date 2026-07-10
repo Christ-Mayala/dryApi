@@ -246,17 +246,32 @@ npm run k8s:deploy
 
 ## 📚 Documentation
 
-- [Démarrage rapide](docs/01_GETTING_STARTED.md)
-- [Guide développeur](docs/02_DEVELOPER_GUIDE.md)
-- [Architecture](docs/03_ARCHITECTURE.md)
-- [Guide de test](docs/04_TESTING_GUIDE.md)
-- [Référence API](docs/05_API_REFERENCE.md)
-- [Déploiement](docs/06_DEPLOYMENT.md)
-- [Référence commandes](docs/07_COMMANDS_REFERENCE.md)
+Lecture séquentielle (chaque page a une navigation ⬅ précédent / suivant ➡) :
+
+- [00 · Cartographie complète du projet](docs/00_PROJECT_MAP.md) — quoi fait quoi, dossier par dossier
+- [01 · Démarrage rapide](docs/01_GETTING_STARTED.md)
+- [02 · Guide développeur](docs/02_DEVELOPER_GUIDE.md)
+- [03 · Architecture](docs/03_ARCHITECTURE.md)
+- [04 · Guide de test](docs/04_TESTING_GUIDE.md)
+- [05 · Référence API](docs/05_API_REFERENCE.md)
+- [06 · Déploiement](docs/06_DEPLOYMENT.md)
+- [07 · Référence commandes](docs/07_COMMANDS_REFERENCE.md)
+- [08 · Frontières du kernel](docs/08_KERNEL_BOUNDARIES.md)
+- [09 · Scope produit](docs/09_PRODUCT_SCOPE.md)
+- [10 · Social Auth](docs/10_SOCIAL_AUTH.md)
+- [11 · Générateur de frontend](docs/11_GENERATEUR_FRONTEND.md)
+
+Références ponctuelles (non séquentielles) :
+
 - [Codes d'erreur](docs/ERRORS.md)
 - [Guide de dépannage](docs/TROUBLESHOOTING.md)
 - [SLA](docs/SLA.md)
 - [Support](docs/SUPPORT.md)
+- [Guide de téléchargement média](docs/GUIDE_TELECHARGEMENT.md)
+- [Diagrammes SCIM](docs/SCIM_DIAGRAMMES.md)
+- [Configuration SenePay (Trivida)](docs/SENEPAY_CONFIG.md)
+- [Réactiver Google OAuth](docs/REACTIVER_GOOGLE_OAUTH.md)
+- [DRY Master Course](docs/DRY_MASTER_COURSE.md)
 - [Changelog](CHANGELOG.md)
 
 ---
