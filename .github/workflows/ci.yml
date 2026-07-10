@@ -3,8 +3,15 @@ name: CI
 on:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   verify:
@@ -30,6 +37,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm audit --audit-level=high
+        continue-on-error: true
       - run: npm run lint
       - run: npm run format:check
       - run: npm run test:unit

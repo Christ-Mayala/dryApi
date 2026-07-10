@@ -1,11 +1,10 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const config = require('./config/database');
-const { connectCluster, getTenantDB } = require('./dry/config/connection/dbConnection');
+const { connectCluster, getTenantDB } = require('../../dry/config/connection/dbConnection');
 
 // Modèles
-const TradeCategorySchema = require('./dryApp/LaStreet/features/categories/model/tradeCategory.schema');
-const TradeSchema = require('./dryApp/LaStreet/features/categories/model/trade.schema');
+const TradeCategorySchema = require('../../dryApp/LaStreet/features/categories/model/tradeCategory.schema');
+const TradeSchema = require('../../dryApp/LaStreet/features/categories/model/trade.schema');
 
 const tradesData = [
   {

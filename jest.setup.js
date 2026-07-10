@@ -3,8 +3,14 @@
  * Configure les variables d'environnement et les helpers globaux pour les tests
  */
 
-// Charger dotenv pour les tests
-require('dotenv').config({ path: '.env.test', silent: true });
+// Volontairement PAS de chargement de .env.test ici : les tests unitaires
+// doivent rester hermétiques et reproductibles sur toute machine, qu'un
+// .env.test local existe ou non. Si un .env.test réel définit des clés
+// _TEST (MONGO_URI_TEST, JWT_SECRET_TEST, ...), elles prendraient le pas
+// sur les valeurs que readSetting() attend en mode test, et casseraient les
+// tests qui manipulent process.env directement (voir tests/unit/config).
+// .env.test reste utile pour test:integration/e2e/smoke (voir
+// scripts/tests/loadTestEnv.js et docs/04_TESTING_GUIDE.md).
 
 // Définir l'environnement de test
 process.env.NODE_ENV = 'test';

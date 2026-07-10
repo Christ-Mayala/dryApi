@@ -33,13 +33,24 @@ reseeder). Si ces scripts se connectent au cluster MongoDB Atlas de production
 
 Pour éviter ça : `scripts/tests/loadTestEnv.js` (utilisé par `run-integration.js`
 et `smoke-runner.js`) charge `.env.test` en priorité — copier
-`.env.test.example` vers `.env.test` et pointer `MONGO_URI` vers une base
+`.env.test.example` vers `.env.test` et pointer `MONGO_URI_TEST` vers une base
 **isolée** (MongoDB local ou cluster/projet Atlas séparé, jamais celui de
 production). **Sans `.env.test`, un avertissement s'affiche et les tests
 retombent sur `.env` (production)** — ne pas ignorer cet avertissement.
 
 Avant de lancer `test:integration`/`test:e2e`/`test:smoke`, vérifier que
 `.env.test` existe et pointe vers une base de test.
+
+### Pourquoi les clés sont suffixées `_TEST`
+
+`config/database.js` résout chaque variable via `readSetting(name)`, qui
+regarde d'abord `NOM_TEST` quand `NODE_ENV=test` (`NOM_DEV` en développement),
+puis retombe sur `NOM` tout court, puis sur une valeur par défaut. C'est ce
+mécanisme — pas un fichier séparé — qui isole vraiment la config : `.env.test`
+n'est qu'un moyen pratique de définir ces clés `_TEST` localement. C'est la
+même convention que dans `.github/workflows/ci.yml` (`MONGO_URI_TEST`,
+`JWT_SECRET_TEST`, etc.), qui isole automatiquement les tests en CI via un
+conteneur `mongo:7` éphémère.
 
 ## Regles recommandees
 

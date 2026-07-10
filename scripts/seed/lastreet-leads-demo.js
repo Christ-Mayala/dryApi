@@ -10,13 +10,13 @@ async function seed() {
     console.log('Connecté à la base de données:', MONGO_URI);
 
     // Schemas
-    const UserSchema = require('./dry/modules/user/user.schema');
-    const LeadSchema = require('./dryApp/LaStreet/features/leads/model/lead.schema');
-    const LeadResponseSchema = require('./dryApp/LaStreet/features/leads/model/lead-response.schema');
-    const TradeSchema = require('./dryApp/LaStreet/features/categories/model/trade.schema');
+    const UserSchema = require('../../dry/modules/user/user.schema');
+    const LeadSchema = require('../../dryApp/LaStreet/features/leads/model/lead.schema');
+    const LeadResponseSchema = require('../../dryApp/LaStreet/features/leads/model/lead-response.schema');
+    const TradeSchema = require('../../dryApp/LaStreet/features/categories/model/trade.schema');
 
     // Factory
-    const getModel = require('./dry/core/factories/modelFactory');
+    const getModel = require('../../dry/core/factories/modelFactory');
 
     const User = getModel('LaStreet', 'User', UserSchema);
     const Lead = getModel('LaStreet', 'Lead', LeadSchema);
