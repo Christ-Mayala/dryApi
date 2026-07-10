@@ -213,6 +213,14 @@ npm run docker:run       # App + MongoDB + Redis + Nginx
 docker-compose up -d
 ```
 
+### Monitoring (Prometheus + Grafana)
+
+```bash
+docker-compose --profile monitoring up -d prometheus grafana
+```
+
+Dashboard et alertes provisionnés automatiquement, rien à importer à la main — voir [monitoring/grafana/readme.md](monitoring/grafana/readme.md). Grafana sur http://localhost:3001 (`admin`/`admin` par défaut).
+
 ### Kubernetes
 
 ```bash

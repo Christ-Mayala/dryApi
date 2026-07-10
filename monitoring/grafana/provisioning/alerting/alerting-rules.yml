@@ -1,12 +1,12 @@
 apiVersion: 1
 
 # Règles d'alerte Grafana (unified alerting) pour DRY API.
-# À placer dans le dossier de provisioning Grafana, ex:
-#   /etc/grafana/provisioning/alerting/dry-api-rules.yml
-# ou via Grafana → Alerting → Alert rules → Import.
+# Chargées automatiquement au démarrage de Grafana via docker-compose
+# (voir docker-compose.yml, profil "monitoring" — le dossier
+# monitoring/grafana/provisioning/ est monté dans le conteneur Grafana).
 #
 # Reprend les seuils déjà documentés en prose dans readme.md, mais sous
-# forme de règles réellement importables/actives (ce qui manquait).
+# forme de règles réellement importées/actives (ce qui manquait).
 #
 # Ces règles portent sur des métriques d'infrastructure (taux d'erreur 5xx,
 # latence, disponibilité, mémoire) — volontairement PAS sur des événements
@@ -25,7 +25,7 @@ groups:
         condition: C
         data:
           - refId: A
-            datasourceUid: Prometheus
+            datasourceUid: prometheus
             model:
               expr: "sum(rate(dry_http_requests_total{status=~\"2..\"}[5m])) / sum(rate(dry_http_requests_total[5m])) * 100"
               refId: A
@@ -48,7 +48,7 @@ groups:
         condition: C
         data:
           - refId: A
-            datasourceUid: Prometheus
+            datasourceUid: prometheus
             model:
               expr: "sum(rate(dry_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(dry_http_requests_total[5m])) * 100"
               refId: A
@@ -71,7 +71,7 @@ groups:
         condition: C
         data:
           - refId: A
-            datasourceUid: Prometheus
+            datasourceUid: prometheus
             model:
               expr: "histogram_quantile(0.95, sum(rate(dry_http_request_duration_seconds_bucket[5m])) by (le))"
               refId: A
@@ -94,7 +94,7 @@ groups:
         condition: C
         data:
           - refId: A
-            datasourceUid: Prometheus
+            datasourceUid: prometheus
             model:
               expr: "process_resident_memory_bytes / 1024 / 1024"
               refId: A

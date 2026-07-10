@@ -1,0 +1,12 @@
+# Configuration Prometheus — scrape les métriques exposées par DRY API
+# sur GET /health/metrics (voir dry/config/prometheus.config.js).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'dry-api'
+    metrics_path: /health/metrics
+    static_configs:
+      - targets: ['app:5000']
