@@ -7,6 +7,8 @@ const {
     buildStatusHistoryEntry,
     decorateReservationForClient,
     formatVisitDate,
+    normalizeRequestTypeKey,
+    getRequestTypeLabel,
     sendReservationContactNotifications,
     notifyNewMessage,
 } = require('./reservation.support.util');
@@ -29,13 +31,16 @@ module.exports = asyncHandler(async (req, res) => {
         return sendResponse(res, decorateReservationForClient(reservation), 'Reservation deja annulee.');
     }
 
+    const reason = String(req.body?.reason || '').trim();
+    const defaultNote = isRequester ? 'Annulee par client' : isAdmin ? 'Annulee par administration' : 'Annulee par proprietaire';
+
     reservation.status = 'annulee';
     reservation.statusHistory = [
         ...(Array.isArray(reservation.statusHistory) ? reservation.statusHistory : []),
         buildStatusHistoryEntry({
             status: 'annulee',
             actorId: req.user.id,
-            note: isRequester ? 'Annulee par client' : isAdmin ? 'Annulee par administration' : 'Annulee par proprietaire',
+            note: reason ? `${defaultNote} — ${reason}` : defaultNote,
         }),
     ];
 
@@ -44,6 +49,7 @@ module.exports = asyncHandler(async (req, res) => {
     try {
         const ref = reservation.reference || reservation._id;
         const dateLabel = formatVisitDate(reservation.date);
+        const requestTypeLabel = getRequestTypeLabel(normalizeRequestTypeKey(reservation.requestType));
         const isClientCancelling = isRequester && !isOwner && !isAdmin;
 
         if (isClientCancelling && reservation.property?.utilisateur && String(reservation.property.utilisateur) !== String(req.user.id)) {
@@ -51,9 +57,9 @@ module.exports = asyncHandler(async (req, res) => {
             const msg = await Message.create({
                 expediteur: req.user.id,
                 destinataire: reservation.property.utilisateur,
-                sujet: `Visite annulée — ${reservation.property?.titre || 'votre bien'}`,
+                sujet: `${requestTypeLabel} annulée — ${reservation.property?.titre || 'votre bien'}`,
                 contenu: [
-                    `Un client a annulé sa demande de visite.`,
+                    `Un client a annulé sa demande de ${requestTypeLabel.toLowerCase()}.`,
                     ``,
                     `📋 Référence : ${ref}`,
                     `🏠 Bien : ${reservation.property?.titre || 'le bien'}`,
@@ -66,13 +72,14 @@ module.exports = asyncHandler(async (req, res) => {
             const msg = await Message.create({
                 expediteur: req.user.id,
                 destinataire: reservation.user,
-                sujet: `Visite annulée — ${reservation.property?.titre || 'votre bien'}`,
+                sujet: `${requestTypeLabel} annulée — ${reservation.property?.titre || 'votre bien'}`,
                 contenu: [
-                    `Votre demande de visite a été annulée.`,
+                    `Votre demande de ${requestTypeLabel.toLowerCase()} a été annulée.`,
                     ``,
                     `📋 Référence : ${ref}`,
                     `🏠 Bien : ${reservation.property?.titre || 'le bien'}`,
                     `📅 Date concernée : ${dateLabel}`,
+                    ...(reason ? ['', `📝 Motif : ${reason}`] : []),
                     ``,
                     `Si vous avez des questions, n'hésitez pas à nous contacter.`,
                 ].join('\n'),
@@ -93,6 +100,7 @@ module.exports = asyncHandler(async (req, res) => {
                 propertyTitle: reservation.property?.titre,
                 visitDate: reservation.date,
                 stage: 'cancellation',
+                reason,
             });
         } catch (_) {}
     }

@@ -121,6 +121,7 @@ const scimSchemas = {
   reservation: {
     create: Joi.object({
       propertyId: commonSchemas.objectId.required(),
+      requestType: Joi.string().valid('visite', 'location', 'achat').optional(),
       date: commonSchemas.date.min('now').required(),
       telephone: commonSchemas.phone.optional(),
       isWhatsapp: Joi.boolean().optional(),

@@ -140,6 +140,15 @@ const registerHealthRoutes = (app) => {
     res.status(200).send(healthService.renderSystemStatusPage(overview));
   });
 
+  // Le formulaire de connexion du panneau système (rendu dans
+  // systemPasswordMiddleware) POST vers cette même URL. Sans cette route,
+  // le POST tombait sur le 404 générique et le mot de passe ne "se
+  // soumettait" jamais. systemPasswordMiddleware valide le mot de passe et
+  // ouvre la session ; on redirige ensuite vers la page en GET.
+  app.post('/system/status', systemPasswordMiddleware, (req, res) => {
+    res.redirect(303, '/system/status');
+  });
+
   // Actions système (protégées par mot de passe)
   app.post('/system/actions/create-app', systemPasswordMiddleware, async (req, res) => {
     const { appName, template, addons } = req.body;

@@ -6,7 +6,17 @@ module.exports = asyncHandler(async (req, res) => {
 
     const { name, nom, email, telephone, status } = req.body;
 
-    const user = await User.findByIdAndUpdate(req.params.id, { name, nom, email, telephone, status }, { new: true }).select('-password');
+    let user;
+    try {
+        user = await User.findByIdAndUpdate(req.params.id, { name, nom, email, telephone, status }, { new: true, runValidators: true }).select('-password');
+    } catch (e) {
+        if (e?.code === 11000) {
+            const field = Object.keys(e.keyPattern || {})[0];
+            if (field === 'telephone') return sendResponse(res, null, 'Ce numéro de téléphone est déjà utilisé', false);
+            return sendResponse(res, null, 'Cet email est déjà utilisé', false);
+        }
+        throw e;
+    }
 
     if (!user) return sendResponse(res, null, 'Utilisateur non trouve', false);
 

@@ -89,6 +89,7 @@ module.exports = asyncHandler(async (req, res) => {
                             nom: '$correspondant.nom',
                             email: '$correspondant.email',
                             telephone: '$correspondant.telephone',
+                            role: '$correspondant.role',
                         },
                         dernierMessage: {
                             _id: '$dernierMessage._id',

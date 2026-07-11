@@ -1,6 +1,7 @@
 ﻿const mongoose = require('mongoose');
 
-const STATUS_ENUM = ['en_attente', 'confirmee', 'annulee'];
+const STATUS_ENUM = ['en_attente', 'confirmee', 'annulee', 'terminee'];
+const REQUEST_TYPE_ENUM = ['visite', 'location', 'achat'];
 
 const stripDiacritics = (value) => {
     return String(value || '')
@@ -17,15 +18,36 @@ const normalizeReservationStatus = (value) => {
 
     if (compact.startsWith('confirm')) return 'confirmee';
     if (compact.startsWith('annul') || compact.startsWith('cancel')) return 'annulee';
+    if (compact.startsWith('termin') || compact.startsWith('complet') || compact === 'done') return 'terminee';
     if (compact === 'pending' || compact.includes('attente')) return 'en_attente';
 
     return compact;
+};
+
+const normalizeRequestType = (value) => {
+    if (value === undefined || value === null) return 'visite';
+    const raw = stripDiacritics(value).trim().toLowerCase();
+    if (!raw) return 'visite';
+
+    if (raw.startsWith('loc')) return 'location';
+    if (raw.startsWith('ach') || raw.startsWith('vente') || raw.startsWith('buy') || raw.startsWith('purchase')) return 'achat';
+    if (raw.startsWith('vis')) return 'visite';
+
+    return REQUEST_TYPE_ENUM.includes(raw) ? raw : 'visite';
 };
 
 const ReservationSchema = new mongoose.Schema(
     {
         property: { type: mongoose.Schema.Types.ObjectId, ref: 'Property', required: true },
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        requestType: {
+            type: String,
+            enum: REQUEST_TYPE_ENUM,
+            default: 'visite',
+            set: normalizeRequestType,
+            get: normalizeRequestType,
+            index: true,
+        },
         date: { type: Date, required: true },
         telephone: { type: String, trim: true, default: '' },
         isWhatsapp: { type: Boolean, default: false },
@@ -83,6 +105,7 @@ ReservationSchema.index({ property: 1, createdAt: -1 });
 
 ReservationSchema.pre('validate', function normalizeLegacyReservationStatus() {
     this.status = normalizeReservationStatus(this.status);
+    this.requestType = normalizeRequestType(this.requestType);
 
     if (Array.isArray(this.statusHistory)) {
         for (const entry of this.statusHistory) {
@@ -93,3 +116,5 @@ ReservationSchema.pre('validate', function normalizeLegacyReservationStatus() {
 });
 
 module.exports = ReservationSchema;
+module.exports.REQUEST_TYPE_ENUM = REQUEST_TYPE_ENUM;
+module.exports.normalizeRequestType = normalizeRequestType;

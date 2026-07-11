@@ -5,14 +5,29 @@ const ReservationSchema = require('../../reservation/model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
 const { CONFIRMED_STATUS_VALUES } = require('../../reservation/controller/reservation.support.util');
 
+const parseRangeDate = (value, fallback) => {
+    const d = value ? new Date(value) : fallback;
+    return Number.isNaN(d?.getTime()) ? fallback : d;
+};
+
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
     const Property = req.getModel('Property', PropertySchema);
 
     const propertiesCollection = Property.collection.name;
 
+    // Periode optionnelle (filtres Semaine/Mois/Trimestre/Annee de la page Statistiques).
+    const from = req.query.from ? parseRangeDate(req.query.from, null) : null;
+    const to = req.query.to ? parseRangeDate(req.query.to, null) : null;
+    const dateMatch = {};
+    if (from) dateMatch.$gte = from;
+    if (to) dateMatch.$lte = to;
+
+    const baseMatch = { status: { $in: CONFIRMED_STATUS_VALUES } };
+    if (from || to) baseMatch.createdAt = dateMatch;
+
     const pipeline = [
-        { $match: { status: { $in: CONFIRMED_STATUS_VALUES } } },
+        { $match: baseMatch },
         {
             $lookup: {
                 from: propertiesCollection,

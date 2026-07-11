@@ -7,9 +7,17 @@ const {
     buildStatusHistoryEntry,
     decorateReservationForClient,
     formatVisitDate,
+    normalizeRequestTypeKey,
+    getRequestTypeLabel,
     sendReservationContactNotifications,
     notifyNewMessage,
 } = require('./reservation.support.util');
+
+const NEXT_STEPS_BY_TYPE = {
+    visite: (dateLabel) => `Merci de vous présenter le ${dateLabel}, muni(e) d'une pièce d'identité valide.`,
+    location: () => `Notre équipe va vous contacter pour finaliser le dossier de location (pièces, garantie, signature du bail).`,
+    achat: () => `Notre équipe va vous contacter pour la suite de l'acquisition (documents, financement, signature de l'acte).`,
+};
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -55,12 +63,17 @@ module.exports = asyncHandler(async (req, res) => {
     try {
         const dateLabel = formatVisitDate(reservation.date);
         const ref = reservation.reference || reservation._id;
+        const requestTypeKey = normalizeRequestTypeKey(reservation.requestType);
+        const requestTypeLabel = getRequestTypeLabel(requestTypeKey);
+        const nextSteps = (NEXT_STEPS_BY_TYPE[requestTypeKey] || NEXT_STEPS_BY_TYPE.visite)(dateLabel);
         const lines = [
-            `Bonjour, votre demande de visite a été confirmée ! ✅`,
+            `Bonjour, votre demande de ${requestTypeLabel.toLowerCase()} a été confirmée ! ✅`,
             ``,
             `📋 Référence : ${ref}`,
             `🏠 Bien : ${reservation.property?.titre || 'le bien'}`,
             `📅 Date confirmée : ${dateLabel}`,
+            ``,
+            nextSteps,
             ``,
             `Merci de nous confirmer la réception de ce message en répondant à cette conversation.`,
         ];
@@ -72,7 +85,7 @@ module.exports = asyncHandler(async (req, res) => {
         const msg = await Message.create({
             expediteur: req.user.id,
             destinataire: reservation.user?._id || reservation.user,
-            sujet: `Visite confirmée — ${reservation.property?.titre || 'votre bien'}`,
+            sujet: `${requestTypeLabel} confirmée — ${reservation.property?.titre || 'votre bien'}`,
             contenu: lines.join('\n'),
         });
         await notifyNewMessage(req, Message, msg);

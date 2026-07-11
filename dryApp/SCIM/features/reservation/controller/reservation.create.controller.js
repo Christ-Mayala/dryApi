@@ -16,6 +16,9 @@ const {
     formatVisitDate,
     isValidContactPhone,
     normalizePhoneE164,
+    normalizeRequestTypeKey,
+    getRequestTypeLabel,
+    getRequestTypeActionLabel,
     sendAdminWhatsAppNotification,
     notifyNewMessage,
 } = require('./reservation.support.util');
@@ -28,6 +31,7 @@ module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User', UserSchema);
 
     const { propertyId, date, telephone, isWhatsapp } = req.body;
+    const requestType = normalizeRequestTypeKey(req.body.requestType);
     const userId = req.user.id;
 
     if (!propertyId || !date) return sendResponse(res, null, 'propertyId et date sont requis.', false);
@@ -56,9 +60,11 @@ module.exports = asyncHandler(async (req, res) => {
     if (Number.isNaN(when.getTime())) return sendResponse(res, null, 'Date invalide.', false);
     if (when < new Date()) return sendResponse(res, null, 'La date de reservation doit etre dans le futur.', false);
 
-    const localMinutes = ((((when.getUTCHours() * 60 + when.getUTCMinutes()) + offsetMinutes) % (24 * 60)) + (24 * 60)) % (24 * 60);
-    if (localMinutes < 10 * 60 || localMinutes > 17 * 60) {
-        return sendResponse(res, null, 'Reservation possible uniquement entre 10h00 et 17h00.', false);
+    if (requestType === 'visite') {
+        const localMinutes = ((((when.getUTCHours() * 60 + when.getUTCMinutes()) + offsetMinutes) % (24 * 60)) + (24 * 60)) % (24 * 60);
+        if (localMinutes < 10 * 60 || localMinutes > 17 * 60) {
+            return sendResponse(res, null, 'Reservation possible uniquement entre 10h00 et 17h00.', false);
+        }
     }
 
     const requester = await User.findById(userId).select('_id name nom email telephone');
@@ -78,18 +84,34 @@ module.exports = asyncHandler(async (req, res) => {
 
     const requesterPhone = normalizePhoneE164(effectivePhoneRaw);
     if (!fallbackPhoneRaw && requesterPhone) {
-        requester.telephone = requesterPhone;
-        await requester.save();
+        try {
+            requester.telephone = requesterPhone;
+            await requester.save();
+        } catch (e) {
+            // Le telephone est unique par compte : si un autre utilisateur l'utilise deja,
+            // on ne bloque pas la reservation, on garde simplement le numero saisi sur la reservation elle-meme.
+            if (e?.code !== 11000) throw e;
+        }
     }
 
     const property = await Property.findById(propertyId)
-        .select('_id titre utilisateur isDeleted')
+        .select('_id titre utilisateur isDeleted status transactionType')
         .populate('utilisateur', 'name nom email telephone role');
 
     if (!property || property.isDeleted) return sendResponse(res, null, 'Bien introuvable.', false);
+    if (property.status && property.status !== 'active') {
+        return sendResponse(res, null, 'Ce bien n\'est pas disponible actuellement.', false);
+    }
 
     if (property.utilisateur && String(property.utilisateur._id) === String(userId)) {
         return sendResponse(res, null, 'Vous ne pouvez pas reserver votre propre bien.', false);
+    }
+
+    if (requestType === 'location' && property.transactionType !== 'location') {
+        return sendResponse(res, null, 'Ce bien n\'est pas propose a la location.', false);
+    }
+    if (requestType === 'achat' && property.transactionType !== 'vente') {
+        return sendResponse(res, null, 'Ce bien n\'est pas propose a la vente.', false);
     }
 
     let reservation;
@@ -97,6 +119,7 @@ module.exports = asyncHandler(async (req, res) => {
         reservation = await Reservation.create({
             property: propertyId,
             user: userId,
+            requestType,
             date: when,
             telephone: requesterPhone,
             isWhatsapp: Boolean(isWhatsapp),
@@ -127,12 +150,15 @@ module.exports = asyncHandler(async (req, res) => {
 
     await reservation.save();
 
+    const requestTypeLabel = getRequestTypeLabel(requestType);
+    const requestActionLabel = getRequestTypeActionLabel(requestType);
+
     try {
         if (property.utilisateur && property.utilisateur._id.toString() !== userId.toString()) {
             const dateLabel = formatVisitDate(when);
             const ownerContent = [
-                `Nouvelle demande de visite reçue.`,
-                `Un client souhaite visiter votre bien "${property.titre}".`,
+                `Nouvelle ${requestActionLabel} reçue.`,
+                `Un client souhaite ${requestType === 'visite' ? 'visiter' : requestType === 'location' ? 'louer' : 'acheter'} votre bien "${property.titre}".`,
                 `Date demandée : ${dateLabel}.`,
                 `Référence de la demande : ${reservation.reference}.`,
             ].join('\n');
@@ -140,7 +166,7 @@ module.exports = asyncHandler(async (req, res) => {
             const msg = await Message.create({
                 expediteur: userId,
                 destinataire: property.utilisateur._id,
-                sujet: `Nouvelle demande de visite — ${property.titre}`,
+                sujet: `Nouvelle ${requestActionLabel} — ${property.titre}`,
                 contenu: ownerContent,
             });
             await notifyNewMessage(req, Message, msg);
@@ -151,10 +177,11 @@ module.exports = asyncHandler(async (req, res) => {
         const adminUser = await findAdminContact(User);
         if (adminUser && String(adminUser._id) !== String(userId)) {
             const lines = [
-                `Bonjour, votre demande de visite a bien été enregistrée.`,
+                `Bonjour, votre ${requestActionLabel} a bien été enregistrée.`,
                 ``,
                 `📋 Référence : ${reservation.reference}`,
                 `🏠 Bien : ${property.titre}`,
+                `📄 Type : ${requestTypeLabel}`,
                 `📅 Date souhaitée : ${formatVisitDate(when)}`,
                 ``,
                 `Notre équipe va traiter votre demande et revenir vers vous dans les plus brefs délais (délai cible : ${support.expectedResponseMinutes} min).`,
@@ -167,7 +194,7 @@ module.exports = asyncHandler(async (req, res) => {
             const msg = await Message.create({
                 expediteur: adminUser._id,
                 destinataire: userId,
-                sujet: `Demande de visite reçue — ${property.titre}`,
+                sujet: `${requestTypeLabel} reçue — ${property.titre}`,
                 contenu: lines.join('\n'),
             });
             await notifyNewMessage(req, Message, msg);
@@ -192,10 +219,11 @@ module.exports = asyncHandler(async (req, res) => {
                 const requesterName = requester?.name || requester?.nom || 'Client';
                 const phoneLabel = requesterPhone || bodyPhoneRaw || fallbackPhoneRaw || '';
                 const messageContent = [
-                    `Nouvelle demande de visite reçue depuis le site.`,
+                    `Nouvelle ${requestActionLabel} reçue depuis le site.`,
                     ``,
                     `📋 Référence : ${reservation.reference}`,
                     `🏠 Bien : ${property.titre}`,
+                    `📄 Type : ${requestTypeLabel}`,
                     `📅 Date souhaitée : ${formatVisitDate(when)}`,
                     `📞 Téléphone : ${phoneLabel}${isWhatsapp ? ' (WhatsApp)' : ''}`,
                     `👤 Client : ${requesterName}`,
@@ -206,7 +234,7 @@ module.exports = asyncHandler(async (req, res) => {
                 const msg = await Message.create({
                     expediteur: requester._id,
                     destinataire: adminUserInternal._id,
-                    sujet: `Nouvelle demande de visite — ${property.titre}`,
+                    sujet: `Nouvelle ${requestActionLabel} — ${property.titre}`,
                     contenu: messageContent,
                 });
                 await notifyNewMessage(req, Message, msg);

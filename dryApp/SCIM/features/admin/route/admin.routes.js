@@ -14,6 +14,7 @@ const UserPublicSchema = require('../../users/model/userPublic.schema');
 
 // Middleware de filtrage réutilisable (comme advancedResults de control-api)
 const queryBuilder = require('../../../../../dry/middlewares/query/queryBuilder');
+const { invalidateCache } = require('../../../../../dry/middlewares/cache/cache.middleware');
 
 const getDashboardStats = require('../controller/admin.dashboardStats.controller');
 const getAllReservations = require('../controller/admin.reservations.list.controller');
@@ -47,6 +48,8 @@ const getRevenueAnalytics = require('../controller/admin.analytics.revenue.contr
 const getSystemSettings = require('../controller/admin.settings.get.controller');
 const updateSystemSettings = require('../controller/admin.settings.update.controller');
 
+const getActivityReport = require('../controller/admin.reports.activity.controller');
+
 router.use(protect);
 router.use(authorize('admin'));
 router.get('/dashboard/stats', getDashboardStats);
@@ -77,8 +80,8 @@ router.get('/properties',
     getAllProperties
 );
 router.get('/properties/:id', validateId, getPropertyById);
-router.put('/properties/:id/status', validateId, updatePropertyStatus);
-router.delete('/properties/:id', validateId, deleteProperty);
+router.put('/properties/:id/status', validateId, invalidateCache(), updatePropertyStatus);
+router.delete('/properties/:id', validateId, invalidateCache(), deleteProperty);
 
 // GET /property-submissions avec queryBuilder
 router.get('/property-submissions',
@@ -146,6 +149,8 @@ router.delete('/messages/:id', validateId, deleteMessage);
 router.get('/analytics/properties', getPropertyAnalytics);
 router.get('/analytics/users', getUserAnalytics);
 router.get('/analytics/revenue', getRevenueAnalytics);
+
+router.get('/reports/activity', getActivityReport);
 
 router.get('/settings', getSystemSettings);
 router.put('/settings', updateSystemSettings);

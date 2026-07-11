@@ -13,12 +13,31 @@ module.exports = asyncHandler(async (req, res) => {
     if (!user) return sendResponse(res, null, 'Utilisateur non trouvé.', false);
 
     const { nom, name, email, telephone } = req.body;
+
+    if (email && email !== user.email) {
+        const existsEmail = await User.findOne({ email, _id: { $ne: user._id } });
+        if (existsEmail) return sendResponse(res, null, 'Cet email est déjà utilisé', false);
+    }
+    if (telephone && telephone !== user.telephone) {
+        const existsPhone = await User.findOne({ telephone, _id: { $ne: user._id } });
+        if (existsPhone) return sendResponse(res, null, 'Ce numéro de téléphone est déjà utilisé', false);
+    }
+
     if (nom) user.nom = nom;
     if (name) user.name = name;
     if (email) user.email = email;
     if (telephone) user.telephone = telephone;
 
-    await user.save();
+    try {
+        await user.save();
+    } catch (e) {
+        if (e?.code === 11000) {
+            const field = Object.keys(e.keyPattern || {})[0];
+            if (field === 'telephone') return sendResponse(res, null, 'Ce numéro de téléphone est déjà utilisé', false);
+            return sendResponse(res, null, 'Cet email est déjà utilisé', false);
+        }
+        throw e;
+    }
 
     return sendResponse(
         res,

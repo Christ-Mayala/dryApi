@@ -21,6 +21,7 @@ const normalizeReservationStatusKey = (value) => {
     const compact = raw.replace(/[\s-]+/g, '_');
     if (compact.startsWith('confirm')) return 'confirmee';
     if (compact.startsWith('annul') || compact.startsWith('cancel')) return 'annulee';
+    if (compact.startsWith('termin') || compact.startsWith('complet') || compact === 'done') return 'terminee';
     if (compact === 'pending' || compact.includes('attente')) return 'en_attente';
     return compact;
 };
@@ -29,10 +30,39 @@ const reservationStatusLabelMap = {
     en_attente: 'En attente',
     confirmee: 'Confirmee',
     annulee: 'Annulee',
+    terminee: 'Terminee',
 };
 
 const getReservationStatusLabel = (statusKey) => {
     return reservationStatusLabelMap[statusKey] || statusKey || 'En attente';
+};
+
+const normalizeRequestTypeKey = (value) => {
+    const raw = stripDiacritics(value).trim().toLowerCase();
+    if (!raw) return 'visite';
+    if (raw.startsWith('loc')) return 'location';
+    if (raw.startsWith('ach') || raw.startsWith('vente')) return 'achat';
+    return 'visite';
+};
+
+const requestTypeLabelMap = {
+    visite: 'Visite',
+    location: 'Location',
+    achat: 'Achat',
+};
+
+const requestTypeActionLabelMap = {
+    visite: 'demande de visite',
+    location: 'demande de location',
+    achat: 'demande d’achat',
+};
+
+const getRequestTypeLabel = (requestTypeKey) => {
+    return requestTypeLabelMap[requestTypeKey] || requestTypeLabelMap.visite;
+};
+
+const getRequestTypeActionLabel = (requestTypeKey) => {
+    return requestTypeActionLabelMap[requestTypeKey] || requestTypeActionLabelMap.visite;
 };
 
 const toPlainObject = (value) => {
@@ -50,6 +80,10 @@ const decorateReservationForClient = (reservation) => {
     const statusKey = normalizeReservationStatusKey(data?.status);
     data.status = statusKey;
     data.statusLabel = getReservationStatusLabel(statusKey);
+
+    const requestTypeKey = normalizeRequestTypeKey(data?.requestType);
+    data.requestType = requestTypeKey;
+    data.requestTypeLabel = getRequestTypeLabel(requestTypeKey);
 
     if (Array.isArray(data.statusHistory)) {
         data.statusHistory = data.statusHistory.map((entry) => {
@@ -72,21 +106,13 @@ const decorateReservationCollectionForClient = (reservations) => {
 const CONFIRMED_STATUS_VALUES = ['confirmee', 'confirmed', 'confirm\u00E9e'];
 const CANCELLED_STATUS_VALUES = ['annulee', 'cancelled', 'annul\u00E9e'];
 const PENDING_STATUS_VALUES = ['en_attente', 'en attente', 'pending'];
+const COMPLETED_STATUS_VALUES = ['terminee', 'termin\u00E9e', 'completed', 'done'];
 
 const defaultCountryCode = (() => {
     const raw = String(config.SCIM_DEFAULT_COUNTRY_CODE || '+242').trim();
     const digits = raw.replace(/[^\d]/g, '');
     return digits ? `+${digits}` : '+242';
 })();
-
-const normalizeWhatsappPhone = (value) => {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    const digits = raw.replace(/[^\d]/g, '');
-    if (!digits) return '';
-    if (digits.startsWith('00')) return digits.slice(2);
-    return digits;
-};
 
 const normalizePhoneE164 = (value) => {
     const raw = String(value || '').trim();
@@ -99,7 +125,11 @@ const normalizePhoneE164 = (value) => {
     if (digits.startsWith('00')) return `+${digits.slice(2)}`;
 
     const countryDigits = defaultCountryCode.replace(/[^\d]/g, '');
-    if (digits.startsWith(countryDigits)) return `+${digits}`;
+    if (digits.startsWith(countryDigits)) {
+        // Un "0" de tronc ne doit jamais suivre l'indicatif pays (ex: 242 0 67896752 -> 242 67896752).
+        const rest = digits.slice(countryDigits.length).replace(/^0+/, '');
+        return rest ? `+${countryDigits}${rest}` : '';
+    }
 
     const local = digits.replace(/^0+/, '');
     if (!local) return '';
@@ -107,6 +137,30 @@ const normalizePhoneE164 = (value) => {
 };
 
 const isValidContactPhone = (value) => Boolean(normalizePhoneE164(value));
+
+// Numero au format wa.me (chiffres uniquement, sans "+"). Contrairement a l'E.164
+// "telecom" standard, WhatsApp attend ici le numero congolais avec son "0" initial
+// conserve (ex: +242 06 78 96 752, jamais +242 6 78 96 752) : on ne retire donc jamais
+// ce zero, on l'ajoute au contraire s'il est absent. Un numero mal forme (indicatif
+// manquant, zero absent) affichait "numero inconnu" sur WhatsApp.
+const normalizeWhatsappPhone = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    let digits = raw.replace(/[^\d]/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('00')) digits = digits.slice(2);
+
+    const countryDigits = defaultCountryCode.replace(/[^\d]/g, '');
+    let local = digits.startsWith(countryDigits) ? digits.slice(countryDigits.length) : digits;
+
+    if (!local.startsWith('0')) local = `0${local}`;
+
+    // Prefixe mobile congolais valide : 0 suivi de 4/5/6/7 puis 7 chiffres (9 chiffres au total).
+    if (!/^0[4-7]\d{7}$/.test(local)) return '';
+
+    return `${countryDigits}${local}`;
+};
 
 const buildWhatsappUrl = (phone, text = '') => {
     const normalizedPhone = normalizeWhatsappPhone(phone);
@@ -201,25 +255,42 @@ const findAdminContact = async (User) => {
     return admin || null;
 };
 
-const buildReservationContactContent = ({ reservation, propertyTitle, visitDate, stage = 'confirmation' } = {}) => {
+// Suite concrète de la procédure une fois la réservation confirmée, adaptée au type de demande.
+const NEXT_STEPS_BY_TYPE = {
+    visite: (dateLabel) => `Merci de vous présenter le ${dateLabel}, muni(e) d'une pièce d'identité valide. Notre agent vous accueillera sur place pour la visite.`,
+    location: () => `Notre équipe va vous contacter très prochainement pour finaliser le dossier de location : pièces justificatives, garantie locative et signature du bail.`,
+    achat: () => `Notre équipe va vous contacter très prochainement pour la suite du processus d'acquisition : vérification des documents, modalités de financement et signature de l'acte de vente.`,
+};
+
+const buildReservationContactContent = ({ reservation, propertyTitle, visitDate, stage = 'confirmation', reason = '' } = {}) => {
     const reference = reservation?.reference || reservation?._id || 'reservation';
     const dateLabel = formatVisitDate(visitDate || reservation?.date);
     const title = propertyTitle || reservation?.property?.titre || 'le bien';
+    const requestTypeKey = normalizeRequestTypeKey(reservation?.requestType);
+    const actionLabel = getRequestTypeActionLabel(requestTypeKey);
+    const nounLabel = requestTypeKey === 'visite' ? 'visite' : getRequestTypeLabel(requestTypeKey).toLowerCase();
+    const cleanReason = String(reason || '').trim();
 
     let subject, baseText, ackText;
 
     if (stage === 'reminder') {
-        subject = `Rappel — Votre visite "${title}" (${reference})`;
-        baseText = `Rappel SCIM : votre visite pour "${title}" (réf. ${reference}) est prévue le ${dateLabel}. Merci de confirmer votre présence.`;
+        subject = `Rappel — Votre ${nounLabel} "${title}" (${reference})`;
+        baseText = `Rappel SCIM : votre ${actionLabel} pour "${title}" (réf. ${reference}) est prévue le ${dateLabel}. Merci de confirmer votre présence.`;
         ackText = '';
     } else if (stage === 'cancellation') {
-        subject = `Votre visite a été annulée — ${title}`;
-        baseText = `Nous vous informons que votre demande de visite (réf. ${reference}) pour "${title}" prévue le ${dateLabel} a été annulée.`;
-        ackText = `Si vous souhaitez planifier une nouvelle visite, n'hésitez pas à nous contacter.`;
+        subject = `Votre ${nounLabel} a été annulée — ${title}`;
+        baseText = `Nous vous informons que votre ${actionLabel} (réf. ${reference}) pour "${title}" prévue le ${dateLabel} a été annulée.`;
+        baseText += cleanReason ? ` Motif : ${cleanReason}.` : '';
+        ackText = `Si vous souhaitez soumettre une nouvelle ${nounLabel} ou avez des questions, n'hésitez pas à nous contacter.`;
+    } else if (stage === 'completion') {
+        subject = `Merci ! Votre ${nounLabel} est terminée — ${title}`;
+        baseText = `Nous vous confirmons que votre ${actionLabel} (réf. ${reference}) pour "${title}" du ${dateLabel} a bien eu lieu et a été clôturée avec succès. Merci pour votre confiance !`;
+        ackText = `N'hésitez pas à solliciter à nouveau SCIM Immobilier pour vos futurs projets — ce sera un plaisir de vous accompagner.`;
     } else {
-        subject = `✅ Visite confirmée — ${title} (${reference})`;
-        baseText = `Bonne nouvelle ! Votre demande de visite pour "${title}" a été confirmée.`;
-        ackText = `Nous vous attendons le ${dateLabel}. Merci de répondre à ce message pour confirmer la réception.`;
+        subject = `✅ ${getRequestTypeLabel(requestTypeKey)} confirmée — ${title} (${reference})`;
+        baseText = `Bonne nouvelle ! Votre ${actionLabel} pour "${title}" a été confirmée.`;
+        const nextSteps = (NEXT_STEPS_BY_TYPE[requestTypeKey] || NEXT_STEPS_BY_TYPE.visite)(dateLabel);
+        ackText = `${nextSteps} Merci de répondre à ce message pour confirmer la bonne réception.`;
     }
 
     const html = `
@@ -227,7 +298,7 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
           <div style="background:${stage === 'cancellation' ? '#27272a' : 'linear-gradient(135deg,#d4af37,#92700a)'};padding:28px;text-align:center">
             <h1 style="margin:0;color:${stage === 'cancellation' ? '#d4af37' : '#09090b'};font-size:22px;font-weight:900">SCIM Immobilier</h1>
             <p style="margin:8px 0 0;color:${stage === 'cancellation' ? '#a1a1aa' : '#09090b'};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:0.8">
-              ${stage === 'cancellation' ? 'Visite annulée' : stage === 'reminder' ? 'Rappel de visite' : 'Visite confirmée'}
+              ${stage === 'cancellation' ? 'Visite annulée' : stage === 'reminder' ? 'Rappel de visite' : stage === 'completion' ? 'Demande terminée' : 'Visite confirmée'}
             </p>
           </div>
           <div style="padding:28px">
@@ -249,10 +320,12 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
     `;
 
     const smsBaseText = stage === 'cancellation'
-        ? `SCIM: Votre visite (réf. ${reference}) pour "${title}" le ${dateLabel} a été annulée. Contactez-nous pour en planifier une nouvelle.`
+        ? `SCIM: Votre ${nounLabel} (réf. ${reference}) pour "${title}" le ${dateLabel} a été annulée.${cleanReason ? ` Motif : ${cleanReason}.` : ''} Contactez-nous pour en planifier une nouvelle.`
         : stage === 'reminder'
-        ? `Rappel SCIM: visite pour "${title}" le ${dateLabel} (réf. ${reference}). Confirmez votre présence.`
-        : `SCIM: Visite confirmée pour "${title}" le ${dateLabel} (réf. ${reference}). Merci de confirmer réception.`;
+        ? `Rappel SCIM: ${nounLabel} pour "${title}" le ${dateLabel} (réf. ${reference}). Confirmez votre présence.`
+        : stage === 'completion'
+        ? `SCIM: Votre ${nounLabel} (réf. ${reference}) pour "${title}" est marquée terminée. Merci pour votre confiance.`
+        : `SCIM: ${getRequestTypeLabel(requestTypeKey)} confirmée pour "${title}" le ${dateLabel} (réf. ${reference}). Merci de confirmer réception.`;
 
     return {
         reference,
@@ -310,8 +383,8 @@ const sendTwilioMessage = async ({ toE164, from, body, whatsapp = false } = {}) 
     }
 };
 
-const sendReservationContactNotifications = async ({ reservation, user, propertyTitle, visitDate, stage = 'confirmation' } = {}) => {
-    const content = buildReservationContactContent({ reservation, propertyTitle, visitDate, stage });
+const sendReservationContactNotifications = async ({ reservation, user, propertyTitle, visitDate, stage = 'confirmation', reason = '' } = {}) => {
+    const content = buildReservationContactContent({ reservation, propertyTitle, visitDate, stage, reason });
     const normalizedPhone = normalizePhoneE164(user?.telephone || reservation?.support?.requesterPhone || '');
     const destinationEmail = String(user?.email || reservation?.support?.requesterEmail || '').trim().toLowerCase();
 
@@ -455,11 +528,15 @@ module.exports = {
     isValidContactPhone,
     normalizeReservationStatusKey,
     getReservationStatusLabel,
+    normalizeRequestTypeKey,
+    getRequestTypeLabel,
+    getRequestTypeActionLabel,
     decorateReservationForClient,
     decorateReservationCollectionForClient,
     CONFIRMED_STATUS_VALUES,
     CANCELLED_STATUS_VALUES,
     PENDING_STATUS_VALUES,
+    COMPLETED_STATUS_VALUES,
     buildWhatsappUrl,
     buildReservationReference,
     buildSupportPayload,

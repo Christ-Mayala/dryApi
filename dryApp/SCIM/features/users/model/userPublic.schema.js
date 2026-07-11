@@ -8,7 +8,7 @@ const UserPublicSchema = new mongoose.Schema(
         password: { type: String, required: true, select: false },
         role: { type: String, default: "user" },
         status: { type: String, enum: ["active", "inactive", "banned"], default: "active", index: true },
-        telephone: { type: String, trim: true },
+        telephone: { type: String, trim: true, unique: true, sparse: true, index: true },
         avatarUrl: { type: String, default: null },
         avatarPublicId: { type: String, default: null },
         refreshTokens: { type: [String], default: [], select: false },

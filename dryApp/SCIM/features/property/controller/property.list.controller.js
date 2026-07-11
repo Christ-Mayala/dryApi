@@ -154,9 +154,13 @@ module.exports = asyncHandler(async (req, res) => {
 
     const categories = [...new Set(properties.map((p) => p.categorie).filter(Boolean))];
 
+    const villes = (await Property.distinct('ville', { isDeleted: false, ville: { $exists: true, $ne: '' } }))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, 'fr'));
+
     return sendResponse(
         res,
-        { total, page, limit, totalPages: Math.ceil(total / limit), properties, categories },
+        { total, page, limit, totalPages: Math.ceil(total / limit), properties, categories, villes },
         'Liste des annonces',
     );
 });

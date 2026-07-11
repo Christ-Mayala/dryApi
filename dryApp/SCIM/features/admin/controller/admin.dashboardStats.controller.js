@@ -89,12 +89,14 @@ module.exports = asyncHandler(async (req, res) => {
         ]),
         Property.find({ isDeleted: false }).sort({ createdAt: -1 }).limit(3).select('titre ville createdAt'),
         User.find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).limit(3).select('name nom email createdAt'),
+        // Trié par updatedAt : une réservation traitée aujourd'hui (confirmée/annulée/terminée)
+        // doit apparaître comme activité récente même si elle a été créée il y a longtemps.
         Reservation.find({})
-            .sort({ createdAt: -1 })
+            .sort({ updatedAt: -1 })
             .limit(4)
             .populate('property', 'titre')
             .populate('user', 'name nom email')
-            .select('status createdAt date reference property user'),
+            .select('status createdAt updatedAt date reference property user'),
         Message.find({})
             .sort({ createdAt: -1 })
             .limit(4)
@@ -151,6 +153,13 @@ module.exports = asyncHandler(async (req, res) => {
         reservations: reservationByMonth[month] || 0,
     }));
 
+    const reservationActivityTitle = {
+        en_attente: 'Nouvelle reservation',
+        confirmee: 'Reservation confirmee',
+        annulee: 'Reservation annulee',
+        terminee: 'Reservation terminee',
+    };
+
     const recentActivities = [
         ...latestProperties.map((p) => ({
             type: 'property',
@@ -162,7 +171,7 @@ module.exports = asyncHandler(async (req, res) => {
         ...latestUsers.map((u) => ({
             type: 'user',
             title: 'Nouvel utilisateur',
-            description: `${u.name || ''} ${u.nom || ''}`.trim() || u.email,
+            description: u.nom || u.name || u.email,
             time: u.createdAt,
             status: 'info',
         })),
@@ -173,13 +182,16 @@ module.exports = asyncHandler(async (req, res) => {
             time: m.createdAt,
             status: m.lu ? 'success' : 'warning',
         })),
-        ...latestReservations.map((r) => ({
-            type: 'reservation',
-            title: 'Nouvelle reservation',
-            description: `${r.property?.titre || 'Bien'} - ${normalizeReservationStatusKey(r.status)}`,
-            time: r.createdAt,
-            status: normalizeReservationStatusKey(r.status) === 'annulee' ? 'danger' : 'info',
-        })),
+        ...latestReservations.map((r) => {
+            const statusKey = normalizeReservationStatusKey(r.status);
+            return {
+                type: 'reservation',
+                title: reservationActivityTitle[statusKey] || 'Reservation mise a jour',
+                description: `${r.property?.titre || 'Bien'} - ${statusKey}`,
+                time: r.updatedAt || r.createdAt,
+                status: statusKey === 'annulee' ? 'danger' : statusKey === 'en_attente' ? 'warning' : 'info',
+            };
+        }),
     ]
         .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
         .slice(0, 10);
@@ -266,17 +278,18 @@ module.exports = asyncHandler(async (req, res) => {
                 id: r._id,
                 reference: r.reference || String(r._id),
                 propertyTitle: r.property?.titre || 'Bien',
-                customer: `${r.user?.name || ''} ${r.user?.nom || ''}`.trim() || r.user?.email || 'Client',
+                customer: r.user?.nom || r.user?.name || r.user?.email || 'Client',
                 status: normalizeReservationStatusKey(r.status),
                 visitDate: r.date,
                 createdAt: r.createdAt,
+                updatedAt: r.updatedAt || r.createdAt,
             })),
             messages: latestMessages.map((m) => ({
                 id: m._id,
                 subject: m.sujet || 'Sans sujet',
                 read: Boolean(m.lu),
-                from: `${m.expediteur?.name || ''} ${m.expediteur?.nom || ''}`.trim() || m.expediteur?.email || 'Expediteur',
-                to: `${m.destinataire?.name || ''} ${m.destinataire?.nom || ''}`.trim() || m.destinataire?.email || 'Destinataire',
+                from: m.expediteur?.nom || m.expediteur?.name || m.expediteur?.email || 'Expediteur',
+                to: m.destinataire?.nom || m.destinataire?.name || m.destinataire?.email || 'Destinataire',
                 createdAt: m.createdAt,
             })),
         },

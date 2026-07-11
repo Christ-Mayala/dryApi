@@ -120,6 +120,8 @@ const confirmReservation = require('../controller/reservation.confirm.controller
 const acknowledgeReservation = require('../controller/reservation.ack.controller');
 const getReservationById = require('../controller/reservation.get.controller');
 const updateReservationStatus = require('../controller/reservation.status.controller');
+const getReservationReceipt = require('../controller/reservation.receipt.controller');
+const getReservationContract = require('../controller/reservation.contract.controller');
 
 
 
@@ -178,6 +180,9 @@ router.patch('/:id/status', protect, validateId, validateSCIM.reservation.update
 
 
 router.get('/:id', protect, validateId, getReservationById);
+
+router.get('/:id/receipt', protect, validateId, getReservationReceipt);
+router.get('/:id/contract', protect, validateId, getReservationContract);
 
 
 

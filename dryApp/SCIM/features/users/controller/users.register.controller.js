@@ -32,10 +32,23 @@ module.exports = asyncHandler(async (req, res) => {
         return sendResponse(res, null, 'Numero de telephone invalide.', false);
     }
 
-    const exists = await User.findOne({ email: payload.email });
-    if (exists) return sendResponse(res, null, 'Cet email est déjà utilisé', false);
+    const existsEmail = await User.findOne({ email: payload.email });
+    if (existsEmail) return sendResponse(res, null, 'Cet email est déjà utilisé', false);
 
-    const user = await User.create(payload);
+    const existsPhone = await User.findOne({ telephone: payload.telephone });
+    if (existsPhone) return sendResponse(res, null, 'Ce numéro de téléphone est déjà utilisé', false);
+
+    let user;
+    try {
+        user = await User.create(payload);
+    } catch (e) {
+        if (e?.code === 11000) {
+            const field = Object.keys(e.keyPattern || {})[0];
+            if (field === 'telephone') return sendResponse(res, null, 'Ce numéro de téléphone est déjà utilisé', false);
+            return sendResponse(res, null, 'Cet email est déjà utilisé', false);
+        }
+        throw e;
+    }
 
     // Générer une clé API pour l'utilisateur
     const apiKey = generateApiKey();

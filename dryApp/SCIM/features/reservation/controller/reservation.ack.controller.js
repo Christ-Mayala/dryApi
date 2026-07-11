@@ -3,7 +3,7 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
 const MessageSchema = require('../../message/model/message.schema');
-const { buildStatusHistoryEntry, decorateReservationForClient, findAdminContact, formatVisitDate, notifyNewMessage } = require('./reservation.support.util');
+const { buildStatusHistoryEntry, decorateReservationForClient, findAdminContact, formatVisitDate, normalizeRequestTypeKey, getRequestTypeLabel, notifyNewMessage } = require('./reservation.support.util');
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
@@ -46,12 +46,13 @@ module.exports = asyncHandler(async (req, res) => {
         if (admin && String(admin._id) !== String(req.user.id)) {
             const reference = reservation.reference || reservation._id;
             const dateLabel = formatVisitDate(reservation.date);
+            const requestTypeLabel = getRequestTypeLabel(normalizeRequestTypeKey(reservation.requestType));
             const msg = await Message.create({
                 expediteur: req.user.id,
                 destinataire: admin._id,
-                sujet: `Réception confirmée — ${reservation.property?.titre || 'visite'}`,
+                sujet: `Réception confirmée — ${reservation.property?.titre || requestTypeLabel}`,
                 contenu: [
-                    `Le client a confirmé la réception de la notification de visite.`,
+                    `Le client a confirmé la réception de la notification de ${requestTypeLabel.toLowerCase()}.`,
                     ``,
                     `📋 Référence : ${reference}`,
                     `🏠 Bien : ${reservation.property?.titre || '—'}`,

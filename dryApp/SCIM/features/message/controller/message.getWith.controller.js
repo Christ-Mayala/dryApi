@@ -29,8 +29,8 @@ module.exports = asyncHandler(async (req, res) => {
     const total = await Message.countDocuments(criteria);
 
     const messages = await Message.find(criteria)
-        .populate('expediteur', 'name nom email')
-        .populate('destinataire', 'name nom email')
+        .populate('expediteur', 'name nom email role')
+        .populate('destinataire', 'name nom email role')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit);
