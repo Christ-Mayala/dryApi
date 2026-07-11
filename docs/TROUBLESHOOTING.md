@@ -9,21 +9,23 @@ Solutions aux problèmes courants rencontrés avec l'API DRY.
 ### Q: La connexion MongoDB échoue
 
 **Symptômes:**
+
 - Erreur `MongoServerSelectionError` au démarrage
 - Health check `/health/ready` retourne `NOT_READY`
 - Logs: `Connexion MongoDB impossible`
 
 **Causes possibles et solutions:**
 
-| Cause | Solution |
-|-------|----------|
+| Cause               | Solution                                                                 |
+| ------------------- | ------------------------------------------------------------------------ |
 | MongoDB non démarré | `sudo systemctl start mongod` ou `brew services start mongodb-community` |
-| URI incorrecte | Vérifier `MONGO_URI` dans `.env` |
-| Firewall bloque | Vérifier que le port 27017 est accessible |
-| Auth échouée | Vérifier user/password dans l'URI |
-| Atlas whitelist IP | Ajouter l'IP actuelle dans Atlas Network Access |
+| URI incorrecte      | Vérifier `MONGO_URI` dans `.env`                                         |
+| Firewall bloque     | Vérifier que le port 27017 est accessible                                |
+| Auth échouée        | Vérifier user/password dans l'URI                                        |
+| Atlas whitelist IP  | Ajouter l'IP actuelle dans Atlas Network Access                          |
 
 **Vérification rapide:**
+
 ```bash
 # Tester la connexion
 mongosh "mongodb://localhost:27017/dryapi" --eval "db.runCommand({ping:1})"
@@ -37,11 +39,13 @@ curl http://localhost:5000/health/ready
 ### Q: Redis ne répond pas
 
 **Symptômes:**
+
 - Cache non fonctionnel
 - Rate limiting désactivé
 - Logs: `Redis connection refused`
 
 **Solutions:**
+
 ```bash
 # Vérifier si Redis tourne
 redis-cli ping  # Doit retourner PONG
@@ -62,12 +66,14 @@ docker run -d -p 6379:6379 redis:alpine
 ### Q: Erreur "Non autorisé" malgré un token valide
 
 **Causes possibles:**
+
 1. **JWT_SECRET changé** → Les anciens tokens sont invalides
 2. **Token expiré** → Vérifier `JWT_EXPIRE` dans `.env`
 3. **Mauvais header** → Doit être `Authorization: Bearer <token>`
 4. **Compte désactivé** → Vérifier le statut du compte
 
 **Vérifications:**
+
 ```bash
 # Décoder le token (sans vérifier la signature)
 echo "<token>" | cut -d'.' -f2 | base64 -d 2>/dev/null || echo "Token invalide"
@@ -79,17 +85,47 @@ curl -I http://localhost:5000/api/v1/scim/auth/profile \
 
 ---
 
+### Q: /system/status refuse le mot de passe alors qu'il est correct
+
+**Symptômes:** Le formulaire de connexion du dashboard système
+(`/system/status`) renvoie toujours "Mot de passe requis" même en
+tapant le bon mot de passe.
+
+**Cause fréquente:** si `SYSTEM_PASSWORD` dans `.env` contient un `#`
+et n'est **pas** entre guillemets, `dotenv` traite tout ce qui suit le
+`#` comme un commentaire et tronque silencieusement la valeur — le mot
+de passe réellement chargé en mémoire est plus court que celui écrit
+dans le fichier, donc rien ne matche jamais.
+
+**Solution:** entourer la valeur de guillemets dans `.env` :
+
+```bash
+SYSTEM_PASSWORD="Mon#MotDePasse2026"
+```
+
+**Vérification rapide** (sans jamais afficher le mot de passe en clair) :
+
+```bash
+node -e "require('dotenv').config(); console.log('longueur chargée:', process.env.SYSTEM_PASSWORD.length)"
+```
+
+Comparez avec la longueur réelle de votre mot de passe — si c'est plus court, c'est ce problème.
+
+---
+
 ### Q: Rate limiting bloque mes requêtes
 
 **Symptômes:** Réponse 429 avec headers `X-RateLimit-*`
 
 **Solutions:**
+
 1. Vérifier les headers `X-RateLimit-Remaining` pour savoir combien reste
 2. Attendre le temps indiqué par `X-RateLimit-Reset`
 3. Demander une clé API pour augmenter les limites
 4. Vérifier que vous utilisez bien le header `Authorization`
 
 **Commandes:**
+
 ```bash
 # Voir les headers de rate limiting
 curl -s -D - http://localhost:5000/api/v1/scim/property -o /dev/null | grep -i ratelimit
@@ -105,11 +141,13 @@ curl -s http://localhost:5000/api/v1/scim/property | jq '.'
 ### Q: Un utilisateur voit les données d'un autre
 
 **Vérifications:**
+
 1. Le middleware `protect` est-il bien appliqué à la route ?
 2. La requête MongoDB filtre-t-elle bien par `userId` ?
 3. Le `req.user` est-il correctement défini ?
 
 **Correctif typique:**
+
 ```javascript
 // Dans le controller, toujours filtrer par userId
 const data = await Model.find({ userId: req.user._id });
@@ -123,9 +161,10 @@ const data = await Model.find({ userId: req.user._id });
 ### Q: L'API répond lentement
 
 **Diagnostic:**
+
 ```bash
-# Voir les logs de requêtes lentes
-tail -f logs/combined.log | grep "Requête lente"
+# Voir les logs de requêtes lentes (npm run logs, ou directement :)
+tail -f logs/info.log logs/error.log | grep "Requête lente"
 
 # Vérifier les métriques Prometheus
 curl http://localhost:5000/metrics | grep dry_http_request_duration
@@ -150,6 +189,7 @@ curl http://localhost:5000/health/ready | jq '.checks.memory'
 ### Q: Docker build échoue
 
 **Solutions:**
+
 ```bash
 # Nettoyer le cache Docker
 docker builder prune -a
@@ -165,6 +205,7 @@ docker build -t dryapi:test . 2>&1 | tee build.log
 ### Q: Kubernetes pod crash en boucle (CrashLoopBackOff)
 
 **Vérifications:**
+
 ```bash
 # Voir les logs du pod
 kubectl logs -n dryapi deployment/dry-api
@@ -183,12 +224,14 @@ kubectl get events -n dryapi --sort-by='.lastTimestamp'
 ### Q: Erreur "ValidationError" pour des données valides
 
 **Causes:**
+
 1. **Schéma Zod/Joi différent** entre la doc et le code
 2. **Types incorrects** (nombre au lieu de string)
 3. **Champs obligatoires** manquants
 4. **Format** attendu vs fourni
 
 **Debug:**
+
 ```javascript
 // Logger les données reçues
 console.log('Body reçu:', JSON.stringify(req.body, null, 2));
@@ -202,6 +245,7 @@ console.log('Schéma attendu:', schema.describe());
 ### Q: Les logs ne s'affichent pas
 
 **Vérifications:**
+
 ```bash
 # Vérifier le niveau de log
 echo $LOG_LEVEL  # Doit être 'debug' pour voir tous les logs
@@ -242,6 +286,7 @@ curl -s -D - http://localhost:5000/api/v1/scim/property -o /dev/null | grep -i a
 ## Support
 
 Si vous ne trouvez pas de solution :
+
 - **Email:** cybertouch2012@gmail.com
 - **GitHub Issues:** Signaler un bug
 - **Docs API:** http://localhost:5000/api-docs
