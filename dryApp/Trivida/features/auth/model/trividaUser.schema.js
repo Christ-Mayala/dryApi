@@ -30,6 +30,11 @@ const TrividaUserSchema = new mongoose.Schema({
     resetCode: { type: String, select: false, default: null },
     resetCodeExpires: { type: Date, select: false, default: null },
     
+    // Quota IA quotidien (5 requêtes/jour avec la clé globale)
+    // Remis à 0 chaque minuit via aiRequestsResetAt
+    aiRequestsToday: { type: Number, default: 0 },
+    aiRequestsResetAt: { type: Date, default: null },
+    
     // Sécurité avancée
     loginAttempts: { type: Number, required: true, default: 0 },
     lockUntil: { type: Number },
