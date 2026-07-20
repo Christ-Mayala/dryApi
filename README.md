@@ -106,9 +106,13 @@ npm run test:integration # Tests d'intégration complets
 npm run test:smoke       # Tests de fumée
 npm run coverage         # Rapport de couverture
 npm run ci:check         # CI complète (lint + format + tests)
-# ⚠️ test:integration/e2e/smoke lancent un seed sur toutes les apps — certains
-# seeders (ex: SCIM) sont destructeurs. Copier .env.test.example en .env.test
-# avec une base isolée avant de lancer ces commandes (voir docs/04_TESTING_GUIDE.md).
+# ⚠️ test:integration/e2e/smoke lancent un seed sur toutes les apps. Les seeders
+# doivent être additifs (jamais de deleteMany sur des donnees potentiellement
+# reelles — voir docs/04_TESTING_GUIDE.md). Copier .env.test.example en .env.test
+# avec une base isolée avant de lancer ces commandes par prudence.
+npm run seed              # additif uniquement, ne supprime jamais rien
+npm run seed:reset        # supprime UNIQUEMENT ce que le seed a lui-meme cree, puis reseed
+npm run seed:clean        # supprime sans reseeder
 
 # Génération
 npm run create-app       # Assistant pour générer une nouvelle app backend

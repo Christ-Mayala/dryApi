@@ -29,8 +29,13 @@ router.patch('/profile', protect, withAudit('UPDATE_PROFILE'), upload.single('av
 router.patch('/password', protect, withAudit('CHANGE_PASSWORD'), changePassword);
 
 // Réinitialisation de mot de passe (publique)
+// SECURITE : /verify vérifie un code a 6 chiffres (~900k combinaisons) contre
+// la base — sans rate-limit, ce endpoint était brute-forçable sans aucune
+// limite (contrairement a /request et /reset, deja proteges). authLimiter
+// ajouté pour fermer ce trou, sans changer le format de code ni casser les
+// clients existants qui appellent deja cette route.
 router.post('/password-reset/request', authLimiter, requestPasswordReset);
-router.post('/password-reset/verify', verifyResetCode);
+router.post('/password-reset/verify', authLimiter, verifyResetCode);
 router.post('/password-reset/reset', authLimiter, resetPassword);
 
 

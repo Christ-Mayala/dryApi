@@ -1,22 +1,21 @@
-const crypto = require('crypto');
 const { logger, circuitBreaker } = require('./inferenceLogger');
 
-// Reference to ApiKeysModel for persistent blacklisting — set at startup
+// Référence au modèle ApiKeysModel pour la mise en liste noire persistante — défini au démarrage
 let _ApiKeysModel = null;
 function setApiKeysModel(model) { _ApiKeysModel = model; }
 
 /**
  * @typedef {Object} KeyStats
- * @property {number} totalRequests
- * @property {number} successCount
- * @property {number} failureCount
- * @property {number} totalLatencyMs
- * @property {number[]} recentLatencies
- * @property {number} lastUsedAt
- * @property {number | null} cooldownUntil
- * @property {string[]} recentErrors
- * @property {'active' | 'invalid' | 'cooldown'} status
- * @property {number | null} disabledAt
+ * @property {number} totalRequests       - Nombre total de requêtes
+ * @property {number} successCount        - Nombre de succès
+ * @property {number} failureCount        - Nombre d'échecs
+ * @property {number} totalLatencyMs      - Latence cumulée en ms
+ * @property {number[]} recentLatencies   - Dernières latences enregistrées
+ * @property {number} lastUsedAt          - Timestamp de la dernière utilisation
+ * @property {number | null} cooldownUntil - Timestamp de fin de cooldown
+ * @property {string[]} recentErrors      - Dernières erreurs enregistrées
+ * @property {'active' | 'invalid' | 'cooldown'} status - Statut de la clé
+ * @property {number | null} disabledAt   - Timestamp de désactivation
  */
 
 /**
@@ -31,25 +30,26 @@ function setApiKeysModel(model) { _ApiKeysModel = model; }
 
 /**
  * @typedef {Object} ProviderMetrics
- * @property {number} totalRequests
- * @property {number} successCount
- * @property {number} failureCount
- * @property {number} totalLatencyMs
- * @property {number[]} recentLatencies
- * @property {number} lastUpdatedAt
- * @property {number} priorityBoost
- * @property {boolean} rateLimited
- * @property {number | null} retryAfter
+ * @property {number} totalRequests       - Nombre total de requêtes
+ * @property {number} successCount        - Nombre de succès
+ * @property {number} failureCount        - Nombre d'échecs
+ * @property {number} totalLatencyMs      - Latence cumulée en ms
+ * @property {number[]} recentLatencies   - Dernières latences
+ * @property {number} lastUpdatedAt       - Dernière mise à jour
+ * @property {number} priorityBoost       - Bonus de priorité de base
+ * @property {boolean} rateLimited        - Provider actuellement rate-limité
+ * @property {number | null} retryAfter   - Timestamp à partir duquel réessayer
  */
 
-const KEY_POOL = new Map(); // Map<platform, Map<keyId, StoredKey>>
+const KEY_POOL = new Map();        // Map<platform, Map<keyId, StoredKey>>
 const PROVIDER_METRICS = new Map(); // Map<platform, ProviderMetrics>
-const COOLDOWN_MS = 120000;
-const RECENT_LATENCY_COUNT = 10;
-const MAX_ERRORS_BEFORE_COOLDOWN = 3;
+const COOLDOWN_MS = 120000;         // Durée de cooldown par défaut : 2 minutes
+const RECENT_LATENCY_COUNT = 10;    // Nombre de latences récentes à conserver
+
+// Décroissance des métriques provider après 1 heure d'inactivité
 const PROVIDER_METRICS_DECAY_MS = 3600000;
 
-// IDE Mode preferred providers
+// Préférences de provider en mode IDE (vitesse privilégiée)
 const IDE_PREFERRED_PROVIDERS = {
   'groq': 1000,
   'nvidia': 900,
@@ -70,7 +70,7 @@ const IDE_PREFERRED_PROVIDERS = {
 };
 
 /**
- * Initialize KeyPoolManager from DB
+ * Initialise le pool de clés depuis la base de données au démarrage.
  */
 async function initializeKeyPool(ApiKeysModel) {
   logger.debug('[KEYPOOL]', {
@@ -128,13 +128,15 @@ async function initializeKeyPool(ApiKeysModel) {
 }
 
 /**
- * Decay old provider metrics to keep scores fresh
+ * Fait décroître les métriques anciennes pour garder les scores à jour.
+ * Appelé avant chaque calcul de score.
  */
 function decayProviderMetrics() {
   const now = Date.now();
-  for (const [platform, metrics] of PROVIDER_METRICS) {
+  for (const [, metrics] of PROVIDER_METRICS) {
     const elapsed = now - metrics.lastUpdatedAt;
     if (elapsed > PROVIDER_METRICS_DECAY_MS) {
+      // Diviser par 2 les compteurs pour effacer progressivement l'historique ancien
       metrics.totalRequests = Math.floor(metrics.totalRequests * 0.5);
       metrics.successCount = Math.floor(metrics.successCount * 0.5);
       metrics.failureCount = Math.floor(metrics.failureCount * 0.5);
@@ -142,6 +144,7 @@ function decayProviderMetrics() {
       metrics.recentLatencies = metrics.recentLatencies.slice(Math.floor(metrics.recentLatencies.length / 2));
       metrics.lastUpdatedAt = now;
 
+      // Réinitialiser le rate limit si le délai est passé
       if (metrics.retryAfter && now > metrics.retryAfter) {
         metrics.rateLimited = false;
         metrics.retryAfter = null;
@@ -151,7 +154,8 @@ function decayProviderMetrics() {
 }
 
 /**
- * Get dynamic provider score with real-time metrics
+ * Calcule le score dynamique d'un provider basé sur ses métriques temps réel.
+ * Un score plus élevé = provider privilégié.
  */
 function getProviderScore(platform) {
   decayProviderMetrics();
@@ -160,15 +164,18 @@ function getProviderScore(platform) {
 
   let score = metrics.priorityBoost;
 
+  // Forte pénalité si le provider est rate-limité
   if (metrics.rateLimited) {
     score -= 1000;
   }
 
+  // Bonus taux de succès (0–300 points)
   if (metrics.totalRequests > 0) {
     const successRate = metrics.successCount / metrics.totalRequests;
     score += successRate * 300;
   }
 
+  // Bonus latence (0–200 points, latence < 3s = score maximum)
   if (metrics.recentLatencies.length > 0) {
     const avgLatency = metrics.recentLatencies.reduce((a, b) => a + b, 0) / metrics.recentLatencies.length;
     const latencyScore = Math.max(0, 200 * (1 - avgLatency / 3000));
@@ -179,7 +186,7 @@ function getProviderScore(platform) {
 }
 
 /**
- * Get sorted list of platforms by dynamic score
+ * Retourne la liste des plateformes triées par score décroissant.
  */
 function getSortedPlatforms() {
   return Array.from(PROVIDER_METRICS.keys())
@@ -187,7 +194,8 @@ function getSortedPlatforms() {
 }
 
 /**
- * Get the best available key for a platform
+ * Retourne la meilleure clé disponible pour une plateforme donnée.
+ * Tient compte du statut, du cooldown et du score individuel de chaque clé.
  */
 function getBestKey(platform) {
   const platformKeys = KEY_POOL.get(platform);
@@ -197,7 +205,7 @@ function getBestKey(platform) {
   let bestKey = null;
   let bestScore = -Infinity;
 
-  for (const [keyId, key] of platformKeys) {
+  for (const [, key] of platformKeys) {
     if (key.stats.status !== 'active') continue;
     if (key.stats.cooldownUntil && now < key.stats.cooldownUntil) continue;
 
@@ -212,23 +220,27 @@ function getBestKey(platform) {
 }
 
 /**
- * Calculate a dynamic score for a key
+ * Calcule un score dynamique pour une clé individuelle.
+ * Basé sur le taux de succès, la latence et la fraîcheur d'utilisation.
  */
 function calculateKeyScore(key) {
   const { stats } = key;
-  let score = 50;
+  let score = 50; // score de base
 
+  // Bonus taux de succès (0–30 points)
   if (stats.totalRequests > 0) {
     const successRate = stats.successCount / stats.totalRequests;
     score += successRate * 30;
   }
 
+  // Bonus latence (0–20 points)
   if (stats.recentLatencies.length > 0) {
     const avgLatency = stats.recentLatencies.reduce((a, b) => a + b, 0) / stats.recentLatencies.length;
     const latencyScore = Math.max(0, 20 * (1 - avgLatency / 5000));
     score += latencyScore;
   }
 
+  // Bonus fraîcheur : les clés récemment utilisées avec succès sont légèrement favorisées
   const recencyMs = Date.now() - stats.lastUsedAt;
   const recencyScore = Math.max(0, 10 * (1 - recencyMs / (3600000 * 24)));
   score += recencyScore;
@@ -237,7 +249,8 @@ function calculateKeyScore(key) {
 }
 
 /**
- * Record a successful request for a key AND provider
+ * Enregistre une requête réussie pour une clé ET son provider.
+ * Met à jour les métriques en mémoire et réinitialise le circuit breaker.
  */
 function recordKeySuccess(platform, keyId, latencyMs) {
   const platformKeys = KEY_POOL.get(platform);
@@ -255,10 +268,12 @@ function recordKeySuccess(platform, keyId, latencyMs) {
         stats.recentLatencies.shift();
       }
 
+      // Réduire légèrement le compteur d'échecs après un succès
       stats.failureCount = Math.max(0, stats.failureCount - 1);
     }
   }
 
+  // Mettre à jour les métriques du provider
   let metrics = PROVIDER_METRICS.get(platform);
   if (!metrics) {
     metrics = {
@@ -295,7 +310,8 @@ function recordKeySuccess(platform, keyId, latencyMs) {
 }
 
 /**
- * Extract retry delay from error message
+ * Extrait le délai de retry depuis un message d'erreur (ex: "retry after 30s").
+ * Retourne le délai en millisecondes, ou null si introuvable.
  */
 function extractRetryDelay(errorMessage) {
   if (!errorMessage) return null;
@@ -321,9 +337,14 @@ function extractRetryDelay(errorMessage) {
 }
 
 /**
- * Record a failed request for a key AND provider
+ * Enregistre un échec pour une clé ET son provider.
+ * Applique le cooldown approprié selon le type d'erreur :
+ * - 401/403 → clé invalide, mise en liste noire 24h et persistée en DB
+ * - 429     → rate limit, cooldown selon le délai extrait ou 60s par défaut
+ * - autre   → cooldown standard de 2 minutes
  */
 function recordKeyFailure(platform, keyId, errorMessage) {
+  // Ignorer les erreurs d'abandon réseau (interruption utilisateur, timeout client)
   if (errorMessage && errorMessage.toLowerCase().includes('aborted')) {
     logger.debug('[KEYPOOL]', {
       event: 'IGNORE_ABORTED',
@@ -340,6 +361,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
   let providerRetryAfter = null;
 
   if (errorMessage && (errorMessage.toLowerCase().includes('401') || errorMessage.toLowerCase().includes('user not found'))) {
+    // Clé invalide / non autorisée → liste noire 24h
     cooldownMs = 24 * 60 * 60 * 1000;
     keyStatus = 'invalid';
     logger.event('KEY_BLACKLISTED', {
@@ -348,7 +370,8 @@ function recordKeyFailure(platform, keyId, errorMessage) {
       reason: '401_UNAUTHORIZED',
       cooldownUntil: now + cooldownMs
     });
-  } else if (errorMessage && (errorMessage.toLowerCase().includes('403'))) {
+  } else if (errorMessage && errorMessage.toLowerCase().includes('403')) {
+    // Accès interdit → liste noire 24h
     cooldownMs = 24 * 60 * 60 * 1000;
     keyStatus = 'invalid';
     logger.event('KEY_BLACKLISTED', {
@@ -358,6 +381,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
       cooldownUntil: now + cooldownMs
     });
   } else if (errorMessage && (errorMessage.toLowerCase().includes('429') || errorMessage.toLowerCase().includes('quota exceeded'))) {
+    // Rate limit → cooldown selon le délai du provider ou 60s par défaut
     const extractedDelay = extractRetryDelay(errorMessage);
     if (extractedDelay) {
       cooldownMs = extractedDelay;
@@ -376,6 +400,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
     });
   }
 
+  // Mettre à jour les stats de la clé en mémoire
   const platformKeys = KEY_POOL.get(platform);
   if (platformKeys) {
     const key = platformKeys.get(keyId);
@@ -394,7 +419,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
       stats.status = keyStatus;
       if (keyStatus === 'invalid') {
         stats.disabledAt = now;
-        // Persist to DB asynchronously so dead key is never retried after restart
+        // Persister en DB de façon asynchrone pour que la clé morte ne soit plus retentée après redémarrage
         if (_ApiKeysModel) {
           _ApiKeysModel.updateOne(
             { _id: keyId },
@@ -407,6 +432,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
     }
   }
 
+  // Mettre à jour les métriques du provider
   let metrics = PROVIDER_METRICS.get(platform);
   if (!metrics) {
     metrics = {
@@ -443,7 +469,7 @@ function recordKeyFailure(platform, keyId, errorMessage) {
 }
 
 /**
- * Get stats for a key
+ * Retourne les statistiques en mémoire d'une clé spécifique.
  */
 function getKeyStats(platform, keyId) {
   const platformKeys = KEY_POOL.get(platform);
@@ -456,7 +482,8 @@ function getKeyStats(platform, keyId) {
 }
 
 /**
- * Get all stats for all providers and keys
+ * Retourne toutes les statistiques de tous les providers et clés.
+ * Utilisé par le tableau de bord d'administration.
  */
 function getAllStats() {
   const stats = {

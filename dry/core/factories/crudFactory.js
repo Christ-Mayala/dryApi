@@ -128,11 +128,13 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     const Model = req.getModel(modelName, schema);
     const qb = queryBuilder(Model, populateFields);
     await qb(req, res, async () => {
-      const results = req.queryResults;
-      if (transformOutput && results.data) {
-        results.data = await Promise.all(results.data.map(doc => transformOutput({ req, doc })));
+      // queryBuilder attache son resultat sur res.advancedResults (pas req.queryResults).
+      const { data, pagination } = res.advancedResults || { data: [], pagination: undefined };
+      let list = data;
+      if (transformOutput && list) {
+        list = await Promise.all(list.map(doc => transformOutput({ req, doc })));
       }
-      sendResponse(res, results, `Liste des ${modelName} récupérée`, true);
+      sendResponse(res, list, `Liste des ${modelName} récupérée`, true, pagination);
     });
   });
 

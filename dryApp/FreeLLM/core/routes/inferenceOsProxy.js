@@ -252,6 +252,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
 
     try {
       let userId = null;
+    let allowSharedKeysFallback = false; // seul Trivida (unifiedApiKey) peut utiliser les clés partagées
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
     const User = req.getModel('User');
 
@@ -263,11 +264,14 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         const firstUser = await User.findOne().lean();
         userId = firstUser ? firstUser._id : null;
       }
+      allowSharedKeysFallback = true; // requêtes Trivida → accès aux clés partagées autorisé
     } else if (token) {
       try {
         const { verifyToken } = require('../../../../dry/utils/auth/jwt.util');
         const decoded = verifyToken(token);
         userId = decoded.id;
+        // Utilisateurs du site freellmapi (JWT) → doivent utiliser leurs propres clés uniquement
+        allowSharedKeysFallback = false;
       } catch (err) {
         profiler.mark('auth');
         finalStatus = 'error';
@@ -652,7 +656,8 @@ Sortie :
           taskType,
           isIdeMode,
           !!(tools && tools.length > 0), // hasTools = true si outils présents
-          userId // per-account key isolation
+          userId, // per-account key isolation
+          allowSharedKeysFallback // only Trivida can use shared keys
         );
         profiler.mark('routing');
         
@@ -908,6 +913,27 @@ Sortie :
           lastError = err;
           // Just retry the same key/route, DO NOT count as fallback or skip
           continue;
+        }
+
+        // NO_API_KEYS : l'utilisateur n'a pas de clés configurées → répondre immédiatement sans retry
+        if (err.code === 'no_api_keys') {
+          logger.event({
+            component: 'InferenceOS',
+            event: 'NO_API_KEYS',
+            requestId,
+            userId
+          });
+          finalStatus = 402;
+          finalError = err.message;
+          res.status(402).json({
+            error: {
+              message: err.message,
+              type: 'no_api_keys',
+              code: 'no_api_keys',
+              requestId
+            }
+          });
+          return;
         }
 
         // --- CRITICAL ERROR CLASSIFICATION ---

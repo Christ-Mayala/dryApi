@@ -7,10 +7,32 @@
  * @param {string} options.select - Sélection de champs par défaut (ex: '-password')
  * @param {Object} options.defaultFilter - Filtre par défaut à appliquer (ex: { isDeleted: false })
  */
+// Echappe les caracteres speciaux regex avant de construire un $regex a partir
+// d'une entree utilisateur libre (req.query.search) — sans ca, un pattern a
+// backtracking catastrophique (ex: "(a+)+$") bloque le thread Mongo/Node en
+// evaluation ReDoS. Toute recherche reste "contains, insensible a la casse"
+// pour l'utilisateur, juste sans interpretation des metacaracteres regex.
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Limite haute absolue de pagination — sans plafond, un client (authentifie ou
+// non selon la route) peut demander ?limit=5000000 et forcer un .find().limit()
+// non borne, DoS memoire/CPU. 100 couvre tous les usages legitimes actuels.
+const MAX_LIMIT = 100;
+
 const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async (req, res, next) => {
     try {
-        // Résoudre le modèle (direct ou via req.getModel)
-        const model = typeof modelOrGetter === 'function' ? modelOrGetter(req) : modelOrGetter;
+        // Résoudre le modèle (direct ou via une fonction getter(req)).
+        // ATTENTION : un modèle Mongoose compilé est lui-même une fonction
+        // (constructeur), donc `typeof === 'function'` seul ne suffit pas à
+        // distinguer "un modèle passé directement" d'"un getter à appeler avec req".
+        // On ne traite comme getter que les fonctions qui n'ont PAS les marqueurs
+        // d'un modèle Mongoose compilé (modelName + schema).
+        const isCompiledModel = (val) =>
+            typeof val === 'function' && Boolean(val.modelName) && Boolean(val.schema);
+        const model =
+            typeof modelOrGetter === 'function' && !isCompiledModel(modelOrGetter)
+                ? modelOrGetter(req)
+                : modelOrGetter;
         if (!model) {
             return next(new Error('Modèle requis pour queryBuilder'));
         }
@@ -92,7 +114,7 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
 
                 if (searchableFields.length > 0) {
                     const orConditions = searchableFields.map(field => ({
-                        [field]: { $regex: searchTerm, $options: 'i' }
+                        [field]: { $regex: escapeRegex(searchTerm), $options: 'i' }
                     }));
                     const currentQuery = { ...findQuery };
                     delete currentQuery.$and;
@@ -112,7 +134,7 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
             }).filter(p => !['_id', '__v', 'password', 'token'].includes(p));
             
             if (stringPaths.length > 0) {
-                const searchRegex = { $regex: req.query.search, $options: 'i' };
+                const searchRegex = { $regex: escapeRegex(req.query.search), $options: 'i' };
                 const orConditions = stringPaths.map(field => ({ [field]: searchRegex }));
                 const currentQuery = { ...findQuery };
                 delete currentQuery.$and;
@@ -147,7 +169,10 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
 
         // 10. Pagination
         const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || parseInt(req.query.rows, 10) || 10;
+        const limit = Math.min(
+            MAX_LIMIT,
+            parseInt(req.query.limit, 10) || parseInt(req.query.rows, 10) || 10,
+        );
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
 

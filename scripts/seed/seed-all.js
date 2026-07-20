@@ -3,6 +3,17 @@
 /**
  * Seeder global DRY
  * - Cree un admin par application si absent
+ * - Appelle le seed.js de chaque app detectee dans dryApp/
+ *
+ * CONVENTION (obligatoire pour tout seed.js) : additif uniquement, jamais
+ * destructeur. Un seed.js ne doit jamais faire deleteMany({})/drop() sur des
+ * donnees potentiellement reelles - il doit detecter que ses donnees existent
+ * deja (upsert par cle naturelle, ou skip si la collection cible a deja des
+ * documents) et ne rien faire dans ce cas plutot que d'ecraser. Pour repartir
+ * d'une base de demo vierge volontairement, utiliser la commande separee et
+ * explicite `npm run seed:reset` (seed-clean.js, qui ne supprime que ce que le
+ * seed a lui-meme cree via le journal __seed_logs, puis relance ce script).
+ * `npm run seed` seul ne doit jamais rien supprimer.
  *
  * Variables optionnelles:
  * - SEED_ADMIN_EMAIL

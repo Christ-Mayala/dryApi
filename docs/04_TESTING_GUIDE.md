@@ -32,10 +32,22 @@ npm run coverage
 
 `test:integration`, `test:e2e` et `test:smoke` en revanche démarrent un vrai serveur
 et lancent `scripts/seed/seed-all.js`, qui appelle le `seed.js` de **chaque app**
-détectée dans `dryApp/`. Certains de ces seeders sont **destructeurs** (ex:
-`dryApp/SCIM/seed.js` fait `deleteMany({})` sur plusieurs collections avant de
-reseeder). Si ces scripts se connectent au cluster MongoDB Atlas de production
-(celui de `.env`), ils peuvent **vider et réécraser de vraies données**.
+détectée dans `dryApp/`.
+
+**Convention seed : `seed.js` doit toujours être additif, jamais destructeur.** Chaque `seed.js` doit vérifier si ses données existent déjà
+(upsert par clé naturelle, ou skip si une collection cible a déjà des documents) et
+ne jamais faire `deleteMany({})`/`drop()` sur des données potentiellement réelles.
+`dryApp/SCIM/seed.js` (autrefois l'exemple destructeur de référence : `deleteMany({})`
+sur Property/Reservation/Message avant reseed) a été corrigé en ce sens — il détecte
+maintenant des biens déjà présents et ignore tout le bloc biens/réservations/
+messages/favoris plutôt que de l'écraser. Si tu ajoutes un nouveau `seed.js`, suis
+le même principe.
+
+Pour repartir d'une base de démo vierge **volontairement**, une commande distincte et
+explicite existe : `npm run seed:reset` (supprime uniquement les documents que le
+seed a lui-même créés, via `scripts/seed/seed-clean.js` qui s'appuie sur le journal
+`__seed_logs`, puis relance `seed-all.js`). `npm run seed:clean` supprime sans
+reseeder. **`npm run seed` seul ne supprime plus jamais rien.**
 
 Pour éviter ça : `scripts/tests/loadTestEnv.js` (utilisé par `run-integration.js`
 et `smoke-runner.js`) charge `.env.test` en priorité — copier

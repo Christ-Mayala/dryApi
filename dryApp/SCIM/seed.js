@@ -126,6 +126,17 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   const propertySchema = require('./features/property/model/property.schema.js');
   const Property = getModel(appName, 'Property', propertySchema);
 
+  // Seed additif, jamais destructeur : si des biens existent deja (donnees de
+  // demo precedentes OU donnees reelles), on ne touche a rien. Pour repartir
+  // d'une base vierge, utiliser explicitement `npm run seed:reset` (qui supprime
+  // uniquement ce que le seed a lui-meme cree, via seed-clean.js) avant de reseeder.
+  const existingPropertyCount = await Property.countDocuments();
+  if (existingPropertyCount > 0) {
+    console.log(`\n⏭️  ${existingPropertyCount} bien(s) deja present(s) — seed biens/reservations/messages/favoris ignore.`);
+    console.log('    Pour regenerer le jeu de demo : npm run seed:reset\n');
+    return { count };
+  }
+
   // ── Générateur de biens additionnels ──
   const QUARTIERS = [
     'Bacongo', 'Poto-Poto', 'Moungali', 'Ouenze', 'Talangaï',
@@ -679,10 +690,6 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   const allPropertyDocs = [...propertyDocs, ...generatedDocs];
   console.log(`   🏠 Total biens à insérer : ${allPropertyDocs.length} (12 phares + ${generatedDocs.length} générés)`);
 
-  // Supprimer les biens existants pour éviter les doublons
-  await Property.deleteMany({});
-  console.log('   🗑️  Anciens biens supprimés');
-
   // Pré-assigner un slug unique (le suffixe auto-généré par le plugin DRY partagé
   // n'utilise que les 4 derniers chiffres du timestamp ms, ce qui collisionne
   // presque à coup sûr sur un insertMany() de dizaines de documents synchrones)
@@ -881,10 +888,6 @@ module.exports = async ({ appName, getModel, logSeed }) => {
     },
   ];
 
-  // Supprimer les réservations existantes
-  await Reservation.deleteMany({});
-  console.log('   🗑️  Anciennes réservations supprimées');
-
   // Pré-assigner un slug unique (même raison que pour les biens : évite les
   // collisions du suffixe timestamp trop court généré par le plugin DRY partagé)
   reservationDocs.forEach((doc, i) => {
@@ -1078,9 +1081,6 @@ L'équipe SCIM Immobilier`,
       createdAt: new Date('2026-03-05T10:20:00'),
     },
   ];
-
-  await Message.deleteMany({});
-  console.log('   🗑️  Anciens messages supprimés');
 
   // Pré-assigner un slug unique (même raison que pour les biens/réservations)
   messageDocs.forEach((doc, i) => {

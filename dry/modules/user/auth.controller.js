@@ -19,17 +19,17 @@ exports.login = asyncHandler(async (req, res) => {
         throw httpError('Identifiants invalides', 401);
     }
 
-    // Vérif Verrouillage (sauf pour admin)
-    if (user.role !== 'admin' && user.lockUntil && user.lockUntil > Date.now()) {
+    // Vérif Verrouillage — les admins ne sont PAS exemptés : un compte admin
+    // compromis a un impact bien plus grand qu'un compte utilisateur normal,
+    // il doit au moins avoir la même protection anti brute-force.
+    if (user.lockUntil && user.lockUntil > Date.now()) {
         throw httpError('Compte temporairement verrouillé. Trop de tentatives.', 423);
     }
 
     // Vérif Password
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-        if (user.role !== 'admin') {
-            await user.incLoginAttempts();
-        }
+        await user.incLoginAttempts();
         throw httpError('Identifiants invalides', 401);
     }
 

@@ -20,6 +20,7 @@ client_secret_*.json
 *.key
 downloads/
 uploads/
+scripts/seed/data/pelerin-bible/
 _ci_logs/
 nul
 .idea/
