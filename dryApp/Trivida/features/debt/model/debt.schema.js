@@ -8,6 +8,7 @@ const DebtSchema = new mongoose.Schema({
     contactPhone: { type: String },
     
     amount: { type: Number, required: true },
+    initialAmount: { type: Number, default: null }, // Montant initial — préservé même après remboursements partiels
     type: { type: String, enum: ['i_owe', 'owe_me', 'owes_me'], required: true }, // Je dois / On me doit (owes_me = alias legacy)
     status: { type: String, enum: ['pending', 'paid', 'settled', 'cancelled'], default: 'pending', index: true },
     

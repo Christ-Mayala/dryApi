@@ -15,6 +15,54 @@ const { createProfiler, logger, circuitBreaker } = require('../services/inferenc
 
 const AUTO_MODEL_ID = 'auto';
 
+/**
+ * Sanitisation côté serveur — couche de protection supplémentaire.
+ * Appliquée sur tous les messages avant transmission à n'importe quel provider.
+ * Même si le client a déjà nettoyé, cette fonction garantit qu'aucune donnée
+ * personnelle identifiable (IIP) ne sort vers un provider tiers.
+ */
+function sanitizeMessageContent(content) {
+  if (typeof content !== 'string') return content;
+  let s = content;
+  // Téléphones Congo/Afrique centrale
+  s = s.replace(/(\+?243|00243)\s?[6-9]\d[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}/g, '[NUMÉRO]');
+  s = s.replace(/(\+?242|00242)\s?[0-9]\d[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}/g, '[NUMÉRO]');
+  // Numéros internationaux génériques
+  s = s.replace(/\+?\d{1,3}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{3,4}[\s\-]?\d{3,4}/g, '[NUMÉRO]');
+  // Emails
+  s = s.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
+  // Numéros de carte bancaire
+  s = s.replace(/\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b/g, '[COMPTE]');
+  // Noms propres après mots-clés financiers sensibles (aligné sur le client)
+  s = s.replace(
+    /\b(prêt|dette|paiement|remboursement|virement|versement|reçu de|payé à|pour|à|de)\s+([A-ZÀÂÉÈÊËÎÏÔÙÛÜ][a-zàâéèêëîïôùûü]+(\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜ][a-zàâéèêëîïôùûü]+)*)/gi,
+    '$1 [CONTACT]'
+  );
+  return s;
+}
+
+function sanitizeMessages(messages) {
+  if (!Array.isArray(messages)) return messages;
+  return messages.map(msg => {
+    if (!msg) return msg;
+    if (typeof msg.content === 'string') {
+      return { ...msg, content: sanitizeMessageContent(msg.content) };
+    }
+    if (Array.isArray(msg.content)) {
+      return {
+        ...msg,
+        content: msg.content.map(part => {
+          if (part?.type === 'text' && typeof part.text === 'string') {
+            return { ...part, text: sanitizeMessageContent(part.text) };
+          }
+          return part;
+        }),
+      };
+    }
+    return msg;
+  });
+}
+
 function isAutoModel(modelId) {
   return modelId === AUTO_MODEL_ID;
 }
@@ -186,7 +234,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       const result = await toolRuntime.executeToolRequest({
         toolName: tool_name,
         toolArgs: tool_args || {},
-        userRequest: user_request || req.body.messages?.map(m => m.content).join('\n') || ''
+        userRequest: safeUserRequest  // sanitisé avant transmission
       });
       
       logger.debug({
@@ -692,13 +740,16 @@ Sortie :
         const requestStart = Date.now();
         profiler.mark('provider');
 
+        // Sanitisation côté serveur — protection IIP avant transmission provider
+        const safeMessages = sanitizeMessages(processedMessages);
+
         try {
           if (stream) {
             let totalOutputTokens = 0;
             let streamStarted = false;
             try {
               const gen = route.provider.streamChatCompletion(
-                route.apiKey, processedMessages, route.modelId,
+                route.apiKey, safeMessages, route.modelId,
                 { 
                   temperature: temperature, 
                   max_tokens: max_tokens, 
@@ -807,7 +858,7 @@ Sortie :
             }
           } else {
             const result = await route.provider.chatCompletion(
-            route.apiKey, processedMessages, route.modelId,
+            route.apiKey, safeMessages, route.modelId,
             { 
               temperature: temperature, 
               max_tokens: max_tokens, 
@@ -1017,19 +1068,21 @@ Sortie :
           fallbackCount
         });
         finalStatus = lastError && lastError.message.includes('429') ? 429 : 502;
-        
-        finalError = lastError ? "All models exhausted. Last error: " + lastError.message : "Error: " + err.message;
-        routeContext.platform = null;
-        routeContext.modelId = null;
-        if (null !== null) tokensContext = null;
-        // logger.request removed
-        
+
+        // Sanitiser les messages d'erreur — certains providers peuvent citer le payload dans leur erreur
+        const safeLastErrMsg = lastError ? sanitizeMessageContent(lastError.message.slice(0, 200)) : null;
+        const safeErrMsg = sanitizeMessageContent(err.message.slice(0, 200));
+
+        finalError = safeLastErrMsg
+          ? 'All models exhausted. Last error: ' + safeLastErrMsg
+          : 'Error: ' + safeErrMsg;
+
         res.status(finalStatus).json({
           error: {
-            message: lastError ? "All models exhausted. Last error: " + lastError.message : "Error: " + err.message,
+            message: finalError,
             type: lastError && lastError.message.includes('429') ? 'rate_limit_error' : 'provider_error',
             requestId,
-            details: err.response?.data || null
+            details: null  // ne jamais retourner err.response?.data (peut contenir le prompt)
           },
         });
         return;
