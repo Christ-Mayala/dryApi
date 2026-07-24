@@ -1,0 +1,105 @@
+name: Backup MongoDB
+
+# ─── DÉCLENCHEURS ──────────────────────────────────
+on:
+  # Backup automatique tous les jours à 2h00
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Backup manuel depuis l'interface GitHub (Actions → Backup MongoDB → Run workflow)
+  workflow_dispatch:
+
+  # Backup à chaque push sur main (optionnel, décommentez si voulu)
+  # push:
+  #   branches: [ main ]
+
+# ─── PERMISSIONS ────────────────────────────────────
+permissions:
+  contents: write   # Nécessaire pour créer des Releases
+  actions: read
+
+# ─── JOB ────────────────────────────────────────────
+jobs:
+  backup:
+    name: 🔄 Backup MongoDB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 💾 Créer le backup MongoDB
+        run: |
+          mkdir -p backups
+          docker run --rm -v ${{ github.workspace }}/backups:/backups mongo:7 \
+            mongodump \
+            --uri="${{ secrets.MONGO_URI }}" \
+            --archive=/backups/dryapi.gz \
+            --gzip
+        shell: bash
+
+      - name: 📏 Vérifier le fichier
+        run: |
+          ls -lh backups/dryapi.gz
+          SIZE=$(stat -c%s backups/dryapi.gz)
+          if [ "$SIZE" -eq 0 ]; then
+            echo "❌ Fichier vide !"
+            exit 1
+          fi
+          echo "✅ Backup valide: $(($SIZE / 1024 / 1024)) Mo"
+
+      - name: 🏷️ Générer le tag du release
+        id: tag
+        run: echo "TAG=backups-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: 📦 Créer / Mettre à jour le Release GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.TAG }}"
+
+          # Vérifier si le release existe déjà
+          if gh release view "$TAG" --repo ${{ github.repository }} &>/dev/null; then
+            echo "📦 Release $TAG existe déjà, mise à jour..."
+          else
+            echo "📦 Création du release $TAG..."
+            gh release create "$TAG" \
+              --repo ${{ github.repository }} \
+              --title "🗄️ Backup MongoDB - $TAG" \
+              --notes "Backup automatique du $(date +'%d/%m/%Y à %H:%M')"
+          fi
+
+          # Upload du backup
+          echo "⬆️ Upload de dryapi.gz..."
+          gh release upload "$TAG" backups/dryapi.gz \
+            --repo ${{ github.repository }} \
+            --clobber
+
+      - name: 🧹 Nettoyer les vieux releases (rétention 30 jours)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CUTOFF=$(date -d '30 days ago' +%s)
+
+          gh release list --repo ${{ github.repository }} --limit 100 \
+            --json tagName,createdAt \
+            -q '.[] | select(.tagName | startswith("backups-")) | "\(.createdAt) \(.tagName)"' \
+          | while read -r CREATED TAG; do
+              CREATED_TS=$(date -d "$CREATED" +%s 2>/dev/null)
+              if [ "$CREATED_TS" -lt "$CUTOFF" ]; then
+                echo "🗑️ Suppression du vieux release: $TAG"
+                gh release delete "$TAG" --repo ${{ github.repository }} --yes --cleanup-tag 2>/dev/null || true
+              fi
+            done
+
+      - name: ✅ Résumé
+        run: |
+          echo ""
+          echo "╔═══════════════════════════════════════╗"
+          echo "║      ✅ Backup terminé avec succès !  ║"
+          echo "╚═══════════════════════════════════════╝"
+          echo ""
+          echo "📅 Date : $(date +'%d/%m/%Y à %H:%M')"
+          echo "📦 Tag  : ${{ steps.tag.outputs.TAG }}"
+          echo "🔗 Lien : https://github.com/${{ github.repository }}/releases"
+          echo ""
