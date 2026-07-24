@@ -26,6 +26,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
 const axios = require('axios');
 
 // ==============================
@@ -34,6 +35,7 @@ const axios = require('axios');
 
 const BACKUP_DIR = path.join(__dirname, '../backups');
 const RETENTION_DAYS = Number(process.env.BACKUP_RETENTION) || 30;
+const BACKUP_KEY = process.env.BACKUP_KEY;
 
 // ==============================
 // Détection du repo GitHub
@@ -354,31 +356,57 @@ const main = async () => {
   console.log('');
 
   // 1. Pré-vérifications
-  console.log('[1/6] 🔎 Vérification de la configuration...');
+  console.log('[1/7] 🔎 Vérification de la configuration...');
   await preflightChecks();
-  console.log(`[1/6] ✅ Repo: ${GITHUB_REPO}`);
+  console.log(`[1/7] ✅ Repo: ${GITHUB_REPO}`);
 
   // 2. Créer le dossier backups
-  console.log('\n[2/6] 📁 Préparation du dossier...');
+  console.log('\n[2/7] 📁 Préparation du dossier...');
   ensureBackupDir();
 
   // 3. Créer le backup
-  console.log('\n[3/6] 💾 Création du backup MongoDB...');
+  console.log('\n[3/7] 💾 Création du backup MongoDB...');
   const filename = getBackupFilename();
   const backupPath = path.join(BACKUP_DIR, filename);
   const fileSize = createBackup(backupPath);
 
   // 4. Vérifier l'intégrité
-  console.log('\n[4/6] 🔍 Vérification de l\'intégrité...');
+  console.log('\n[4/7] 🔍 Vérification de l\'intégrité...');
   verifyBackup(backupPath);
 
-  // 5. Upload vers GitHub
-  console.log('\n[5/6] ⬆️ Upload vers GitHub Releases...');
-  const release = await findOrCreateRelease(GITHUB_REPO);
-  await uploadAsset(release, backupPath);
+  let uploadPath = backupPath;
+  let uploadName = filename;
 
-  // 6. Nettoyage
-  console.log('\n[6/6] 🧹 Nettoyage...');
+  // 5. Chiffrement AES-256 (optionnel)
+  if (BACKUP_KEY) {
+    console.log('\n[5/7] 🔐 Chiffrement du backup (AES-256)...');
+    const encPath = backupPath + '.enc';
+    execSync(
+      `openssl enc -aes-256-cbc -salt -pbkdf2 -in "${backupPath}" -out "${encPath}" -pass pass:"${BACKUP_KEY}"`,
+      { stdio: 'inherit', timeout: 300000 }
+    );
+    fs.unlinkSync(backupPath);
+    uploadPath = encPath;
+    uploadName = filename + '.enc';
+    console.log(`[Backup] ✅ Fichier chiffré: ${uploadName}`);
+  } else {
+    console.log('\n[5/7] ℹ️  Backup NON chiffré (définissez BACKUP_KEY dans .env pour chiffrer)');
+  }
+
+  // 6. Upload vers GitHub
+  console.log(`\n[6/7] ⬆️ Upload vers GitHub Releases...`);
+  const release = await findOrCreateRelease(GITHUB_REPO);
+
+  // Upload avec le bon nom
+  const tempPath = path.join(BACKUP_DIR, uploadName);
+  if (uploadPath !== tempPath) {
+    fs.renameSync(uploadPath, tempPath);
+    uploadPath = tempPath;
+  }
+  await uploadAsset(release, uploadPath);
+
+  // 7. Nettoyage
+  console.log('\n[7/7] 🧹 Nettoyage...');
   cleanupOldBackups();
   await cleanupOldReleases(GITHUB_REPO);
 
@@ -388,7 +416,8 @@ const main = async () => {
   console.log('║         ✅  Backup terminé !           ║');
   console.log('╚═══════════════════════════════════════╝');
   console.log('');
-  console.log(`  📦 Fichier : ${filename}`);
+  console.log(`  📦 Fichier : ${uploadName}`);
+  console.log(`  ${BACKUP_KEY ? '🔐' : '⚠️'} Chiffré  : ${BACKUP_KEY ? 'Oui (AES-256)' : 'Non'}`);
   console.log(`  💾 Taille   : ${formatSize(fileSize)}`);
   console.log(`  🔗 Release  : https://github.com/${GITHUB_REPO}/releases`);
   console.log('');

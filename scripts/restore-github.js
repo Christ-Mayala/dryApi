@@ -77,6 +77,29 @@ const getAxiosHeaders = () => ({
 });
 
 // ==============================
+// Déchiffrement AES-256
+// ==============================
+
+const decryptBackup = (encryptedPath) => {
+  const backupKey = process.env.BACKUP_KEY;
+  if (!backupKey) {
+    throw new Error('BACKUP_KEY manquant dans .env — le backup est chiffré, définissez BACKUP_KEY pour le déchiffrer');
+  }
+
+  const decryptedPath = encryptedPath.replace(/\.enc$/, '');
+  console.log(`\n[Restore] 🔓 Déchiffrement AES-256...`);
+
+  execSync(
+    `openssl enc -d -aes-256-cbc -pbkdf2 -in "${encryptedPath}" -out "${decryptedPath}" -pass pass:"${backupKey}"`,
+    { stdio: 'inherit', timeout: 300000 }
+  );
+
+  fs.unlinkSync(encryptedPath);
+  console.log(`[Restore] ✅ Déchiffré: ${path.basename(decryptedPath)}`);
+  return decryptedPath;
+};
+
+// ==============================
 // Interface interactive
 // ==============================
 
@@ -240,13 +263,18 @@ const restoreFromLocalFile = (filePath) => {
   }
 
   const ext = path.extname(filePath);
-  if (ext !== '.gz') {
-    console.warn(`\n⚠️  Le fichier n'a pas l'extension .gz. Assurez-vous que c'est un backup MongoDB compressé.`);
+  if (ext !== '.gz' && ext !== '.enc') {
+    console.warn(`\n⚠️  Extension inhabituelle: ${ext}. Attendu: .gz ou .enc`);
   }
 
   const stats = fs.statSync(filePath);
   if (stats.size === 0) {
     throw new Error('Le fichier est vide');
+  }
+
+  // Déchiffrer si le fichier est chiffré
+  if (ext === '.enc') {
+    return decryptBackup(filePath);
   }
 
   return filePath;
@@ -431,6 +459,11 @@ const main = async () => {
     }
     backupFile = path.join(BACKUP_DIR, selected.asset.name);
     await downloadAsset(selected.asset, backupFile);
+
+    // Déchiffrer si le fichier téléchargé est chiffré (.enc)
+    if (selected.asset.name.endsWith('.enc')) {
+      backupFile = decryptBackup(backupFile);
+    }
   }
 
   // Confirmation

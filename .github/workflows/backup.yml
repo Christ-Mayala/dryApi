@@ -31,7 +31,9 @@ jobs:
       - name: 💾 Créer le backup MongoDB
         run: |
           mkdir -p backups
-          docker run --rm -v ${{ github.workspace }}/backups:/backups mongo:7 \
+          chmod 777 backups
+          docker run --rm -v ${{ github.workspace }}/backups:/backups \
+            --user root mongo:7 \
             mongodump \
             --uri="${{ secrets.MONGO_URI }}" \
             --archive=/backups/dryapi.gz \
@@ -47,6 +49,23 @@ jobs:
             exit 1
           fi
           echo "✅ Backup valide: $(($SIZE / 1024 / 1024)) Mo"
+
+      - name: 🔐 Chiffrer le backup (AES-256)
+        if: secrets.BACKUP_KEY != ''
+        run: |
+          echo "🔐 Chiffrement du backup avec AES-256..."
+          openssl enc -aes-256-cbc -salt -pbkdf2 \
+            -in backups/dryapi.gz \
+            -out backups/dryapi.gz.enc \
+            -pass pass:"${{ secrets.BACKUP_KEY }}"
+          rm backups/dryapi.gz
+          echo "✅ Fichier chiffré: dryapi.gz.enc"
+
+      - name: 🔐 Backup non chiffré (pas de BACKUP_KEY)
+        if: secrets.BACKUP_KEY == ''
+        run: |
+          echo "⚠️  Backup NON chiffré (BACKUP_KEY non défini)"
+          echo "💡 Ajoutez BACKUP_KEY dans les secrets GitHub pour chiffrer automatiquement"
 
       - name: 🏷️ Générer le tag du release
         id: tag
@@ -69,11 +88,18 @@ jobs:
               --notes "Backup automatique du $(date +'%d/%m/%Y à %H:%M')"
           fi
 
-          # Upload du backup
-          echo "⬆️ Upload de dryapi.gz..."
-          gh release upload "$TAG" backups/dryapi.gz \
-            --repo ${{ github.repository }} \
-            --clobber
+          # Upload du backup (chiffré ou non)
+          if [ -f backups/dryapi.gz.enc ]; then
+            echo "⬆️ Upload du backup chiffré..."
+            gh release upload "$TAG" backups/dryapi.gz.enc \
+              --repo ${{ github.repository }} \
+              --clobber
+          else
+            echo "⬆️ Upload du backup (non chiffré)..."
+            gh release upload "$TAG" backups/dryapi.gz \
+              --repo ${{ github.repository }} \
+              --clobber
+          fi
 
       - name: 🧹 Nettoyer les vieux releases (rétention 30 jours)
         env:
