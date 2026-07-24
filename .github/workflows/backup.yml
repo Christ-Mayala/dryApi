@@ -9,10 +9,6 @@ on:
   # Backup manuel depuis l'interface GitHub (Actions → Backup MongoDB → Run workflow)
   workflow_dispatch:
 
-  # Backup à chaque push sur main (optionnel, décommentez si voulu)
-  # push:
-  #   branches: [ main ]
-
 # ─── PERMISSIONS ────────────────────────────────────
 permissions:
   contents: write   # Nécessaire pour créer des Releases
@@ -50,34 +46,33 @@ jobs:
           fi
           echo "✅ Backup valide: $(($SIZE / 1024 / 1024)) Mo"
 
-      - name: 🔐 Chiffrer le backup (AES-256)
-        if: secrets.BACKUP_KEY != ''
-        run: |
-          echo "🔐 Chiffrement du backup avec AES-256..."
-          openssl enc -aes-256-cbc -salt -pbkdf2 \
-            -in backups/dryapi.gz \
-            -out backups/dryapi.gz.enc \
-            -pass pass:"${{ secrets.BACKUP_KEY }}"
-          rm backups/dryapi.gz
-          echo "✅ Fichier chiffré: dryapi.gz.enc"
-
-      - name: 🔐 Backup non chiffré (pas de BACKUP_KEY)
-        if: secrets.BACKUP_KEY == ''
-        run: |
-          echo "⚠️  Backup NON chiffré (BACKUP_KEY non défini)"
-          echo "💡 Ajoutez BACKUP_KEY dans les secrets GitHub pour chiffrer automatiquement"
-
       - name: 🏷️ Générer le tag du release
         id: tag
         run: echo "TAG=backups-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: 📦 Créer / Mettre à jour le Release GitHub
+      - name: 🔐 Chiffrer (si BACKUP_KEY défini) + Upload
         env:
           GH_TOKEN: ${{ github.token }}
+          BACKUP_KEY: ${{ secrets.BACKUP_KEY }}
         run: |
           TAG="${{ steps.tag.outputs.TAG }}"
 
-          # Vérifier si le release existe déjà
+          # --- Chiffrement (optionnel) ---
+          if [ -n "$BACKUP_KEY" ]; then
+            echo "🔐 Chiffrement AES-256 en cours..."
+            openssl enc -aes-256-cbc -salt -pbkdf2 \
+              -in backups/dryapi.gz \
+              -out backups/dryapi.gz.enc \
+              -pass pass:"$BACKUP_KEY"
+            rm backups/dryapi.gz
+            UPLOAD_FILE="dryapi.gz.enc"
+            echo "✅ Backup chiffré: $UPLOAD_FILE"
+          else
+            echo "⚠️  Backup NON chiffré (ajoutez BACKUP_KEY dans les secrets pour chiffrer)"
+            UPLOAD_FILE="dryapi.gz"
+          fi
+
+          # --- Création ou mise à jour du Release ---
           if gh release view "$TAG" --repo ${{ github.repository }} &>/dev/null; then
             echo "📦 Release $TAG existe déjà, mise à jour..."
           else
@@ -88,18 +83,11 @@ jobs:
               --notes "Backup automatique du $(date +'%d/%m/%Y à %H:%M')"
           fi
 
-          # Upload du backup (chiffré ou non)
-          if [ -f backups/dryapi.gz.enc ]; then
-            echo "⬆️ Upload du backup chiffré..."
-            gh release upload "$TAG" backups/dryapi.gz.enc \
-              --repo ${{ github.repository }} \
-              --clobber
-          else
-            echo "⬆️ Upload du backup (non chiffré)..."
-            gh release upload "$TAG" backups/dryapi.gz \
-              --repo ${{ github.repository }} \
-              --clobber
-          fi
+          # --- Upload ---
+          echo "⬆️ Upload de $UPLOAD_FILE..."
+          gh release upload "$TAG" "backups/$UPLOAD_FILE" \
+            --repo ${{ github.repository }} \
+            --clobber
 
       - name: 🧹 Nettoyer les vieux releases (rétention 30 jours)
         env:
