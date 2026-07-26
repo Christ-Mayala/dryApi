@@ -71,7 +71,7 @@ const runDataRetentionNow = async () => {
       }
     }
   } catch (error) {
-    console.error(`[RETENTION] ❌ Erreur: ${error?.message || error}`);
+    console.error(`[RETENTION] ❌ Erreur: ${error?.message || String(error)}`);
   } finally {
     running = false;
   }
