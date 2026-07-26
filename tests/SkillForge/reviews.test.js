@@ -31,13 +31,13 @@ test('CRUD reviews (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "courseId": "exemple",
-  "studentId": "exemple",
-  "rating": 100,
-  "comment": "exemple",
-  "isApproved": true,
-  "label": "exemple_label_1780745846965"
-};
+    courseId: 'exemple',
+    studentId: 'exemple',
+    rating: 100,
+    comment: 'exemple',
+    isApproved: true,
+    label: 'exemple_label_1780745846965',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

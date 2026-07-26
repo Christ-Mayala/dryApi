@@ -3,7 +3,6 @@
  * @module tests/unit/config/config.test
  */
 
-
 describe('Configuration', () => {
   const OLD_ENV = { ...process.env };
 
@@ -29,14 +28,14 @@ describe('Configuration', () => {
     expect(config.NODE_ENV).toBe('test');
   });
 
-  it('devrait retourner le bon port pour l\'environnement test', () => {
+  it("devrait retourner le bon port pour l'environnement test", () => {
     const config = require('../../../config/database');
     // En mode test, le port par défaut devrait être 5001
     expect(config.PORT).toBeDefined();
     expect(typeof config.PORT).toBe('number');
   });
 
-  it('devrait parser les variables d\'environnement correctement', () => {
+  it("devrait parser les variables d'environnement correctement", () => {
     process.env.PORT = '8080';
     process.env.RATE_LIMIT_WINDOW_MS = '120000';
     process.env.RATE_LIMIT_MAX = '200';

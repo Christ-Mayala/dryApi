@@ -68,7 +68,6 @@ const main = async () => {
       for (const candidatePort of candidatePorts) {
         const candidateBaseUrl = `http://${url.hostname}:${candidatePort}`;
 
-         
         const alreadyRunning = await waitForReady(candidateBaseUrl, 1500);
         if (alreadyRunning) {
           baseUrl = candidateBaseUrl;
@@ -76,7 +75,6 @@ const main = async () => {
           break;
         }
 
-         
         const seemsAvailable = await isPortAvailable(candidatePort);
         if (!seemsAvailable) continue;
 
@@ -86,7 +84,6 @@ const main = async () => {
           stdio: 'inherit',
         });
 
-         
         const ready = await Promise.race([
           waitForReady(candidateBaseUrl, 30000),
           new Promise((resolve) => serverProcess.once('exit', () => resolve(false))),

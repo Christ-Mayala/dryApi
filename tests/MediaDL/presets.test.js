@@ -31,13 +31,13 @@ test('CRUD presets (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "label": "exemple",
-  "qualityMode": "exemple",
-  "preferAudioOnly": true,
-  "maxHeight": 100,
-  "downloadDir": "exemple",
-  "concurrent": 100
-};
+    label: 'exemple',
+    qualityMode: 'exemple',
+    preferAudioOnly: true,
+    maxHeight: 100,
+    downloadDir: 'exemple',
+    concurrent: 100,
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

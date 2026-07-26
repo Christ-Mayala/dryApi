@@ -31,17 +31,17 @@ test('CRUD courses (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "title": "exemple",
-  "subtitle": "exemple",
-  "price": 100,
-  "duration": 100,
-  "level": "exemple",
-  "categoryId": "exemple",
-  "trailerUrl": "exemple",
-  "contentUrl": "exemple",
-  "isPublished": true,
-  "label": "exemple_label_1780745846943"
-};
+    title: 'exemple',
+    subtitle: 'exemple',
+    price: 100,
+    duration: 100,
+    level: 'exemple',
+    categoryId: 'exemple',
+    trailerUrl: 'exemple',
+    contentUrl: 'exemple',
+    isPublished: true,
+    label: 'exemple_label_1780745846943',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

@@ -31,14 +31,14 @@ test('CRUD batches (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "label": "exemple",
-  "sourceType": "exemple",
-  "total": 100,
-  "completed": 100,
-  "failed": 100,
-  "startedAt": "2026-01-01T12:00:00.000Z",
-  "finishedAt": "2026-01-01T12:00:00.000Z"
-};
+    label: 'exemple',
+    sourceType: 'exemple',
+    total: 100,
+    completed: 100,
+    failed: 100,
+    startedAt: '2026-01-01T12:00:00.000Z',
+    finishedAt: '2026-01-01T12:00:00.000Z',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

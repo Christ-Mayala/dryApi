@@ -41,7 +41,12 @@ describe('Billing — Création de session checkout', () => {
   });
 
   it('createCheckoutSession() devrait retourner une URL directe pour le plan gratuit', async () => {
-    const result = await billing.createCheckoutSession('community', 'user_free', 'http://success', 'http://cancel');
+    const result = await billing.createCheckoutSession(
+      'community',
+      'user_free',
+      'http://success',
+      'http://cancel'
+    );
     expect(result.free).toBe(true);
     expect(result.url).toBe('http://success');
     expect(result.planId).toBe('community');
@@ -73,13 +78,13 @@ describe('Billing — Vérification des limites', () => {
     expect(result.limit).toBe(Infinity);
   });
 
-  it('checkPlanLimit() devrait vérifier la limite d\'apps', () => {
+  it("checkPlanLimit() devrait vérifier la limite d'apps", () => {
     expect(billing.checkPlanLimit({ plan: 'community' }, 'apps').limit).toBe(1);
     expect(billing.checkPlanLimit({ plan: 'pro' }, 'apps').limit).toBe(10);
     expect(billing.checkPlanLimit({ plan: 'enterprise' }, 'apps').limit).toBe(Infinity);
   });
 
-  it("checkPlanLimit() devrait retourner un refus pour un plan inconnu", () => {
+  it('checkPlanLimit() devrait retourner un refus pour un plan inconnu', () => {
     const result = billing.checkPlanLimit({ plan: 'unknown' });
     expect(result.allowed).toBe(false);
     expect(result.limit).toBe(0);

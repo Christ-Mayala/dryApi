@@ -9,7 +9,12 @@
  * @module tests/Pelerin/admin.test
  */
 
-const { setupPelerinTestDB, createRealUser, buildReq, buildRes } = require('./_helpers/pelerinTestUtils');
+const {
+  setupPelerinTestDB,
+  createRealUser,
+  buildReq,
+  buildRes,
+} = require('./_helpers/pelerinTestUtils');
 
 const listUsers = require('../../dryApp/Pelerin/features/admin/controller/admin.users.list.controller');
 const updateUserRole = require('../../dryApp/Pelerin/features/admin/controller/admin.users.role.controller');
@@ -57,7 +62,7 @@ describe('Pelerin — admin/users', () => {
     expect(reactivateRes.body.data.status).toBe('active');
   });
 
-  it("un admin ne peut pas suspendre son propre compte", async () => {
+  it('un admin ne peut pas suspendre son propre compte', async () => {
     const admin = await createRealUser({ role: 'admin', email: 'selfsuspend@test.local' });
     const req = buildReq({
       user: { id: admin._id.toString() },
@@ -69,7 +74,10 @@ describe('Pelerin — admin/users', () => {
 
   it('rejette un statut invalide', async () => {
     const target = await createRealUser({ email: 'invalidstatus@test.local' });
-    const req = buildReq({ params: { id: target._id.toString() }, body: { status: 'not-a-status' } });
+    const req = buildReq({
+      params: { id: target._id.toString() },
+      body: { status: 'not-a-status' },
+    });
     await expect(updateUserStatus(req, buildRes())).rejects.toMatchObject({ statusCode: 400 });
   });
 
@@ -87,7 +95,7 @@ describe('Pelerin — admin/users', () => {
     expect(res.body.data.role).toBe('admin');
   });
 
-  it("un admin ne peut pas retirer son propre role admin", async () => {
+  it('un admin ne peut pas retirer son propre role admin', async () => {
     const admin = await createRealUser({ role: 'admin', email: 'selfdemote@test.local' });
     const req = buildReq({
       user: { id: admin._id.toString() },
@@ -101,7 +109,10 @@ describe('Pelerin — admin/users', () => {
     const admin = await createRealUser({ role: 'admin', email: 'deleter@test.local' });
     const target = await createRealUser({ email: 'todelete@test.local' });
 
-    const req = buildReq({ user: { id: admin._id.toString() }, params: { id: target._id.toString() } });
+    const req = buildReq({
+      user: { id: admin._id.toString() },
+      params: { id: target._id.toString() },
+    });
     const res = buildRes();
     await deleteUser(req, res);
     expect(res.body.success).toBe(true);
@@ -111,9 +122,12 @@ describe('Pelerin — admin/users', () => {
     expect(listRes.body.data.find((u) => String(u._id) === String(target._id))).toBeUndefined();
   });
 
-  it("un admin ne peut pas supprimer son propre compte depuis cet ecran", async () => {
+  it('un admin ne peut pas supprimer son propre compte depuis cet ecran', async () => {
     const admin = await createRealUser({ role: 'admin', email: 'selfdelete@test.local' });
-    const req = buildReq({ user: { id: admin._id.toString() }, params: { id: admin._id.toString() } });
+    const req = buildReq({
+      user: { id: admin._id.toString() },
+      params: { id: admin._id.toString() },
+    });
     await expect(deleteUser(req, buildRes())).rejects.toMatchObject({ statusCode: 400 });
   });
 
@@ -123,9 +137,13 @@ describe('Pelerin — admin/users', () => {
 
     await expect(
       updateUserStatus(
-        buildReq({ user: { id: admin._id.toString() }, params: { id: fakeId }, body: { status: 'active' } }),
-        buildRes(),
-      ),
+        buildReq({
+          user: { id: admin._id.toString() },
+          params: { id: fakeId },
+          body: { status: 'active' },
+        }),
+        buildRes()
+      )
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 });

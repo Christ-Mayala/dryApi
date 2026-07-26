@@ -31,15 +31,15 @@ test('CRUD orders (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "studentId": "exemple",
-  "items": [],
-  "subtotal": 100,
-  "tax": 100,
-  "total": 100,
-  "paymentMethod": "exemple",
-  "transactionId": "exemple",
-  "label": "exemple_label_1780745846961"
-};
+    studentId: 'exemple',
+    items: [],
+    subtotal: 100,
+    tax: 100,
+    total: 100,
+    paymentMethod: 'exemple',
+    transactionId: 'exemple',
+    label: 'exemple_label_1780745846961',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

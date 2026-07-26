@@ -13,7 +13,7 @@ const { verifyToken } = require('../../../dry/utils/auth/jwt.util');
 const sendResponse = require('../../../dry/utils/http/response');
 const { protect, authorize } = require('../../../dry/middlewares/protection/auth.middleware');
 
-describe('Middleware d\'authentification - protect', () => {
+describe("Middleware d'authentification - protect", () => {
   let req;
   let res;
   let next;
@@ -50,7 +50,9 @@ describe('Middleware d\'authentification - protect', () => {
 
   it('devrait rejeter un token invalide', async () => {
     req.headers.authorization = 'Bearer invalid_token';
-    verifyToken.mockImplementation(() => { throw new Error('Invalid token'); });
+    verifyToken.mockImplementation(() => {
+      throw new Error('Invalid token');
+    });
 
     await protect(req, res, next);
     expect(sendResponse).toHaveBeenCalledWith(res, null, expect.any(String), false, undefined, 401);
@@ -83,7 +85,7 @@ describe('Middleware d\'authentification - protect', () => {
   });
 });
 
-describe('Middleware d\'authentification - authorize', () => {
+describe("Middleware d'authentification - authorize", () => {
   let req;
   let res;
   let next;
@@ -111,7 +113,7 @@ describe('Middleware d\'authentification - authorize', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('devrait refuser si aucun utilisateur n\'est connecté', () => {
+  it("devrait refuser si aucun utilisateur n'est connecté", () => {
     req.user = undefined;
     const middleware = authorize('admin');
     middleware(req, res, next);

@@ -99,7 +99,10 @@ describe('Pelerin — habit + habitLog', () => {
       await createHabit(req, res);
       const habit = res.body.data;
 
-      const toggleReq = buildReq({ user: req.user, body: { habitId: String(habit._id), date: DATE } });
+      const toggleReq = buildReq({
+        user: req.user,
+        body: { habitId: String(habit._id), date: DATE },
+      });
       const toggleRes = buildRes();
       await toggleHabitLog(toggleReq, toggleRes);
 
@@ -120,11 +123,18 @@ describe('Pelerin — habit + habitLog', () => {
       const LogModel = getPelerinModel('HabitLog', HabitLogSchema);
 
       // Etat initial : aucun log
-      const before = await LogModel.find({ createdBy: req.user.id, habitId: habit._id, date: DATE });
+      const before = await LogModel.find({
+        createdBy: req.user.id,
+        habitId: habit._id,
+        date: DATE,
+      });
       expect(before).toHaveLength(0);
 
       const toggle = async () => {
-        const toggleReq = buildReq({ user: req.user, body: { habitId: String(habit._id), date: DATE } });
+        const toggleReq = buildReq({
+          user: req.user,
+          body: { habitId: String(habit._id), date: DATE },
+        });
         const toggleRes = buildRes();
         await toggleHabitLog(toggleReq, toggleRes);
         return toggleRes.body.data.done;
@@ -147,7 +157,10 @@ describe('Pelerin — habit + habitLog', () => {
       const habit = res.body.data;
 
       const toggle = async () => {
-        const toggleReq = buildReq({ user: req.user, body: { habitId: String(habit._id), date: DATE } });
+        const toggleReq = buildReq({
+          user: req.user,
+          body: { habitId: String(habit._id), date: DATE },
+        });
         const toggleRes = buildRes();
         await toggleHabitLog(toggleReq, toggleRes);
         return toggleRes.body.data.done;
@@ -182,11 +195,11 @@ describe('Pelerin — habit + habitLog', () => {
 
       await toggleHabitLog(
         buildReq({ user: req.user, body: { habitId: String(habit._id), date: '2026-07-10' } }),
-        buildRes(),
+        buildRes()
       );
       await toggleHabitLog(
         buildReq({ user: req.user, body: { habitId: String(habit._id), date: '2026-07-11' } }),
-        buildRes(),
+        buildRes()
       );
 
       const listReq = buildReq({ user: req.user, query: { habitId: String(habit._id) } });

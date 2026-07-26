@@ -3,8 +3,7 @@
  * @module tests/unit/middlewares/errorHandler.test
  */
 
-
-describe('Gestionnaire d\'erreurs', () => {
+describe("Gestionnaire d'erreurs", () => {
   let errorHandler;
   let req;
   let res;
@@ -43,9 +42,7 @@ describe('Gestionnaire d\'erreurs', () => {
     const err = new Error('Erreur interne');
     await errorHandler(err, req, res, jest.fn());
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ success: false })
-    );
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false }));
   });
 
   it('devrait retourner un message précis pour les erreurs de validation MongoDB', async () => {

@@ -31,16 +31,16 @@ test('CRUD ebooks (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "title": "exemple",
-  "author": "exemple",
-  "price": 100,
-  "summary": "exemple",
-  "pages": 100,
-  "format": "exemple",
-  "coverUrl": "exemple",
-  "fileUrl": "exemple",
-  "label": "exemple_label_1780745846950"
-};
+    title: 'exemple',
+    author: 'exemple',
+    price: 100,
+    summary: 'exemple',
+    pages: 100,
+    format: 'exemple',
+    coverUrl: 'exemple',
+    fileUrl: 'exemple',
+    label: 'exemple_label_1780745846950',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

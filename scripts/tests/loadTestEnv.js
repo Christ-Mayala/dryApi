@@ -19,9 +19,9 @@ if (fs.existsSync(testEnvPath)) {
 } else {
   console.warn(
     '\n⚠️  Aucun .env.test trouvé — les tests vont utiliser .env, qui pointe ' +
-    'vers l\'infrastructure de PRODUCTION (cluster MongoDB Atlas partagé). ' +
-    'Créez un .env.test avec un MONGO_URI isolé (base/cluster de test) pour ' +
-    'éviter tout risque sur les données réelles. Voir .env.test.example.\n'
+      "vers l'infrastructure de PRODUCTION (cluster MongoDB Atlas partagé). " +
+      'Créez un .env.test avec un MONGO_URI isolé (base/cluster de test) pour ' +
+      'éviter tout risque sur les données réelles. Voir .env.test.example.\n'
   );
   dotenv.config();
 }

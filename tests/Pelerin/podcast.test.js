@@ -7,7 +7,12 @@
  * @module tests/Pelerin/podcast.test
  */
 
-const { setupPelerinTestDB, getPelerinModel, buildReq, buildRes } = require('./_helpers/pelerinTestUtils');
+const {
+  setupPelerinTestDB,
+  getPelerinModel,
+  buildReq,
+  buildRes,
+} = require('./_helpers/pelerinTestUtils');
 
 const PodcastEpisodeSchema = require('../../dryApp/Pelerin/features/podcastEpisode/model/podcastEpisode.schema');
 
@@ -25,7 +30,9 @@ describe('Pelerin — podcastShow + podcastEpisode', () => {
   setupPelerinTestDB();
 
   it('cree une emission publiee par defaut, visible publiquement', async () => {
-    const req = buildReq({ body: { title: 'Ecoute la Parole', description: 'Un podcast biblique' } });
+    const req = buildReq({
+      body: { title: 'Ecoute la Parole', description: 'Un podcast biblique' },
+    });
     const res = buildRes();
     await createPodcastShow(req, res);
 
@@ -38,18 +45,24 @@ describe('Pelerin — podcastShow + podcastEpisode', () => {
   });
 
   it('une emission non publiee est cachee de la liste publique mais visible via la vue admin', async () => {
-    const req = buildReq({ body: { title: 'Brouillon', description: 'Pas encore pret', isPublished: 'false' } });
+    const req = buildReq({
+      body: { title: 'Brouillon', description: 'Pas encore pret', isPublished: 'false' },
+    });
     const res = buildRes();
     await createPodcastShow(req, res);
     expect(res.body.data.isPublished).toBe(false);
 
     const publicListRes = buildRes();
     await getAllPodcastShow(buildReq(), publicListRes);
-    expect(publicListRes.body.data.find((s) => String(s._id) === String(res.body.data._id))).toBeUndefined();
+    expect(
+      publicListRes.body.data.find((s) => String(s._id) === String(res.body.data._id))
+    ).toBeUndefined();
 
     const adminListRes = buildRes();
     await getAllAdminPodcastShow(buildReq(), adminListRes);
-    expect(adminListRes.body.data.some((s) => String(s._id) === String(res.body.data._id))).toBe(true);
+    expect(adminListRes.body.data.some((s) => String(s._id) === String(res.body.data._id))).toBe(
+      true
+    );
   });
 
   it('rejette la creation sans title/description', async () => {
@@ -59,10 +72,16 @@ describe('Pelerin — podcastShow + podcastEpisode', () => {
 
   it('met a jour puis supprime une emission (admin)', async () => {
     const createRes = buildRes();
-    await createPodcastShow(buildReq({ body: { title: 'A modifier', description: 'Desc' } }), createRes);
+    await createPodcastShow(
+      buildReq({ body: { title: 'A modifier', description: 'Desc' } }),
+      createRes
+    );
     const showId = createRes.body.data._id;
 
-    const updateReq = buildReq({ params: { id: String(showId) }, body: { title: 'Titre modifie' } });
+    const updateReq = buildReq({
+      params: { id: String(showId) },
+      body: { title: 'Titre modifie' },
+    });
     const updateRes = buildRes();
     await updatePodcastShow(updateReq, updateRes);
     expect(updateRes.body.data.title).toBe('Titre modifie');
@@ -73,12 +92,17 @@ describe('Pelerin — podcastShow + podcastEpisode', () => {
     expect(deleteRes.body.success).toBe(true);
 
     const getRes = buildRes();
-    await expect(getByIdPodcastShow(buildReq({ params: { id: String(showId) } }), getRes)).rejects.toBeTruthy();
+    await expect(
+      getByIdPodcastShow(buildReq({ params: { id: String(showId) } }), getRes)
+    ).rejects.toBeTruthy();
   });
 
   it('un episode publie apparait dans la liste publique filtree par showId', async () => {
     const showRes = buildRes();
-    await createPodcastShow(buildReq({ body: { title: 'Emission', description: 'Desc' } }), showRes);
+    await createPodcastShow(
+      buildReq({ body: { title: 'Emission', description: 'Desc' } }),
+      showRes
+    );
     const showId = showRes.body.data._id;
 
     const episodeReq = buildReq({
@@ -101,7 +125,10 @@ describe('Pelerin — podcastShow + podcastEpisode', () => {
 
   it('un episode non publie est absent de la liste publique', async () => {
     const showRes = buildRes();
-    await createPodcastShow(buildReq({ body: { title: 'Emission2', description: 'Desc' } }), showRes);
+    await createPodcastShow(
+      buildReq({ body: { title: 'Emission2', description: 'Desc' } }),
+      showRes
+    );
     const showId = showRes.body.data._id;
 
     // NOTE (bug potentiel releve pendant les tests) : contrairement a

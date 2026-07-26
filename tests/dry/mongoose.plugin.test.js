@@ -98,9 +98,7 @@ describe('Plugin DRY — pre("find") hook', () => {
     const conditionsAfter = query.getQuery();
     expect(conditionsAfter.status).toBe('active');
     expect(conditionsAfter.$and).toBeDefined();
-    expect(conditionsAfter.$and).toEqual(
-      expect.arrayContaining([{ status: { $ne: 'deleted' } }])
-    );
+    expect(conditionsAfter.$and).toEqual(expect.arrayContaining([{ status: { $ne: 'deleted' } }]));
   });
 
   it('ne doit pas ecraser status=annulee ou status=en_attente', async () => {

@@ -69,7 +69,8 @@ describe('Validation Zod - Schémas conversation', () => {
   let createConversationSchema;
 
   beforeAll(() => {
-    createConversationSchema = require('../../../dry/schemas/conversation.schema').createConversationSchema;
+    createConversationSchema =
+      require('../../../dry/schemas/conversation.schema').createConversationSchema;
   });
 
   it('devrait valider une conversation correcte', () => {

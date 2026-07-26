@@ -3,7 +3,6 @@
  * @module tests/unit/utils/logger.test
  */
 
-
 describe('Logger (Winston)', () => {
   beforeEach(() => {
     jest.resetModules();

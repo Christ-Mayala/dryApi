@@ -68,8 +68,6 @@ describe('Factory CRUD', () => {
       })
     );
     // Le champ 'role' ne devrait pas être passé car non autorisé
-    expect(mockModel.create).not.toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'admin' })
-    );
+    expect(mockModel.create).not.toHaveBeenCalledWith(expect.objectContaining({ role: 'admin' }));
   });
 });

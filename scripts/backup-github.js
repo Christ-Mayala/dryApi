@@ -351,7 +351,7 @@ const preflightChecks = async () => {
 const main = async () => {
   console.log('');
   console.log('╔═══════════════════════════════════════╗');
-  console.log('║    Backup MongoDB → GitHub Releases    ║');
+  console.log('║    Backup MongoDB → GitHub Releases   ║');
   console.log('╚═══════════════════════════════════════╝');
   console.log('');
 

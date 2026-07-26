@@ -231,7 +231,7 @@ describe('Pelerin — notes', () => {
 
       expect(listResA.body.data).toHaveLength(2);
       expect(
-        listResA.body.data.every((n) => String(n.createdBy?._id || n.createdBy) === reqA.user.id),
+        listResA.body.data.every((n) => String(n.createdBy?._id || n.createdBy) === reqA.user.id)
       ).toBe(true);
     });
   });

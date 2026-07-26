@@ -17,32 +17,32 @@ const healthRoutes = require('../routes/health.routes');
 const billingRoutes = require('../modules/billing/billing.routes');
 const licensingRoutes = require('../modules/licensing/licensing.routes');
 // const googleAuthRoutes = require('../modules/auth/auth.routes'); // COMMENTÉ
-const senePayRoutes = require("../modules/senepay/senepay.routes");
+const senePayRoutes = require('../modules/senepay/senepay.routes');
 
 // Middleware de protection par mot de passe pour les routes système
 if (!process.env.SYSTEM_PASSWORD) {
   throw new Error(
-    'SYSTEM_PASSWORD doit être défini dans les variables d\'environnement. ' +
-    'Ajoutez SYSTEM_PASSWORD=<mot_de_passe_fort> dans votre fichier .env'
+    "SYSTEM_PASSWORD doit être défini dans les variables d'environnement. " +
+      'Ajoutez SYSTEM_PASSWORD=<mot_de_passe_fort> dans votre fichier .env'
   );
 }
 const SYSTEM_PASSWORD = process.env.SYSTEM_PASSWORD;
 
 const systemPasswordMiddleware = (req, res, next) => {
   const password = SYSTEM_PASSWORD;
-  
+
   // Vérifier si déjà authentifié via session
   if (req.session && req.session.systemAuth === true) {
     return next();
   }
-  
+
   // Vérifier le mot de passe uniquement dans le body (POST) — jamais en query string (logs)
   const provided = req.body?.password;
   if (provided && provided === password) {
     if (req.session) req.session.systemAuth = true;
     return next();
   }
-  
+
   // Si la requête PRÉFÈRE explicitement JSON (API/fetch), renvoyer 401 JSON.
   // req.accepts('json') seul est trompeur : un navigateur classique envoie
   // "Accept: text/html,...,*/*" — le "*/*" matche JSON aussi, donc
@@ -52,7 +52,8 @@ const systemPasswordMiddleware = (req, res, next) => {
   if (req.accepts(['html', 'json']) === 'json') {
     return res.status(401).json({
       success: false,
-      message: 'Mot de passe requis. Ouvrez cette URL dans un navigateur pour voir le formulaire de connexion, ou envoyez un POST avec { "password": "VOTRE_MOT_DE_PASSE" } dans le corps JSON (jamais en query string, pour ne pas l\'exposer dans les logs).',
+      message:
+        'Mot de passe requis. Ouvrez cette URL dans un navigateur pour voir le formulaire de connexion, ou envoyez un POST avec { "password": "VOTRE_MOT_DE_PASSE" } dans le corps JSON (jamais en query string, pour ne pas l\'exposer dans les logs).',
     });
   }
 
@@ -185,7 +186,7 @@ const registerDocumentationRoutes = (app) => {
 const registerApplicationRoutes = async (app) => {
   // Initialiser les métriques Prometheus
   const metrics = createMetrics();
-  
+
   // Middleware de tracking HTTP Prometheus (après toutes les routes)
   app.use(httpMetricsMiddleware(metrics));
 
@@ -204,7 +205,7 @@ const registerApplicationRoutes = async (app) => {
     next();
   };
 
-  app.use("/api/v1/senepay", injectTrivida, senePayRoutes);
+  app.use('/api/v1/senepay', injectTrivida, senePayRoutes);
   app.use('/api/v1/billing', injectTrivida, billingRoutes);
 
   // Route de callback paiement — redirige vers le deep link de l'app mobile
@@ -223,7 +224,7 @@ const registerApplicationRoutes = async (app) => {
 
   // 404
   app.use((req, res) => sendResponse(res, null, 'Route introuvable', false));
-  
+
   // Gestion d'erreurs
   app.use(handleCsrfError);
   app.use(errorHandler);

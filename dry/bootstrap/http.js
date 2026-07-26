@@ -71,10 +71,12 @@ const attachRequestLogging = (app) => {
         const requestId = req.requestId || 'no-request-id';
         let logMessage = `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`;
 
-        const hasBody = req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0;
+        const hasBody =
+          req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0;
         if (hasBody) {
           const safeBody = JSON.stringify(maskSensitiveData(req.body));
-          const truncated = safeBody.length > 2000 ? `${safeBody.slice(0, 2000)}… [TRUNCATED]` : safeBody;
+          const truncated =
+            safeBody.length > 2000 ? `${safeBody.slice(0, 2000)}… [TRUNCATED]` : safeBody;
           logMessage += ` body=${truncated}`;
         }
 
@@ -114,12 +116,14 @@ const createApp = () => {
   // Body parsers
   // ⚠️ verify() capture le raw body AVANT parsing JSON → nécessaire pour vérifier
   //    les signatures HMAC des webhooks (SenePay, Stripe, etc.)
-  app.use(express.json({
-    limit: '10mb',
-    verify: (req, _res, buf) => {
-      req.rawBody = buf.toString();
-    },
-  }));
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req, _res, buf) => {
+        req.rawBody = buf.toString();
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // ── Middleware: Request ID (tracing distribué) ──

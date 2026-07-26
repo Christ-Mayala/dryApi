@@ -3,7 +3,6 @@
  * @module tests/unit/middlewares/rateLimiter.test
  */
 
-
 describe('Rate Limiter de sécurité', () => {
   let setupSecurity;
   let req;

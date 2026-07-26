@@ -10,7 +10,12 @@
  * @module tests/Pelerin/meditation.test
  */
 
-const { setupPelerinTestDB, getPelerinModel, buildReq, buildRes } = require('./_helpers/pelerinTestUtils');
+const {
+  setupPelerinTestDB,
+  getPelerinModel,
+  buildReq,
+  buildRes,
+} = require('./_helpers/pelerinTestUtils');
 
 const MeditationSchema = require('../../dryApp/Pelerin/features/meditation/model/meditation.schema');
 const MeditationLogSchema = require('../../dryApp/Pelerin/features/meditationLog/model/meditationLog.schema');
@@ -67,7 +72,9 @@ describe('Pelerin — meditation + meditationLog', () => {
     const userAReq = buildReq({ body: { meditationId: String(meditation._id), feeling: 'joie' } });
     await createMeditationLog(userAReq, buildRes());
 
-    const userBReq = buildReq({ body: { meditationId: String(meditation._id), feeling: 'tristesse' } });
+    const userBReq = buildReq({
+      body: { meditationId: String(meditation._id), feeling: 'tristesse' },
+    });
     await createMeditationLog(userBReq, buildRes());
 
     const listReqA = buildReq({ user: userAReq.user });
@@ -86,7 +93,9 @@ describe('Pelerin — meditation + meditationLog', () => {
     const logId = ownerRes.body.data._id;
 
     const strangerReq = buildReq({ params: { id: String(logId) } });
-    await expect(deleteMeditationLog(strangerReq, buildRes())).rejects.toMatchObject({ statusCode: 404 });
+    await expect(deleteMeditationLog(strangerReq, buildRes())).rejects.toMatchObject({
+      statusCode: 404,
+    });
 
     const ownerDeleteReq = buildReq({ user: ownerReq.user, params: { id: String(logId) } });
     const ownerDeleteRes = buildRes();

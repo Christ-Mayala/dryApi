@@ -71,12 +71,12 @@ describe('Pelerin — parcours + parcoursProgress', () => {
 
     await completeStep(
       buildReq({ user, params: { parcoursId: String(parcours._id) }, body: { stepOrder: 1 } }),
-      buildRes(),
+      buildRes()
     );
     const res2 = buildRes();
     await completeStep(
       buildReq({ user, params: { parcoursId: String(parcours._id) }, body: { stepOrder: 2 } }),
-      res2,
+      res2
     );
 
     expect(res2.body.data.completedSteps.sort()).toEqual([1, 2]);
@@ -90,12 +90,12 @@ describe('Pelerin — parcours + parcoursProgress', () => {
 
     await completeStep(
       buildReq({ user, params: { parcoursId: String(parcours._id) }, body: { stepOrder: 1 } }),
-      buildRes(),
+      buildRes()
     );
     const res2 = buildRes();
     await completeStep(
       buildReq({ user, params: { parcoursId: String(parcours._id) }, body: { stepOrder: 1 } }),
-      res2,
+      res2
     );
 
     expect(res2.body.data.completedSteps).toEqual([1]);
@@ -109,8 +109,12 @@ describe('Pelerin — parcours + parcoursProgress', () => {
     const userB = { id: buildReq().user.id };
 
     await completeStep(
-      buildReq({ user: userA, params: { parcoursId: String(parcours._id) }, body: { stepOrder: 1 } }),
-      buildRes(),
+      buildReq({
+        user: userA,
+        params: { parcoursId: String(parcours._id) },
+        body: { stepOrder: 1 },
+      }),
+      buildRes()
     );
 
     // B n'a rien complete : getOne pour B doit rester "pas commence"

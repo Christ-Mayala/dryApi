@@ -3,7 +3,6 @@
  * @module tests/unit/utils/helpers.test
  */
 
-
 describe('Utilitaires - Pagination', () => {
   let pagination;
 

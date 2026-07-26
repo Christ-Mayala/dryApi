@@ -31,13 +31,13 @@ test('CRUD categories (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "name": "exemple",
-  "description": "exemple",
-  "slug": "exemple",
-  "icon": "exemple",
-  "parentId": "exemple",
-  "label": "exemple_label_1780745846936"
-};
+    name: 'exemple',
+    description: 'exemple',
+    slug: 'exemple',
+    icon: 'exemple',
+    parentId: 'exemple',
+    label: 'exemple_label_1780745846936',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

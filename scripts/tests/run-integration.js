@@ -90,7 +90,6 @@ const main = async () => {
     for (const candidatePort of candidatePorts) {
       const candidateBaseUrl = buildLocalBaseUrl(candidatePort);
 
-       
       const alreadyRunning = await waitForReady(candidateBaseUrl, 1500);
       if (alreadyRunning) {
         baseUrl = candidateBaseUrl;
@@ -99,7 +98,6 @@ const main = async () => {
         break;
       }
 
-       
       const seemsAvailable = await isPortAvailable(candidatePort);
       if (!seemsAvailable) continue;
 
@@ -111,7 +109,7 @@ const main = async () => {
       });
 
       // Wait until ready or process exits early (EADDRINUSE, config error, etc.)
-       
+
       const outcome = await Promise.race([
         waitForReady(candidateBaseUrl, 30000).then((ready) => ({ type: 'ready', ready })),
         new Promise((resolve) =>

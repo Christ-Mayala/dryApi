@@ -31,14 +31,14 @@ test('CRUD students (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "fullName": "exemple",
-  "email": "exemple",
-  "phone": "exemple",
-  "preferences": [],
-  "balance": 100,
-  "enrolledCourses": [],
-  "label": "exemple_label_1780745846971"
-};
+    fullName: 'exemple',
+    email: 'exemple',
+    phone: 'exemple',
+    preferences: [],
+    balance: 100,
+    enrolledCourses: [],
+    label: 'exemple_label_1780745846971',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

@@ -31,12 +31,12 @@ test('CRUD downloads (auto)', async () => {
   if (!token) return;
 
   const payload = {
-  "url": "exemple",
-  "mediaType": "exemple",
-  "filename": "exemple",
-  "qualityMode": "exemple",
-  "label": "exemple"
-};
+    url: 'exemple',
+    mediaType: 'exemple',
+    filename: 'exemple',
+    qualityMode: 'exemple',
+    label: 'exemple',
+  };
   if (!payload) return;
 
   const createRes = await fetch(`${BASE_URL}/api/v1/${APP}/${FEATURE}`, {

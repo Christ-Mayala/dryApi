@@ -57,7 +57,8 @@ const createRealUser = async (overrides = {}) => {
   const UserModel = getPelerinModel('User');
   const user = await UserModel.create({
     name: overrides.name || 'Test User',
-    email: overrides.email || `user-${Date.now()}-${Math.random().toString(36).slice(2)}@test.local`,
+    email:
+      overrides.email || `user-${Date.now()}-${Math.random().toString(36).slice(2)}@test.local`,
     role: overrides.role || 'user',
     ...overrides,
   });

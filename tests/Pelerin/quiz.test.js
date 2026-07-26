@@ -8,7 +8,12 @@
  * @module tests/Pelerin/quiz.test
  */
 
-const { setupPelerinTestDB, getPelerinModel, buildReq, buildRes } = require('./_helpers/pelerinTestUtils');
+const {
+  setupPelerinTestDB,
+  getPelerinModel,
+  buildReq,
+  buildRes,
+} = require('./_helpers/pelerinTestUtils');
 
 const QuizSchema = require('../../dryApp/Pelerin/features/quiz/model/quiz.schema');
 const QuizAttemptSchema = require('../../dryApp/Pelerin/features/quizAttempt/model/quizAttempt.schema');
@@ -40,7 +45,7 @@ describe('Pelerin — quiz', () => {
     expect(res.body.data.correctAnswerIndex).toBe(0);
   });
 
-  it("getAll (liste publique) NE renvoie PAS correctAnswerIndex ni explanation", async () => {
+  it('getAll (liste publique) NE renvoie PAS correctAnswerIndex ni explanation', async () => {
     await createQuiz(buildReq({ body: questionPayload }), buildRes());
 
     const listRes = buildRes();
@@ -53,7 +58,7 @@ describe('Pelerin — quiz', () => {
     expect(publicQuestion.explanation).toBeUndefined();
   });
 
-  it("getById NE renvoie PAS correctAnswerIndex ni explanation", async () => {
+  it('getById NE renvoie PAS correctAnswerIndex ni explanation', async () => {
     const createRes = buildRes();
     await createQuiz(buildReq({ body: questionPayload }), createRes);
     const quizId = createRes.body.data._id;
@@ -110,9 +115,14 @@ describe('Pelerin — quiz', () => {
     await createQuiz(buildReq({ body: questionPayload }), buildRes());
     await createQuiz(
       buildReq({
-        body: { ...questionPayload, question: 'Qui a trahi Jesus ?', theme: 'nouveau-testament', difficulty: 'medium' },
+        body: {
+          ...questionPayload,
+          question: 'Qui a trahi Jesus ?',
+          theme: 'nouveau-testament',
+          difficulty: 'medium',
+        },
       }),
-      buildRes(),
+      buildRes()
     );
 
     const filteredRes = buildRes();

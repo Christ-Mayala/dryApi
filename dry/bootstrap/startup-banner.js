@@ -40,38 +40,56 @@ const collectSystemUrls = (port, baseUrl) => {
   const apps = ['freellm', 'lastreet', 'mediadl', 'scim', 'skillforge', 'spiritemeraude'];
 
   const urls = [
-    { category: '🏠 Général', items: [
-      { label: 'Racine API', url: baseUrl },
-      { label: 'Health (Live)', url: `${baseUrl}/health/live` },
-      { label: 'Health (Ready)', url: `${baseUrl}/health/ready` },
-      { label: 'Health (Startup)', url: `${baseUrl}/health/startup` },
-      { label: 'Métriques Prometheus', url: `${baseUrl}/health/metrics` },
-    ]},
-    { category: '📖 Documentation', items: [
-      { label: 'Swagger UI', url: `${baseUrl}/api-docs` },
-      { label: 'Swagger JSON', url: `${baseUrl}/api-docs.json` },
-    ]},
-    { category: '📊 Monitoring', items: [
-      { label: 'Dashboard Système', url: `${baseUrl}/system/status` },
-      { label: 'JSON Status', url: `${baseUrl}/system/status.json` },
-    ]},
-    { category: '💳 Billing', items: [
-      { label: 'Plans', url: `${baseUrl}/api/v1/billing/plans` },
-      { label: 'Checkout', url: `${baseUrl}/api/v1/billing/checkout-session` },
-      { label: 'Factures', url: `${baseUrl}/api/v1/billing/invoices` },
-      { label: 'Webhook Stripe', url: `${baseUrl}/api/v1/billing/webhooks/stripe` },
-    ]},
-    { category: '🔑 Licensing', items: [
-      { label: 'Générer licence', url: `${baseUrl}/api/v1/licensing/generate` },
-      { label: 'Activer licence', url: `${baseUrl}/api/v1/licensing/activate` },
-      { label: 'Valider licence', url: `${baseUrl}/api/v1/licensing/validate` },
-      { label: 'Features par tier', url: `${baseUrl}/api/v1/licensing/features` },
-      { label: 'Mon statut', url: `${baseUrl}/api/v1/licensing/check` },
-    ]},
-    { category: '🔌 Applications', items: apps.map((app) => ({
-      label: app.charAt(0).toUpperCase() + app.slice(1),
-      url: `${baseUrl}/api/v1/${app}`,
-    }))},
+    {
+      category: '🏠 Général',
+      items: [
+        { label: 'Racine API', url: baseUrl },
+        { label: 'Health (Live)', url: `${baseUrl}/health/live` },
+        { label: 'Health (Ready)', url: `${baseUrl}/health/ready` },
+        { label: 'Health (Startup)', url: `${baseUrl}/health/startup` },
+        { label: 'Métriques Prometheus', url: `${baseUrl}/health/metrics` },
+      ],
+    },
+    {
+      category: '📖 Documentation',
+      items: [
+        { label: 'Swagger UI', url: `${baseUrl}/api-docs` },
+        { label: 'Swagger JSON', url: `${baseUrl}/api-docs.json` },
+      ],
+    },
+    {
+      category: '📊 Monitoring',
+      items: [
+        { label: 'Dashboard Système', url: `${baseUrl}/system/status` },
+        { label: 'JSON Status', url: `${baseUrl}/system/status.json` },
+      ],
+    },
+    {
+      category: '💳 Billing',
+      items: [
+        { label: 'Plans', url: `${baseUrl}/api/v1/billing/plans` },
+        { label: 'Checkout', url: `${baseUrl}/api/v1/billing/checkout-session` },
+        { label: 'Factures', url: `${baseUrl}/api/v1/billing/invoices` },
+        { label: 'Webhook Stripe', url: `${baseUrl}/api/v1/billing/webhooks/stripe` },
+      ],
+    },
+    {
+      category: '🔑 Licensing',
+      items: [
+        { label: 'Générer licence', url: `${baseUrl}/api/v1/licensing/generate` },
+        { label: 'Activer licence', url: `${baseUrl}/api/v1/licensing/activate` },
+        { label: 'Valider licence', url: `${baseUrl}/api/v1/licensing/validate` },
+        { label: 'Features par tier', url: `${baseUrl}/api/v1/licensing/features` },
+        { label: 'Mon statut', url: `${baseUrl}/api/v1/licensing/check` },
+      ],
+    },
+    {
+      category: '🔌 Applications',
+      items: apps.map((app) => ({
+        label: app.charAt(0).toUpperCase() + app.slice(1),
+        url: `${baseUrl}/api/v1/${app}`,
+      })),
+    },
   ];
 
   return urls;
@@ -86,7 +104,9 @@ const printUrlSection = (title, urls, baseUrl) => {
 
   urls.forEach(({ label, url }) => {
     const relativePath = url.replace(baseUrl, '');
-    console.log(`    ${colors.green}→${colors.reset} ${colors.bright}${label.padEnd(20)}${colors.reset} ${colors.dim}${relativePath}${colors.reset}`);
+    console.log(
+      `    ${colors.green}→${colors.reset} ${colors.bright}${label.padEnd(20)}${colors.reset} ${colors.dim}${relativePath}${colors.reset}`
+    );
   });
 };
 
@@ -99,7 +119,9 @@ const printStartupBanner = async (port, allowedOrigins) => {
   console.log('');
   console.log(`${colors.green}${'█'.repeat(BOX_WIDTH)}${colors.reset}`);
   console.log(`${colors.bright}${colors.green}  🚀  DRY API SERVER READY  ${colors.reset}`);
-  console.log(`${colors.dim}  Framework multi-tenant — version ${overview.version || config.APP_VERSION || '1.0.0'}${colors.reset}`);
+  console.log(
+    `${colors.dim}  Framework multi-tenant — version ${overview.version || config.APP_VERSION || '1.0.0'}${colors.reset}`
+  );
   console.log(`${colors.green}${'█'.repeat(BOX_WIDTH)}${colors.reset}`);
 
   // ─── SYSTEM OVERVIEW ──
@@ -130,7 +152,9 @@ const printStartupBanner = async (port, allowedOrigins) => {
     apps.forEach((app) => {
       const fullUrl = `${baseUrl}/api/v1/${app.name.toLowerCase()}`;
       const features = app.features || 0;
-      console.log(`    ${colors.green}✔${colors.reset} ${colors.bright}${String(app.name).padEnd(16)}${colors.reset} ${colors.dim}→${colors.reset} ${colors.cyan}${fullUrl}${colors.reset}  ${colors.dim}(${features} features)${colors.reset}`);
+      console.log(
+        `    ${colors.green}✔${colors.reset} ${colors.bright}${String(app.name).padEnd(16)}${colors.reset} ${colors.dim}→${colors.reset} ${colors.cyan}${fullUrl}${colors.reset}  ${colors.dim}(${features} features)${colors.reset}`
+      );
     });
   } else {
     console.log(`    ${colors.yellow}ℹ Aucune application détectée${colors.reset}`);
@@ -138,7 +162,9 @@ const printStartupBanner = async (port, allowedOrigins) => {
 
   // ─── Pied de page ──
   console.log(`\n  ${colors.dim}${'─'.repeat(BOX_WIDTH - 4)}${colors.reset}`);
-  console.log(`  ${colors.dim}📅 ${new Date().toISOString()}  |  🛡 ${allowedOrigins.length} origine(s) CORS autorisée(s)${colors.reset}`);
+  console.log(
+    `  ${colors.dim}📅 ${new Date().toISOString()}  |  🛡 ${allowedOrigins.length} origine(s) CORS autorisée(s)${colors.reset}`
+  );
   console.log(`${colors.green}${'█'.repeat(BOX_WIDTH)}${colors.reset}\n`);
 };
 
