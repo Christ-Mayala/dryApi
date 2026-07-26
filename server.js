@@ -13,6 +13,9 @@ const { connectCluster } = require('./dry/config/connection/dbConnection');
 const redisService = require('./dry/services/cache/redis.service');
 const { startPurgeScheduler } = require('./dry/services/cleanup/purgeDeleted.scheduler');
 const {
+  startDataRetentionScheduler,
+} = require('./dry/services/cleanup/dataRetention.scheduler');
+const {
   startScimReservationReminderScheduler,
 } = require('./dry/services/notification/scimReservationReminder.scheduler');
 const {
@@ -39,10 +42,10 @@ createSocketServer(server, app, allowedOrigins);
 const startServer = async () => {
   await connectCluster();
   await redisService.connect();
-  
   await registerApplicationRoutes(app);
 
   startPurgeScheduler();
+  startDataRetentionScheduler();
   startHealthMonitor();
   startScimReservationReminderScheduler();
   startScimBonPlanExpiryScheduler();
