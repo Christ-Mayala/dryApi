@@ -1,98 +1,107 @@
-const csrf = require('csurf');
-const asyncHandler = require('express-async-handler');
+const { doubleCsrf } = require('csrf-csrf');
 const sendResponse = require('../../utils/http/response');
 const config = require('../../../config/database');
 
-// Initialisation du middleware CSRF
-const csrfProtection = csrf({
-    cookie: {
-        httpOnly: true, // Empêche l'accès via JavaScript
-        secure: config.NODE_ENV === 'production', // Active le flag Secure en production
-        sameSite: 'strict', // Protège contre les attaques CSRF
-    },
+// ─── Initialisation csrf-csrf (double-submit cookie pattern) ─────────────────
+//
+// csrf-csrf remplace csurf (déprécié). Il utilise le pattern "double submit
+// cookie" : un cookie signé HMAC + un token dans le header/body.
+// Le secret HMAC est tiré de JWT_SECRET pour éviter d'introduire une nouvelle
+// variable d'environnement.
+//
+const {
+  generateToken,   // (req, res, overwrite?) → string  — génère et pose le cookie
+  doubleCsrfProtection, // middleware Express standard
+} = doubleCsrf({
+  getSecret: () => config.JWT_SECRET,
+  cookieName: '__Host-psifi.x-csrf-token',
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: config.NODE_ENV === 'production',
+    // __Host- prefix exige path=/ et secure=true en prod, domain absent
+    path: '/',
+  },
+  // Cherche le token dans :
+  //   1. Le header X-CSRF-Token (API REST / React Native)
+  //   2. Le champ _csrf du body (formulaires HTML classiques)
+  getTokenFromRequest: (req) =>
+    req.headers['x-csrf-token'] || req.body?._csrf,
+  size: 64,
 });
 
-// Middleware pour ajouter le token CSRF aux réponses
-const setCsrfToken = asyncHandler((req, res, next) => {
-    try {
-        // Le token CSRF est automatiquement ajouté aux cookies par `csurf`
-        // On l'expose aussi dans `res.locals` pour les réponses API
-        res.locals.csrfToken = req.csrfToken();
-        next();
-    } catch {
-        // Si CSRF n'est pas initialisé, on continue sans token
-        next();
-    }
-});
-
-// Routes qui n'ont PAS besoin de protection CSRF
+// ─── Routes exemptées de vérification CSRF ───────────────────────────────────
 const NO_CSRF_ROUTES = [
-    // Auth routes (login/register sont publics)
-    '/auth/login',
-    '/auth/register',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-    
-    // Routes publiques de lecture
-    '/health',
-    '/health/live',
-    '/health/ready',
-    
-    // Routes publiques d'API (GET seulement)
-    // Les méthodes GET, OPTIONS, HEAD sont déjà exclues par CSRF
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/health',
+  '/health/live',
+  '/health/ready',
 ];
 
-// Middleware pour vérifier si une route nécessite une protection CSRF
+// ─── setCsrfToken — expose le token dans le cookie + res.locals ──────────────
+const setCsrfToken = (req, res, next) => {
+  try {
+    res.locals.csrfToken = generateToken(req, res);
+  } catch {
+    // Si le contexte ne permet pas de générer un token, on continue sans
+  }
+  next();
+};
+
+// ─── requiresCsrfProtection — skip les méthodes safe et les routes exclues ───
 const requiresCsrfProtection = (req, res, next) => {
-    const path = req.path;
-    const method = req.method;
-    
-    // Les méthodes safe n'ont pas besoin de CSRF
-    if (['GET', 'OPTIONS', 'HEAD'].includes(method)) {
-        return next();
+  const { path, method } = req;
+
+  // GET / OPTIONS / HEAD sont des méthodes "safe" — pas de vérification CSRF
+  if (['GET', 'OPTIONS', 'HEAD'].includes(method)) {
+    return next();
+  }
+
+  const isExcluded = NO_CSRF_ROUTES.some((route) => {
+    if (route.endsWith('/*')) {
+      return path.startsWith(route.slice(0, -2));
     }
-    
-    // Vérifier si la route est dans la liste des exceptions
-    const needsCsrf = !NO_CSRF_ROUTES.some(route => {
-        // Support des wildcards (ex: /auth/*)
-        if (route.endsWith('/*')) {
-            const baseRoute = route.slice(0, -2);
-            return path.startsWith(baseRoute);
-        }
-        return path === route;
-    });
-    
-    if (needsCsrf) {
-        return csrfProtection(req, res, next);
-    }
-    
-    next();
+    return path === route;
+  });
+
+  if (isExcluded) return next();
+
+  // Déléguer la vérification à csrf-csrf
+  return doubleCsrfProtection(req, res, next);
 };
 
-// Middleware pour vérifier le token CSRF sur les requêtes sensibles
-const verifyCsrfToken = asyncHandler((req, res, next) => {
-    // `csurf` vérifie automatiquement le token CSRF dans les cookies ou les headers
-    // Si le token est invalide, `csurf` renvoie une erreur 403
-    next();
-});
+// ─── verifyCsrfToken — alias conservé pour la compatibilité des imports ──────
+const verifyCsrfToken = (_req, _res, next) => next();
 
-// Gestion des erreurs CSRF
+// ─── handleCsrfError — gestion de l'erreur 403 csrf-csrf ─────────────────────
 const handleCsrfError = (err, req, res, next) => {
-    if (err.code === 'EBADCSRFTOKEN') {
-        return sendResponse(res, null, 'Token CSRF invalide ou manquant', false, 403);
-    }
-    next(err); // Passe l'erreur au middleware suivant
+  // csrf-csrf lève une erreur avec le code 'EBADCSRFTOKEN' ou message 'invalid csrf token'
+  if (
+    err.code === 'EBADCSRFTOKEN' ||
+    err.message === 'invalid csrf token' ||
+    err.status === 403
+  ) {
+    return sendResponse(res, null, 'Token CSRF invalide ou manquant', false, 403);
+  }
+  next(err);
 };
 
-// Middleware combiné pour appliquer CSRF sélectivement
+// ─── applyCsrfSelectively — middleware combiné ────────────────────────────────
 const applyCsrfSelectively = [requiresCsrfProtection, setCsrfToken];
 
 module.exports = {
-    csrfProtection,
-    setCsrfToken,
-    verifyCsrfToken,
-    handleCsrfError,
-    requiresCsrfProtection,
-    applyCsrfSelectively,
-    NO_CSRF_ROUTES
+  // Exposé pour usage direct si nécessaire
+  doubleCsrfProtection,
+  generateToken,
+  // Alias de compatibilité avec l'ancien nommage csurf
+  csrfProtection: doubleCsrfProtection,
+  setCsrfToken,
+  verifyCsrfToken,
+  handleCsrfError,
+  requiresCsrfProtection,
+  applyCsrfSelectively,
+  NO_CSRF_ROUTES,
 };

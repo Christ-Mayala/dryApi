@@ -7,76 +7,136 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: #f6f8f7;
       color: #14201b;
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
+      /* Empêche le zoom horizontal sur iOS */
+      overflow-x: hidden;
     }
-    a { color: #006B4D; }
-    .container { max-width: 780px; margin: 0 auto; padding: 0 24px 80px; }
 
+    a { color: #006B4D; }
+
+    /* ── Conteneur principal ── */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+    }
+
+    /* ── Header ── */
     header {
       background: linear-gradient(135deg, #006B4D, #00A876);
       color: #fff;
-      padding: 56px 24px 40px;
+      padding: 48px 20px 36px;
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 24px;
     }
     header .badge {
       display: inline-block;
       background: rgba(255,255,255,0.15);
       border: 1px solid rgba(255,255,255,0.25);
-      padding: 6px 16px;
+      padding: 5px 14px;
       border-radius: 20px;
-      font-size: 0.8em;
+      font-size: 0.78em;
       font-weight: 700;
       letter-spacing: 0.4px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    header h1 { font-size: clamp(1.7em, 5vw, 2.3em); font-weight: 800; letter-spacing: -0.02em; }
-    header p { margin-top: 10px; color: rgba(255,255,255,0.85); font-size: 0.95em; }
+    header h1 {
+      font-size: clamp(1.45em, 6vw, 2.3em);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    header p {
+      margin-top: 8px;
+      color: rgba(255,255,255,0.85);
+      font-size: 0.9em;
+    }
 
+    /* ── Titres de section ── */
     h2 {
-      font-size: 1.15em;
+      font-size: 1.05em;
       font-weight: 800;
       color: #006B4D;
-      margin: 40px 0 12px;
+      margin: 36px 0 10px;
       letter-spacing: -0.01em;
     }
     h2:first-of-type { margin-top: 0; }
-    p, li { font-size: 0.95em; color: #33403a; }
+
+    /* ── Texte courant ── */
+    p, li { font-size: 0.93em; color: #33403a; }
     p { margin-bottom: 12px; }
-    ul { margin: 8px 0 16px 20px; }
+    ul { margin: 8px 0 14px 18px; }
     li { margin-bottom: 6px; }
     strong { color: #14201b; }
 
-    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 0.9em; }
-    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e2e8e5; vertical-align: top; }
-    th { color: #006B4D; font-weight: 700; }
+    /* ── Tableau — responsive via scroll horizontal sur mobile ── */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 12px 0 20px;
+      border-radius: 8px;
+      border: 1px solid #e2e8e5;
+    }
+    table {
+      width: 100%;
+      min-width: 520px; /* force le scroll plutôt que l'écrasement */
+      border-collapse: collapse;
+      font-size: 0.88em;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8e5;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    th {
+      background: #f0f7f4;
+      color: #006B4D;
+      font-weight: 700;
+      white-space: nowrap;
+    }
 
+    /* ── Cards ── */
     .card {
       background: #fff;
       border: 1px solid #e2e8e5;
       border-radius: 16px;
-      padding: 28px 28px 8px;
+      padding: 24px 20px 12px;
     }
 
     .contact {
       background: #fff;
       border: 1px solid #e2e8e5;
       border-radius: 16px;
-      padding: 24px 28px;
-      margin-top: 32px;
+      padding: 20px;
+      margin-top: 20px;
     }
     .contact a { font-weight: 600; text-decoration: none; }
+
+    /* ── Footer ── */
     .footer {
       text-align: center;
       color: #7c8983;
-      font-size: 0.82em;
-      margin-top: 40px;
+      font-size: 0.8em;
+      margin-top: 32px;
+      padding: 0 8px;
+    }
+
+    /* ── Adaptations > 480px ── */
+    @media (min-width: 480px) {
+      .container { padding: 0 24px 80px; }
+      .card { padding: 28px 28px 8px; }
+      .contact { padding: 24px 28px; }
+      h2 { font-size: 1.15em; }
     }
   </style>
 </head>
@@ -97,34 +157,40 @@
       </p>
 
       <h2>2. Données que nous collectons</h2>
-      <table>
-        <tr><th>Catégorie</th><th>Détail</th><th>Pourquoi</th></tr>
-        <tr>
-          <td>Compte</td>
-          <td>Nom, e-mail, téléphone (optionnel), mot de passe (haché), photo de profil (optionnelle)</td>
-          <td>Créer et sécuriser votre compte, vous authentifier</td>
-        </tr>
-        <tr>
-          <td>Données financières</td>
-          <td>Transactions, revenus, dépenses, prêts, objectifs d'épargne, clients, factures, stock, activités business que vous saisissez</td>
-          <td>Fournir le service de gestion financière et le synchroniser entre vos appareils</td>
-        </tr>
-        <tr>
-          <td>Photos de reçus</td>
-          <td>Image capturée si vous utilisez le scan de reçu (OCR)</td>
-          <td>Extraire automatiquement le montant et la catégorie de la dépense — transmise ponctuellement à notre prestataire d'intelligence artificielle pour l'analyse, non conservée sur nos serveurs</td>
-        </tr>
-        <tr>
-          <td>Messages à l'assistant IA</td>
-          <td>Le texte de vos questions et, si nécessaire, un résumé de vos données financières pour contextualiser la réponse</td>
-          <td>Fournir des conseils financiers personnalisés dans "Trivida Intel"</td>
-        </tr>
-        <tr>
-          <td>Biométrie</td>
-          <td>Empreinte digitale / reconnaissance faciale, si vous activez le verrouillage biométrique</td>
-          <td>Traitée entièrement sur votre appareil par le système d'exploitation. Trivida ne reçoit et ne stocke jamais ces données.</td>
-        </tr>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Catégorie</th><th>Détail</th><th>Pourquoi</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Compte</strong></td>
+              <td>Nom, e-mail, téléphone (optionnel), mot de passe (haché), photo de profil (optionnelle)</td>
+              <td>Créer et sécuriser votre compte, vous authentifier</td>
+            </tr>
+            <tr>
+              <td><strong>Données financières</strong></td>
+              <td>Transactions, revenus, dépenses, prêts, objectifs d'épargne, clients, factures, stock, activités business que vous saisissez</td>
+              <td>Fournir le service de gestion financière et le synchroniser entre vos appareils</td>
+            </tr>
+            <tr>
+              <td><strong>Photos de reçus</strong></td>
+              <td>Image capturée si vous utilisez le scan de reçu (OCR)</td>
+              <td>Extraire automatiquement le montant et la catégorie — transmise ponctuellement à notre prestataire IA pour l'analyse, non conservée sur nos serveurs</td>
+            </tr>
+            <tr>
+              <td><strong>Messages IA</strong></td>
+              <td>Le texte de vos questions et, si nécessaire, un résumé de vos données financières</td>
+              <td>Fournir des conseils financiers personnalisés dans "Trivida Intel"</td>
+            </tr>
+            <tr>
+              <td><strong>Biométrie</strong></td>
+              <td>Empreinte digitale / reconnaissance faciale, si vous activez le verrouillage biométrique</td>
+              <td>Traitée entièrement sur votre appareil. Trivida ne reçoit et ne stocke jamais ces données.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <p>
         Si vous utilisez Trivida en <strong>mode invité</strong> (sans créer de compte), toutes vos données
