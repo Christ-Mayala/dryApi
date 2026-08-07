@@ -934,67 +934,221 @@ Tel: +242068457521
     const baseUrl = `http://localhost:5000/api/v1/${appName.toLowerCase()}/${featureName}`;
     const authUrl = `http://localhost:5000/api/v1/${appName.toLowerCase()}/user/login`;
     const payload = buildReadmePayload(fields);
-    
-    return `# 🚀 Commandes cURL pour tester ${featureName}
 
-Ces commandes permettent de tester rapidement votre API depuis un terminal.
-Assurez-vous d'avoir un token JWT valide (login admin).
+    const parsedFields = fields.map(f => f.split(':')[0]).filter(Boolean);
+    const emailField = parsedFields.find(f => f.toLowerCase().includes('email')) || 'email';
+    const passwordField = parsedFields.find(f => f.toLowerCase().includes('password')) || 'password';
 
-## 🌍 Variables d'environnement
-Copiez ces lignes dans votre terminal (Git Bash recommandé sur Windows) :
+    return `# 🚀 Guide de Test pour ${featureName}
+
+Ce document vous permet de tester l'API ${featureName} pas à pas, même sans expérience.
+Copiez-collez chaque commande dans votre terminal et lisez ce qui se passe.
+
+---
+
+## 📋 Table des matières
+
+1. [Prérequis](#1-prérequis)
+2. [Étape 1 : Démarrer le serveur](#2-étape-1--démarrer-le-serveur)
+3. [Étape 2 : Obtenir un token (connexion)](#3-étape-2--obtenir-un-token-connexion)
+4. [Étape 3 : Tester les routes](#4-étape-3--tester-les-routes)
+5. [Glossaire](#5-glossaire)
+
+---
+
+## 1. Prérequis
+
+- Le serveur est démarré : \`npm run dev\`
+- MongoDB est lancé (local ou Docker)
+- Vous avez un compte admin créé (via \`npm run seed\`)
+
+---
+
+## 2. Étape 1 : Démarrer le serveur
+
+Si ce n'est pas déjà fait, dans un terminal :
 
 \`\`\`bash
-export BASE_URL="${baseUrl}"
-# Remplacez par votre token réel.
-# Pour obtenir un token, faites un POST sur : ${authUrl}
-export TOKEN="votre_token_jwt_ici"
+npm run dev
 \`\`\`
 
-## 1️⃣ Lister (GET)
-Récupérer la liste paginée des éléments.
+Vous devriez voir s'afficher :
+
+\`\`\`
+🚀  DRY API SERVER READY
+   Port             5000
+   Base URL         http://localhost:5000
+\`\`\`
+
+---
+
+## 3. Étape 2 : Obtenir un token (connexion)
+
+### 3.1 Comprendre le token
+
+L'API utilise un **token JWT** pour savoir qui vous êtes. C'est comme un badge d'accès :
+- Sans token : on ne peut que lire certaines données publiques
+- Avec token : on peut créer, modifier, supprimer
+
+### 3.2 Se connecter (login)
+
+Ouvrez **un nouveau terminal** (laissez le serveur tourner dans l'autre) et tapez :
 
 \`\`\`bash
-curl -X GET "$BASE_URL" \\
-  -H "Authorization: Bearer $TOKEN" \\
+curl -X POST "${authUrl}" \\
+  -H "Content-Type: application/json" \\
+  -d '{\n    "${emailField}": "admin@dry.local",\n    "${passwordField}": "Admin123!"\n  }'
+\`\`\`
+
+### 3.3 Récupérer le token
+
+La réponse ressemble à ça :
+
+\`\`\`json
+{\n  "success": true,\n  "message": "Connexion réussie",\n  "data": {\n    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY..."\n  }\n}
+\`\`\`
+
+**Copiez la valeur de \`token\`** (tout ce qui est entre les guillemets après \`"token":\`).
+
+### 3.4 Enregistrer le token
+
+**Windows PowerShell** :
+
+\`\`\`powershell
+$token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY..."
+\`\`\`
+
+**Windows Git Bash / macOS / Linux** :
+
+\`\`\`bash
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY..."
+\`\`\`
+
+---
+
+## 4. Étape 3 : Tester les routes
+
+Maintenant que vous avez votre token, testez les 5 actions principales.
+
+### 4.1 Lister tous les éléments (GET)
+
+\`\`\`bash
+curl -X GET "${baseUrl}" \\
+  -H "Authorization: Bearer \$token" \\
   -H "Accept: application/json"
 \`\`\`
 
-## 2️⃣ Créer (POST)
-Créer un nouvel élément.
+**Ce que ça fait** : Récupère la liste de tous les ${featureName} (par pages de 10 par défaut).
+
+### 4.2 Créer un élément (POST)
 
 \`\`\`bash
-curl -X POST "$BASE_URL" \\
+curl -X POST "${baseUrl}" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer $TOKEN" \\
+  -H "Authorization: Bearer \$token" \\
   -d '${payload}'
 \`\`\`
 
-## 3️⃣ Voir détails (GET ID)
-Remplacez \`ID_ICI\` par l'ID retourné lors de la création.
+**Ce que ça fait** : Crée un nouveau ${featureName} avec les données fournies.
+
+### 4.3 Voir un élément par son ID (GET /:id)
+
+Remplacez \`ID_ICI\` par l'ID retourné lors de la création (champ \`_id\` de la réponse).
 
 \`\`\`bash
-# Exemple ID: 64f1a2b3c4d5e6f7a8b9c0d1
-curl -X GET "$BASE_URL/ID_ICI" \\
-  -H "Authorization: Bearer $TOKEN"
+curl -X GET "${baseUrl}/ID_ICI" \\
+  -H "Authorization: Bearer \$token"
 \`\`\`
 
-## 4️⃣ Mettre à jour (PUT)
-Modifier un élément existant.
+**Ce que ça fait** : Récupère les détails d'un ${featureName} précis.
+
+### 4.4 Modifier un élément (PUT /:id)
+
+Remplacez \`ID_ICI\` par l'ID de l'élément à modifier.
 
 \`\`\`bash
-curl -X PUT "$BASE_URL/ID_ICI" \\
+curl -X PUT "${baseUrl}/ID_ICI" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer $TOKEN" \\
+  -H "Authorization: Bearer \$token" \\
   -d '${payload}'
 \`\`\`
 
-## 5️⃣ Supprimer (DELETE)
-Suppression logique (soft delete).
+**Ce que ça fait** : Met à jour l'élément avec les nouvelles données.
+
+### 4.5 Supprimer un élément (DELETE /:id)
+
+Remplacez \`ID_ICI\` par l'ID de l'élément à supprimer.
 
 \`\`\`bash
-curl -X DELETE "$BASE_URL/ID_ICI" \\
-  -H "Authorization: Bearer $TOKEN"
+curl -X DELETE "${baseUrl}/ID_ICI" \\
+  -H "Authorization: Bearer \$token"
 \`\`\`
+
+**Ce que ça fait** : Désactive l'élément (soft delete, pas de suppression définitive).
+
+---
+
+## 5. Glossaire
+
+### Qu'est-ce que cURL ?
+
+cURL est un outil en ligne de commande pour communiquer avec des serveurs web.
+- **Linux/macOS** : cURL est préinstallé
+- **Windows** : PowerShell a \`Invoke-RestMethod\` (plus simple) ou installez Git Bash pour avoir cURL
+
+### Qu'est-ce qu'un token JWT ?
+
+Un **JSON Web Token** est un badge numérique qui prouve votre identité.
+- Il contient votre ID utilisateur et vos rôles
+- Il expire après un certain temps (voir \`expiresIn\` dans \`.env\`)
+- Il faut le renvoyer à chaque requête dans l'en-tête \`Authorization: Bearer <token>\`
+
+### Qu'est-ce qu'un endpoint ?
+
+C'est l'adresse d'une fonctionnalité de l'API. Exemples :
+- \`POST /api/v1/${appName.toLowerCase()}/${featureName}\` → Créer un ${featureName}
+- \`GET /api/v1/${appName.toLowerCase()}/${featureName}\` → Lister les ${featureName}
+
+### Qu'est-ce qu'un ID MongoDB ?
+
+Chaque élément créé a un identifiant unique, par exemple :
+\`\`\`
+64f1a2b3c4d5e6f7a8b9c0d1
+\`\`\`
+C'est cet ID que vous utilisez dans les URLs pour voir/modifier/supprimer un élément précis.
+
+### Qu'est-ce que le soft delete ?
+
+Au lieu de supprimer définitivement un document de la base de données, DRY marque l'élément comme \`status: "deleted"\`. Il disparaît des listes mais reste en base pour l'historique et la restauration.
+
+---
+
+## ❓ Problèmes courants
+
+### "401 Unauthorized"
+
+- Vérifiez que le token est bien copié (sans espaces avant/après)
+- Vérifiez que le token n'a pas expiré (relancez le login)
+- Vérifiez que vous utilisez \`Bearer\` avant le token (avec un espace)
+
+### "403 Forbidden"
+
+- Votre compte n'a pas les droits pour cette action
+- Connectez-vous avec un compte admin
+
+### "404 Not Found"
+
+- Vérifiez l'URL (sans faute de frappe)
+- Vérifiez que le serveur est bien démarré
+
+### "500 Internal Server Error"
+
+- Vérifiez que MongoDB est bien connecté
+- Consultez les logs : \`npm run logs\`
+
+---
+
+_Bon test ! 🚀_
 `;
   },
 };

@@ -39,6 +39,35 @@ Regle:
 - une app peut configurer ou etendre le comportement framework
 - elle ne doit pas modifier le coeur du kernel pour un besoin metier local
 
+## 1.5. Vue d'ensemble (C4 Container)
+
+```mermaid
+flowchart TD
+    Client["👤 Client\n(Navigateur, Mobile, API)"]
+    Nginx["🔄 Nginx\n(Reverse Proxy - optionnel)"]
+    DRY["🚀 DRY API Server\n(Express + Socket.IO)"]
+    Kernel["🧩 Kernel `dry/`\n(Sécurité, Auth, CRUD, Cache, Audit)"]
+    Apps["📦 Apps `dryApp/`\n(Trivida, SCIM, FreeLLM, LaStreet, ...)"]
+    Mongo[("🍃 MongoDB\n(1 cluster, N bases par tenant)")]
+    Redis[("🔴 Redis\n(Cache, Rate Limit, Sessions)")]
+    Cloudinary["☁️ Cloudinary\n(Upload média)"]
+    Stripe["💳 Stripe\n(Paiements)"]
+    OAuth["🔐 OAuth\n(Google, Facebook)"]
+
+    Client --> Nginx
+    Nginx --> DRY
+    DRY --> Kernel
+    DRY --> Apps
+    Kernel --> Mongo
+    Kernel --> Redis
+    Apps --> Mongo
+    Apps --> Cloudinary
+    Apps --> Stripe
+    Kernel --> OAuth
+```
+
+**Principe clé** : Un seul processus Node.js, une seule connexion MongoDB partagée, mais chaque tenant dispose de sa propre base logique (`<NomApp>DB`) et de ses propres routes sous `/api/v1/<app>`.
+
 ## 2. Flux d'une requete
 
 ```mermaid

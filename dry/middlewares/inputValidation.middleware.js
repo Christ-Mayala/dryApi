@@ -94,7 +94,7 @@ const sanitizeObject = (value, depth = 0) => {
  * @param {number} depth - Profondeur de récursion
  * @returns {string|null} Message d'erreur ou null
  */
-const detectAttacks = (value, depth = 0) => {
+const detectAttacks = (value, depth = 0, checkSql = true) => {
   if (depth > 10) return null;
   if (typeof value === 'string') {
     // Vérifier les patterns NoSQL
@@ -103,10 +103,12 @@ const detectAttacks = (value, depth = 0) => {
         return 'Pattern d\'injection NoSQL détecté';
       }
     }
-    // Vérifier les patterns SQL
-    for (const pattern of ATTACK_PATTERNS.sqlInjection) {
-      if (pattern.test(value)) {
-        return 'Pattern d\'injection SQL détecté';
+    // Vérifier les patterns SQL uniquement si autorisé
+    if (checkSql) {
+      for (const pattern of ATTACK_PATTERNS.sqlInjection) {
+        if (pattern.test(value)) {
+          return 'Pattern d\'injection SQL détecté';
+        }
       }
     }
     // Vérifier les patterns XSS
@@ -118,7 +120,7 @@ const detectAttacks = (value, depth = 0) => {
   }
   if (value && typeof value === 'object' && !Buffer.isBuffer(value)) {
     for (const val of Object.values(value)) {
-      const result = detectAttacks(val, depth + 1);
+      const result = detectAttacks(val, depth + 1, checkSql);
       if (result) return result;
     }
   }
@@ -152,7 +154,8 @@ const inputValidationMiddleware = (req, res, next) => {
 
   // 3. Détecter les patterns d'attaque
   if (req.body) {
-    const attackDetected = detectAttacks(req.body);
+    const isFreeLLMRoute = req.path.startsWith('/api/v1/freellm/') || req.path === '/v1/chat/completions';
+    const attackDetected = detectAttacks(req.body, 0, !isFreeLLMRoute);
     if (attackDetected) {
       return res.status(400).json({
         success: false,

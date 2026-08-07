@@ -47,14 +47,19 @@ cd dry-api
 # 2. Installer les dépendances
 npm install
 
-# 3. Copier et configurer l'environnement
+# 3. Démarrer MongoDB (local, Docker ou Atlas)
+#    Local :  net start MongoDB   (Windows) / brew services start mongodb-community (macOS)
+#    Docker : docker run -d -p 27017:27017 mongo:7
+#    Atlas  : configurer MONGO_URI avec votre cluster
+
+# 4. Copier et configurer l'environnement
 cp .env.example .env
 # Éditer .env avec vos valeurs (MONGO_URI, JWT_SECRET, SESSION_SECRET)
 
-# 4. Lancer les migrations
+# 5. Lancer les migrations
 npm run migrate:up
 
-# 5. Démarrer le serveur
+# 6. Démarrer le serveur
 npm run dev
 ```
 

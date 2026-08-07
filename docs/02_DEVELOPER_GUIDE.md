@@ -50,9 +50,9 @@ Une "Feature" est une brique de ton application (ex: `products`, `orders`, `comm
 - `model/product.schema.js` (La structure de données)
 - `route/products.routes.js` (Les URLs API)
 
-### 🚀 NOUVEAU : La Puissance du `routerFactory`
+### 🚀 La Puissance du `routerFactory`
 
-Depuis la version 3.5, tu n'as plus besoin de créer 5 fichiers de contrôleurs séparés. La **`routerFactory`** s'occupe de tout.
+Le `routerFactory` automatise la création des routes CRUD standards. Tu n'as plus besoin de créer 5 fichiers de contrôleurs séparés.
 
 Exemple dans `route/products.routes.js` :
 
@@ -61,8 +61,21 @@ const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFac
 const router = buildCrudRouter('Product', ProductSchema, {
   auth: { create: 'admin', update: 'admin', delete: 'admin' },
   caching: { list: 300 },
+  upload: upload.array('images', 5),
+  validation: {
+    create: validateMyApp.product.create,
+    update: validateMyApp.product.update
+  },
+  crudOptions: {
+    transformInput: async ({ req, payload }) => {
+      if (req.files) payload.images = req.files.map((f) => f.path);
+      return payload;
+    }
+  }
 });
 ```
+
+Cela génère automatiquement les routes `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id` avec les middlewares de sécurité, cache et audit.
 
 ## 3️⃣ Personnaliser ton Code
 

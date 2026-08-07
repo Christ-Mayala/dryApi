@@ -4,7 +4,7 @@ const CODE_KEYWORDS = [
   'react', 'vue', 'angular', 'component', 'hook', 'jsx', 'tsx',
   'python', 'javascript', 'typescript', 'java', 'c++', 'c#', 'rust', 'go',
   'code', 'programming', 'algorithm', 'debug', 'error', 'bug', 'fix',
-  'function', 'method', 'api', 'endpoint', 'database', 'sql', 'query',
+  'function', 'method', 'api', 'endpoint', 'database',
   'git', 'github', 'docker', 'kubernetes', 'terminal', 'command', 'npm'
 ];
 
