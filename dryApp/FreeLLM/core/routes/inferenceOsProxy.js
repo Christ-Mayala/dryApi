@@ -33,11 +33,6 @@ function sanitizeMessageContent(content) {
   s = s.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
   // Numéros de carte bancaire
   s = s.replace(/\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b/g, '[COMPTE]');
-  // Noms propres après mots-clés financiers sensibles (aligné sur le client)
-  s = s.replace(
-    /\b(prêt|dette|paiement|remboursement|virement|versement|reçu de|payé à|pour|à|de)\s+([A-ZÀÂÉÈÊËÎÏÔÙÛÜ][a-zàâéèêëîïôùûü]+(\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜ][a-zàâéèêëîïôùûü]+)*)/gi,
-    '$1 [CONTACT]'
-  );
   return s;
 }
 
@@ -61,6 +56,48 @@ function sanitizeMessages(messages) {
     }
     return msg;
   });
+}
+
+function sanitizeProviderResponse(result) {
+  if (!result || !result.choices || !Array.isArray(result.choices)) return result;
+  return {
+    ...result,
+    choices: result.choices.map(choice => {
+      if (!choice || !choice.message) return choice;
+      const content = typeof choice.message.content === 'string'
+        ? choice.message.content
+        : choice.message.content;
+      if (typeof content !== 'string') return choice;
+      // Nettoyer les placeholders de sanitization qui auraient pu être échoés par le modèle
+      const cleaned = content
+        .replace(/\[CONTACT\]/gi, '[UTILISATEUR]')
+        .replace(/\[NUMÉRO\]/gi, '[NUMÉRO]')
+        .replace(/\[EMAIL\]/gi, '[EMAIL]')
+        .replace(/\[COMPTE\]/gi, '[COMPTE]');
+      return {
+        ...choice,
+        message: { ...choice.message, content: cleaned }
+      };
+    })
+  };
+}
+
+function sanitizeStreamChunk(chunk) {
+  if (!chunk || !chunk.choices || !Array.isArray(chunk.choices)) return chunk;
+  return {
+    ...chunk,
+    choices: chunk.choices.map(choice => {
+      if (!choice || !choice.delta) return choice;
+      const content = choice.delta.content;
+      if (typeof content !== 'string') return choice;
+      const cleaned = content
+        .replace(/\[CONTACT\]/gi, '[UTILISATEUR]')
+        .replace(/\[NUMÉRO\]/gi, '[NUMÉRO]')
+        .replace(/\[EMAIL\]/gi, '[EMAIL]')
+        .replace(/\[COMPTE\]/gi, '[COMPTE]');
+      return { ...choice, delta: { ...choice.delta, content: cleaned } };
+    })
+  };
 }
 
 function isAutoModel(modelId) {
@@ -420,7 +457,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         res.setHeader('X-Latency', Date.now() - profiler.start);
         res.setHeader('X-Task-Type', taskType);
         res.setHeader('X-Request-Id', requestId);
-        res.json(result);
+        res.json(sanitizeProviderResponse(result));
         profiler.mark('serialize');
         
         finalStatus = 'success';
@@ -754,7 +791,8 @@ Sortie :
                 }
                 const text = chunk.choices?.[0]?.delta?.content || '';
                 totalOutputTokens += Math.ceil(text.length / 4);
-                res.write('data: ' + JSON.stringify(chunk) + '\n\n');
+                const safeChunk = sanitizeStreamChunk(chunk);
+                res.write('data: ' + JSON.stringify(safeChunk) + '\n\n');
               }
               profiler.mark('providerStreamEnd');
               profiler.mark('providerEnd');
@@ -892,7 +930,7 @@ Sortie :
             
             // Then serialize and send response
             const serializeStart = Date.now();
-            res.json(result);
+            res.json(sanitizeProviderResponse(result));
             profiler.mark('serialize');
 
             finalStatus = 'success';
