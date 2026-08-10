@@ -433,47 +433,6 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       }
     }
 
-    // --- 3. CONVERSATION TOKEN BUDGET CHECK ---
-    let conversationId;
-    const firstUserMsg = messages.find(m => m.role === 'user' && m.content);
-    if (firstUserMsg) {
-      const contentToHash = typeof firstUserMsg.content === 'string' 
-        ? firstUserMsg.content 
-        : JSON.stringify(firstUserMsg.content);
-      conversationId = crypto.createHash('md5').update(contentToHash.slice(0, 200)).digest('hex');
-    } else {
-      conversationId = crypto.randomUUID();
-    }
-    let convBudget = conversationTokenUsage.get(conversationId);
-    const now = Date.now();
-    if (!convBudget || now - convBudget.createdAt > CONVERSATION_BUDGET_TTL) {
-      convBudget = { usedTokens: 0, createdAt: now };
-      conversationTokenUsage.set(conversationId, convBudget);
-    }
-    const estimatedTotalTokens = inputTokens + max_tokens;
-    if (convBudget.usedTokens + estimatedTotalTokens > CONVERSATION_TOKEN_BUDGET) {
-      profiler.mark('context');
-      profiler.mark('routing');
-      profiler.mark('provider');
-      profiler.mark('providerEnd');
-      profiler.mark('mongo');
-      profiler.mark('serialize');
-      finalStatus = 'error';
-        finalError = 'Conversation token budget exceeded';
-        routeContext.platform = null;
-        routeContext.modelId = null;
-        if (null !== null) tokensContext = null;
-        // logger.request removed
-      res.status(429).json({
-        error: {
-          message: `Conversation token budget exceeded (${CONVERSATION_TOKEN_BUDGET} tokens max). Start a new conversation.`,
-          type: 'budget_exceeded',
-          requestId
-        }
-      });
-      return;
-    }
-
     // --- 4. LAZY ORCHESTRATION START ---
     
     // 4.1 Classify ONLY if NOT in IDE Mode
@@ -586,6 +545,47 @@ Sortie :
 
     // Calculer les tokens d'entrée une seule fois ici
     const inputTokens = tokenEstimator.estimateTotalTokens(processedMessages);
+
+    // --- 3. CONVERSATION TOKEN BUDGET CHECK ---
+    let conversationId;
+    const firstUserMsg = messages.find(m => m.role === 'user' && m.content);
+    if (firstUserMsg) {
+      const contentToHash = typeof firstUserMsg.content === 'string' 
+        ? firstUserMsg.content 
+        : JSON.stringify(firstUserMsg.content);
+      conversationId = crypto.createHash('md5').update(contentToHash.slice(0, 200)).digest('hex');
+    } else {
+      conversationId = crypto.randomUUID();
+    }
+    let convBudget = conversationTokenUsage.get(conversationId);
+    const now = Date.now();
+    if (!convBudget || now - convBudget.createdAt > CONVERSATION_BUDGET_TTL) {
+      convBudget = { usedTokens: 0, createdAt: now };
+      conversationTokenUsage.set(conversationId, convBudget);
+    }
+    const estimatedTotalTokens = inputTokens + max_tokens;
+    if (convBudget.usedTokens + estimatedTotalTokens > CONVERSATION_TOKEN_BUDGET) {
+      profiler.mark('context');
+      profiler.mark('routing');
+      profiler.mark('provider');
+      profiler.mark('providerEnd');
+      profiler.mark('mongo');
+      profiler.mark('serialize');
+      finalStatus = 'error';
+        finalError = 'Conversation token budget exceeded';
+        routeContext.platform = null;
+        routeContext.modelId = null;
+        if (null !== null) tokensContext = null;
+        // logger.request removed
+      res.status(429).json({
+        error: {
+          message: `Conversation token budget exceeded (${CONVERSATION_TOKEN_BUDGET} tokens max). Start a new conversation.`,
+          type: 'budget_exceeded',
+          requestId
+        }
+      });
+      return;
+    }
 
     // 4.3 Cache check
     const cacheable = !stream && !tools && !tool_choice && (temperature === 0 || temperature === undefined);
