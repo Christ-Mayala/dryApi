@@ -53,9 +53,10 @@ function set(cacheKey, value, ttlMs = CACHE_TTL_MS) {
 
 function clear() {
   memoryCache.clear();
-  redisStore.client.keys('inf:cache:*').then(keys => {
+  redisStore.getCacheStats().then(stats => {
+    const keys = stats.keys || [];
     for (const key of keys) {
-      redisStore.del(key).catch(() => {});
+      redisStore.deleteCacheEntry('inf:cache:' + key).catch(() => {});
     }
   }).catch(() => {});
 }

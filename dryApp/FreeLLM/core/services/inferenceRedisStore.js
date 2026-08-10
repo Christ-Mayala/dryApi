@@ -3,7 +3,7 @@
  * Utilise redis.service.js quand Redis est disponible, sinon fallback en mémoire.
  */
 
-const redisService = require('../../../dry/services/cache/redis.service');
+const redisService = require('../../../../dry/services/cache/redis.service');
 
 const PREFIX = 'inf:';
 const TTL_SECONDS = 3600; // 1 heure par défaut
@@ -47,12 +47,18 @@ async function deleteCircuitBreakerState(key) {
 
 async function getAllCircuitBreakerStates() {
   if (await ensureRedis()) {
-    // Redis SCAN pour récupérer toutes les clés cb:*
-    const keys = await redisService.client.keys(PREFIX + 'cb:*');
+    let keys;
+    try {
+      keys = await redisService.keys(PREFIX + 'cb:*');
+    } catch {
+      keys = [];
+    }
     const states = [];
     for (const key of keys) {
       const val = await redisService.get(key);
-      if (val) states.push(JSON.parse(val));
+      if (val) {
+        try { states.push(JSON.parse(val)); } catch {}
+      }
     }
     return states;
   }
@@ -82,11 +88,18 @@ async function setPerformanceMetrics(platform, modelId, metrics) {
 
 async function getAllPerformanceMetrics() {
   if (await ensureRedis()) {
-    const keys = await redisService.client.keys(PREFIX + 'pm:*');
+    let keys;
+    try {
+      keys = await redisService.keys(PREFIX + 'pm:*');
+    } catch {
+      keys = [];
+    }
     const metrics = [];
     for (const key of keys) {
       const val = await redisService.get(key);
-      if (val) metrics.push(JSON.parse(val));
+      if (val) {
+        try { metrics.push(JSON.parse(val)); } catch {}
+      }
     }
     return metrics;
   }
@@ -122,7 +135,12 @@ async function deleteCacheEntry(key) {
 
 async function getCacheStats() {
   if (await ensureRedis()) {
-    const keys = await redisService.client.keys(PREFIX + 'cache:*');
+    let keys;
+    try {
+      keys = await redisService.keys(PREFIX + 'cache:*');
+    } catch {
+      keys = [];
+    }
     return { size: keys.length, keys: keys.map(k => k.replace(PREFIX + 'cache:', '')) };
   }
   const entries = Array.from(memoryStore.entries()).filter(([k]) => k.startsWith('cache:'));

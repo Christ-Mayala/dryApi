@@ -91,6 +91,16 @@ class RedisService {
     }
   }
 
+  async keys(pattern) {
+    if (!this.isConnected || !this.client) return [];
+    try {
+      return await this.client.keys(pattern);
+    } catch (error) {
+      console.error('[REDIS] Erreur KEYS:', error);
+      return [];
+    }
+  }
+
   getStatus() {
     return {
       connected: this.isConnected,
