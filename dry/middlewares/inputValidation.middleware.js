@@ -153,25 +153,27 @@ const inputValidationMiddleware = (req, res, next) => {
   }
 
   // 3. Détecter les patterns d'attaque
-  if (req.body) {
-    const isFreeLLMRoute = req.path.startsWith('/api/v1/freellm/') || req.path === '/v1/chat/completions';
-    const attackDetected = detectAttacks(req.body, 0, !isFreeLLMRoute);
-    if (attackDetected) {
-      return res.status(400).json({
-        success: false,
-        message: 'Entrée invalide détectée.',
-        detail: attackDetected,
-      });
+  const isFreeLLMRoute = req.path.startsWith('/api/v1/freellm/') || req.path === '/v1/chat/completions';
+  if (!isFreeLLMRoute) {
+    if (req.body) {
+      const attackDetected = detectAttacks(req.body, 0, true);
+      if (attackDetected) {
+        return res.status(400).json({
+          success: false,
+          message: 'Entrée invalide détectée.',
+          detail: attackDetected,
+        });
+      }
     }
-  }
-  if (req.query) {
-    const attackDetected = detectAttacks(req.query);
-    if (attackDetected) {
-      return res.status(400).json({
-        success: false,
-        message: 'Paramètre de requête invalide.',
-        detail: attackDetected,
-      });
+    if (req.query) {
+      const attackDetected = detectAttacks(req.query);
+      if (attackDetected) {
+        return res.status(400).json({
+          success: false,
+          message: 'Paramètre de requête invalide.',
+          detail: attackDetected,
+        });
+      }
     }
   }
 

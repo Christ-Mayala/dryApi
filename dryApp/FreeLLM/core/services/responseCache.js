@@ -1,8 +1,12 @@
 const crypto = require('crypto');
 
-const cache = new Map();
+const redisStore = require('./inferenceRedisStore');
+
 const CACHE_TTL_MS = 300000; // 5 minutes par défaut
 const MAX_CACHE_SIZE = 1000;
+
+// In-memory fallback si Redis n'est pas dispo
+const memoryCache = new Map();
 
 function getCacheKey(messages, options = {}) {
   const hash = crypto.createHash('sha256');
@@ -17,50 +21,65 @@ function getCacheKey(messages, options = {}) {
 }
 
 function get(cacheKey) {
-  const entry = cache.get(cacheKey);
+  const entry = memoryCache.get(cacheKey);
   if (!entry) return null;
-  
+
   if (Date.now() > entry.expiresAt) {
-    cache.delete(cacheKey);
+    memoryCache.delete(cacheKey);
     return null;
   }
-  
+
   entry.hits = (entry.hits || 0) + 1;
   return entry.value;
 }
 
 function set(cacheKey, value, ttlMs = CACHE_TTL_MS) {
-  if (cache.size >= MAX_CACHE_SIZE) {
-    const oldestKey = cache.keys().next().value;
-    cache.delete(oldestKey);
-  }
-  
-  cache.set(cacheKey, {
+  const entry = {
     value,
     expiresAt: Date.now() + ttlMs,
     createdAt: Date.now(),
     hits: 0
-  });
+  };
+
+  if (memoryCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = memoryCache.keys().next().value;
+    memoryCache.delete(oldestKey);
+  }
+  memoryCache.set(cacheKey, entry);
+
+  // Persistance asynchrone en arrière-plan
+  redisStore.setCacheEntry(cacheKey, entry, Math.ceil(ttlMs / 1000)).catch(() => {});
 }
 
 function clear() {
-  cache.clear();
+  memoryCache.clear();
+  redisStore.client.keys('inf:cache:*').then(keys => {
+    for (const key of keys) {
+      redisStore.del(key).catch(() => {});
+    }
+  }).catch(() => {});
 }
 
 function getStats() {
   let totalHits = 0;
   let totalEntries = 0;
   const now = Date.now();
-  
-  for (const [key, entry] of cache.entries()) {
+
+  for (const [key, entry] of memoryCache.entries()) {
     if (now <= entry.expiresAt) {
       totalEntries++;
       totalHits += entry.hits || 0;
     }
   }
-  
+
+  // Tentative de récupérer les stats Redis (non bloquant)
+  let redisSize = 0;
+  redisStore.getCacheStats().then(stats => {
+    redisSize = stats.size || 0;
+  }).catch(() => {});
+
   return {
-    size: totalEntries,
+    size: totalEntries + redisSize,
     maxSize: MAX_CACHE_SIZE,
     totalHits
   };

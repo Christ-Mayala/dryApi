@@ -1,6 +1,8 @@
 const performanceStore = new Map();
 const METRICS_TTL_MS = 3600000; // 1 heure
 
+const redisStore = require('./inferenceRedisStore');
+
 function getKey(platform, modelId) {
   return `${platform}:${modelId}`;
 }
@@ -9,7 +11,7 @@ function getMetrics(platform, modelId) {
   const key = getKey(platform, modelId);
   const now = Date.now();
   let metrics = performanceStore.get(key);
-  
+
   if (!metrics) {
     metrics = {
       platform,
@@ -25,10 +27,10 @@ function getMetrics(platform, modelId) {
     };
     performanceStore.set(key, metrics);
   }
-  
+
   // Nettoyer l'historique vieux
   metrics.latencyHistory = metrics.latencyHistory.filter(l => now - l.timestamp < METRICS_TTL_MS);
-  
+
   return metrics;
 }
 
@@ -40,11 +42,14 @@ function recordSuccess(platform, modelId, latencyMs, inputTokens, outputTokens) 
   metrics.totalInputTokens += inputTokens;
   metrics.totalOutputTokens += outputTokens;
   metrics.lastUpdated = Date.now();
-  
+
   metrics.latencyHistory.push({ timestamp: Date.now(), latencyMs });
   if (metrics.latencyHistory.length > 100) {
     metrics.latencyHistory.shift();
   }
+
+  // Persistance asynchrone en arrière-plan
+  redisStore.setPerformanceMetrics(platform, modelId, metrics).catch(() => {});
 }
 
 function recordFailure(platform, modelId) {
@@ -52,6 +57,9 @@ function recordFailure(platform, modelId) {
   metrics.totalRequests++;
   metrics.failureCount++;
   metrics.lastUpdated = Date.now();
+
+  // Persistance asynchrone en arrière-plan
+  redisStore.setPerformanceMetrics(platform, modelId, metrics).catch(() => {});
 }
 
 function getSuccessRate(platform, modelId) {

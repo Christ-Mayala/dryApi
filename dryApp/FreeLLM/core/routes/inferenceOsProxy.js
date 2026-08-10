@@ -409,7 +409,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         profiler.mark('provider');
         profiler.mark('providerEnd');
         const mongoSaveStart = Date.now();
-        await logRequest(RequestsModel, userId, 'fast-path', 'fast-path', null, 'success', 
+        logRequest(RequestsModel, userId, 'fast-path', 'fast-path', null, 'success', 
           tokenEstimator.estimateTotalTokens(messages), 
           result.usage?.completion_tokens || 0, 
           Date.now() - profiler.start, null, taskType, 0, requestId);
@@ -450,8 +450,7 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
       convBudget = { usedTokens: 0, createdAt: now };
       conversationTokenUsage.set(conversationId, convBudget);
     }
-    const estimatedInputTokens = tokenEstimator.estimateTotalTokens(messages);
-    const estimatedTotalTokens = estimatedInputTokens + max_tokens;
+    const estimatedTotalTokens = inputTokens + max_tokens;
     if (convBudget.usedTokens + estimatedTotalTokens > CONVERSATION_TOKEN_BUDGET) {
       profiler.mark('context');
       profiler.mark('routing');
@@ -585,6 +584,9 @@ Sortie :
       tokensSaved
     });
 
+    // Calculer les tokens d'entrée une seule fois ici
+    const inputTokens = tokenEstimator.estimateTotalTokens(processedMessages);
+
     // 4.3 Cache check
     const cacheable = !stream && !tools && !tool_choice && (temperature === 0 || temperature === undefined);
     let cacheKey = null;
@@ -598,8 +600,8 @@ Sortie :
         profiler.mark('providerEnd');
         
         const mongoSaveStart = Date.now();
-        await logRequest(RequestsModel, userId, 'cache', 'cached', null, 'success', 
-          tokenEstimator.estimateTotalTokens(messages), 
+        logRequest(RequestsModel, userId, 'cache', 'cached', null, 'success', 
+          inputTokens, 
           cached.usage?.completion_tokens || 0, 
           Date.now() - profiler.start, null, taskType, 0, requestId);
         profiler.mark('mongo');
@@ -626,35 +628,6 @@ Sortie :
     let preferredModel;
     if (isAutoModel(requestedModel)) {
       preferredModel = getStickyModel(messages);
-      
-      if (!preferredModel) {
-        const fallbackChain = await FallbackConfigModel.find({ deletedAt: null, enabled: true })
-          .sort({ priority: 1 })
-          .lean();
-        
-        const modelDbIds = fallbackChain.map(entry => entry.modelDbId);
-        const allModels = await ModelsModel.find({ _id: { $in: modelDbIds }, enabled: true, deletedAt: null }).lean();
-        
-        const modelMap = new Map();
-        for (const model of allModels) {
-          modelMap.set(String(model._id), model);
-        }
-        
-        const candidateModels = [];
-        for (const entry of fallbackChain) {
-          const model = modelMap.get(String(entry.modelDbId));
-          if (model) {
-            candidateModels.push({
-              ...entry,
-              model,
-            });
-          }
-        }
-        
-        if (candidateModels.length > 0) {
-          preferredModel = candidateModels[0].model._id;
-        }
-      }
     } else if (requestedModel) {
       const enabled = await ModelsModel.findOne({ modelId: requestedModel, enabled: true, deletedAt: null }).lean();
       if (enabled) {
@@ -698,7 +671,7 @@ Sortie :
           ModelsModel, 
           ApiKeysModel, 
           FallbackConfigModel, 
-          tokenEstimator.estimateTotalTokens(processedMessages) + max_tokens, 
+          inputTokens + max_tokens, 
           skipKeys.size > 0 ? skipKeys : undefined, 
           preferredModel,
           taskType,
@@ -726,13 +699,14 @@ Sortie :
             requestId,
             platform: route.platform
           });
+          const originalInputTokens = tokenEstimator.estimateTotalTokens(messages);
           const furtherCompressed = tokenEstimator.compressContext(
             processedMessages, 
             Math.min(tokenCheck.budget.input, tokenCheck.providerLimit - max_tokens)
           );
           processedMessages = furtherCompressed.messages;
-          tokensSaved += tokenEstimator.estimateTotalTokens(messages) - furtherCompressed.compressedTokens;
-          compressionRatio = 1 - (furtherCompressed.compressedTokens / tokenEstimator.estimateTotalTokens(messages));
+          tokensSaved += originalInputTokens - furtherCompressed.compressedTokens;
+          compressionRatio = 1 - (furtherCompressed.compressedTokens / originalInputTokens);
         }
 
         recordRequest(route.platform, route.modelId, route.keyId);
@@ -793,7 +767,7 @@ Sortie :
               res.end();
 
               const latency = Date.now() - requestStart;
-              const totalTokensUsed = tokenEstimator.estimateTotalTokens(processedMessages) + totalOutputTokens;
+              const totalTokensUsed = inputTokens + totalOutputTokens;
               convBudget.usedTokens += totalTokensUsed;
               conversationTokenUsage.set(conversationId, convBudget);
               
@@ -801,14 +775,14 @@ Sortie :
               recordSuccess(route.modelDbId);
               circuitBreaker.recordSuccess(route.platform);
               perfMetrics.recordSuccess(route.platform, route.modelId, latency, 
-                tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens);
+                inputTokens, totalOutputTokens);
               keyPoolManager.recordKeySuccess(route.platform, route.keyId, latency);
               setStickyModel(processedMessages, route.modelDbId);
               
               // First save to Mongo and measure that time
               const mongoSaveStart = Date.now();
-              await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'success', 
-                tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
+              logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'success', 
+                inputTokens, totalOutputTokens, 
                 latency, null, taskType, fallbackCount, requestId);
               profiler.mark('mongo');
               
@@ -819,7 +793,7 @@ Sortie :
         routeContext.modelId = route.modelId;
         tokensContext = {
                   originalInput: tokenEstimator.estimateTotalTokens(messages),
-                  processedInput: tokenEstimator.estimateTotalTokens(processedMessages),
+                  processedInput: inputTokens,
                   output: totalOutputTokens,
                   total: totalTokensUsed,
                   saved: tokensSaved,
@@ -841,8 +815,8 @@ Sortie :
                 try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
                 const latency = Date.now() - requestStart;
                 const mongoSaveStart = Date.now();
-                await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
-                  tokenEstimator.estimateTotalTokens(processedMessages), totalOutputTokens, 
+                logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
+                  inputTokens, totalOutputTokens, 
                   latency, streamErr.message, taskType, fallbackCount, requestId);
                 profiler.mark('mongo');
                 profiler.mark('serialize');
@@ -873,7 +847,7 @@ Sortie :
 
             const latency = Date.now() - requestStart;
             const totalTokens = result.usage?.total_tokens || 0;
-            const inputTokensResult = result.usage?.prompt_tokens || tokenEstimator.estimateTotalTokens(processedMessages);
+            const inputTokensResult = result.usage?.prompt_tokens || inputTokens;
             const outputTokensResult = result.usage?.completion_tokens || 0;
             
             convBudget.usedTokens += totalTokens;
@@ -899,7 +873,7 @@ Sortie :
             
             // First save to Mongo and measure that time
             const mongoSaveStart = Date.now();
-            await logRequest(
+            logRequest(
               RequestsModel,
               userId,
               route.platform,
@@ -939,8 +913,8 @@ Sortie :
         } catch (err) {
           const latency = Date.now() - requestStart;
           const mongoSaveStart = Date.now();
-          await logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
-            tokenEstimator.estimateTotalTokens(processedMessages), 0, latency, 
+          logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', 
+            inputTokens, 0, latency, 
             err.message, taskType, fallbackCount, requestId);
           profiler.mark('mongo');
           profiler.mark('serialize');

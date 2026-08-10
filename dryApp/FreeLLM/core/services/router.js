@@ -91,12 +91,12 @@ function getAllPenalties() {
  * - Latence moyenne
  * - Classement vitesse / intelligence
  */
-function calculateModelScore(entry, model, isIdeMode) {
+async function calculateModelScore(entry, model, isIdeMode) {
   const basePriority = entry.priority || 0;
   const ratePenalty = getPenalty(entry.modelDbId);
 
-  const successRate = getSuccessRate(model.platform, model.modelId);
-  const avgLatency = getAvgLatency(model.platform, model.modelId);
+  const successRate = await getSuccessRate(model.platform, model.modelId);
+  const avgLatency = await getAvgLatency(model.platform, model.modelId);
 
   // Score dynamique du provider depuis keyPoolManager
   const providerScore = getProviderScore(model.platform);
@@ -160,30 +160,32 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
   const TOOLS_SUPPORTED = new Set(['google', 'openrouter']);
 
   // Calculer les scores et trier du meilleur au moins bon
-  const scoredChain = fallbackChain
-    .filter(entry => modelMap.has(String(entry.modelDbId)))
-    .map(entry => {
-      const model = modelMap.get(String(entry.modelDbId));
-      return {
-        ...entry,
-        model,
-        score: calculateModelScore(entry, model, isIdeMode)
-      };
-    })
-    .filter(entry => {
-      // Si la requête contient des outils, ne garder que les providers compatibles
-      if (hasTools) {
-        const platformLower = entry.model.platform.toLowerCase();
-        for (const goodPlatform of TOOLS_SUPPORTED) {
-          if (platformLower.includes(goodPlatform)) {
-            return true;
-          }
+  const scoredChain = [];
+  for (const entry of fallbackChain) {
+    if (!modelMap.has(String(entry.modelDbId))) continue;
+    const model = modelMap.get(String(entry.modelDbId));
+    scoredChain.push({
+      ...entry,
+      model,
+      score: await calculateModelScore(entry, model, isIdeMode)
+    });
+  }
+
+  const filteredChain = scoredChain.filter(entry => {
+    // Si la requête contient des outils, ne garder que les providers compatibles
+    if (hasTools) {
+      const platformLower = entry.model.platform.toLowerCase();
+      for (const goodPlatform of TOOLS_SUPPORTED) {
+        if (platformLower.includes(goodPlatform)) {
+          return true;
         }
-        return false;
       }
-      return true;
-    })
-    .sort((a, b) => b.score - a.score); // du plus haut score au plus bas
+      return false;
+    }
+    return true;
+  });
+
+  filteredChain.sort((a, b) => b.score - a.score); // du plus haut score au plus bas
 
   // Session sticky : mettre le modèle préféré en tête de liste
   if (preferredModelDbId) {

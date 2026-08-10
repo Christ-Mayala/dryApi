@@ -4,13 +4,13 @@ const CIRCUIT_STATES = {
   HALF_OPEN: 'half-open'
 };
 
-const circuitBreakers = new Map();
-
 const DEFAULT_OPTIONS = {
   failureThreshold: 5, // Nombre d'échecs avant d'ouvrir le circuit
   resetTimeoutMs: 30000, // Délai avant de passer en half-open
   halfOpenMaxRequests: 1 // Nombre de requêtes autorisées en half-open
 };
+
+const redisStore = require('./inferenceRedisStore');
 
 class CircuitBreaker {
   constructor(key, options = {}) {
@@ -54,6 +54,7 @@ class CircuitBreaker {
         this.lastStateChange = Date.now();
       }
     }
+    this._persist();
   }
 
   recordFailure() {
@@ -67,6 +68,7 @@ class CircuitBreaker {
       this.state = CIRCUIT_STATES.OPEN;
       this.lastStateChange = Date.now();
     }
+    this._persist();
   }
 
   getStatus() {
@@ -77,14 +79,35 @@ class CircuitBreaker {
       successCount: this.successCount,
       lastFailureTime: this.lastFailureTime,
       lastStateChange: this.lastStateChange,
-      timeToReset: this.state === CIRCUIT_STATES.OPEN 
+      timeToReset: this.state === CIRCUIT_STATES.OPEN
         ? Math.max(0, this.options.resetTimeoutMs - (Date.now() - this.lastFailureTime))
         : 0
     };
   }
+
+  _persist() {
+    redisStore.setCircuitBreakerState(this.key, this.getStatus()).catch(() => {});
+  }
 }
 
 function getCircuitBreaker(key, options) {
+  // Tentative de chargement depuis Redis (non bloquant)
+  redisStore.getCircuitBreakerState(key).then(state => {
+    if (state) {
+      const cb = new CircuitBreaker(key, options);
+      cb.state = state.state || CIRCUIT_STATES.CLOSED;
+      cb.failureCount = state.failureCount || 0;
+      cb.successCount = state.successCount || 0;
+      cb.lastFailureTime = state.lastFailureTime || null;
+      cb.lastStateChange = state.lastStateChange || Date.now();
+      // Remplacer dans le Map local si il existe
+      if (circuitBreakers.has(key)) {
+        const existing = circuitBreakers.get(key);
+        Object.assign(existing, cb);
+      }
+    }
+  }).catch(() => {});
+
   if (!circuitBreakers.has(key)) {
     circuitBreakers.set(key, new CircuitBreaker(key, options));
   }
@@ -101,10 +124,16 @@ function getAllCircuitBreakers() {
 
 function resetCircuitBreaker(key) {
   circuitBreakers.delete(key);
+  redisStore.deleteCircuitBreakerState(key).catch(() => {});
 }
 
 function resetAllCircuitBreakers() {
   circuitBreakers.clear();
+  redisStore.getAllCircuitBreakerStates().then(states => {
+    for (const state of states) {
+      redisStore.deleteCircuitBreakerState(state.key).catch(() => {});
+    }
+  }).catch(() => {});
 }
 
 module.exports = {

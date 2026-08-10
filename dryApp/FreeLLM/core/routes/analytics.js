@@ -18,30 +18,54 @@ function getSinceTimestamp(range) {
   }
 }
 
+function getErrorCategory(error) {
+  if (!error) return 'Other';
+  const e = error.toLowerCase();
+  if (e.includes('429') || e.includes('rate limit') || e.includes('too many') || e.includes('quota')) return 'Rate Limited (429)';
+  if (e.includes('401') || e.includes('unauthorized') || e.includes('invalid') || e.includes('key')) return 'Auth Error (401)';
+  if (e.includes('403') || e.includes('forbidden')) return 'Forbidden (403)';
+  if (e.includes('404') || e.includes('not found')) return 'Not Found (404)';
+  if (e.includes('timeout') || e.includes('etimedout') || e.includes('econnrefused')) return 'Timeout/Connection';
+  if (e.includes('500') || e.includes('internal server')) return 'Server Error (500)';
+  if (e.includes('503') || e.includes('unavailable')) return 'Unavailable (503)';
+  return 'Other';
+}
+
 function createAnalyticsRouter(ModelsModel, RequestsModel) {
   const router = express.Router();
   router.use(protect);
 
+  // GET /api/analytics/summary
   router.get('/summary', async (req, res) => {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
-    const stats = {
+    const result = await RequestsModel.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          createdAt: { $gte: since }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total_requests: { $sum: 1 },
+          success_count: { $sum: { $cond: [{ $eq: ['$status', 'success'] }, 1, 0] } },
+          total_input_tokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+          total_output_tokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+          total_latency: { $sum: { $ifNull: ['$latencyMs', 0] } }
+        }
+      }
+    ]);
+
+    const stats = result[0] || {
       total_requests: 0,
       success_count: 0,
       total_input_tokens: 0,
       total_output_tokens: 0,
       total_latency: 0
     };
-
-    for (const r of requests) {
-      stats.total_requests++;
-      if (r.status === 'success') stats.success_count++;
-      stats.total_input_tokens += (r.inputTokens || 0);
-      stats.total_output_tokens += (r.outputTokens || 0);
-      if (r.latencyMs) stats.total_latency += r.latencyMs;
-    }
 
     const totalRequests = stats.total_requests;
     const successRate = totalRequests > 0 ? (stats.success_count / totalRequests) * 100 : 0;
@@ -56,154 +80,151 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     });
   });
 
+  // GET /api/analytics/by-model
   router.get('/by-model', async (req, res) => {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
-    const modelsMap = new Map();
-
-    for (const r of requests) {
-      const key = `${r.platform}:${r.modelId}`;
-      if (!modelsMap.has(key)) {
-        modelsMap.set(key, {
-          platform: r.platform,
-          modelId: r.modelId,
-          requests: 0,
-          success_count: 0,
-          total_latency: 0,
-          total_input_tokens: 0,
-          total_output_tokens: 0
-        });
-      }
-      const entry = modelsMap.get(key);
-      entry.requests++;
-      if (r.status === 'success') entry.success_count++;
-      if (r.latencyMs) entry.total_latency += r.latencyMs;
-      entry.total_input_tokens += (r.inputTokens || 0);
-      entry.total_output_tokens += (r.outputTokens || 0);
-    }
-
     const models = await ModelsModel.find().lean();
     const modelMap = new Map(models.map(m => [m.platform + ':' + m.modelId, m.displayName]));
 
-    const result = Array.from(modelsMap.values()).map(r => ({
-      platform: r.platform,
-      modelId: r.modelId,
-      displayName: modelMap.get(r.platform + ':' + r.modelId) || r.modelId,
+    const result = await RequestsModel.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          createdAt: { $gte: since }
+        }
+      },
+      {
+        $group: {
+          _id: { platform: '$platform', modelId: '$modelId' },
+          requests: { $sum: 1 },
+          success_count: { $sum: { $cond: [{ $eq: ['$status', 'success'] }, 1, 0] } },
+          total_latency: { $sum: { $ifNull: ['$latencyMs', 0] } },
+          total_input_tokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+          total_output_tokens: { $sum: { $ifNull: ['$outputTokens', 0] } }
+        }
+      },
+      {
+        $sort: { requests: -1 }
+      }
+    ]);
+
+    const formatted = result.map(r => ({
+      platform: r._id.platform,
+      modelId: r._id.modelId,
+      displayName: modelMap.get(r._id.platform + ':' + r._id.modelId) || r._id.modelId,
       requests: r.requests,
       successRate: Math.round((r.success_count / r.requests) * 100 * 10) / 10,
       avgLatencyMs: r.requests > 0 ? Math.round(r.total_latency / r.requests) : 0,
       totalInputTokens: r.total_input_tokens,
       totalOutputTokens: r.total_output_tokens,
-    })).sort((a, b) => b.requests - a.requests);
+    }));
 
-    res.json(result);
+    res.json(formatted);
   });
 
+  // GET /api/analytics/by-platform
   router.get('/by-platform', async (req, res) => {
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).lean();
-    const platformMap = new Map();
-
-    for (const r of requests) {
-      if (!platformMap.has(r.platform)) {
-        platformMap.set(r.platform, {
-          platform: r.platform,
-          requests: 0,
-          success_count: 0,
-          total_latency: 0,
-          total_input_tokens: 0,
-          total_output_tokens: 0
-        });
+    const result = await RequestsModel.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          createdAt: { $gte: since }
+        }
+      },
+      {
+        $group: {
+          _id: '$platform',
+          requests: { $sum: 1 },
+          success_count: { $sum: { $cond: [{ $eq: ['$status', 'success'] }, 1, 0] } },
+          total_latency: { $sum: { $ifNull: ['$latencyMs', 0] } },
+          total_input_tokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+          total_output_tokens: { $sum: { $ifNull: ['$outputTokens', 0] } }
+        }
+      },
+      {
+        $sort: { requests: -1 }
       }
-      const entry = platformMap.get(r.platform);
-      entry.requests++;
-      if (r.status === 'success') entry.success_count++;
-      if (r.latencyMs) entry.total_latency += r.latencyMs;
-      entry.total_input_tokens += (r.inputTokens || 0);
-      entry.total_output_tokens += (r.outputTokens || 0);
-    }
+    ]);
 
-    const result = Array.from(platformMap.values()).map(r => ({
-      platform: r.platform,
+    const formatted = result.map(r => ({
+      platform: r._id,
       requests: r.requests,
       successRate: Math.round((r.success_count / r.requests) * 100 * 10) / 10,
       avgLatencyMs: r.requests > 0 ? Math.round(r.total_latency / r.requests) : 0,
       totalInputTokens: r.total_input_tokens,
       totalOutputTokens: r.total_output_tokens
-    })).sort((a, b) => b.requests - a.requests);
+    }));
 
-    res.json(result);
+    res.json(formatted);
   });
 
+  // GET /api/analytics/timeline
   router.get('/timeline', async (req, res) => {
     const range = req.query.range || '7d';
     const interval = req.query.interval || (range === '24h' ? 'hour' : 'day');
     const since = getSinceTimestamp(range);
 
-    const requests = await RequestsModel.find({ createdAt: { $gte: since }, userId: req.user._id }).sort({ createdAt: 1 }).lean();
-    const timelineMap = new Map();
+    const dateFormat = interval === 'hour'
+      ? { year: { $year: '$createdAt' }, month: { $month: '$createdAt' }, day: { $dayOfMonth: '$createdAt' }, hour: { $hour: '$createdAt' } }
+      : { year: { $year: '$createdAt' }, month: { $month: '$createdAt' }, day: { $dayOfMonth: '$createdAt' } };
 
-    for (const r of requests) {
-      let key;
-      if (interval === 'hour') {
-        const d = new Date(r.createdAt);
-        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:00:00`;
-      } else {
-        const d = new Date(r.createdAt);
-        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const dateToString = interval === 'hour'
+      ? { $dateToString: { format: '%Y-%m-%dT%H:00:00', date: '$createdAt' } }
+      : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } };
+
+    const result = await RequestsModel.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          createdAt: { $gte: since }
+        }
+      },
+      {
+        $group: {
+          _id: dateToString,
+          requests: { $sum: 1 },
+          successCount: { $sum: { $cond: [{ $eq: ['$status', 'success'] }, 1, 0] } },
+          failureCount: { $sum: { $cond: [{ $ne: ['$status', 'success'] }, 1, 0] } }
+        }
+      },
+      {
+        $sort: { _id: 1 }
       }
+    ]);
 
-      if (!timelineMap.has(key)) {
-        timelineMap.set(key, {
-          timestamp: key,
-          requests: 0,
-          successCount: 0,
-          failureCount: 0
-        });
-      }
-      const entry = timelineMap.get(key);
-      entry.requests++;
-      if (r.status === 'success') {
-        entry.successCount++;
-      } else {
-        entry.failureCount++;
-      }
-    }
+    const formatted = result.map(r => ({
+      timestamp: r._id,
+      requests: r.requests,
+      successCount: r.successCount,
+      failureCount: r.failureCount
+    }));
 
-    const result = Array.from(timelineMap.values()).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-
-    res.json(result);
+    res.json(formatted);
   });
 
+  // GET /api/analytics/error-distribution
   router.get('/error-distribution', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since }, userId: req.user._id }).lean();
+    const errors = await RequestsModel.find({
+      status: 'error',
+      createdAt: { $gte: since },
+      userId: req.user._id
+    }).lean();
+
     const categoryMap = new Map();
     const platformMap = new Map();
     const detailedMap = new Map();
 
-    const getCategory = (error) => {
-      if (!error) return 'Other';
-      const e = error.toLowerCase();
-      if (e.includes('429') || e.includes('rate limit') || e.includes('too many') || e.includes('quota')) return 'Rate Limited (429)';
-      if (e.includes('401') || e.includes('unauthorized') || e.includes('invalid') || e.includes('key')) return 'Auth Error (401)';
-      if (e.includes('403') || e.includes('forbidden')) return 'Forbidden (403)';
-      if (e.includes('404') || e.includes('not found')) return 'Not Found (404)';
-      if (e.includes('timeout') || e.includes('etimedout') || e.includes('econnrefused')) return 'Timeout/Connection';
-      if (e.includes('500') || e.includes('internal server')) return 'Server Error (500)';
-      if (e.includes('503') || e.includes('unavailable')) return 'Unavailable (503)';
-      return 'Other';
-    };
-
     for (const e of errors) {
-      const category = getCategory(e.error);
+      const category = getErrorCategory(e.error);
       const platform = e.platform;
       const detailedKey = `${platform}:${category}`;
 
@@ -230,12 +251,17 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     res.json({ byCategory, byPlatform, detailed });
   });
 
+  // GET /api/analytics/errors
   router.get('/errors', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const range = req.query.range || '7d';
     const since = getSinceTimestamp(range);
 
-    const errors = await RequestsModel.find({ status: 'error', createdAt: { $gte: since }, userId: req.user._id })
+    const errors = await RequestsModel.find({
+      status: 'error',
+      createdAt: { $gte: since },
+      userId: req.user._id
+    })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();
@@ -250,21 +276,21 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     })));
   });
 
-  // Nouveau endpoint: status des circuit breakers
+  // GET /api/analytics/circuit-breakers
   router.get('/circuit-breakers', async (req, res) => {
     res.json({
       circuitBreakers: getAllCircuitBreakers()
     });
   });
 
-  // Nouveau endpoint: métriques de performance en temps réel
+  // GET /api/analytics/performance-metrics
   router.get('/performance-metrics', async (req, res) => {
     res.json({
       metrics: getAllMetrics()
     });
   });
 
-  // Nouveau endpoint: stats du cache
+  // GET /api/analytics/cache-stats
   router.get('/cache-stats', async (req, res) => {
     res.json(getCacheStats());
   });
