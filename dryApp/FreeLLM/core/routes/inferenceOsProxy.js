@@ -162,12 +162,34 @@ function setStickyModel(messages, modelDbId) {
   }
 }
 
-const MAX_FALLBACKS = 1;
+const MAX_FALLBACKS = 3;
+
+// Retry réseau avec backoff exponentiel
+const RETRY_DELAYS = [100, 500, 2000]; // 100ms, 500ms, 2s
+
+// Timeout global de la boucle de fallback (60s)
+const FALLBACK_GLOBAL_TIMEOUT_MS = 60000;
 
 // GLOBAL RUNTIME TOKEN BUDGET PER CONVERSATION (INCREASED A LOT)
 const CONVERSATION_TOKEN_BUDGET = 1000000; // 1 MILLION tokens max per conversation
 const conversationTokenUsage = new Map(); // Map<convId, {usedTokens: number, createdAt: number}>
 const CONVERSATION_BUDGET_TTL = 3600000 * 24; // 24 hours
+
+// Fallback metrics for analytics
+const fallbackMetrics = {
+  totalRequests: 0,
+  totalFallbacks: 0,
+  totalNetworkRetries: 0,
+  totalTimeouts: 0,
+  providerStats: new Map(), // platform -> { requests, fallbacks, successes, failures }
+  reset() {
+    this.totalRequests = 0;
+    this.totalFallbacks = 0;
+    this.totalNetworkRetries = 0;
+    this.totalTimeouts = 0;
+    this.providerStats.clear();
+  }
+};
 
 async function logRequest(RequestsModel, userId, platform, modelId, keyId, status, inputTokens, outputTokens, latencyMs, error, taskType, fallbackCount, requestId) {
   try {
@@ -700,9 +722,30 @@ Sortie :
     const skipKeys = new Set();
     let lastError = null;
     let route = null;
+    let networkRetryCount = 0;
 
     // --- 6. EXECUTION LOOP ---
+    const fallbackStartTime = Date.now();
+    
+    // Track request start
+    fallbackMetrics.totalRequests++;
+    
     while (fallbackCount <= MAX_FALLBACKS) {
+      // Vérifier le timeout global
+      if (Date.now() - fallbackStartTime > FALLBACK_GLOBAL_TIMEOUT_MS) {
+        fallbackMetrics.totalTimeouts++;
+        finalStatus = 'timeout';
+        finalError = 'Global fallback timeout exceeded';
+        res.status(504).json({
+          error: {
+            message: 'Request timeout: all providers exhausted or too slow.',
+            type: 'timeout_error',
+            requestId
+          }
+        });
+        return;
+      }
+
       try {
         route = await routeRequest(
           ModelsModel, 
@@ -898,6 +941,11 @@ Sortie :
             keyPoolManager.recordKeySuccess(route.platform, route.keyId, latency);
             setStickyModel(processedMessages, route.modelDbId);
 
+            // Track success in fallback metrics
+            const stats = fallbackMetrics.providerStats.get(route.platform) || { requests: 0, fallbacks: 0, successes: 0, failures: 0 };
+            stats.successes++;
+            fallbackMetrics.providerStats.set(route.platform, stats);
+
             res.setHeader('X-Routed-Via', route.platform + '/' + route.modelId);
             res.setHeader('X-Task-Type', taskType);
             res.setHeader('X-Compression-Ratio', compressionRatio.toFixed(3));
@@ -1049,7 +1097,45 @@ Sortie :
           skipKeys.add(skipId);
           lastError = err;
           fallbackCount++;
+          networkRetryCount = 0; // Reset network retry on key change
+          
+          // Track fallback metrics
+          fallbackMetrics.totalFallbacks++;
+          if (route) {
+            const stats = fallbackMetrics.providerStats.get(route.platform) || { requests: 0, fallbacks: 0, successes: 0, failures: 0 };
+            stats.fallbacks++;
+            stats.failures++;
+            fallbackMetrics.providerStats.set(route.platform, stats);
+          }
           continue;
+        }
+
+        // Retry réseau avec backoff exponentiel pour les erreurs transitoires
+        const isNetworkError = (
+          msg.includes('timeout') ||
+          msg.includes('ETIMEDOUT') ||
+          msg.includes('ECONNREFUSED') ||
+          msg.includes('ENOTFOUND') ||
+          msg.includes('network') ||
+          msg.includes('fetch failed') ||
+          err.code === 'ECONNABORTED' ||
+          err.code === 'ETIMEDOUT'
+        );
+
+        if (isNetworkError && networkRetryCount < RETRY_DELAYS.length) {
+          const delay = RETRY_DELAYS[networkRetryCount];
+          networkRetryCount++;
+          fallbackMetrics.totalNetworkRetries++;
+          logger.debug({
+            component: 'InferenceOS',
+            event: 'NETWORK_RETRY',
+            requestId,
+            attempt: networkRetryCount,
+            delay,
+            error: msg.slice(0, 100)
+          });
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry same route
         }
 
         if (fallbackCount < MAX_FALLBACKS) {
@@ -1128,5 +1214,6 @@ Sortie :
 }
 
 module.exports = {
-  createFreeLLMProxyRouter
+  createFreeLLMProxyRouter,
+  fallbackMetrics
 };

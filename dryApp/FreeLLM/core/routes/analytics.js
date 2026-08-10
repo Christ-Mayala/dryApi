@@ -3,6 +3,7 @@ const protect = require('../../../../dry/middlewares/protection/auth.middleware'
 const { getAllCircuitBreakers } = require('../services/circuitBreaker.js');
 const { getAllMetrics } = require('../services/performanceMetrics.js');
 const { getStats: getCacheStats } = require('../services/responseCache.js');
+const { fallbackMetrics, MAX_FALLBACKS } = require('../routes/inferenceOsProxy.js');
 const router = express.Router();
 
 function getSinceTimestamp(range) {
@@ -293,6 +294,26 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
   // GET /api/analytics/cache-stats
   router.get('/cache-stats', async (req, res) => {
     res.json(getCacheStats());
+  });
+
+  // GET /api/analytics/fallback-metrics
+  router.get('/fallback-metrics', async (req, res) => {
+    const providerStats = {};
+    for (const [platform, stats] of fallbackMetrics.providerStats.entries()) {
+      providerStats[platform] = {
+        ...stats,
+        successRate: stats.requests > 0 ? (stats.successes / stats.requests) * 100 : 0,
+        fallbackRate: stats.requests > 0 ? (stats.fallbacks / stats.requests) * 100 : 0
+      };
+    }
+    res.json({
+      totalRequests: fallbackMetrics.totalRequests,
+      totalFallbacks: fallbackMetrics.totalFallbacks,
+      totalNetworkRetries: fallbackMetrics.totalNetworkRetries,
+      totalTimeouts: fallbackMetrics.totalTimeouts,
+      maxFallbacks: MAX_FALLBACKS,
+      providerStats
+    });
   });
 
   return router;
