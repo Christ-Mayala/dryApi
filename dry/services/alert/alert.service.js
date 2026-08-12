@@ -412,17 +412,31 @@ const buildText = (payload) => {
     `Severity: ${payload.severity || 'warning'}`,
     `Event: ${payload.event || 'ALERT'}`,
     `Status: ${payload.status || 'UNKNOWN'}`,
-    `HTTP: ${payload.http || 'N/A'}`,
-    `URL: ${payload.url || 'N/A'}`,
-    `Tenant: ${payload.tenant || 'N/A'}`,
-    `RequestId: ${payload.requestId || payload.request?.id || 'N/A'}`,
-    `TraceId: ${payload.traceId || 'N/A'}`,
-    `Downtime(s): ${payload.downtimeSeconds ?? 'N/A'}`,
-    `Time: ${payload.timestamp || new Date().toISOString()}`,
   ];
-  if (payload.error) parts.push(`Error: ${payload.error}`);
-  if (payload.causeProbable) parts.push(`Cause: ${payload.causeProbable}`);
-  if (payload.fingerprint) parts.push(`Fingerprint: ${payload.fingerprint}`);
+
+  const http = payload.http || payload.url;
+  if (http) parts.push(`HTTP: ${http}`);
+
+  const tenant = payload.tenant || payload.details?.tenant;
+  if (tenant) parts.push(`Tenant: ${tenant}`);
+
+  const requestId = payload.requestId || payload.request?.id;
+  if (requestId) parts.push(`RequestId: ${requestId}`);
+
+  if (payload.downtimeSeconds !== undefined && payload.downtimeSeconds !== null) {
+    parts.push(`Downtime(s): ${payload.downtimeSeconds}`);
+  }
+
+  const errorMessage = payload.error || payload.message || payload.details?.message;
+  if (errorMessage) parts.push(`Error: ${errorMessage}`);
+
+  const cause = payload.causeProbable || payload.details?.issue?.message;
+  if (cause) parts.push(`Cause: ${cause}`);
+
+  if (payload.health?.database) parts.push(`DB: ${payload.health.database}`);
+  if (payload.health?.memory?.rss) parts.push(`Mem: ${payload.health.memory.rss}`);
+
+  parts.push(`Time: ${payload.timestamp || new Date().toISOString()}`);
   return parts.join(' | ');
 };
 
@@ -558,7 +572,7 @@ const isQuietHours = () => {
 const shouldSendBySeverity = (severity) => {
   const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
   if (isQuietHours()) {
-    return sev === 'critical';
+    return sev === 'critical' || sev === 'info';
   }
   return true;
 };
@@ -575,10 +589,10 @@ const getSeverityChannels = async (severity) => {
     case 'critical':
       return { webhook: true, slack: true, discord: true, email: true, telegram: true, whatsapp: true, logOnly: false };
     case 'warning':
-      return { webhook: true, slack: false, discord: false, email: false, telegram: false, whatsapp: false, logOnly: false };
+      return { webhook: true, slack: false, discord: false, email: true, telegram: true, whatsapp: false, logOnly: false };
     case 'info':
     default:
-      return { webhook: true, slack: false, discord: false, email: false, telegram: false, whatsapp: false, logOnly: false };
+      return { webhook: true, slack: false, discord: false, email: true, telegram: false, whatsapp: false, logOnly: false };
   }
 };
 
@@ -738,7 +752,6 @@ const sendAlert = async (payload, severity = 'warning') => {
         body: JSON.stringify({
           chat_id: telegramChatId,
           text,
-          parse_mode: 'MarkdownV2',
         }),
       });
 
