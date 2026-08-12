@@ -48,8 +48,7 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
   }
 
   if (!origin) {
-    logger(`[cors] Origin bloquee: (aucune origine) | autorisees: ${allowedOrigins.join(', ') || '(aucune)'}`, 'warning');
-    return callback(new Error('Origin not allowed by CORS'));
+    return callback(null, true);
   }
 
   if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
