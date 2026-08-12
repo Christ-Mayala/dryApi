@@ -54,7 +54,7 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
     return callback(null, true);
   }
 
-  logger(`[cors] Origin bloquee: ${origin}`, 'warning');
+  logger(`[cors] Origin bloquee: ${origin} | autorisees: ${allowedOrigins.join(', ') || '(aucune)'}`, 'warning');
   return callback(new Error('Origin not allowed by CORS'));
 };
 
