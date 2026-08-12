@@ -42,6 +42,17 @@ const getAllowedOrigins = () => {
     : Array.from(new Set(allowedOrigins));
 };
 
+// Same-origin : l'API s'appelle elle-même (ex: le formulaire /system/status qui
+// POST vers la même URL). Le navigateur n'applique AUCUNE restriction CORS sur
+// une requête same-origin — la bloquer est inutile et casse les formulaires
+// auto-soumis. On compare l'hôte de l'origine avec l'hôte de la requête.
+const isSameOrigin = (origin, host) => {
+  if (!origin || !host) return false;
+  const originHost = String(origin).replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+  const requestHost = String(host).toLowerCase();
+  return originHost === requestHost;
+};
+
 const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
   if (config.NODE_ENV !== 'production') {
     return callback(null, true);
@@ -164,14 +175,24 @@ const createApp = () => {
   app.use(apiVersionMiddleware);
 
   // ── CORS ──
-  app.use(
-    cors({
-      origin: buildCorsOriginHandler(allowedOrigins),
+  // Wrapper : les requêtes same-origin (même hôte, ex: POST du formulaire
+  // /system/status vers lui-même) sont toujours acceptées — le navigateur ne
+  // vérifie pas CORS pour le même hôte. Les requêtes cross-origin passent par
+  // la liste blanche stricte (buildCorsOriginHandler).
+  const corsHandler = buildCorsOriginHandler(allowedOrigins);
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const host = req.headers.host;
+    if (isSameOrigin(origin, host)) {
+      return next();
+    }
+    return cors({
+      origin: corsHandler,
       methods: config.CORS.methods,
       allowedHeaders: config.CORS.allowedHeaders,
       credentials: config.CORS.credentials,
-    })
-  );
+    })(req, res, next);
+  });
 
   // ── Middleware: Validation des entrées ──
   // Nettoie XSS, détecte injections NoSQL/SQL, valide Content-Type
@@ -204,4 +225,5 @@ module.exports = {
   createApp,
   getAllowedOrigins,
   buildCorsOriginHandler,
+  isSameOrigin,
 };

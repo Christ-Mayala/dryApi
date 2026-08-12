@@ -81,3 +81,44 @@ describe('buildCorsOriginHandler (production)', () => {
     expect(r.ok).toBe(true);
   });
 });
+
+describe('isSameOrigin (requêtes same-origin)', () => {
+  let isSameOrigin;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...OLD_ENV };
+    process.env.NODE_ENV = 'production';
+    const { isSameOrigin: fn } = require('../../../dry/bootstrap/http');
+    isSameOrigin = fn;
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  it('reconnaît une origine identique à l\'hôte (POST formulaire /system/status)', () => {
+    expect(isSameOrigin('https://dryapi.onrender.com', 'dryapi.onrender.com')).toBe(true);
+  });
+
+  it('reconnaît le schéma http avec port', () => {
+    expect(isSameOrigin('http://localhost:5000', 'localhost:5000')).toBe(true);
+  });
+
+  it('ignore la casse et le slash final', () => {
+    expect(isSameOrigin('HTTPS://DryApi.OnRender.com/', 'dryapi.onrender.com')).toBe(true);
+  });
+
+  it('rejette une origine cross-origin', () => {
+    expect(isSameOrigin('https://evil.com', 'dryapi.onrender.com')).toBe(false);
+  });
+
+  it('rejette quand l\'origine ou l\'hôte manque', () => {
+    expect(isSameOrigin(undefined, 'dryapi.onrender.com')).toBe(false);
+    expect(isSameOrigin('https://dryapi.onrender.com', undefined)).toBe(false);
+  });
+
+  it('rejette une origine cross-origin sur le même domaine parent', () => {
+    expect(isSameOrigin('https://evil.dryapi.onrender.com', 'dryapi.onrender.com')).toBe(false);
+  });
+});

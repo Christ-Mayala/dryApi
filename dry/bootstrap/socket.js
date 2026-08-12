@@ -3,13 +3,21 @@ const { Server: SocketIOServer } = require('socket.io');
 const config = require('../../config/database');
 const { verifyToken } = require('../utils/auth/jwt.util');
 const notificationService = require('../services/notification/notification.service');
+const { isSameOrigin } = require('./http');
 
-const buildSocketOriginHandler = (allowedOrigins) => (origin, callback) => {
+const buildSocketOriginHandler = (allowedOrigins) => (origin, callback, req) => {
   if (config.NODE_ENV !== 'production') {
     return callback(null, true);
   }
 
   if (!origin || allowedOrigins.includes('*')) {
+    return callback(null, true);
+  }
+
+  // Requêtes same-origin (ex: dashboard hébergé sur le même hôte que l'API)
+  // : le navigateur n'applique pas de restriction CORS — on accepte.
+  // req est le handshake http.IncomingMessage (host présent dans req.headers.host).
+  if (req && isSameOrigin(origin, req.headers?.host)) {
     return callback(null, true);
   }
 
