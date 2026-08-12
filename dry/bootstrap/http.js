@@ -19,7 +19,8 @@ const { inputValidationMiddleware } = require('../middlewares/inputValidation.mi
 const { performanceMonitor } = require('../middlewares/performanceMonitor.middleware');
 
 const getAllowedOrigins = () => {
-  const allowedOrigins = (config.ALLOWED_ORIGINS || '')
+  const raw = config.ALLOWED_ORIGINS || config.CORS_ORIGINS || '';
+  const allowedOrigins = raw
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
@@ -46,11 +47,29 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
     return callback(null, true);
   }
 
-  if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+  if (!origin) {
+    logger(`[cors] Origin bloquee: (aucune origine) | autorisees: ${allowedOrigins.join(', ') || '(aucune)'}`, 'warning');
+    return callback(new Error('Origin not allowed by CORS'));
+  }
+
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
     return callback(null, true);
   }
 
-  if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+  const normalizedOrigin = origin.replace(/\/$/, '');
+  const allowedSet = new Set(allowedOrigins);
+
+  if (allowedSet.has(normalizedOrigin)) {
+    return callback(null, true);
+  }
+
+  const netlifyMatch = allowedOrigins.find((allowed) => {
+    if (!allowed.includes('netlify.app')) return false;
+    const normalizedAllowed = allowed.replace(/\/$/, '');
+    return normalizedOrigin === normalizedAllowed || normalizedOrigin.endsWith(`.${normalizedAllowed}`);
+  });
+
+  if (netlifyMatch) {
     return callback(null, true);
   }
 
