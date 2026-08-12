@@ -68,6 +68,8 @@ router.post('/', async (req, res) => {
     const requestId = req.requestId || req.headers['x-request-id'] || 'no-request-id';
     const statusCode = Number(error?.statusCode || error?.status || 500);
     const routePath = String(req.originalUrl || '').split('?')[0];
+    // Erreur 5xx côté serveur → critical (alertes complètes), erreur client → warning
+    const severity = statusCode >= 500 ? 'critical' : 'warning';
 
     setImmediate(() => {
       sendAlert({
@@ -97,7 +99,7 @@ router.post('/', async (req, res) => {
         },
         dedupKey: `youtube-metadata:${statusCode}:${error?.code || ''}:${error?.message || ''}`,
         timestamp: new Date().toISOString(),
-      }).catch((alertErr) => {
+      }, severity).catch((alertErr) => {
         console.error('Echec alerte YouTube metadata:', alertErr?.message || String(alertErr));
       });
     });

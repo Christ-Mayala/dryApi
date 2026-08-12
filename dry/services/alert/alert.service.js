@@ -2,6 +2,7 @@ const os = require('os');
 const { createHash } = require('crypto');
 const emailService = require('../auth/email.service');
 const config = require('../../../config/database');
+const logger = require('../../utils/logging/logger');
 
 const REDACTED = '[REDACTED]';
 const SENSITIVE_KEYS = [
@@ -38,9 +39,9 @@ const callMeBotApiKey = String(config.CALLMEBOT_API_KEY || process.env.CALLMEBOT
 const callMeBotPhone = String(config.CALLMEBOT_PHONE || process.env.CALLMEBOT_PHONE || '');
 
 // Log de configuration au démarrage
-console.log(`[AlertService] Telegram configuré: ${telegramBotToken && telegramChatId ? `OUI (bot=${telegramBotToken.slice(0, 10)}..., chat=${telegramChatId})` : 'NON'}`);
-console.log(`[AlertService] WhatsApp configuré: ${callMeBotApiKey && callMeBotPhone ? `OUI (phone=${callMeBotPhone})` : 'NON'}`);
-console.log(`[AlertService] Email configuré: ${config.ALERT_EMAIL_TO ? `OUI (${config.ALERT_EMAIL_TO})` : 'NON'}`);
+logger(`[AlertService] Telegram configuré: ${telegramBotToken && telegramChatId ? `OUI (bot=${telegramBotToken.slice(0, 10)}..., chat=${telegramChatId})` : 'NON'}`, 'info');
+logger(`[AlertService] WhatsApp configuré: ${callMeBotApiKey && callMeBotPhone ? `OUI (phone=${callMeBotPhone})` : 'NON'}`, 'info');
+logger(`[AlertService] Email configuré: ${config.ALERT_EMAIL_TO ? `OUI (${config.ALERT_EMAIL_TO})` : 'NON'}`, 'info');
 const getMaintenanceMode = async () => {
   try {
     const redis = require('../cache/redis.service');
@@ -64,6 +65,15 @@ const escapeHtml = (value) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+};
+
+const neutralizePreviewUrls = (value) => {
+  // Casse les URLs vidéo (YouTube) avec un espace invisible : évite les aperçus
+  // automatiques dans les emails (Gmail) et Telegram, sans perdre la lisibilité.
+  return String(value ?? '').replace(
+    /(https?:\/\/)(?:www\.)?(youtu)((?:\.be|be\.com))([\/?#]|$)/gi,
+    '$1$2\u200B$3$4'
+  );
 };
 
 const isEmailConfigured = () => {
@@ -262,6 +272,11 @@ const inferProbableCause = (errorDetails) => {
   if (status === 429) {
     return 'Trop de requetes (Rate limit). Le fournisseur externe vous a bloque temporairement.';
   }
+  // Cause spécifique AVANT le statut 5xx générique (la détection anti-bot de YouTube
+  // doit primer sur le simple "erreur 500")
+  if (message.includes('not a bot') || message.includes('sign in to confirm')) {
+    return "YouTube a detecte un trafic automatise (CAPTCHA anti-bot). L'IP du serveur (datacenter) est bloquee par YouTube : utilisez un proxy residentiel, des cookies d'authentification, ou le mode cookies (cookies.txt) pour ytdl-core.";
+  }
   if (status >= 500 && status <= 599) {
     return 'Erreur interne chez le fournisseur externe. Le probleme vient de chez eux.';
   }
@@ -284,6 +299,67 @@ const inferProbableCause = (errorDetails) => {
     return 'Requete bloquee par la politique CORS (Origine non autorisee).';
   }
   return 'Cause technique a determiner. Consultez les details de la stack trace pour plus de precision.';
+};
+
+// Noms/codes d'erreur typiquement "serveur" : une erreur 5xx, réseau ou base de données
+const CRITICAL_ERROR_NAMES = [
+  'MongoNetworkError',
+  'MongoServerSelectionError',
+  'MongoServerError',
+  'MongooseError',
+  'RedisError',
+  'SequelizeConnectionError',
+  'SequelizeConnectionRefusedError',
+  'TypeError',
+  'ReferenceError',
+  'SyntaxError',
+  'EvalError',
+  'RangeError',
+  'AggregateError',
+];
+const CRITICAL_ERROR_CODES = [
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'ESOCKETTIMEDOUT',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'EPIPE',
+  'EADDRINUSE',
+  'ENOMEM',
+];
+
+// Déduit la sévérité la plus pertinente quand l'appelant n'en fournit aucune :
+// - erreurs serveur (5xx) / réseau / base de données → critical
+// - erreurs client (4xx) → warning
+// - événements de récupération ou résumés → info
+// - sinon → warning
+const inferSeverity = (payload = {}) => {
+  const event = String(payload.event || '');
+  if (event === 'DRY_UNCAUGHT_EXCEPTION' || event === 'DRY_UNHANDLED_REJECTION' || event === 'DRY_HEALTH_ERROR') {
+    return 'critical';
+  }
+  if (event === 'DRY_HEALTH_RECOVERED' || event === 'DRY_DAILY_SUMMARY' || event === 'DRY_LOGS_SUMMARY' || event === 'TEST_ALERT') {
+    return 'info';
+  }
+
+  // errorDetails n'existe pas encore sur le payload brut (normalisation plus tard) :
+  // on inspecte aussi payload.error (objet Error brut avec .status/.name/.code)
+  const raw = payload.error;
+  const err = payload.errorDetails || (raw && typeof raw === 'object' ? raw : {}) || {};
+  const status = Number(err.status || payload.statusCode || payload.details?.providerStatus || payload.details?.statusCode || 0);
+  if (status >= 500) return 'critical';
+  if (status >= 400 && status < 500) return 'warning';
+
+  const name = String(err.name || (typeof raw?.name === 'string' ? raw.name : '') || '');
+  const code = String(err.code || (typeof raw?.code === 'string' ? raw.code : '') || '').toUpperCase();
+  if (CRITICAL_ERROR_NAMES.includes(name)) return 'critical';
+  if (CRITICAL_ERROR_CODES.includes(code)) return 'critical';
+
+  // Cas restants (erreur non catégorisée ou alerte sans erreur) → warning
+  return 'warning';
 };
 
 const normalizeAlertPayload = (payload = {}) => {
@@ -408,7 +484,11 @@ const eventMeta = (event, severity = 'warning') => {
     return { title: getTitle(event), tone: 'ok', color: '#1b5e20', bg: '#e8f5e9', label: 'OK' };
   }
   if (event === 'DRY_API_EXCEPTION') {
-    return { title: getTitle(event), tone: 'alert', color: '#b71c1c', bg: '#ffebee', label: 'CRITIQUE' };
+    // Le label suit la sévérité RÉELLE (évite l'incohérence "CRITIQUE" dans le titre
+    // alors que la ligne Sévérité affiche warning, comme signalé en production)
+    const sev = String(severity || 'warning').toLowerCase();
+    const label = sev === 'critical' ? 'CRITIQUE' : 'ALERTE';
+    return { title: getTitle(event), tone: 'alert', color: '#b71c1c', bg: '#ffebee', label };
   }
   if (event === 'DRY_UNHANDLED_REJECTION') {
     return { title: getTitle(event), tone: 'alert', color: '#b71c1c', bg: '#ffebee', label: 'CRITIQUE' };
@@ -488,7 +568,7 @@ const buildText = (payload) => {
   if (payload.health?.memory?.rss) parts.push(`Mem: ${payload.health.memory.rss}`);
 
   parts.push(`Time: ${payload.timestamp || new Date().toISOString()}`);
-  return parts.join(' | ');
+  return neutralizePreviewUrls(parts.join(' | '));
 };
 
 const buildTelegramText = (payload, severity = 'warning') => {
@@ -585,7 +665,7 @@ const buildTelegramText = (payload, severity = 'warning') => {
   lines.push(`🕐 Heure : ${formatDateTime(time)}`);
 
   // Garde-fou : Telegram limite les messages à 4096 caractères
-  const text = lines.join('\n');
+  const text = neutralizePreviewUrls(lines.join('\n'));
   return text.length > 4000 ? truncate(text, 3990) : text;
 };
 
@@ -669,7 +749,7 @@ const buildEmailHtml = (payload) => {
     </div>`
     : '';
 
-  return `
+  return neutralizePreviewUrls(`
 <div style="max-width:800px; margin:0 auto; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#333; line-height:1.6;">
   <div style="background:${meta.bg}; padding:25px; border-radius:8px 8px 0 0; border-left:8px solid ${meta.color};">
     <div style="text-transform:uppercase; font-size:12px; font-weight:bold; color:${meta.color}; margin-bottom:5px; letter-spacing:1px;">${meta.label}</div>
@@ -694,7 +774,7 @@ const buildEmailHtml = (payload) => {
       Système de Monitoring DRY API — Généré automatiquement le ${formatDateTime(new Date().toISOString())}
     </div>
   </div>
-</div>`;
+</div>`);
 };
 
 const isQuietHours = () => {
@@ -718,16 +798,23 @@ const isQuietHours = () => {
   }
 };
 
-const shouldSendBySeverity = (severity) => {
+// Les résumés quotidiens/périodiques sont des rendez-vous planifiés (pas des alertes) :
+// ils restent envoyés par email (anti-spam : uniquement les résumés, pas les infos) et
+// ne sont pas bloqués par les heures calmes.
+const isSummaryEvent = (event) =>
+  event === 'DRY_DAILY_SUMMARY' || event === 'DRY_LOGS_SUMMARY';
+
+const shouldSendBySeverity = (severity, event) => {
   const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
   if (isQuietHours()) {
-    // Pendant les heures calmes (22h-7h par défaut), seules les alertes critiques sont envoyées
-    return sev === 'critical';
+    // Pendant les heures calmes (22h-7h par défaut), seules les alertes critiques
+    // sont envoyées — sauf les résumés planifiés (ex: rapport quotidien du matin)
+    return sev === 'critical' || isSummaryEvent(event);
   }
   return true;
 };
 
-const getSeverityChannels = async (severity) => {
+const getSeverityChannels = async (severity, event) => {
   const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
   
   const isMaintenanceMode = await getMaintenanceMode();
@@ -742,8 +829,17 @@ const getSeverityChannels = async (severity) => {
       return { webhook: true, slack: false, discord: false, email: true, telegram: true, whatsapp: false, logOnly: false };
     case 'info':
     default:
-      // info → Telegram + Webhook uniquement (pas d'email : anti-spam)
-      return { webhook: true, slack: false, discord: false, email: false, telegram: true, whatsapp: false, logOnly: false };
+      // info → Telegram + Webhook uniquement (pas d'email : anti-spam),
+      // EXCEPTION : les résumés planifiés gardent l'email en plus de Telegram
+      return {
+        webhook: true,
+        slack: false,
+        discord: false,
+        email: isSummaryEvent(event),
+        telegram: true,
+        whatsapp: false,
+        logOnly: false,
+      };
   }
 };
 
@@ -782,18 +878,21 @@ const storeAlert = async (normalized, severity) => {
     await alertDoc.save();
     return alertDoc;
   } catch (storeError) {
-    console.warn('[AlertStore] Echec stockage alerte:', storeError.message);
+    logger(`[AlertStore] Echec stockage alerte: ${storeError.message}`, 'warning');
     return null;
   }
 };
 
-const sendAlert = async (payload, severity = 'warning') => {
-  const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
+const sendAlert = async (payload, severity) => {
+  // Priorité : argument explicite > payload.severity > inférence automatique > défaut config
+  const sev = String(
+    severity || payload?.severity || inferSeverity(payload) || config.ALERT_DEFAULT_SEVERITY || 'warning'
+  ).toLowerCase();
   const normalized = normalizeAlertPayload({ ...payload, severity: sev });
   
-  if (!shouldSendBySeverity(sev)) {
+  if (!shouldSendBySeverity(sev, normalized.event)) {
     const reason = isQuietHours() ? 'quiet_hours' : 'maintenance_mode';
-    console.log(`[Alert] ${reason} - alerte ${sev} ignoree: ${normalized.event}`);
+    logger(`[Alert] ${reason} - alerte ${sev} ignoree: ${normalized.event}`, 'info');
     await storeAlert(normalized, sev);
     return { skipped: true, reason, severity: sev };
   }
@@ -808,8 +907,8 @@ const sendAlert = async (payload, severity = 'warning') => {
   }
 
   const text = buildText(normalized);
-  const channels = await getSeverityChannels(sev);
-  console.log(`[AlertService] Severity=${sev}, channels=${JSON.stringify(channels)}`);
+  const channels = await getSeverityChannels(sev, normalized.event);
+  logger(`[AlertService] Severity=${sev}, channels=${JSON.stringify(channels)}`, 'info');
 
   const genericWebhook = config.ALERT_WEBHOOK_URL || '';
   const slackWebhook = config.SLACK_WEBHOOK_URL || '';
@@ -863,10 +962,10 @@ const sendAlert = async (payload, severity = 'warning') => {
 
   let telegramErrorDetails = null;
   if (channels.telegram && telegramBotToken && telegramChatId) {
-    console.log(`[AlertService] Tentative envoi Telegram: severity=${sev}, event=${normalized.event}, chat=${telegramChatId}`);
+    logger(`[AlertService] Tentative envoi Telegram: severity=${sev}, event=${normalized.event}, chat=${telegramChatId}`, 'info');
     try {
       const text = buildTelegramText(normalized, sev);
-      console.log(`[AlertService] Telegram payload: text=${JSON.stringify(text)}`);
+      logger(`[AlertService] Telegram payload: text=${JSON.stringify(text)}`, 'debug');
       
       const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
         method: 'POST',
@@ -878,14 +977,14 @@ const sendAlert = async (payload, severity = 'warning') => {
       });
 
       const telegramData = await telegramRes.json().catch(() => null);
-      console.log(`[AlertService] Telegram response: status=${telegramRes.status} ok=${telegramData?.ok} description=${telegramData?.description}`);
+      logger(`[AlertService] Telegram response: status=${telegramRes.status} ok=${telegramData?.ok} description=${telegramData?.description}`, 'info');
       if (telegramRes.ok && telegramData?.ok) {
         delivery.telegram = { ok: true, skipped: false };
       } else {
         throw new Error(telegramData?.description || `HTTP ${telegramRes.status}`);
       }
     } catch (err) {
-      console.log(`[AlertService] Telegram error: ${err.message}`);
+      logger(`[AlertService] Telegram error: ${err.message}`, 'error');
       telegramErrorDetails = extractErrorDetails(err);
       delivery.telegram = {
         ok: false,
@@ -895,7 +994,7 @@ const sendAlert = async (payload, severity = 'warning') => {
       };
     }
   } else {
-    console.log(`[AlertService] Telegram skip: channels.telegram=${channels.telegram}, token=${!!telegramBotToken}, chat=${!!telegramChatId}`);
+    logger(`[AlertService] Telegram skip: channels.telegram=${channels.telegram}, token=${!!telegramBotToken}, chat=${!!telegramChatId}`, 'info');
   }
 
   let whatsappErrorDetails = null;
@@ -965,6 +1064,9 @@ module.exports = {
   sendAlert,
   extractErrorDetails,
   inferProbableCause,
+  inferSeverity,
+  shouldSendBySeverity,
+  getSeverityChannels,
   sanitizeValue,
 };
 

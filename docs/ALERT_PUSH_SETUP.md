@@ -35,6 +35,7 @@
 | `critical` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `warning` | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | `info` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `info` + résumé (DRY_DAILY_SUMMARY / DRY_LOGS_SUMMARY) | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 
 ## 🧪 Tester
 
@@ -52,7 +53,7 @@ Tu recevras la notification sur Telegram ET WhatsApp (si configurés).
 
 - **Telegram** : 100% gratuit, fiable, pas de limite connue.
 - **CallMeBot WhatsApp** : gratuit mais non officiel. Pour un usage professionnel, préférer la **WhatsApp Business Platform** (payante après période d'essai).
-- Les alertes **`critical`** partent partout ; les **`warning`** sur Email + Telegram ; les **`info`** sur **Telegram + Webhook uniquement** (pas d'email pour éviter le spam).
+- Les alertes **`critical`** partent partout ; les **`warning`** sur Email + Telegram ; les **`info`** sur **Telegram + Webhook uniquement** (pas d'email pour éviter le spam), **sauf exception** : les résumés planifiés `DRY_DAILY_SUMMARY` / `DRY_LOGS_SUMMARY` partent aussi par **email** (rapports quotidiens) en plus de Telegram.
 - **Telegram reçoit toutes les sévérités** (`critical`, `warning`, `info`) avec un message complet : environnement, serveur, source exacte de l'erreur, extrait de stack, état santé et heure lisible — de quoi débugger sans ouvrir les logs.
-- Les alertes **`warning`** et **`info`** sont suspendues pendant les **heures calmes** (22h–7h par défaut, fuseau `Africa/Brazzaville`) : seules les `critical` partent.
+- Les alertes **`warning`** et **`info`** sont suspendues pendant les **heures calmes** (22h–7h par défaut, fuseau `Africa/Brazzaville`) : seules les `critical` partent — **sauf les résumés planifiés**, qui sont toujours envoyés (même la nuit, pour garantir la réception du rapport quotidien).
 - L'email d'alerte n'est marqué comme **envoyé** que si un provider email est réellement configuré (SMTP, Resend ou Brevo). Sans config, le canal est marqué `skipped` au lieu de simuler un succès.
