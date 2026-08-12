@@ -108,8 +108,6 @@ const TODAY_QUIZZES = [
   { question: `Quel est le signe que Moïse a montré pour prouver la présence de Dieu ?`, options: ['La nuée et le feu', 'Une arche', 'Une croix', 'Un rocher'], correctAnswerIndex: 0, explanation: `Exode 13 et 14 : la nuée et le feu guident le peuple de nuit.`, theme: 'ancien-testament', difficulty: 'easy', bookCode: 'exode' },
 ];
 
-/* eslint-disable no-console */
-
 async function main() {
   log('Connexion au cluster MongoDB Atlas...');
   await connectCluster();
