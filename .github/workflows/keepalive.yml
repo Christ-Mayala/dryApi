@@ -6,8 +6,13 @@ name: Keep Alive (Render gratuit)
 # les 10 min empêche le spin-down : l'API reste éveillée,
 # l'activité est visible dans le dashboard Render.
 #
-# IMPORTANT : un ping fait depuis l'intérieur du serveur ne
-# réveille rien — l'instance dort, son code ne tourne pas.
+# En cas d'échec du ping, une ALERTE est envoyée sur Telegram
+# et par email (via les secrets GitHub), avec une déduplication
+# de 60 min pour éviter le spam de notifications.
+#
+# ⚠️ IMPORTANT : les alertes partent DIRECTEMENT de GitHub Actions
+# (Telegram Bot API + Brevo), PAS via l'API — car si l'API est
+# down, son propre système d'alertes ne peut pas tourner.
 
 # ─── DÉCLENCHEURS ────────────────────────────────────
 on:
@@ -20,39 +25,97 @@ on:
   workflow_dispatch:
 
 # ─── PERMISSIONS ────────────────────────────────────
+# actions: write nécessaire pour lire/écrire la variable de dédup
+# (gh variable get/set) via le token GitHub.
 permissions:
   contents: read
+  actions: write
 
 # ─── JOB ─────────────────────────────────────────────
 jobs:
   ping:
-    name: 🔄 Ping API
+    name: Ping + Alerte si down
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
+    env:
+      # L'URL de votre API Render. Surchargez-la via un secret GitHub
+      # (Settings → Secrets and variables → Actions → RENDER_URL), sinon
+      # l'URL par défaut ci-dessous est utilisée.
+      RENDER_URL: ${{ secrets.RENDER_URL || 'https://dryapi.onrender.com' }}
+      # Secrets pour les alertes (voir le message de fin de workflow)
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+      ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+      # Expéditeur des emails Brevo : doit être vérifié dans le compte Brevo.
+      # Si absent, l'expéditeur par défaut (dryapi.io) est utilisé.
+      ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM || 'no-reply@dryapi.io' }}
+      # Variable de dédup : timestamp (ms) de la dernière alerte envoyée
+      DEDUP_VAR: KEEPALIVE_LAST_ALERT
+
     steps:
-      - name: 🌐 Ping /health/ready
-        env:
-          # L'URL de votre API Render. Surchargez-la si besoin via un secret GitHub
-          # (Settings → Secrets and variables → Actions → RENDER_URL), sinon
-          # l'URL par défaut ci-dessous est utilisée.
-          RENDER_URL: ${{ secrets.RENDER_URL || 'https://dryapi.onrender.com' }}
+      - name: Ping /health/ready (3 tentatives)
+        id: ping
         run: |
           URL="$RENDER_URL/health/ready"
           echo "Ping de $URL..."
-
-          HTTP_CODE=$(curl -s -o /tmp/keepalive-response.json -w '%{http_code}' \
-            --max-time 25 \
-            -H 'Accept: application/json' \
-            "$URL")
-
-          echo "HTTP $HTTP_CODE"
-          cat /tmp/keepalive-response.json
+          HTTP_CODE=""
+          ATTEMPT=0
+          while [ "$ATTEMPT" -lt 3 ] && [ "$HTTP_CODE" != "200" ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "--- Tentative $ATTEMPT/3 ---"
+            HTTP_CODE=$(curl -s -o /tmp/keepalive-response.json -w '%{http_code}' --max-time 30 -H 'Accept: application/json' "$URL" || echo "000")
+            echo "HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" != "200" ] && [ "$ATTEMPT" -lt 3 ]; then
+              echo "Reveil en cours... nouvelle tentative dans 25s"
+              sleep 25
+            fi
+          done
+          cat /tmp/keepalive-response.json 2>/dev/null || echo ""
           echo ""
-
           if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ API éveillée et prête"
+            echo "API eveillee et prete"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            # L'API est revenue : réinitialiser la dédup pour qu'une NOUVELLE panne
+            # (même dans la fenêtre 60 min) déclenche à nouveau une alerte.
+            gh variable set "$DEDUP_VAR" "0" --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           else
-            echo "❌ Réponse inattendue (HTTP $HTTP_CODE) — l'API est peut-être down ou en cours de démarrage"
-            exit 1
+            echo "API injoignable (HTTP $HTTP_CODE) - envoi d'une alerte"
+            echo "status=down" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Alerte Telegram + Email si down
+        if: steps.ping.outputs.status == 'down'
+        env:
+          ALERT_QUIET_MS: "3600000"
+        run: |
+          NOW_MS=$(node -e "console.log(Date.now())")
+          LAST_ALERT=$(gh variable get "$DEDUP_VAR" --repo "$GITHUB_REPOSITORY" 2>/dev/null || echo "0")
+          LAST_ALERT=${LAST_ALERT:-0}
+          ELAPSED=$((NOW_MS - LAST_ALERT))
+          if [ "$LAST_ALERT" -gt 0 ] && [ "$ELAPSED" -lt "$ALERT_QUIET_MS" ]; then
+            MINUTES=$((ELAPSED / 60000))
+            echo "Dedup : alerte deja envoyee il y a $MINUTES min - pas de spam."
+            exit 0
+          fi
+          HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$RENDER_URL/health/ready" || echo "000")
+          DATE_STR=$(date -u +'%d/%m/%Y a %H:%M UTC')
+          export HTTP_CODE DATE_STR RENDER_URL
+          TG_TEXT=$(node -e "const lines=['ALERTE KEEP-ALIVE - API injoignable','Env: production (Render gratuit)','URL: '+process.env.RENDER_URL+'/health/ready','HTTP: '+process.env.HTTP_CODE,'Heure: '+process.env.DATE_STR,'Actions: ouvrir le dashboard Render, verifier les logs, verifier le plan gratuit'];process.stdout.write(lines.join('\\n'))")
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            TG_PAYLOAD=$(TG_CHAT_ID="$TELEGRAM_CHAT_ID" TG_TEXT="$TG_TEXT" node -e "process.stdout.write(JSON.stringify({chat_id: process.env.TG_CHAT_ID, text: process.env.TG_TEXT}))")
+            RES=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -H 'Content-Type: application/json' -d "$TG_PAYLOAD" --max-time 20)
+            echo "$RES" | grep -q '"ok":true' && echo "Alerte Telegram envoyee" || echo "Telegram: $(echo $RES | head -c 200)"
+          else
+            echo "Telegram non configure (secrets TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID absents)"
+          fi
+          if [ -n "$BREVO_API_KEY" ] && [ -n "$ALERT_EMAIL_TO" ]; then
+            HTML_BODY=$(node -e "const u=process.env.RENDER_URL,h=process.env.HTTP_CODE,d=process.env.DATE_STR;process.stdout.write('<div style=\"font-family:Arial;max-width:600px;margin:auto;border:1px solid #ddd;border-radius:8px;\"><div style=\"background:#b71c1c;color:#fff;padding:18px;font-weight:bold;\">ALERTE KEEP-ALIVE - API injoignable</div><div style=\"padding:18px;line-height:1.6;\"><p><b>Environnement :</b> production (Render gratuit)</p><p><b>URL :</b> '+u+'/health/ready</p><p><b>Statut HTTP :</b> '+h+'</p><p><b>Heure :</b> '+d+'</p><hr><p><b>Actions :</b> ouvrir le dashboard Render, verifier les logs (crash, OOM), verifier le plan gratuit si down > 15 min.</p></div></div>')")
+            EMAIL_PAYLOAD=$(ALERT_EMAIL_FROM="$ALERT_EMAIL_FROM" ALERT_EMAIL_TO="$ALERT_EMAIL_TO" HTML_BODY="$HTML_BODY" node -e "process.stdout.write(JSON.stringify({sender:{name:'DRY API Monitor',email:process.env.ALERT_EMAIL_FROM},to:[{email:process.env.ALERT_EMAIL_TO}],subject:'ALERTE KEEP-ALIVE - API injoignable',htmlContent:process.env.HTML_BODY}))")
+            EMAIL_RES=$(curl -s -X POST "https://api.brevo.com/v3/smtp/email" -H "api-key: $BREVO_API_KEY" -H 'Content-Type: application/json' -d "$EMAIL_PAYLOAD" --max-time 20)
+            echo "$EMAIL_RES" | grep -q '"messageId"' && echo "Email Brevo envoye" || echo "Email Brevo: $(echo $EMAIL_RES | head -c 200)"
+          else
+            echo "Email non configure (secrets BREVO_API_KEY / ALERT_EMAIL_TO absents)"
+          fi
+          gh variable set "$DEDUP_VAR" "$NOW_MS" --repo "$GITHUB_REPOSITORY" 2>/dev/null && echo "Dedup enregistree : prochaine alerte possible dans 60 min" || echo "Impossible d'ecrire la variable de dedup (permissions.actions: write requis)"
