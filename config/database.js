@@ -118,9 +118,24 @@ const buildBaseConfig = () => ({
   ALERT_DEDUP_WINDOW_MS: readSetting('ALERT_DEDUP_WINDOW_MS', { fallback: '60000' }),
   ALERT_MAX_STACK_LINES: readSetting('ALERT_MAX_STACK_LINES', { fallback: '20' }),
   ALERT_MAX_VALUE_LENGTH: readSetting('ALERT_MAX_VALUE_LENGTH', { fallback: '1500' }),
+  ALERT_DEFAULT_SEVERITY: readSetting('ALERT_DEFAULT_SEVERITY', { fallback: 'warning' }),
+  ALERT_API_SEVERITY: readSetting('ALERT_API_SEVERITY', { fallback: 'warning' }),
+  ALERT_PROCESS_SEVERITY: readSetting('ALERT_PROCESS_SEVERITY', { fallback: 'critical' }),
+  ALERT_QUIET_START: readSetting('ALERT_QUIET_START', { fallback: '22:00' }),
+  ALERT_QUIET_END: readSetting('ALERT_QUIET_END', { fallback: '07:00' }),
+  ALERT_QUIET_TIMEZONE: readSetting('ALERT_QUIET_TIMEZONE', { fallback: 'Africa/Brazzaville' }),
+  ALERT_MAX_PAYLOAD_LENGTH: readSetting('ALERT_MAX_PAYLOAD_LENGTH', { fallback: '1500' }),
+  ALERT_MAINTENANCE_MODE: readSetting('ALERT_MAINTENANCE_MODE', { fallback: 'false' }),
   CRASH_ON_UNHANDLED_REJECTION: readSetting('CRASH_ON_UNHANDLED_REJECTION', { fallback: 'false' }),
   FATAL_ERROR_EXIT_DELAY_MS: readSetting('FATAL_ERROR_EXIT_DELAY_MS', { fallback: '3500' }),
   HEALTH_MONITOR_INTERVAL_MS: readSetting('HEALTH_MONITOR_INTERVAL_MS', { fallback: '0' }),
+  HEALTH_CHECK_API_LATENCY_MS: readSetting('HEALTH_CHECK_API_LATENCY_MS', { fallback: '5000' }),
+  HEALTH_CHECK_DISK_THRESHOLD_MB: readSetting('HEALTH_CHECK_DISK_THRESHOLD_MB', { fallback: '500' }),
+  HEALTH_CHECK_QUEUE_ENABLED: readSetting('HEALTH_CHECK_QUEUE_ENABLED', { fallback: 'false' }),
+  TELEGRAM_BOT_TOKEN: readSetting('TELEGRAM_BOT_TOKEN'),
+  TELEGRAM_CHAT_ID: readSetting('TELEGRAM_CHAT_ID'),
+  CALLMEBOT_API_KEY: readSetting('CALLMEBOT_API_KEY'),
+  CALLMEBOT_PHONE: readSetting('CALLMEBOT_PHONE'),
   MONITOR_REPEAT_ALERTS: readSetting('MONITOR_REPEAT_ALERTS', { fallback: 'false' }),
   MONITOR_REPEAT_ALERT_MS: readSetting('MONITOR_REPEAT_ALERT_MS', { fallback: '900000' }),
   MONITOR_DAILY_SUMMARY: readSetting('MONITOR_DAILY_SUMMARY', { fallback: 'false' }),
@@ -275,3 +290,5 @@ const finalConfig = {
 validateRuntimeConfig(finalConfig);
 
 module.exports = finalConfig;
+
+

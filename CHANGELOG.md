@@ -7,6 +7,46 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [Unreleased] — 2026-08-10
+
+### 🚀 Ajouté
+
+#### FreeLLM Router (fallback automatique)
+- Système de fallback multi-providers avec priorisation intelligente
+- Circuit breaker par provider avec récupération automatique
+- Retry réseau automatique (jusqu'à 4 tentatives)
+- Timeout configurable par requête (60s par défaut)
+- Sanitization PII cohérente backend ↔ frontends
+- Cache Redis pour les clés API et configurations
+- Analytics détaillées (latence, tokens, coûts, erreurs)
+- Endpoints dédiés : `/api/fallback`, `/api/analytics/*`, `/api/keys`
+
+#### Trivida Integration
+- Endpoints dédiés Trivida (`/api/v1/trivida/*`)
+- Schémas MongoDB pour Transaction, Customer, Activity, Debt, SavingsGoal
+- Synchronisation cloud avec queue locale et retry
+- Soft delete et `localId` pour la sync bidirectionnelle
+- Authentification JWT + refresh token automatique
+
+#### Sécurité
+- Sanitization PII côté serveur (téléphones, emails, cartes bancaires)
+- Validation XSS/NoSQL/SQL renforcée
+- Chiffrement AES-256-GCM des clés API
+- Isolation multi-tenant stricte par `userId`
+
+### 📝 Modifié
+- Configuration Redis centralisée avec fallback mémoire
+- Amélioration du rate limiting avec fenêtre glissante Redis
+- Documentation Swagger enrichie pour FreeLLM et Trivida
+- Structure du projet réorganisée (`src/providers/`, `src/routes/`)
+
+### 🐛 Corrigé
+- Gestion des erreurs réseau dans le fallback provider
+- Nettoyage des placeholders PII avant envoi aux providers IA
+- Synchronisation des conversations entre sessions
+
+---
+
 ## [1.0.0] — 2026-06-06
 
 ### 🚀 Ajouté

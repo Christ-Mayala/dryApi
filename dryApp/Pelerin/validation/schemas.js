@@ -49,6 +49,64 @@ const pelerinSchemas = {
       label: Joi.string().min(2).max(200).optional(),
       status: commonSchemas.status.optional()
     })
+  },
+  readingPlan: {
+    create: Joi.object({
+      title: Joi.string().min(2).max(200).required(),
+      description: Joi.string().max(1000).required(),
+      theme: Joi.string().max(100).optional(),
+      icon: Joi.string().max(100).optional(),
+      durationDays: Joi.number().integer().min(1).max(365).required(),
+      isPublished: Joi.boolean().optional(),
+      days: Joi.array().items(
+        Joi.object({
+          day: Joi.number().integer().min(1).max(365).required(),
+          bookCode: Joi.string().lowercase().required(),
+          chapter: Joi.number().integer().min(1).required(),
+          verseStart: Joi.number().integer().min(1).optional(),
+          verseEnd: Joi.number().integer().min(1).optional(),
+          theme: Joi.string().max(100).optional(),
+          reflection: Joi.string().max(1000).optional(),
+          estimatedMinutes: Joi.number().integer().min(1).optional(),
+          label: Joi.string().max(200).optional(),
+        })
+      ).optional(),
+      label: Joi.string().min(2).max(200).optional()
+    }),
+    update: Joi.object({
+      title: Joi.string().min(2).max(200).optional(),
+      description: Joi.string().max(1000).optional(),
+      theme: Joi.string().max(100).optional(),
+      icon: Joi.string().max(100).optional(),
+      durationDays: Joi.number().integer().min(1).max(365).optional(),
+      isPublished: Joi.boolean().optional(),
+      days: Joi.array().items(
+        Joi.object({
+          day: Joi.number().integer().min(1).max(365).required(),
+          bookCode: Joi.string().lowercase().required(),
+          chapter: Joi.number().integer().min(1).required(),
+          verseStart: Joi.number().integer().min(1).optional(),
+          verseEnd: Joi.number().integer().min(1).optional(),
+          theme: Joi.string().max(100).optional(),
+          reflection: Joi.string().max(1000).optional(),
+          estimatedMinutes: Joi.number().integer().min(1).optional(),
+          label: Joi.string().max(200).optional(),
+        })
+      ).optional(),
+      label: Joi.string().min(2).max(200).optional()
+    })
+  },
+  userJourney: {
+    upsert: Joi.object({
+      points: Joi.number().integer().min(0).optional(),
+      currentStageKey: Joi.string().max(100).optional(),
+      completedMilestones: Joi.array().items(Joi.string().max(100)).optional(),
+      streakDays: Joi.number().integer().min(0).optional(),
+      lastActiveDate: Joi.date().optional(),
+      readingPlanDay: Joi.number().integer().min(1).max(365).optional(),
+      readingPlanId: Joi.string().max(100).optional(),
+      label: Joi.string().min(2).max(200).optional()
+    })
   }
 };
 

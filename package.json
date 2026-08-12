@@ -26,6 +26,8 @@
     "seed:reset": "node scripts/seed/seed-clean.js && node scripts/seed/seed-all.js",
     "seed:pelerin-bible": "node scripts/seed/seed-pelerin-bible.js",
     "seed:pelerin-demo": "node scripts/seed/seed-pelerin-demo.js",
+    "seed:pelerin-reading-plan": "node scripts/seed/seed-pelerin-reading-plan.js",
+    "seed:pelerin-content": "node scripts/seed/seed-pelerin-content.js",
     "promote:pelerin-admin": "node scripts/seed/promote-pelerin-admin.js",
     "purge": "node dry/scripts/maintenance/purgeDeleted.js",
     "killport": "node scripts/dev/kill-port.js 5000",

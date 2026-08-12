@@ -34,13 +34,14 @@ const scheduleFatalExit = (origin) => {
   }, safeDelayMs).unref();
 };
 
-const sendProcessAlert = async (event, error, details = {}) => {
+const sendProcessAlert = async (event, error, details = {}, severity) => {
   try {
     const normalizedError = toErrorObject(error);
     const dedupKey = `process:${event}:${normalizedError.name || 'Error'}:${normalizedError.code || ''}:${normalizedError.message || ''}`;
     const memory = process.memoryUsage();
 
     await sendAlert({
+      severity: severity || 'critical',
       event,
       status: 'ERROR',
       timestamp: new Date().toISOString(),
@@ -99,3 +100,4 @@ module.exports = {
   scheduleFatalExit,
   sendProcessAlert,
 };
+

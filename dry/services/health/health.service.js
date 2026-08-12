@@ -55,6 +55,17 @@ class HealthService {
     const allServicesUp = dbStatus === 'UP' && (!redisEnabled || redisStatus.connected);
     const globalStatus = allServicesUp ? 'OK' : 'DEGRADED';
 
+    // Checks étendus (latence API, disque, queue, file de sync)
+    let extendedHealth = {};
+    try {
+      const healthMonitor = require('../../bootstrap/health-monitor');
+      if (healthMonitor.runExtendedChecks) {
+        extendedHealth = await healthMonitor.runExtendedChecks();
+      }
+    } catch {
+      // Module non disponible ou checks désactivés
+    }
+
     return {
       status: globalStatus,
       timestamp,
@@ -72,6 +83,7 @@ class HealthService {
           external: `${Math.round(memory.external / 1024 / 1024)}MB`,
         },
         applications,
+        extendedHealth,
       },
       version: config.APP_VERSION || '1.0.0',
       environment: config.NODE_ENV || 'development',
@@ -120,7 +132,12 @@ class HealthService {
     const redisMeta = this.getRedisStatusMeta(health.services.redis);
     const applications = health.services.applications || [];
     const activeApps = applications.filter((app) => app.status === 'ACTIVE').length;
-    const totalFeatures = applications.reduce((sum, app) => sum + (app.features || 0), 0);
+    const totalFeatures = applications.reduce((sum, app) => sum + (app.feature || 0), 0);
+
+    const maintenanceMode = String(config.ALERT_MAINTENANCE_MODE || 'false').toLowerCase() === 'true';
+    const alertSeverity = config.ALERT_DEFAULT_SEVERITY || 'warning';
+
+    const extendedHealth = health.services.extendedHealth || {};
 
     return {
       status: health.status,
@@ -136,7 +153,27 @@ class HealthService {
         health: `${baseUrl}/health/ready`,
         swagger: `${baseUrl}/api-docs`,
         systemStatus: `${baseUrl}/system/status`,
+        alerts: `${baseUrl}/api/v1/admin/alerts`,
       },
+      alerts: {
+        maintenanceMode,
+        defaultSeverity: alertSeverity,
+        channels: {
+          email: !!config.ALERT_EMAIL_TO,
+          webhook: !!config.ALERT_WEBHOOK_URL,
+          slack: !!config.SLACK_WEBHOOK_URL,
+          discord: !!config.DISCORD_WEBHOOK_URL,
+          telegram: !!(config.TELEGRAM_BOT_TOKEN && config.TELEGRAM_CHAT_ID),
+          whatsapp: !!(config.CALLMEBOT_API_KEY && config.CALLMEBOT_PHONE),
+        },
+        quietHours: {
+          enabled: !!(config.ALERT_QUIET_START && config.ALERT_QUIET_END),
+          start: config.ALERT_QUIET_START || '22:00',
+          end: config.ALERT_QUIET_END || '07:00',
+          timezone: config.ALERT_QUIET_TIMEZONE || 'Africa/Brazzaville',
+        },
+      },
+      extendedHealth,
       items: [
         {
           label: 'Base de données',
@@ -178,6 +215,41 @@ class HealthService {
           state: 'INFO',
           value: `${baseUrl}/health/metrics`,
         },
+        {
+          label: 'Mode maintenance',
+          state: maintenanceMode ? 'WARN' : 'OK',
+          value: maintenanceMode ? 'Activé (alertes réduites)' : 'Désactivé',
+        },
+        {
+          label: 'Sévérité alertes',
+          state: 'INFO',
+          value: alertSeverity,
+        },
+        {
+          label: 'Quiet hours',
+          state: 'INFO',
+          value: `${config.ALERT_QUIET_START || '22:00'} - ${config.ALERT_QUIET_END || '07:00'} (${config.ALERT_QUIET_TIMEZONE || 'Africa/Brazzaville'})`,
+        },
+        ...(extendedHealth.apiLatency !== undefined ? [{
+          label: 'Latence API',
+          state: extendedHealth.apiLatency.state,
+          value: extendedHealth.apiLatency.value,
+        }] : []),
+        ...(extendedHealth.diskSpace !== undefined ? [{
+          label: 'Disque',
+          state: extendedHealth.diskSpace.state,
+          value: extendedHealth.diskSpace.value,
+        }] : []),
+        ...(extendedHealth.queueHealth !== undefined ? [{
+          label: 'Queue',
+          state: extendedHealth.queueHealth.state,
+          value: extendedHealth.queueHealth.value,
+        }] : []),
+        ...(extendedHealth.syncQueue !== undefined ? [{
+          label: 'File de sync',
+          state: extendedHealth.syncQueue.state,
+          value: extendedHealth.syncQueue.value,
+        }] : []),
       ],
       applications,
       health,

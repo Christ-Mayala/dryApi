@@ -2,6 +2,9 @@
    DRY UI — Design System
    ═══════════════════════════════════════════════════════════════ */
 
+/* Pour l'app Le Pèlerin, utiliser dry-ui-le-pelerin.css APRÈS ce fichier
+   afin d'appliquer la palette verte/or/ivoire partagée avec le mobile. */
+
 :root {
   /* ── Couleurs primaires ── */
   --dry-primary: #3b82f6;

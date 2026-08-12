@@ -102,11 +102,13 @@ const dispatchApiErrorAlert = (err, req, rid, safeMessage) => {
     const dedupKey = `api:${req.method}:${urlPath}:${err?.name || 'Error'}:${err?.code || ''}:${safeMessage || ''}`;
     const tenant = req.headers['x-tenant-id'] || req.headers['tenant-id'] || req.tenant || 'N/A';
 
+    const severity = (err?.status >= 500 || err?.statusCode >= 500 || !isClientError(err)) ? 'critical' : 'warning';
     setImmediate(() => {
         sendAlert({
             event: 'DRY_API_EXCEPTION',
             status: 'ERROR',
             requestId: rid,
+            traceId: rid,
             http: `${req.method} ${req.originalUrl}`,
             url: req.originalUrl,
             tenant,
@@ -118,7 +120,7 @@ const dispatchApiErrorAlert = (err, req, rid, safeMessage) => {
             request: buildRequestContext(req, rid),
             dedupKey,
             timestamp: new Date().toISOString(),
-        }).catch((alertErr) => {
+        }, severity).catch((alertErr) => {
             const msg = alertErr?.message || String(alertErr);
             logger(`[${rid}] Echec envoi alerte erreur API: ${msg}`, 'error');
         });
@@ -172,3 +174,7 @@ const errorHandler = async (err, req, res, _next) => {
 };
 
 module.exports = errorHandler;
+
+
+
+

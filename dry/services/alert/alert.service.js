@@ -23,7 +23,33 @@ const SENSITIVE_KEYS = [
 const alertDedupWindowMs = Number(process.env.ALERT_DEDUP_WINDOW_MS || 60000);
 const alertMaxStackLines = Number(process.env.ALERT_MAX_STACK_LINES || 20);
 const alertMaxValueLength = Number(process.env.ALERT_MAX_VALUE_LENGTH || 1500);
+const alertMaxPayloadLength = Number(process.env.ALERT_MAX_PAYLOAD_LENGTH || config.ALERT_MAX_PAYLOAD_LENGTH || 1500);
 const sentAlertMap = new Map();
+
+// Seuil de severite pour les heures calmes
+const quietStart = String(config.ALERT_QUIET_START || '22:00');
+const quietEnd = String(config.ALERT_QUIET_END || '07:00');
+const quietTimezone = String(config.ALERT_QUIET_TIMEZONE || 'Africa/Brazzaville');
+
+// Telegram / WhatsApp config
+const telegramBotToken = String(config.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '');
+const telegramChatId = String(config.TELEGRAM_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '');
+const callMeBotApiKey = String(config.CALLMEBOT_API_KEY || process.env.CALLMEBOT_API_KEY || '');
+const callMeBotPhone = String(config.CALLMEBOT_PHONE || process.env.CALLMEBOT_PHONE || '');
+
+// Log de configuration au d�marrage
+console.log(`[AlertService] Telegram configure: ${telegramBotToken && telegramChatId ? 'OUI (bot=${telegramBotToken.slice(0, 10)}..., chat=${telegramChatId})' : 'NON'}`);
+console.log(`[AlertService] WhatsApp configure: ${callMeBotApiKey && callMeBotPhone ? 'OUI (phone=' + callMeBotPhone + ')' : 'NON'}`);
+console.log(`[AlertService] Email configure: ${config.ALERT_EMAIL_TO ? 'OUI (' + config.ALERT_EMAIL_TO + ')' : 'NON'}`);
+const getMaintenanceMode = async () => {
+  try {
+    const redis = require('../cache/redis.service');
+    const val = await redis.get('alerts:maintenanceMode');
+    return val === '1' || val === 'true';
+  } catch {
+    return String(config.ALERT_MAINTENANCE_MODE || 'false').toLowerCase() === 'true';
+  }
+};
 
 const truncate = (value, max = alertMaxValueLength) => {
   const str = String(value ?? '');
@@ -79,7 +105,6 @@ const extractCodeSnippet = (sourceLine) => {
   if (!sourceLine || sourceLine === 'N/A') return null;
 
   try {
-    // Format attendu: "filename.js:line:col" ou "path/filename.js:line:col"
     const match = sourceLine.match(/(.*?):(\d+):(\d+)/);
     if (!match) return null;
 
@@ -87,12 +112,10 @@ const extractCodeSnippet = (sourceLine) => {
     const lineNum = parseInt(match[2], 10);
     if (isNaN(lineNum)) return null;
 
-    // Tentative de resolution du chemin absolu si ce n'est pas dejà le cas
     if (!require('path').isAbsolute(filePath)) {
       filePath = require('path').resolve(process.cwd(), filePath);
     }
 
-    // Protection: Ne lire que les fichiers dans le dossier du projet
     if (!filePath.startsWith(process.cwd()) && !filePath.includes('dry')) {
        return null;
     }
@@ -256,7 +279,6 @@ const normalizeAlertPayload = (payload = {}) => {
     pid: payload.pid || process.pid,
   };
 
-  // Ajout du statut de santé si disponible (sans bloquer)
   try {
     const mongoose = require('mongoose');
     normalized.health = {
@@ -339,7 +361,7 @@ const postJson = async (url, payload, headers = {}) => {
   }
 };
 
-const eventMeta = (event) => {
+const eventMeta = (event, severity = 'warning') => {
   if (event === 'DRY_HEALTH_RECOVERED') {
     return { title: 'Serveur retabli', tone: 'ok', color: '#1b5e20', bg: '#e8f5e9', label: 'OK' };
   }
@@ -361,6 +383,13 @@ const eventMeta = (event) => {
   if (event === 'DRY_HEALTH_ERROR') {
     return { title: 'Erreur de monitoring', tone: 'alert', color: '#b71c1c', bg: '#ffebee', label: 'ALERTE' };
   }
+
+  if (severity === 'critical') {
+    return { title: 'Alerte Critique DRY', tone: 'alert', color: '#b71c1c', bg: '#ffebee', label: 'CRITIQUE' };
+  }
+  if (severity === 'info') {
+    return { title: 'Information DRY', tone: 'info', color: '#0d47a1', bg: '#e3f2fd', label: 'INFO' };
+  }
   return { title: 'Alerte DRY', tone: 'alert', color: '#b71c1c', bg: '#ffebee', label: 'ALERTE' };
 };
 
@@ -377,15 +406,17 @@ const formatDateTime = (value) => {
 };
 
 const buildText = (payload) => {
-  const meta = eventMeta(payload.event);
+  const meta = eventMeta(payload.event, payload.severity);
   const parts = [
     `${meta.title}`,
+    `Severity: ${payload.severity || 'warning'}`,
     `Event: ${payload.event || 'ALERT'}`,
     `Status: ${payload.status || 'UNKNOWN'}`,
     `HTTP: ${payload.http || 'N/A'}`,
     `URL: ${payload.url || 'N/A'}`,
     `Tenant: ${payload.tenant || 'N/A'}`,
     `RequestId: ${payload.requestId || payload.request?.id || 'N/A'}`,
+    `TraceId: ${payload.traceId || 'N/A'}`,
     `Downtime(s): ${payload.downtimeSeconds ?? 'N/A'}`,
     `Time: ${payload.timestamp || new Date().toISOString()}`,
   ];
@@ -396,33 +427,35 @@ const buildText = (payload) => {
 };
 
 const buildEmailHtml = (payload) => {
-  const meta = eventMeta(payload.event);
+  const meta = eventMeta(payload.event, payload.severity);
   const err = payload.errorDetails || {};
   
   const mainRows = [
-    { label: '📌 Evenement', value: payload.event || 'ALERT' },
-    { label: '🌐 URL / Route', value: `<code>${payload.http || payload.url || 'N/A'}</code>` },
-    { label: '👤 Tenant / Client', value: payload.tenant || 'N/A' },
-    { label: '🕒 Date & Heure', value: formatDateTime(payload.timestamp) },
+    { label: '?? Evenement', value: payload.event || 'ALERT' },
+    { label: '?? Severite', value: payload.severity || 'warning' },
+    { label: '?? URL / Route', value: `<code>${payload.http || payload.url || 'N/A'}</code>` },
+    { label: '?? Tenant / Client', value: payload.tenant || 'N/A' },
+    { label: '?? Date & Heure', value: formatDateTime(payload.timestamp) },
   ];
 
   if (payload.health) {
     mainRows.push({ 
-      label: '🏥 Santé Système', 
+      label: '?? Sante Systeme', 
       value: `DB: <b style="color:${payload.health.database === 'UP' ? '#2e7d32' : '#d32f2f'};">${payload.health.database}</b> | Mem: ${payload.health.memory.rss} | Up: ${payload.health.uptime}s` 
     });
   }
 
   const techRows = [
-    { label: '📂 Source Precis', value: `<b style="color:#d32f2f;">${err.source || 'Inconnue'}</b>` },
-    { label: '❌ Erreur', value: `<code>${err.name || 'Error'}: ${err.message || payload.error || 'N/A'}</code>` },
-    { label: '💡 Cause Probable', value: `<i style="color:#1976d2;">${payload.causeProbable || 'N/A'}</i>` },
-    { label: '🆔 Request ID', value: `<code>${payload.requestId || 'N/A'}</code>` },
+    { label: '?? Source Precis', value: `<b style="color:#d32f2f;">${err.source || 'Inconnue'}</b>` },
+    { label: '? Erreur', value: `<code>${err.name || 'Error'}: ${err.message || payload.error || 'N/A'}</code>` },
+    { label: '?? Cause Probable', value: `<i style="color:#1976d2;">${payload.causeProbable || 'N/A'}</i>` },
+    { label: '?? Request ID', value: `<code>${payload.requestId || 'N/A'}</code>` },
+    { label: '?? Trace ID', value: `<code>${payload.traceId || 'N/A'}</code>` },
   ];
 
   const envRows = [
-    { label: '🖥️ Serveur', value: payload.server || 'N/A' },
-    { label: '🌿 Environnement', value: payload.environment || 'N/A' },
+    { label: '??? Serveur', value: payload.server || 'N/A' },
+    { label: '?? Environnement', value: payload.environment || 'N/A' },
   ];
 
   const renderRows = (rows) => rows
@@ -432,7 +465,7 @@ const buildEmailHtml = (payload) => {
   const requestBlock = payload.request
     ? `
     <div style="margin-top:25px;">
-      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">📥 Contexte de la Requete</h3>
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">?? Contexte de la Requete</h3>
       <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:4px; padding:12px; font-family:monospace; font-size:12px; overflow-x:auto;">
         <pre style="margin:0; white-space:pre-wrap;">${truncate(JSON.stringify(payload.request, null, 2), 5000)}</pre>
       </div>
@@ -442,7 +475,7 @@ const buildEmailHtml = (payload) => {
   const stackBlock = err.stack
     ? `
     <div style="margin-top:25px;">
-      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">🔍 Stack Trace</h3>
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">?? Stack Trace</h3>
       <div style="background:#212529; color:#f8f9fa; border-radius:4px; padding:12px; font-family:monospace; font-size:11px; overflow-x:auto; line-height:1.5;">
         <pre style="margin:0; white-space:pre-wrap;">${truncate(err.stack, 7000)}</pre>
       </div>
@@ -452,7 +485,7 @@ const buildEmailHtml = (payload) => {
   const codeSnippetBlock = err.snippet
     ? `
     <div style="margin-top:25px;">
-      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">💻 Extrait du Code (Précision Chirurgicale)</h3>
+      <h3 style="margin:0 0 10px 0; font-size:16px; color:#444; border-bottom:2px solid #ddd; padding-bottom:5px;">?? Extrait du Code (Pr�cision Chirurgicale)</h3>
       <div style="margin-bottom:5px; font-size:12px; color:#666;">Fichier: <code>${err.snippet.path}</code> (Ligne ${err.snippet.line})</div>
       <div style="background:#1e1e1e; color:#dcdcaa; border-radius:4px; padding:12px; font-family:'Consolas', 'Monaco', monospace; font-size:12px; overflow-x:auto; border-left:4px solid #d32f2f;">
         <pre style="margin:0; white-space:pre-wrap;">${err.snippet.code}</pre>
@@ -463,7 +496,7 @@ const buildEmailHtml = (payload) => {
   const actions = meta.tone === 'alert'
     ? `
     <div style="margin-top:25px; padding:15px; background:#fff3e0; border-left:4px solid #ff9800; border-radius:4px;">
-      <h4 style="margin:0 0 8px 0; color:#e65100;">🛠️ Actions Recommandees</h4>
+      <h4 style="margin:0 0 8px 0; color:#e65100;">??? Actions Recommandees</h4>
       <ul style="margin:0; padding-left:20px; font-size:14px; color:#5d4037;">
         <li>Verifier si le service est accessible via <code>${payload.url || 'le lien direct'}</code></li>
         <li>Consulter les logs de production (Render/PM2) pour plus de contexte</li>
@@ -495,14 +528,111 @@ const buildEmailHtml = (payload) => {
     ${actions}
     
     <div style="margin-top:30px; text-align:center; color:#999; font-size:11px; border-top:1px solid #eee; padding-top:15px;">
-      Systeme de Monitoring DRY API • Genere automatiquement le ${formatDateTime(new Date().toISOString())}
+      Systeme de Monitoring DRY API � Genere automatiquement le ${formatDateTime(new Date().toISOString())}
     </div>
   </div>
 </div>`;
 };
 
-const sendAlert = async (payload) => {
-  const normalized = normalizeAlertPayload(payload);
+const isQuietHours = () => {
+  try {
+    const now = new Date();
+    const options = { timeZone: quietTimezone, hour: '2-digit', minute: '2-digit', hour12: false };
+    const currentTime = now.toLocaleTimeString('fr-FR', options).slice(0, 5);
+    
+    let start = quietStart;
+    let end = quietEnd;
+    
+    if (start.includes(':')) start = start.padStart(5, '0');
+    if (end.includes(':')) end = end.padStart(5, '0');
+    
+    if (start > end) {
+      return currentTime >= start || currentTime < end;
+    }
+    return currentTime >= start && currentTime < end;
+  } catch {
+    return false;
+  }
+};
+
+const shouldSendBySeverity = (severity) => {
+  const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
+  if (isQuietHours()) {
+    return sev === 'critical';
+  }
+  return true;
+};
+
+const getSeverityChannels = async (severity) => {
+  const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
+  
+  const isMaintenanceMode = await getMaintenanceMode();
+  if (isMaintenanceMode && sev !== 'critical') {
+    return { webhook: false, slack: false, discord: false, email: false, telegram: false, whatsapp: false, logOnly: true };
+  }
+  
+  switch (sev) {
+    case 'critical':
+      return { webhook: true, slack: true, discord: true, email: true, telegram: true, whatsapp: true, logOnly: false };
+    case 'warning':
+      return { webhook: true, slack: false, discord: false, email: false, telegram: false, whatsapp: false, logOnly: false };
+    case 'info':
+    default:
+      return { webhook: true, slack: false, discord: false, email: false, telegram: false, whatsapp: false, logOnly: false };
+  }
+};
+
+const storeAlert = async (normalized, severity) => {
+  try {
+    const mongoose = require('mongoose');
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) return null;
+    
+    const AlertSchema = require('../../models/alert/Alert.schema');
+    let Alert = mongoose.connection.models.Alert;
+    if (!Alert) {
+      Alert = mongoose.connection.model('Alert', AlertSchema);
+    }
+    
+    const alertDoc = new Alert({
+      severity: String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase(),
+      event: normalized.event || 'ALERT',
+      message: normalized.error || normalized.message || 'Alerte systeme',
+      traceId: normalized.traceId || null,
+      userId: normalized.userId || null,
+      tenantId: normalized.tenant || null,
+      requestId: normalized.requestId || null,
+      context: {
+        details: normalized.details,
+        request: normalized.request,
+        health: normalized.health,
+        errorDetails: normalized.errorDetails,
+      },
+      channelsSent: {
+        webhook: { generic: false, slack: false, discord: false },
+        email: false,
+      },
+      timestamp: new Date(normalized.timestamp || Date.now()),
+    });
+    
+    await alertDoc.save();
+    return alertDoc;
+  } catch (storeError) {
+    console.warn('[AlertStore] Echec stockage alerte:', storeError.message);
+    return null;
+  }
+};
+
+const sendAlert = async (payload, severity = 'warning') => {
+  const sev = String(severity || config.ALERT_DEFAULT_SEVERITY || 'warning').toLowerCase();
+  const normalized = normalizeAlertPayload({ ...payload, severity: sev });
+  
+  if (!shouldSendBySeverity(sev)) {
+    const reason = isQuietHours() ? 'quiet_hours' : 'maintenance_mode';
+    console.log(`[Alert] ${reason} - alerte ${sev} ignoree: ${normalized.event}`);
+    await storeAlert(normalized, sev);
+    return { skipped: true, reason, severity: sev };
+  }
+  
   const dedup = dedupAlert(normalized);
   if (dedup.deduped) {
     return {
@@ -513,15 +643,17 @@ const sendAlert = async (payload) => {
   }
 
   const text = buildText(normalized);
+  const channels = await getSeverityChannels(sev);
+  console.log(`[AlertService] Severity=${sev}, channels=${JSON.stringify(channels)}`);
 
   const genericWebhook = config.ALERT_WEBHOOK_URL || '';
   const slackWebhook = config.SLACK_WEBHOOK_URL || '';
   const discordWebhook = config.DISCORD_WEBHOOK_URL || '';
   const emailTo = config.ALERT_EMAIL_TO || '';
 
-  const genericResult = genericWebhook ? await postJson(genericWebhook, normalized) : { ok: null, skipped: true };
-  const slackResult = slackWebhook ? await postJson(slackWebhook, { text }) : { ok: null, skipped: true };
-  const discordResult = discordWebhook ? await postJson(discordWebhook, { content: text }) : { ok: null, skipped: true };
+  const genericResult = (channels.webhook && genericWebhook) ? await postJson(genericWebhook, normalized) : { ok: null, skipped: true };
+  const slackResult = (channels.slack && slackWebhook) ? await postJson(slackWebhook, { text }) : { ok: null, skipped: true };
+  const discordResult = (channels.discord && discordWebhook) ? await postJson(discordWebhook, { content: text }) : { ok: null, skipped: true };
 
   const delivery = {
     webhook: {
@@ -529,13 +661,15 @@ const sendAlert = async (payload) => {
       slack: slackResult,
       discord: discordResult,
     },
-    email: { ok: null, skipped: !emailTo },
+    email: { ok: null, skipped: !channels.email || !emailTo },
+    telegram: { ok: null, skipped: !channels.telegram || !telegramBotToken || !telegramChatId },
+    whatsapp: { ok: null, skipped: !channels.whatsapp || !callMeBotApiKey || !callMeBotPhone },
   };
 
   let emailErrorDetails = null;
-  if (emailTo) {
+  if (channels.email && emailTo) {
     try {
-      const meta = eventMeta(normalized.event);
+      const meta = eventMeta(normalized.event, sev);
       const subject = `[DRY ${meta.label}] ${meta.title} - ${normalized.event || 'ALERT'}`;
       const html = buildEmailHtml({ ...normalized, delivery });
       await emailService.sendGenericEmail({ email: emailTo, subject, html, throwOnError: true });
@@ -551,9 +685,147 @@ const sendAlert = async (payload) => {
     }
   }
 
+  let telegramErrorDetails = null;
+  if (channels.telegram && telegramBotToken && telegramChatId) {
+    console.log(`[AlertService] Tentative envoi Telegram: severity=${sev}, event=${normalized.event}, chat=${telegramChatId}`);
+    try {
+      const meta = eventMeta(normalized.event, sev);
+      
+      // Fonction d'�chappement pour MarkdownV2 de Telegram
+      const escapeMarkdownV2 = (text) => {
+        if (!text) return '';
+        return String(text)
+          .replace(/\\/g, '\\\\')
+          .replace(/_/g, '\\_')
+          .replace(/\*/g, '\\*')
+          .replace(/\[/g, '\\[')
+          .replace(/\]/g, '\\]')
+          .replace(/\(/g, '\\(')
+          .replace(/\)/g, '\\)')
+          .replace(/~/g, '\\~')
+          .replace(/`/g, '\\`')
+          .replace(/>/g, '\\>')
+          .replace(/#/g, '\\#')
+          .replace(/\+/g, '\\+')
+          .replace(/-/g, '\\-')
+          .replace(/=/g, '\\=')
+          .replace(/\|/g, '\\|')
+          .replace(/\{/g, '\\{')
+          .replace(/\}/g, '\\}')
+          .replace(/\./g, '\\.')
+          .replace(/!/g, '\\!');
+      };
+      
+      const message = [
+        `?? *${escapeMarkdownV2(meta.title)}*`,
+        `Severity: *${escapeMarkdownV2(sev)}*`,
+        `Event: ${escapeMarkdownV2(normalized.event || 'ALERT')}`,
+        `Status: ${escapeMarkdownV2(normalized.status || 'UNKNOWN')}`,
+        `HTTP: ${escapeMarkdownV2(normalized.http || 'N/A')}`,
+        `URL: ${escapeMarkdownV2(normalized.url || 'N/A')}`,
+        `Tenant: ${escapeMarkdownV2(normalized.tenant || 'N/A')}`,
+        `Time: ${escapeMarkdownV2(normalized.timestamp || new Date().toISOString())}`,
+      ];
+      if (normalized.error) message.push(`Error: ${escapeMarkdownV2(normalized.error)}`);
+      if (normalized.causeProbable) message.push(`Cause: ${escapeMarkdownV2(normalized.causeProbable)}`);
+
+      const text = message.join('\n');
+      console.log(`[AlertService] Telegram payload: parse_mode=MarkdownV2 text=${JSON.stringify(text)}`);
+      
+      const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text,
+          parse_mode: 'MarkdownV2',
+        }),
+      });
+
+      const telegramData = await telegramRes.json().catch(() => null);
+      console.log(`[AlertService] Telegram response: status=${telegramRes.status} ok=${telegramData?.ok} description=${telegramData?.description}`);
+      if (telegramRes.ok && telegramData?.ok) {
+        delivery.telegram = { ok: true, skipped: false };
+      } else {
+        throw new Error(telegramData?.description || `HTTP ${telegramRes.status}`);
+      }
+    } catch (err) {
+      console.log(`[AlertService] Telegram error: ${err.message}`);
+      telegramErrorDetails = extractErrorDetails(err);
+      delivery.telegram = {
+        ok: false,
+        skipped: false,
+        error: telegramErrorDetails?.message || 'Erreur envoi Telegram',
+        errorDetails: telegramErrorDetails,
+      };
+    }
+  } else {
+    console.log(`[AlertService] Telegram skip: channels.telegram=${channels.telegram}, token=${!!telegramBotToken}, chat=${!!telegramChatId}`);
+  }
+
+  let whatsappErrorDetails = null;
+  if (channels.whatsapp && callMeBotApiKey && callMeBotPhone) {
+    try {
+      const meta = eventMeta(normalized.event, sev);
+      const message = [
+        `?? ${meta.title}`,
+        `Severity: ${sev}`,
+        `Event: ${normalized.event || 'ALERT'}`,
+        `Status: ${normalized.status || 'UNKNOWN'}`,
+        `HTTP: ${normalized.http || 'N/A'}`,
+        `URL: ${normalized.url || 'N/A'}`,
+        `Tenant: ${normalized.tenant || 'N/A'}`,
+        `Time: ${normalized.timestamp || new Date().toISOString()}`,
+      ];
+      if (normalized.error) message.push(`Error: ${normalized.error}`);
+      if (normalized.causeProbable) message.push(`Cause: ${normalized.causeProbable}`);
+
+      const text = encodeURIComponent(message.join('\n'));
+      const whatsappRes = await fetch(`https://api.callmebot.com/whatsapp.php?phone=${callMeBotPhone}&text=${text}&apikey=${callMeBotApiKey}`);
+      const whatsappText = await whatsappRes.text().catch(() => '');
+      
+      if (whatsappRes.ok && (whatsappText.includes('Message queued') || whatsappRes.status === 200)) {
+        delivery.whatsapp = { ok: true, skipped: false };
+      } else {
+        throw new Error(whatsappText || `HTTP ${whatsappRes.status}`);
+      }
+    } catch (err) {
+      whatsappErrorDetails = extractErrorDetails(err);
+      delivery.whatsapp = {
+        ok: false,
+        skipped: false,
+        error: whatsappErrorDetails?.message || 'Erreur envoi WhatsApp',
+        errorDetails: whatsappErrorDetails,
+      };
+    }
+  }
+
+  const stored = await storeAlert(normalized, sev);
+  if (stored) {
+    try {
+      const mongoose = require('mongoose');
+      const Alert = mongoose.connection.models.Alert;
+      if (Alert) {
+        await Alert.findByIdAndUpdate(stored._id, {
+          channelsSent: {
+            webhook: {
+              generic: !!genericResult?.ok,
+              slack: !!slackResult?.ok,
+              discord: !!discordResult?.ok,
+            },
+            email: delivery.email.ok || false,
+            telegram: delivery.telegram.ok || false,
+            whatsapp: delivery.whatsapp.ok || false,
+          },
+        });
+      }
+    } catch {}
+  }
+
   return {
     skipped: false,
     dedup,
+    severity: sev,
     delivery,
     webhook: {
       generic: !!genericResult?.ok,
@@ -561,6 +833,8 @@ const sendAlert = async (payload) => {
       discord: !!discordResult?.ok,
     },
     email: delivery.email.ok,
+    telegram: delivery.telegram.ok,
+    whatsapp: delivery.whatsapp.ok,
     error: emailErrorDetails?.message || null,
   };
 };
@@ -571,3 +845,7 @@ module.exports = {
   inferProbableCause,
   sanitizeValue,
 };
+
+
+
+

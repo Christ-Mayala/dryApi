@@ -33,6 +33,13 @@ const validatePelerin = {
   bibleBook: {
     create: validate(pelerinSchemas.BibleBook.create),
     update: validate(pelerinSchemas.BibleBook.update)
+  },
+  readingPlan: {
+    create: validate(pelerinSchemas.readingPlan.create),
+    update: validate(pelerinSchemas.readingPlan.update)
+  },
+  userJourney: {
+    upsert: validate(pelerinSchemas.userJourney.upsert)
   }
 };
 

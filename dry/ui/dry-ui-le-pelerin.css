@@ -1,0 +1,42 @@
+/* ═══════════════════════════════════════════════════════════════
+   DRY UI — Le Pèlerin Theme Override
+   ═══════════════════════════════════════════════════════════════
+   Ce fichier surcharge les tokens dry-ui.css avec la palette
+   officielle de l'app Le Pèlerin (vert profond + or + ivoire).
+   Il doit être chargé APRÈS dry-ui.css dans les pages web qui
+   utilisent Le Pèlerin Design System.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Importation des tokens Le Pèlerin */
+@import url('./le-pelerin-tokens.css');
+
+/* Mapping vers les variables dry-ui */
+:root {
+  --dry-primary: var(--pelerin-primary);
+  --dry-primary-dark: var(--pelerin-green700);
+  --dry-primary-light: var(--pelerin-green100);
+
+  --dry-success: var(--pelerin-success);
+  --dry-success-bg: var(--pelerin-successSoft);
+  --dry-error: var(--pelerin-error);
+  --dry-error-bg: var(--pelerin-errorSoft);
+  --dry-warning: var(--pelerin-gold500);
+  --dry-warning-bg: var(--pelerin-gold200);
+  --dry-info: var(--pelerin-info);
+  --dry-info-bg: var(--pelerin-infoSoft);
+
+  --dry-white: var(--pelerin-white);
+  --dry-bg: var(--pelerin-background);
+  --dry-surface: var(--pelerin-surface);
+  --dry-border: var(--pelerin-border);
+  --dry-text: var(--pelerin-text);
+  --dry-text-secondary: var(--pelerin-textMuted);
+  --dry-text-muted: var(--pelerin-textMuted);
+
+  --dry-radius: var(--pelerin-radius-md);
+  --dry-radius-sm: var(--pelerin-radius-sm);
+  --dry-radius-lg: var(--pelerin-radius-lg);
+  --dry-shadow: 0 1px 3px var(--pelerin-shadowColor), 0 1px 2px var(--pelerin-shadowColor);
+  --dry-shadow-lg: 0 10px 15px -3px var(--pelerin-shadowColor);
+  --dry-transition: 150ms ease;
+}

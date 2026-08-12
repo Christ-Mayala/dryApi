@@ -44,6 +44,7 @@ inter-versions, ex. `jean`), `book` (nom affiché dans la langue de la version),
 - `GET /api/v1/pelerin/bible?version=LSG1910&bookCode=jean&chapter=3` — liste paginée/filtrable
 - `GET /api/v1/pelerin/bible/chapter?version=LSG1910&bookCode=jean&chapter=3` — chapitre complet trié
 - `GET /api/v1/pelerin/bible/search?q=amour&version=LSG1910` — recherche plein texte
+- `GET /api/v1/pelerin/bible/verse-of-the-day` — verset aléatoire du jour
 - `GET/POST/PUT/DELETE /api/v1/pelerin/bible/:id` — CRUD standard (écriture admin uniquement)
 
 Le texte des 3 versions n'est **pas** inclus dans `seed.js` (trop volumineux). Il s'importe via
@@ -85,6 +86,26 @@ version consultée.
 Modèle `BibleBook` : référence statique des 66 livres (canon protestant, cohérent avec les 3
 versions ci-dessus), seedée par `seed.js`. CRUD standard via `buildCrudRouter` — lecture publique,
 écriture admin.
+
+## Feature `readingPlan`
+Modèle `ReadingPlan` : plan de lecture structuré (ex. "Bible en 1 an"). Chaque plan contient 365
+jours de lecture avec livre, chapitre, versets, thème et réflexion. CRUD admin, lecture publique.
+
+- `GET /api/v1/pelerin/readingplan` — liste des plans publiés
+- `GET /api/v1/pelerin/readingplan/day/:day` — jour spécifique du plan
+- `GET /api/v1/pelerin/readingplan/:id` — plan complet
+
+Seed dédié :
+```
+npm run seed:pelerin-reading-plan
+```
+
+## Feature `userJourney`
+Modèle `UserJourney` : progression spirituelle d'un utilisateur (points, étapes, milestones,
+streak, jour de lecture en cours). Un document par utilisateur, mutable via l'API.
+
+- `GET /api/v1/pelerin/userjourney/me` — ma progression
+- `PUT /api/v1/pelerin/userjourney/me` — mettre à jour ma progression
 
 ## Feature `bibleAnnotation`
 Un document par (utilisateur, version, livre, chapitre, verset) portant `isFavorite`,

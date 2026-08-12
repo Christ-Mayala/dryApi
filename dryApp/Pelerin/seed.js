@@ -144,6 +144,23 @@ module.exports = async ({ appName, getModel, logSeed }) => {
       { title: 'La force dans la faiblesse', bookCode: '2corinthiens', chapter: 12, verseStart: 9, reflection: 'Nos limites ne sont pas un obstacle a l\'oeuvre de Dieu, elles sont souvent l\'endroit ou sa force se manifeste le plus clairement.', prayer: 'Seigneur, dans mes faiblesses, montre ta force. Je choisis de m\'appuyer sur toi aujourd\'hui. Amen.', publishDate: new Date(Date.now() - 3 * 86400000) },
       { title: 'Aimer son prochain', bookCode: 'marc', chapter: 12, verseStart: 31, reflection: 'Aimer son prochain comme soi-meme commence souvent par un geste simple : ecouter, pardonner, tendre la main. C\'est un choix qui se renouvelle chaque jour.', prayer: 'Seigneur, donne-moi un coeur qui aime concretement les personnes que je croise aujourd\'hui. Amen.', publishDate: new Date(Date.now() - 4 * 86400000) },
       { title: 'Le repos pour les fatigues', bookCode: 'matthieu', chapter: 11, verseStart: 28, reflection: 'Cette invitation s\'adresse a ceux qui portent un fardeau, visible ou invisible. Venir, tel quel, fatigue, sans rien devoir prouver avant.', prayer: 'Seigneur, je viens a toi avec ma fatigue. Merci de m\'offrir un repos que je ne peux pas me donner moi-meme. Amen.', publishDate: new Date(Date.now() - 5 * 86400000) },
+      { title: 'La grace suffit', bookCode: '2corinthiens', chapter: 12, verseStart: 9, reflection: 'Quand on pense avoir atteint la fin de ce que l\'on peut supporter, la grace de Dieu se déploie précisément dans l\'espace de notre fragilité.', prayer: 'Seigneur, quand je me sens faible, rappelle-moi que ta grâce me suffit. Amen.', publishDate: new Date(Date.now() - 6 * 86400000) },
+      { title: 'Ne crains rien', bookCode: 'esaye', chapter: 41, verseStart: 10, reflection: 'Dieu invite à ne pas craindre parce qu\'il est avec nous. Sa présence change la donne dans les moments d\'inquiétude.', prayer: 'Seigneur, quand la peur monte, rappelle-moi que tu es avec moi. Amen.', publishDate: new Date(Date.now() - 7 * 86400000) },
+      { title: 'Le chemin de la vie', bookCode: 'psaumes', chapter: 16, verseStart: 11, reflection: 'La proximité de Dieu est le chemin même de la vie. Elle apporte une joie qui ne dépend pas des circonstances.', prayer: 'Seigneur, apprends-moi à marcher dans ta présence chaque jour. Amen.', publishDate: new Date(Date.now() - 8 * 86400000) },
+      { title: 'Aimez-vous les uns les autres', bookCode: 'jean', chapter: 13, verseStart: 34, reflection: 'L\'amour est le signe distinctif des disciples. C\'est un commandement, mais aussi un fruit de l\'Esprit.', prayer: 'Seigneur, aide-moi à aimer comme tu m\'aimes, sans compter. Amen.', publishDate: new Date(Date.now() - 9 * 86400000) },
+      { title: 'Esperance inebranlable', bookCode: 'romains', chapter: 5, verseStart: 5, reflection: 'L\'espérance ne déçoit point parce que l\'amour de Dieu est déversé dans nos coeurs. Elle résiste aux épreuves.', prayer: 'Seigneur, que mon espérance reste ferme en toi. Amen.', publishDate: new Date(Date.now() - 10 * 86400000) },
+      { title: 'La priere du coeur', bookCode: 'matthieu', chapter: 6, verseStart: 9, reflection: 'Jésus nous apprend à prier avec simplicité, sans longs discours. Le Père connaît déjà nos besoins.', prayer: 'Notre Père, que ton nom soit sanctifié. Que ton règne vienne. Amen.', publishDate: new Date(Date.now() - 11 * 86400000) },
+      { title: 'Marcher par la foi', bookCode: '2corinthiens', chapter: 5, verseStart: 7, reflection: 'La foi fait avancer même quand on ne voit pas toute l\'issue. Elle se fonde sur la présence de Dieu, pas sur nos propres forces.', prayer: 'Seigneur, aide-moi à marcher par la foi et non par la vue. Amen.', publishDate: new Date(Date.now() - 12 * 86400000) },
+      { title: 'Le fruit de l\'Esprit', bookCode: 'galates', chapter: 5, verseStart: 22, reflection: 'L\'Esprit produit en nous un fruit invisible mais transformant. Ce n\'est pas un effort, c\'est une croissance.', prayer: 'Seigneur, laisse l\'Esprit produire son fruit en moi. Amen.', publishDate: new Date(Date.now() - 13 * 86400000) },
+      { title: 'La sagesse qui vient d\'en haut', bookCode: 'jacques', chapter: 1, verseStart: 5, reflection: 'Dieu donne la sagesse avec générosité. Il suffit de la demander avec foi.', prayer: 'Seigneur, donne-moi ta sagesse pour les décisions de ce jour. Amen.', publishDate: new Date(Date.now() - 14 * 86400000) },
+      { title: 'Reconnaître sa voix', bookCode: 'jean', chapter: 10, verseStart: 27, reflection: 'Les brebis reconnaissent la voix du berger. À mesure qu\'on écoute Jésus, on discerne mieux sa direction.', prayer: 'Seigneur, affûte mon oreille pour reconnaître ta voix. Amen.', publishDate: new Date(Date.now() - 15 * 86400000) },
+      { title: 'La victoire en Christ', bookCode: '1corinthiens', chapter: 15, verseStart: 57, reflection: 'Grâce à Jésus, nous avons la victoire. Cette certitude change notre manière d\'affronter les combats.', prayer: 'Seigneur, merci pour la victoire que j\'ai en Jésus. Amen.', publishDate: new Date(Date.now() - 16 * 86400000) },
+      { title: 'L\'amour patient', bookCode: '1corinthiens', chapter: 13, verseStart: 4, reflection: 'L\'amour véritable ne se presse pas, ne s\'irrite pas, ne garde pas de compte. Il espère en toutes circonstances.', prayer: 'Seigneur, apprends-moi à aimer avec patience et bienveillance. Amen.', publishDate: new Date(Date.now() - 17 * 86400000) },
+      { title: 'Le sel et la lumière', bookCode: 'matthieu', chapter: 5, verseStart: 13, reflection: 'Nous sommes appelés à influer positivement là où la vie nous place. Une petite lumière peut changer une pièce entière.', prayer: 'Seigneur, que ma vie soit sel et lumière autour de moi. Amen.', publishDate: new Date(Date.now() - 18 * 86400000) },
+      { title: 'La promesse du Saint-Esprit', bookCode: 'jean', chapter: 14, verseStart: 26, reflection: 'Jésus promet un autre Consolateur : l\'Esprit de vérité. Il habite en nous et nous guide dans toute vérité.', prayer: 'Seigneur, envoie ton Esprit me guider aujourd\'hui. Amen.', publishDate: new Date(Date.now() - 19 * 86400000) },
+      { title: 'Confier son chemin', bookCode: 'proverbes', chapter: 3, verseStart: 5, reflection: 'Confier ses voies à Dieu, c\'est abandonner le besoin de tout contrôler. Il rendra tes sentiers droits.', prayer: 'Seigneur, je te confie mon chemin et mes choix. Amen.', publishDate: new Date(Date.now() - 20 * 86400000) },
+      { title: 'La joie du pardon', bookCode: 'psaumes', chapter: 32, verseStart: 1, reflection: 'Quand on avoue sa faute, le pardon apporte une joie profonde. Le poids tombe.', prayer: 'Seigneur, merci pour ton pardon qui libère. Amen.', publishDate: new Date(Date.now() - 21 * 86400000) },
+      { title: 'Un trésor dans des vases', bookCode: '2corinthiens', chapter: 4, verseStart: 7, reflection: 'Le trésor de Dieu est porté par des personnes fragiles. Sa puissance se manifeste justement là.', prayer: 'Seigneur, que ta puissance brille à travers ma faiblesse. Amen.', publishDate: new Date(Date.now() - 22 * 86400000) },
     ];
     const meditationCreated = await Meditation.insertMany(meditationDocs);
     count += meditationCreated.length;
@@ -176,6 +193,29 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   } else {
     console.log('[Pelerin] devPersonnel : deja seede, ignore.');
   }
+
+  // userJourney — etapes de progression spirituelle (systeme d'evolution).
+  const userJourneySchema = require('./features/userJourney/model/userJourney.schema.js');
+  const UserJourney = getModel(appName, 'UserJourney', userJourneySchema);
+  if (await UserJourney.countDocuments() === 0) {
+    const journeyDocs = [
+      { createdBy: 'system', points: 0, currentStageKey: 'beginner', completedMilestones: [], streakDays: 0, label: 'Debutant' },
+      { createdBy: 'system', points: 100, currentStageKey: 'growing', completedMilestones: ['first_reading'], streakDays: 7, label: 'En croissance' },
+      { createdBy: 'system', points: 300, currentStageKey: 'maturing', completedMilestones: ['first_reading', 'first_meditation', 'first_annotation'], streakDays: 21, label: 'Mature' },
+      { createdBy: 'system', points: 600, currentStageKey: 'discipling', completedMilestones: ['first_reading', 'first_meditation', 'first_annotation', 'first_parcours'], streakDays: 60, label: 'Disciple' },
+      { createdBy: 'system', points: 1000, currentStageKey: 'leader', completedMilestones: ['first_reading', 'first_meditation', 'first_annotation', 'first_parcours', 'leader_welcome'], streakDays: 100, label: 'Guide' },
+    ];
+    const journeyCreated = await UserJourney.insertMany(journeyDocs);
+    count += journeyCreated.length;
+    await logSeed({ appName, feature: 'userJourney', modelName: 'UserJourney', schemaPath: path.join(__dirname, 'features', 'userJourney', 'model', 'userJourney.schema.js'), ids: journeyCreated.map((d) => d._id) });
+    console.log(`[Pelerin] userJourney : ${journeyCreated.length} etape(s) creee(s).`);
+  } else {
+    console.log('[Pelerin] userJourney : deja seede, ignore.');
+  }
+
+  // readingPlan — Bible en 1 an. Ce plan volumineux est genere par un script dedie :
+  //   npm run seed:pelerin-reading-plan
+  // Il cree un document ReadingPlan avec 365 jours de lecture.
 
   // parcours — parcours spirituels guides (contenu editorial original pour ce projet).
   const parcoursSchema = require('./features/parcours/model/parcours.schema.js');

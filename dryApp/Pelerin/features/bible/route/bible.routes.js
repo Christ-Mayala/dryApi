@@ -16,6 +16,7 @@ const update = require('../controller/bible.update.controller');
 const remove = require('../controller/bible.delete.controller');
 const getChapter = require('../controller/bible.getChapter.controller');
 const search = require('../controller/bible.search.controller');
+const verseOfTheDay = require('../controller/bible.verseOfTheDay.controller');
 
 // Injection du modele dynamique pour ce tenant (multi-tenant)
 const setupModel = (req, res, next) => {
@@ -79,6 +80,25 @@ router.get('/chapter', cache(600), getChapter);
  *             schema: { $ref: '#/components/schemas/SuccessResponse' }
  */
 router.get('/search', search);
+
+/**
+ * @swagger
+ * /api/v1/pelerin/bible/verse-of-the-day:
+ *   get:
+ *     summary: Verset aleatoire du jour
+ *     tags: [Pelerin - Bible]
+ *     parameters:
+ *       - in: query
+ *         name: version
+ *         schema: { type: string, enum: [LSG1910, DARBY, KJV] }
+ *     responses:
+ *       200:
+ *         description: Verset selectionne aleatoirement
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/SuccessResponse' }
+ */
+router.get('/verse-of-the-day', verseOfTheDay);
 
 /**
  * @swagger
