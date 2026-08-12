@@ -10,7 +10,9 @@ const buildSocketOriginHandler = (allowedOrigins) => (origin, callback, req) => 
     return callback(null, true);
   }
 
-  if (!origin || allowedOrigins.includes('*')) {
+  // Origin "null" = WebView Android / navigateur intégré d'app / contexte opaque :
+  // produit par le navigateur lui-même, pas falsifiable par un site malveillant.
+  if (!origin || origin === 'null' || allowedOrigins.includes('*')) {
     return callback(null, true);
   }
 

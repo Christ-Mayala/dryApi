@@ -80,6 +80,12 @@ describe('buildCorsOriginHandler (production)', () => {
     expect(r.err).toBeNull();
     expect(r.ok).toBe(true);
   });
+
+  it("accepte Origin 'null' (WebView Android, navigateur intégré d'app)", async () => {
+    const r = await allow('null');
+    expect(r.err).toBeNull();
+    expect(r.ok).toBe(true);
+  });
 });
 
 describe('isSameOrigin (requêtes same-origin)', () => {

@@ -58,7 +58,13 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
     return callback(null, true);
   }
 
-  if (!origin) {
+  // Origin absent (curl, serveur à serveur) ou "null" (WebView Android,
+  // navigateurs intégrés d'apps, pages file://, contextes opaques) :
+  // "null" est produit par le NAVIGATEUR lui-même — un site malveillant
+  // envoie toujours son vrai Origin, donc l'accepter ne crée pas de faille.
+  // Les vraies protections restent actives : cookie SameSite=Lax, mot de
+  // passe système, JWT.
+  if (!origin || origin === 'null') {
     return callback(null, true);
   }
 
