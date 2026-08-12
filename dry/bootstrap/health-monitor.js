@@ -203,62 +203,65 @@ const startHealthMonitor = () => {
         lastAlertAt = 0;
       }
 
-      const extendedChecks = {
-        apiLatency: await checkApiLatency(),
-        diskSpace: await checkDiskSpace(),
-        queueHealth: await checkQueueHealth(),
-        syncQueue: await checkSyncQueue(),
-      };
+      const isProd = String(config.NODE_ENV || '').toLowerCase() === 'production';
+      if (!isProd) {
+        const extendedChecks = {
+          apiLatency: await checkApiLatency(),
+          diskSpace: await checkDiskSpace(),
+          queueHealth: await checkQueueHealth(),
+          syncQueue: await checkSyncQueue(),
+        };
 
-      const issues = [];
-      
-      if (extendedChecks.apiLatency && !extendedChecks.apiLatency.ok) {
-        issues.push({
-          check: 'api_latency',
-          severity: extendedChecks.apiLatency.latency === -1 ? 'critical' : 'warning',
-          message: `API latency: ${extendedChecks.apiLatency.latency}ms (status: ${extendedChecks.apiLatency.status})`,
-          data: extendedChecks.apiLatency,
-        });
-      }
-      
-      if (extendedChecks.diskSpace && !extendedChecks.diskSpace.ok && !extendedChecks.diskSpace.supported === false) {
-        issues.push({
-          check: 'disk_space',
-          severity: 'warning',
-          message: `Disk space low: ${extendedChecks.diskSpace.availableMB}MB available (threshold: ${extendedChecks.diskSpace.threshold}MB)`,
-          data: extendedChecks.diskSpace,
-        });
-      }
-      
-      if (extendedChecks.queueHealth && extendedChecks.queueHealth.enabled && extendedChecks.queueHealth.status === 'DOWN') {
-        issues.push({
-          check: 'queue_health',
-          severity: 'critical',
-          message: `Message queue is down`,
-          data: extendedChecks.queueHealth,
-        });
-      }
-      
-      if (extendedChecks.syncQueue && extendedChecks.syncQueue.pending > (extendedChecks.syncQueue.threshold || 1000)) {
-        issues.push({
-          check: 'sync_queue',
-          severity: 'warning',
-          message: `Sync queue backlog: ${extendedChecks.syncQueue.pending} pending (threshold: ${extendedChecks.syncQueue.threshold})`,
-          data: extendedChecks.syncQueue,
-        });
-      }
-
-      for (const issue of issues) {
-        const shouldSendIssue = !lastAlertAt || (repeatAlerts && now - lastAlertAt >= repeatMs);
-        if (shouldSendIssue) {
-          await sendAlert({
-            event: 'DRY_HEALTH_EXTENDED_CHECK',
-            status: 'WARN',
-            severity: issue.severity,
-            timestamp: new Date().toISOString(),
-            details: { extendedChecks, issue },
-            message: issue.message,
+        const issues = [];
+        
+        if (extendedChecks.apiLatency && !extendedChecks.apiLatency.ok) {
+          issues.push({
+            check: 'api_latency',
+            severity: extendedChecks.apiLatency.latency === -1 ? 'critical' : 'warning',
+            message: `API latency: ${extendedChecks.apiLatency.latency}ms (status: ${extendedChecks.apiLatency.status})`,
+            data: extendedChecks.apiLatency,
           });
+        }
+        
+        if (extendedChecks.diskSpace && !extendedChecks.diskSpace.ok && !extendedChecks.diskSpace.supported === false) {
+          issues.push({
+            check: 'disk_space',
+            severity: 'warning',
+            message: `Disk space low: ${extendedChecks.diskSpace.availableMB}MB available (threshold: ${extendedChecks.diskSpace.threshold}MB)`,
+            data: extendedChecks.diskSpace,
+          });
+        }
+        
+        if (extendedChecks.queueHealth && extendedChecks.queueHealth.enabled && extendedChecks.queueHealth.status === 'DOWN') {
+          issues.push({
+            check: 'queue_health',
+            severity: 'critical',
+            message: `Message queue is down`,
+            data: extendedChecks.queueHealth,
+          });
+        }
+        
+        if (extendedChecks.syncQueue && extendedChecks.syncQueue.pending > (extendedChecks.syncQueue.threshold || 1000)) {
+          issues.push({
+            check: 'sync_queue',
+            severity: 'warning',
+            message: `Sync queue backlog: ${extendedChecks.syncQueue.pending} pending (threshold: ${extendedChecks.syncQueue.threshold})`,
+            data: extendedChecks.syncQueue,
+          });
+        }
+
+        for (const issue of issues) {
+          const shouldSendIssue = !lastAlertAt || (repeatAlerts && now - lastAlertAt >= repeatMs);
+          if (shouldSendIssue) {
+            await sendAlert({
+              event: 'DRY_HEALTH_EXTENDED_CHECK',
+              status: 'WARN',
+              severity: issue.severity,
+              timestamp: new Date().toISOString(),
+              details: { extendedChecks, issue },
+              message: issue.message,
+            });
+          }
         }
       }
 

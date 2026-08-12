@@ -705,43 +705,36 @@ const sendAlert = async (payload, severity = 'warning') => {
     try {
       const meta = eventMeta(normalized.event, sev);
       
-      // Fonction d'échappement pour MarkdownV2 de Telegram
-      const escapeMarkdownV2 = (text) => {
-        if (!text) return '';
-        return String(text)
-          .replace(/\\/g, '\\\\')
-          .replace(/_/g, '\\_')
-          .replace(/\*/g, '\\*')
-          .replace(/\[/g, '\\[')
-          .replace(/\]/g, '\\]')
-          .replace(/\(/g, '\\(')
-          .replace(/\)/g, '\\)')
-          .replace(/~/g, '\\~')
-          .replace(/`/g, '\\`')
-          .replace(/>/g, '\\>')
-          .replace(/#/g, '\\#')
-          .replace(/\+/g, '\\+')
-          .replace(/-/g, '\\-')
-          .replace(/=/g, '\\=')
-          .replace(/\|/g, '\\|')
-          .replace(/\{/g, '\\{')
-          .replace(/\}/g, '\\}')
-          .replace(/\./g, '\\.')
-          .replace(/!/g, '\\!');
-      };
-      
       const message = [
-        `?? *${escapeMarkdownV2(meta.title)}*`,
-        `Severity: *${escapeMarkdownV2(sev)}*`,
-        `Event: ${escapeMarkdownV2(normalized.event || 'ALERT')}`,
-        `Status: ${escapeMarkdownV2(normalized.status || 'UNKNOWN')}`,
-        `HTTP: ${escapeMarkdownV2(normalized.http || 'N/A')}`,
-        `URL: ${escapeMarkdownV2(normalized.url || 'N/A')}`,
-        `Tenant: ${escapeMarkdownV2(normalized.tenant || 'N/A')}`,
-        `Time: ${escapeMarkdownV2(normalized.timestamp || new Date().toISOString())}`,
+        `${meta.title}`,
+        `Severity: ${sev}`,
+        `Event: ${normalized.event || 'ALERT'}`,
+        `Status: ${normalized.status || 'UNKNOWN'}`,
       ];
-      if (normalized.error) message.push(`Error: ${escapeMarkdownV2(normalized.error)}`);
-      if (normalized.causeProbable) message.push(`Cause: ${escapeMarkdownV2(normalized.causeProbable)}`);
+
+      const http = normalized.http || normalized.url;
+      if (http) message.push(`HTTP: ${http}`);
+
+      const tenant = normalized.tenant || normalized.details?.tenant;
+      if (tenant) message.push(`Tenant: ${tenant}`);
+
+      const requestId = normalized.requestId || normalized.request?.id;
+      if (requestId) message.push(`RequestId: ${requestId}`);
+
+      if (normalized.downtimeSeconds !== undefined && normalized.downtimeSeconds !== null) {
+        message.push(`Downtime(s): ${normalized.downtimeSeconds}`);
+      }
+
+      const errorMessage = normalized.error || normalized.message || normalized.details?.message;
+      if (errorMessage) message.push(`Error: ${errorMessage}`);
+
+      const cause = normalized.causeProbable || normalized.details?.issue?.message;
+      if (cause) message.push(`Cause: ${cause}`);
+
+      if (normalized.health?.database) message.push(`DB: ${normalized.health.database}`);
+      if (normalized.health?.memory?.rss) message.push(`Mem: ${normalized.health.memory.rss}`);
+
+      message.push(`Time: ${normalized.timestamp || new Date().toISOString()}`);
 
       const text = message.join('\n');
       console.log(`[AlertService] Telegram payload: parse_mode=MarkdownV2 text=${JSON.stringify(text)}`);
