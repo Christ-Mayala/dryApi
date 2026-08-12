@@ -1,0 +1,58 @@
+name: Keep Alive (Render gratuit)
+
+# ─── POURQUOI ─────────────────────────────────────────
+# Le plan gratuit de Render endort l'instance après 15 min
+# sans trafic. Un ping EXTERNE (ici GitHub Actions) toutes
+# les 10 min empêche le spin-down : l'API reste éveillée,
+# l'activité est visible dans le dashboard Render.
+#
+# IMPORTANT : un ping fait depuis l'intérieur du serveur ne
+# réveille rien — l'instance dort, son code ne tourne pas.
+
+# ─── DÉCLENCHEURS ────────────────────────────────────
+on:
+  # Toutes les 10 minutes (cron GitHub minimum ≈ 5 min,
+  # on garde une marge sous les 15 min de spin-down Render)
+  schedule:
+    - cron: '*/10 * * * *'
+
+  # Ping manuel depuis l'interface GitHub (Actions → Keep Alive → Run workflow)
+  workflow_dispatch:
+
+# ─── PERMISSIONS ────────────────────────────────────
+permissions:
+  contents: read
+
+# ─── JOB ─────────────────────────────────────────────
+jobs:
+  ping:
+    name: 🔄 Ping API
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🌐 Ping /health/ready
+        env:
+          # L'URL de votre API Render. Surchargez-la si besoin via un secret GitHub
+          # (Settings → Secrets and variables → Actions → RENDER_URL), sinon
+          # l'URL par défaut ci-dessous est utilisée.
+          RENDER_URL: ${{ secrets.RENDER_URL || 'https://dryapi.onrender.com' }}
+        run: |
+          URL="$RENDER_URL/health/ready"
+          echo "Ping de $URL..."
+
+          HTTP_CODE=$(curl -s -o /tmp/keepalive-response.json -w '%{http_code}' \
+            --max-time 25 \
+            -H 'Accept: application/json' \
+            "$URL")
+
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/keepalive-response.json
+          echo ""
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ API éveillée et prête"
+          else
+            echo "❌ Réponse inattendue (HTTP $HTTP_CODE) — l'API est peut-être down ou en cours de démarrage"
+            exit 1
+          fi
