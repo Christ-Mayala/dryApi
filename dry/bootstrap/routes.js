@@ -30,8 +30,6 @@ if (!process.env.SYSTEM_PASSWORD) {
 const SYSTEM_PASSWORD = process.env.SYSTEM_PASSWORD;
 
 const systemPasswordMiddleware = (req, res, next) => {
-  const password = SYSTEM_PASSWORD;
-
   // Vérifier si déjà authentifié via session
   if (req.session && req.session.systemAuth === true) {
     return next();
@@ -39,18 +37,34 @@ const systemPasswordMiddleware = (req, res, next) => {
 
   // Vérifier le mot de passe uniquement dans le body (POST) — jamais en query string (logs)
   const provided = req.body?.password;
-  if (provided && provided === password) {
-    if (req.session) req.session.systemAuth = true;
+  if (provided && provided === SYSTEM_PASSWORD) {
+    // Anti-fixation de session : on régénère le SID avant d'ouvrir l'accès
+    if (req.session) {
+      return req.session.regenerate((err) => {
+        if (err) return next(err);
+        req.session.systemAuth = true;
+        next();
+      });
+    }
     return next();
   }
 
-  // Si la requête PRÉFÈRE explicitement JSON (API/fetch), renvoyer 401 JSON.
+  // Un POST a été envoyé mais le mot de passe est absent ou incorrect → erreur visible
+  const showError = req.method === 'POST';
+
+  // Ne jamais mettre en cache la page de connexion (ni son 401)
+  res.setHeader('Cache-Control', 'no-store');
+
+  // Si la requête PRÉFÈRE explicitement JSON (API/fetch) — ou que le corps
+  // envoyé est du JSON — renvoyer 401 JSON.
   // req.accepts('json') seul est trompeur : un navigateur classique envoie
   // "Accept: text/html,...,*/*" — le "*/*" matche JSON aussi, donc
   // req.accepts('json') renvoyait vrai même pour une navigation normale,
   // qui n'a jamais le formulaire de connexion en résultat.
-  // req.accepts(['html','json']) choisit le type réellement préféré.
-  if (req.accepts(['html', 'json']) === 'json') {
+  // req.accepts(['html','json']) choisit le type réellement préféré, et
+  // req.is('json') couvre les clients API qui POSTent du JSON sans en-tête
+  // Accept explicite (curl, scripts, monitoring).
+  if (req.accepts(['html', 'json']) === 'json' || req.is('json')) {
     return res.status(401).json({
       success: false,
       message:
@@ -58,14 +72,19 @@ const systemPasswordMiddleware = (req, res, next) => {
     });
   }
 
-  // Afficher une page de connexion simple
+  // Afficher une page de connexion simple — AUCUN JavaScript inline (compatible CSP
+  // `script-src 'self'` de Helmet) : le formulaire natif soumet directement le
+  // champ `name="password"` en POST application/x-www-form-urlencoded.
+  const errorBanner = showError
+    ? '<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:10px 14px;border-radius:8px;font-size:0.9em;margin-bottom:20px;text-align:left;">Mot de passe incorrect. Réessayez.</div>'
+    : '';
+
   res.status(401).send(`<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Accès protégé — DRY API</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter',sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+body { font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
 .login-card { background:#1e293b; border:1px solid #334155; border-radius:16px; padding:48px 40px; width:100%; max-width:420px; text-align:center; }
 .login-card h1 { font-size:1.5em; margin-bottom:8px; }
 .login-card p { color:#94a3b8; font-size:0.95em; margin-bottom:32px; }
@@ -73,34 +92,18 @@ body { font-family:'Inter',sans-serif; background:#0f172a; color:#e2e8f0; min-he
 .login-card input[type="password"]:focus { border-color:#3b82f6; }
 .login-card button { width:100%; padding:14px; background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; border-radius:10px; font-size:1em; font-weight:600; cursor:pointer; font-family:inherit; transition:transform 0.2s; }
 .login-card button:hover { transform:translateY(-1px); }
-.login-card .error { color:#ef4444; font-size:0.9em; margin-top:12px; display:none; }
 </style>
 </head><body>
 <div class="login-card">
 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:20px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 <h1>Accès protégé</h1>
 <p>Cette page est sécurisée. Entrez le mot de passe pour continuer.</p>
-<form method="POST" action="?" onsubmit="return false">
-<input type="password" id="pwdField" placeholder="Mot de passe" autofocus>
-<button type="button" onclick="submitPassword()">Accéder</button>
-<div class="error" id="error" style="display:none;color:#ef4444;font-size:0.9em;margin-top:12px;">Mot de passe incorrect</div>
+${errorBanner}
+<form method="POST" action="/system/status">
+<input type="password" name="password" placeholder="Mot de passe" autofocus autocomplete="current-password">
+<button type="submit">Accéder</button>
 </form>
 </div>
-<script>
-function submitPassword() {
-  const pwd = document.getElementById('pwdField').value;
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = window.location.pathname;
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'password';
-  input.value = pwd;
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-}
-</script>
 </body></html>`);
 };
 
