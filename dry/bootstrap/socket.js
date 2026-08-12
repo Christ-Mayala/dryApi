@@ -9,7 +9,27 @@ const buildSocketOriginHandler = (allowedOrigins) => (origin, callback) => {
     return callback(null, true);
   }
 
-  if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+  if (!origin || allowedOrigins.includes('*')) {
+    return callback(null, true);
+  }
+
+  // Même logique que le CORS HTTP : correspondance exacte (slash final ignoré)
+  const normalizedOrigin = origin.replace(/\/$/, '');
+
+  if (allowedOrigins.includes(normalizedOrigin)) {
+    return callback(null, true);
+  }
+
+  // Sous-domaines Netlify (frontends hébergés sur Netlify)
+  const netlifyMatch = allowedOrigins.find((allowed) => {
+    if (!allowed.includes('netlify.app')) return false;
+    // Comparaison sur l'hôte (sans schéma ni slash final) pour autoriser les sous-domaines
+    const allowedHost = allowed.replace(/\/$/, '').replace(/^https?:\/\//i, '').toLowerCase();
+    const originHost = normalizedOrigin.replace(/^https?:\/\//i, '').toLowerCase();
+    return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
+  });
+
+  if (netlifyMatch) {
     return callback(null, true);
   }
 

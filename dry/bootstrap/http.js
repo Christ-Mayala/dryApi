@@ -51,10 +51,8 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
     return callback(null, true);
   }
 
-  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    return callback(null, true);
-  }
-
+  // En production, pas de raccourci localhost : seules les origines exactement
+  // listées (ALLOWED_ORIGINS / CORS_ORIGINS) sont acceptées.
   const normalizedOrigin = origin.replace(/\/$/, '');
   const allowedSet = new Set(allowedOrigins);
 
@@ -64,8 +62,10 @@ const buildCorsOriginHandler = (allowedOrigins) => (origin, callback) => {
 
   const netlifyMatch = allowedOrigins.find((allowed) => {
     if (!allowed.includes('netlify.app')) return false;
-    const normalizedAllowed = allowed.replace(/\/$/, '');
-    return normalizedOrigin === normalizedAllowed || normalizedOrigin.endsWith(`.${normalizedAllowed}`);
+    // Comparaison sur l'hôte (sans schéma ni slash final) pour autoriser les sous-domaines
+    const allowedHost = allowed.replace(/\/$/, '').replace(/^https?:\/\//i, '').toLowerCase();
+    const originHost = normalizedOrigin.replace(/^https?:\/\//i, '').toLowerCase();
+    return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
   });
 
   if (netlifyMatch) {
@@ -108,6 +108,18 @@ const attachRequestLogging = (app) => {
 const createApp = () => {
   const app = express();
   const allowedOrigins = getAllowedOrigins();
+
+  // Avertissement si la production ne permet qu'un fallback localhost (frontends bloqués)
+  if (config.NODE_ENV === 'production') {
+    const remoteOrigins = allowedOrigins.filter((o) => !/localhost|127\.0\.0\.1/.test(o));
+    if (remoteOrigins.length === 0) {
+      logger(
+        '[cors] ATTENTION: aucune origine distante autorisée en production (fallback localhost uniquement). ' +
+        'Définissez ALLOWED_ORIGINS ou CORS_ORIGINS pour autoriser vos frontends.',
+        'warning'
+      );
+    }
+  }
 
   app.set('trust proxy', 1);
 

@@ -33,8 +33,8 @@
 | Severity | Email | Webhook | Slack | Discord | Telegram | WhatsApp |
 |----------|-------|---------|-------|---------|----------|----------|
 | `critical` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `warning` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `info` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `warning` | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `info` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
 
 ## 🧪 Tester
 
@@ -52,4 +52,7 @@ Tu recevras la notification sur Telegram ET WhatsApp (si configurés).
 
 - **Telegram** : 100% gratuit, fiable, pas de limite connue.
 - **CallMeBot WhatsApp** : gratuit mais non officiel. Pour un usage professionnel, préférer la **WhatsApp Business Platform** (payante après période d'essai).
-- Les notifications ne partent **que pour les alertes `critical`** (erreurs 5xx, crash, queue down, etc.).
+- Les alertes **`critical`** partent partout ; les **`warning`** sur Email + Telegram ; les **`info`** sur **Telegram + Webhook uniquement** (pas d'email pour éviter le spam).
+- **Telegram reçoit toutes les sévérités** (`critical`, `warning`, `info`) avec un message complet : environnement, serveur, source exacte de l'erreur, extrait de stack, état santé et heure lisible — de quoi débugger sans ouvrir les logs.
+- Les alertes **`warning`** et **`info`** sont suspendues pendant les **heures calmes** (22h–7h par défaut, fuseau `Africa/Brazzaville`) : seules les `critical` partent.
+- L'email d'alerte n'est marqué comme **envoyé** que si un provider email est réellement configuré (SMTP, Resend ou Brevo). Sans config, le canal est marqué `skipped` au lieu de simuler un succès.
