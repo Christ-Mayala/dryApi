@@ -49,6 +49,16 @@ curl -X POST http://localhost:5000/api/v1/admin/alerts/test \
 
 Tu recevras la notification sur Telegram ET WhatsApp (si configurés).
 
+## 🛑 Couper complètement les notifications (ex: dev local)
+
+Pour **bloquer tous les envois** (Telegram, email, webhooks, WhatsApp — même les `critical`), mettre dans `.env` :
+
+```env
+ALERTS_ENABLED=false
+```
+
+L'alerte reste **loggée et stockée en base** (trace gardée), mais rien ne part à l'extérieur. Alternative plus douce : `ALERT_MAINTENANCE_MODE=true` (coupe tout **sauf** les `critical`).
+
 ## ⚠️ Notes
 
 - **Telegram** : 100% gratuit, fiable, pas de limite connue.

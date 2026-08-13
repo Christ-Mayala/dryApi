@@ -126,6 +126,8 @@ const buildBaseConfig = () => ({
   ALERT_QUIET_TIMEZONE: readSetting('ALERT_QUIET_TIMEZONE', { fallback: 'Africa/Brazzaville' }),
   ALERT_MAX_PAYLOAD_LENGTH: readSetting('ALERT_MAX_PAYLOAD_LENGTH', { fallback: '1500' }),
   ALERT_MAINTENANCE_MODE: readSetting('ALERT_MAINTENANCE_MODE', { fallback: 'false' }),
+  // Interrupteur global des alertes : false = aucun envoi externe (Telegram, email, webhooks...)
+  ALERTS_ENABLED: readSetting('ALERTS_ENABLED', { fallback: 'true' }),
   CRASH_ON_UNHANDLED_REJECTION: readSetting('CRASH_ON_UNHANDLED_REJECTION', { fallback: 'false' }),
   FATAL_ERROR_EXIT_DELAY_MS: readSetting('FATAL_ERROR_EXIT_DELAY_MS', { fallback: '3500' }),
   HEALTH_MONITOR_INTERVAL_MS: readSetting('HEALTH_MONITOR_INTERVAL_MS', { fallback: '0' }),

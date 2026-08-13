@@ -890,6 +890,15 @@ const sendAlert = async (payload, severity) => {
   ).toLowerCase();
   const normalized = normalizeAlertPayload({ ...payload, severity: sev });
   
+  // Interrupteur global : ALERTS_ENABLED=false coupe TOUS les envois externes
+  // (Telegram, email, webhooks, WhatsApp...) même pour les critical — utile en dev.
+  // L'alerte reste loggée et stockée en base pour garder la trace.
+  if (String(config.ALERTS_ENABLED || 'true').toLowerCase() === 'false') {
+    logger(`[Alert] alerts_disabled - alerte ${sev} ignoree: ${normalized.event}`, 'info');
+    await storeAlert(normalized, sev);
+    return { skipped: true, reason: 'alerts_disabled', severity: sev };
+  }
+  
   if (!shouldSendBySeverity(sev, normalized.event)) {
     const reason = isQuietHours() ? 'quiet_hours' : 'maintenance_mode';
     logger(`[Alert] ${reason} - alerte ${sev} ignoree: ${normalized.event}`, 'info');

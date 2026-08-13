@@ -150,4 +150,42 @@ describe('Résolution de sévérité des alertes', () => {
       expect(cause.toLowerCase()).toContain('proxy');
     });
   });
+
+  describe('ALERTS_ENABLED=false — interrupteur global', () => {
+    let alertsOffService;
+
+    beforeAll(() => {
+      process.env.ALERTS_ENABLED = 'false';
+      jest.resetModules();
+      alertsOffService = require('../../../dry/services/alert/alert.service');
+    });
+
+    afterAll(() => {
+      delete process.env.ALERTS_ENABLED;
+      jest.resetModules();
+      alertService = require('../../../dry/services/alert/alert.service');
+    });
+
+    it('bloque tout envoi même pour une alerte critical', async () => {
+      const result = await alertsOffService.sendAlert({
+        event: 'DRY_UNCAUGHT_EXCEPTION',
+        severity: 'critical',
+        dedupKey: 'alerts-off-critical',
+        timestamp: new Date().toISOString(),
+      });
+      expect(result.skipped).toBe(true);
+      expect(result.reason).toBe('alerts_disabled');
+    });
+
+    it('bloque aussi les résumés planifiés (DRY_DAILY_SUMMARY)', async () => {
+      const result = await alertsOffService.sendAlert({
+        event: 'DRY_DAILY_SUMMARY',
+        severity: 'info',
+        dedupKey: 'alerts-off-summary',
+        timestamp: new Date().toISOString(),
+      });
+      expect(result.skipped).toBe(true);
+      expect(result.reason).toBe('alerts_disabled');
+    });
+  });
 });
