@@ -15,12 +15,18 @@ const AudioTrackSchema = new mongoose.Schema({
   coverUrl: { type: String, trim: true },
   coverPublicId: { type: String, trim: true, select: false },
   duration: { type: String, trim: true }, // ex: "3:45", format libre affiche tel quel
-  label: { type: String, trim: true }
+  label: { type: String, trim: true },
+  // Source de la piste : 'upload' (fichier/lien admin) ou 'youtube' (importée
+  // automatiquement par la découverte). Pour 'youtube', `url` est l'URL watch
+  // YouTube et `youtubeVideoId` permet de résoudre le flux audio à la lecture.
+  source: { type: String, enum: ['upload', 'youtube'], default: 'upload' },
+  youtubeVideoId: { type: String, trim: true, default: null },
 }, {
   timestamps: true
 });
 
 AudioTrackSchema.index({ category: 1, createdAt: -1 });
+AudioTrackSchema.index({ youtubeVideoId: 1 }, { unique: true, sparse: true });
 AudioTrackSchema.statics.CATEGORIES = CATEGORIES;
 
 module.exports = AudioTrackSchema;

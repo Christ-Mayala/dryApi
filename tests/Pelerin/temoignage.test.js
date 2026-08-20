@@ -151,4 +151,80 @@ describe('Pelerin — temoignage', () => {
       pendingRes.body.data.find((t) => String(t._id) === String(temoignageId))
     ).toBeUndefined();
   });
+
+  it('categorise automatiquement un temoignage sans category fournie', async () => {
+    const submitter = buildReq({
+      body: {
+        title: 'Delivre de la drogue',
+        before: 'Je etais accro a l alcool et a la drogue',
+        encounter: 'Dieu m a delivre lors d une retraite',
+        after: 'Je vis libre desormais',
+      },
+    });
+    const submitRes = buildRes();
+    await createTemoignage(submitter, submitRes);
+
+    expect(submitRes.body.data.category).toBe('delivrance');
+  });
+
+  it('conserve une category valide fournie par l utilisateur', async () => {
+    const submitter = buildReq({
+      body: {
+        title: 'Mon epreuve',
+        before: 'avant',
+        encounter: 'rencontre',
+        after: 'apres',
+        category: 'famille',
+      },
+    });
+    const submitRes = buildRes();
+    await createTemoignage(submitter, submitRes);
+
+    expect(submitRes.body.data.category).toBe('famille');
+  });
+
+  it('nettoye le nom de l auteur (trim + max 80)', async () => {
+    const submitter = buildReq({
+      body: {
+        ...submitPayload,
+        authorName: '  ' + 'X'.repeat(100) + '  ',
+      },
+    });
+    const submitRes = buildRes();
+    await createTemoignage(submitter, submitRes);
+
+    expect(submitRes.body.data.authorName.length).toBe(80);
+    expect(submitRes.body.data.authorName.endsWith('  ')).toBe(false);
+  });
+
+  it('filtre la liste publique par category', async () => {
+    const submitter = buildReq({
+      body: {
+        title: 'Ma guerison',
+        before: 'J etais malade',
+        encounter: 'Dieu m a gueri',
+        after: 'Je vais bien',
+      },
+    });
+    await createTemoignage(submitter, buildRes());
+
+    // Approbation admin des deux temoignages pour qu'ils soient publics
+    const pendingRes = buildRes();
+    await getPendingTemoignage(buildReq(), pendingRes);
+    for (const t of pendingRes.body.data) {
+      await updateTemoignage(
+        buildReq({
+          params: { id: String(t._id) },
+          body: { isApproved: true },
+          user: { id: buildReq().user.id, role: 'admin' },
+        }),
+        buildRes()
+      );
+    }
+
+    const filterRes = buildRes();
+    await getAllTemoignage(buildReq({ query: { category: 'guerison' } }), filterRes);
+    expect(filterRes.body.data.length).toBe(1);
+    expect(filterRes.body.data[0].category).toBe('guerison');
+  });
 });

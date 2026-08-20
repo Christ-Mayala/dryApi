@@ -206,6 +206,7 @@ const buildBaseConfig = () => ({
   YTDL_NO_UPDATE: readSetting('YTDL_NO_UPDATE'),
   MEDIA_DIR: readSetting('MEDIA_DIR', { fallback: 'downloads' }),
   MEDIA_VERBOSE: readSetting('MEDIA_VERBOSE', { fallback: 'false' }),
+  YOUTUBE_API_KEY: readSetting('YOUTUBE_API_KEY'),
 });
 
 const baseConfig = buildBaseConfig();

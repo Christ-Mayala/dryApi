@@ -4,12 +4,19 @@ const { httpError } = require('../../../../../dry/utils/http/httpError');
 const { deleteCloudinaryAsset } = require('../../../services/cloudinaryCleanup.service');
 const PodcastShowSchema = require('../model/podcastShow.schema');
 const PodcastEpisodeSchema = require('../../podcastEpisode/model/podcastEpisode.schema');
+const PodcastSubscriptionSchema = require('../model/podcastSubscription.schema');
+const PodcastListenSchema = require('../../podcastEpisode/model/podcastListen.schema');
+const PodcastEpisodeFavoriteSchema = require('../../podcastEpisode/model/podcastEpisodeFavorite.schema');
 
 // Supprime l'emission ET tous ses episodes (jamais d'episode orphelin
-// pointant vers une emission qui n'existe plus) + nettoyage Cloudinary.
+// pointant vers une emission qui n'existe plus) + nettoyage Cloudinary +
+// suppression des donnees utilisateur liees (abonnements, ecoutes, favoris).
 module.exports = asyncHandler(async (req, res) => {
   const Show = req.getModel('PodcastShow', PodcastShowSchema);
   const Episode = req.getModel('PodcastEpisode', PodcastEpisodeSchema);
+  const Subscription = req.getModel('PodcastSubscription', PodcastSubscriptionSchema);
+  const Listen = req.getModel('PodcastListen', PodcastListenSchema);
+  const Favorite = req.getModel('PodcastEpisodeFavorite', PodcastEpisodeFavoriteSchema);
 
   const show = await Show.findById(req.params.id).select('+coverPublicId');
   if (!show) throw httpError('Émission introuvable', 404);
@@ -24,7 +31,12 @@ module.exports = asyncHandler(async (req, res) => {
     deleteCloudinaryAsset(show.coverPublicId, 'image'),
   ]);
 
-  await Episode.deleteMany({ showId: show._id });
+  await Promise.all([
+    Subscription.deleteMany({ showId: show._id }),
+    Listen.deleteMany({ showId: show._id }),
+    Favorite.deleteMany({ episodeId: { $in: episodes.map((e) => e._id) } }),
+    Episode.deleteMany({ showId: show._id }),
+  ]);
   await show.deleteOne();
 
   return sendResponse(res, null, 'Émission et ses épisodes supprimés');

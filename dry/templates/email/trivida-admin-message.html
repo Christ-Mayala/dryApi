@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
+  <title>{{SUBJECT}}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f4f3;font-family:'Inter',Arial,Helvetica,sans-serif;">
+
+  <!-- Préheader invisible -->
+  <span style="display:none;font-size:1px;color:#f0f4f3;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{SUBJECT}}</span>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f4f3;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,107,77,0.08);">
+
+          <!-- HEADER -->
+          <tr>
+            <td align="center" bgcolor="#006B4D" style="background-color:#006B4D;padding:36px 32px 32px;">
+              <table cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td align="center" valign="middle" style="width:44px;height:44px;background-color:rgba(255,255,255,0.15);border-radius:14px;font-size:22px;line-height:44px;text-align:center;padding:0 10px;">&#128154;</td>
+                  <td align="left" valign="middle" style="padding-left:10px;">
+                    <span style="color:#ffffff;font-size:24px;font-weight:900;font-family:'Inter',Arial,Helvetica,sans-serif;letter-spacing:-0.5px;">Trivida</span>
+                  </td>
+                </tr>
+              </table>
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding-top:10px;">
+                    <span style="color:rgba(255,255,255,0.8);font-size:13px;font-family:'Inter',Arial,Helvetica,sans-serif;font-weight:500;">Message de l'administration</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-bottom:24px;">
+                    <span style="font-size:22px;font-weight:700;color:#1a1a2e;font-family:'Inter',Arial,Helvetica,sans-serif;">Bonjour {{NAME}} &#128075;</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Message content -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+                <tr>
+                  <td bgcolor="#f0faf6" style="background-color:#f0faf6;border-radius:12px;border:1px solid #e0ede8;padding:24px;">
+                    <div style="font-size:15px;color:#1a1a2e;font-family:'Inter',Arial,Helvetica,sans-serif;line-height:1.8;white-space:pre-wrap;">{{MESSAGE}}</div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:20px;">
+                <tr>
+                  <td align="center" bgcolor="#006B4D" style="background-color:#006B4D;border-radius:14px;padding:18px 24px;">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr><td align="center">
+                        <a href="{{APP_URL}}" style="color:#ffffff;font-size:15px;font-weight:800;font-family:'Inter',Arial,Helvetica,sans-serif;text-decoration:none;">&#128241; Ouvrir Trivida</a>
+                      </td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Signature -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr><td>
+                  <p style="margin:0;font-size:14px;color:#6b7280;font-family:'Inter',Arial,Helvetica,sans-serif;line-height:1.7;">
+                    &#192; tr&#232;s vite,<br>
+                    <strong style="color:#006B4D;">L'&#233;quipe Trivida</strong>
+                  </p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td bgcolor="#f0f4f3" style="background-color:#f0f4f3;border-top:1px solid #e0ede8;padding:20px 40px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#6b7280;font-family:'Inter',Arial,Helvetica,sans-serif;line-height:1.7;">
+                Vous recevez cet e-mail car vous &#234;tes inscrit sur Trivida.<br>
+                <a href="https://cyberfusion-group.vercel.app/" style="color:#006B4D;text-decoration:none;">CyberFusion Group</a>
+                &nbsp;&#183; &copy; {{YEAR}} Trivida. Tous droits r&#233;serv&#233;s.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

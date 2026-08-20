@@ -13,15 +13,27 @@ const getAllAdmin = require('../controller/podcastEpisode.getAllAdmin.controller
 const getById = require('../controller/podcastEpisode.getById.controller');
 const update = require('../controller/podcastEpisode.update.controller');
 const remove = require('../controller/podcastEpisode.delete.controller');
+const progress = require('../controller/podcastEpisode.progress.controller');
+const history = require('../controller/podcastEpisode.history.controller');
+const favorites = require('../controller/podcastEpisode.favorites.controller');
 
 const episodeUpload = upload.fields([
   { name: 'audio', maxCount: 1 },
   { name: 'cover', maxCount: 1 },
 ]);
 
-// Route specifique AVANT /:id.
+// ── Routes spécifiques (AVANT /:id) ─────────────────────────────────────
 router.get('/admin/all', protect, authorize('admin'), getAllAdmin);
 
+// Données personnelles (historique, favoris, progression) — authentifiées.
+router.get('/history', protect, history);
+router.get('/favorites', protect, favorites.listMine);
+router.post('/favorites/:id', protect, validateId, favorites.add);
+router.delete('/favorites/:id', protect, validateId, favorites.remove);
+router.get('/progress/:id', protect, validateId, progress.getOne);
+router.put('/progress/:id', protect, validateId, progress.upsert);
+
+// ── Routes publiques / CRUD ─────────────────────────────────────────────
 router.get('/', cache(300), getAll);
 router.get('/:id', validateId, cache(600), getById);
 

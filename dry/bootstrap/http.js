@@ -214,6 +214,12 @@ const createApp = () => {
   // ── Sécurité (Helmet, rate limiting, sanitize) ──
   setupSecurity(app);
 
+  // ── Web App Trivida (Expo web build) ──
+  const trividaWebDir = path.join(__dirname, '../../../trivida-v2/dist');
+  if (require('fs').existsSync(trividaWebDir)) {
+    app.use(express.static(trividaWebDir));
+  }
+
   // ── Landing Pages (pricing, etc.) ──
   const landingDir = path.join(__dirname, '../../landing');
   app.use(express.static(landingDir));

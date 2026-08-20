@@ -107,6 +107,17 @@ const pelerinSchemas = {
       readingPlanId: Joi.string().max(100).optional(),
       label: Joi.string().min(2).max(200).optional()
     })
+  },
+  spiritualProfile: {
+    upsert: Joi.object({
+      favoriteVerseBook: Joi.string().max(10).optional(),
+      favoriteVerseChapter: Joi.number().integer().min(1).optional(),
+      favoriteVerseVerse: Joi.number().integer().min(1).optional(),
+      favoriteVerseText: Joi.string().max(500).optional(),
+      spiritualGoal: Joi.string().max(500).optional(),
+      prayerTopics: Joi.array().items(Joi.string().max(200)).optional(),
+      label: Joi.string().min(2).max(200).optional()
+    })
   }
 };
 

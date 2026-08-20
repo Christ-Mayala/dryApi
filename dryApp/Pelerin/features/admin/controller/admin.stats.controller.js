@@ -9,6 +9,8 @@ const DevPersonnelSchema = require('../../devPersonnel/model/devPersonnel.schema
 const AudioTrackSchema = require('../../audioTrack/model/audioTrack.schema');
 const PodcastShowSchema = require('../../podcastShow/model/podcastShow.schema');
 const PodcastEpisodeSchema = require('../../podcastEpisode/model/podcastEpisode.schema');
+const SpiritualProfileSchema = require('../../spiritual-profile/model/spiritualProfile.schema');
+const HousePreachingSchema = require('../../housePreaching/model/housePreaching.schema');
 
 // GET /admin/stats — vue d'ensemble pour le tableau de bord admin.
 module.exports = asyncHandler(async (req, res) => {
@@ -21,6 +23,8 @@ module.exports = asyncHandler(async (req, res) => {
   const AudioTrack = req.getModel('AudioTrack', AudioTrackSchema);
   const PodcastShow = req.getModel('PodcastShow', PodcastShowSchema);
   const PodcastEpisode = req.getModel('PodcastEpisode', PodcastEpisodeSchema);
+  const SpiritualProfile = req.getModel('SpiritualProfile', SpiritualProfileSchema);
+  const HousePreaching = req.getModel('HousePreaching', HousePreachingSchema);
 
   const [
     totalUsers,
@@ -34,6 +38,8 @@ module.exports = asyncHandler(async (req, res) => {
     totalAudioTracks,
     totalPodcastShows,
     totalPodcastEpisodes,
+    totalSpiritualProfiles,
+    totalHousePreachings,
   ] = await Promise.all([
     User.countDocuments({}),
     User.countDocuments({ role: 'admin' }),
@@ -46,6 +52,8 @@ module.exports = asyncHandler(async (req, res) => {
     AudioTrack.countDocuments({}),
     PodcastShow.countDocuments({}),
     PodcastEpisode.countDocuments({}),
+    SpiritualProfile.countDocuments({}),
+    HousePreaching.countDocuments({}),
   ]);
 
   return sendResponse(res, {
@@ -65,5 +73,7 @@ module.exports = asyncHandler(async (req, res) => {
     totalAudioTracks,
     totalPodcastShows,
     totalPodcastEpisodes,
+    totalSpiritualProfiles,
+    totalHousePreachings,
   }, 'Statistiques recuperees');
 });

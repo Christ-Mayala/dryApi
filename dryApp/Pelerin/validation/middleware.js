@@ -40,6 +40,9 @@ const validatePelerin = {
   },
   userJourney: {
     upsert: validate(pelerinSchemas.userJourney.upsert)
+  },
+  spiritualProfile: {
+    upsert: validate(pelerinSchemas.spiritualProfile.upsert)
   }
 };
 

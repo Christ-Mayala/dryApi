@@ -26,6 +26,10 @@ const UserJourneySchema = new mongoose.Schema({
   timestamps: true
 });
 
-UserJourneySchema.index({ createdBy: 1 }, { unique: true });
+// PAS d'index explicite sur createdBy : le plugin DRY global ajoute deja
+// createdBy avec index:true — un deuxieme schema.index({createdBy:1}) ici
+// declenche le warning mongoose "Duplicate schema index". L'unicite (un
+// document par utilisateur) est garantie par le findOneAndUpdate(upsert) des
+// controllers, pas besoin d'un index unique.
 
 module.exports = UserJourneySchema;

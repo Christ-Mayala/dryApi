@@ -10,7 +10,7 @@ module.exports = asyncHandler(async (req, res) => {
   const show = await Model.findById(req.params.id).select('+coverPublicId');
   if (!show) throw httpError('Émission introuvable', 404);
 
-  Object.assign(show, pickDefined(req.body, ['title', 'description', 'author', 'category']));
+  Object.assign(show, pickDefined(req.body, ['title', 'description', 'author', 'category', 'autoPublishStatus', 'score', 'scoreBreakdown', 'moderationReason']));
   if (req.body.isPublished !== undefined) {
     show.isPublished = req.body.isPublished === 'true' || req.body.isPublished === true;
   }

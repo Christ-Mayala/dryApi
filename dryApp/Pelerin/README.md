@@ -32,6 +32,8 @@ authentification via `dry/modules/user` (JWT + OAuth Google/Facebook déjà gén
 - `/api/v1/pelerin/audioTrack` — contenus audio chrétiens, liens externes uniquement (lecture publique, écriture admin)
 - `/api/v1/pelerin/habit` — mes habitudes spirituelles avec streak calculé (privé, JWT requis)
 - `/api/v1/pelerin/habitLog` — historique/coche quotidienne d'une habitude (privé, JWT requis)
+- `/api/v1/pelerin/spiritual-profile` — profil spirituel (verset favori, objectif spirituel, sujets de prière) (privé, JWT requis)
+- `/api/v1/pelerin/notifications` — tokens push + préférences notifications (privé, JWT requis)
 
 Reste à venir : synchronisation offline-first — voir la feuille de route de l'app mobile
 (`../../Le Pèlerin — Du monde vers la Croix/docs/ROADMAP.md`).
@@ -100,12 +102,28 @@ Seed dédié :
 npm run seed:pelerin-reading-plan
 ```
 
+## Feature `spiritualProfile`
+Modèle `SpiritualProfile` : identité spirituelle statique d'un utilisateur — verset favori,
+objectif spirituel, sujets de prière. Un document par utilisateur, upsert via `/me`.
+
+- `GET /api/v1/pelerin/spiritual-profile/me` — mon profil spirituel (404 si absent)
+- `PUT /api/v1/pelerin/spiritual-profile/me` — mettre à jour (crée si absent)
+- Racines `/` (GET/PUT) servent d'alias pour compatibilité mobile.
+
+Complément de `userJourney` (voir ci-dessous) : `spiritualProfile` = *qui je suis*
+(verset, objectif, prières) tandis que `userJourney` = *où j'en suis* (points, streak).
+
 ## Feature `userJourney`
-Modèle `UserJourney` : progression spirituelle d'un utilisateur (points, étapes, milestones,
-streak, jour de lecture en cours). Un document par utilisateur, mutable via l'API.
+Modèle `UserJourney` : progression spirituelle gamifiée d'un utilisateur (points, étapes,
+milestones, streak, jour de lecture en cours). Un document par utilisateur, mutable via l'API.
 
 - `GET /api/v1/pelerin/userjourney/me` — ma progression
 - `PUT /api/v1/pelerin/userjourney/me` — mettre à jour ma progression
+
+> **Réconciliation avec spiritualProfile** : `userJourney` reste comme couche de progression
+> gamifiée (points/streak/milestones), distincte du profil d'identité spirituelle
+> (`spiritualProfile`). L'intégration mobile de `userJourney` est prévue — pour l'instant
+> seule l'admin et les seeds l'exploitent.
 
 ## Feature `bibleAnnotation`
 Un document par (utilisateur, version, livre, chapitre, verset) portant `isFavorite`,
@@ -122,3 +140,55 @@ un objectif). 100% privé (`createdBy`). Recherche plein texte via `GET /notes/s
 réflexion/exercice pratique) — lecture publique, écriture admin. `ParcoursProgress` : progression
 personnelle par utilisateur (`completedSteps`, `currentStepOrder`), un document par
 (utilisateur, parcours), avancée via `POST /parcoursProgress/:parcoursId/complete-step`.
+
+## Feature `notifications`
+Gestion des tokens push et préférences de notifications par utilisateur.
+
+- `POST /api/v1/pelerin/notifications/register` — enregistrer un token push (corps: `{pushToken, platform}`)
+- `GET /api/v1/pelerin/notifications/preferences` — récupérer mes préférences
+- `PUT /api/v1/pelerin/notifications/preferences` — mettre à jour mes préférences (upsert)
+
+## Module Podcast — configuration
+
+Le module Podcast (import RSS, auto-découverte Podcast Index, scoring de
+pertinence, modération admin) se configure **exclusivement via l'environnement**
+(`dryApi/.env`, modèle dans `.env.example`) et — pour le scoring uniquement —
+depuis l'écran admin « Configuration Podcast » de l'app mobile (surcharges
+persistées en base, priorité sur le `.env`).
+
+### Variables d'environnement
+
+| Variable | Défaut | Rôle | Obligatoire ? |
+|---|---|---|---|
+| `APP_NAME` | `Pelerin` | Tenant (choisit la DB `PelerinDB`) | non |
+| `PODCASTINDEX_API_KEY` / `PODCASTINDEX_API_SECRET` | vide | Credentials Podcast Index (recherche + auto-découverte) | **oui pour la découverte** |
+| `PODCASTINDEX_API_BASE` | `https://api.podcastindex.org/api/1.0` | URL de base de l'API (proxy/miroir) | non |
+| `PODCAST_RSS_SYNC_ENABLED` | `true` | Sync horaire des épisodes des podcasts importés | non |
+| `PODCAST_RSS_CRON` | `0 * * * *` | Expression cron de la sync | non |
+| `PODCAST_AUTO_DISCOVER_ENABLED` | `true` | Auto-découverte Podcast Index | non |
+| `PODCAST_AUTO_DISCOVER_CRON` | `0 4 * * *` | Expression cron de l'auto-découverte | non |
+| `PODCAST_AUTO_DISCOVER_MAX` | `8` | Nombre max de podcasts importés par passe | non |
+| `PODCAST_DISCOVERY_KEYWORDS` | 8 mots-clés FR | Mots-clés de recherche (séparés par des virgules) | non |
+| `PODCAST_SEED_ENABLED` | `true` | Seed des 8 podcasts par défaut au démarrage (si catalogue externe vide) | non |
+| `PODCAST_SCORE_*` | voir service | Poids du scoring + seuils 80/50 (détaillés dans `podcastScoring.service.js`) | non |
+
+Sans `PODCASTINDEX_API_KEY`/`SECRET` : la découverte répond 503 et le scheduler
+ignore la passe — l'import RSS manuel reste fonctionnel.
+
+### Scoring — priorité de résolution
+
+1. **Surcharges admin persistées** (collection `PodcastScoringConfig`, via l'app) ;
+2. variables d'environnement `PODCAST_SCORE_*` ;
+3. valeurs par défaut de la spec produit (`podcastScoring.service.js`).
+
+Chaque décision d'import est consignée dans `PodcastImportDecision` (historique
+« Pipeline ») avec le détail du score par critère.
+
+### Endpoints admin (module Podcast)
+
+- `GET /api/v1/pelerin/podcastshow/admin/config` — état réel de la configuration (clés, crons, seed, scoring, mots-clés)
+- `PUT /api/v1/pelerin/podcastshow/admin/config/scoring` — persiste les surcharges `{ weights?, thresholds? }` (objets vides = retour au `.env`)
+- `POST /api/v1/pelerin/podcastshow/admin/config/test` — test de connectivité en direct de Podcast Index
+- `POST /api/v1/pelerin/podcastshow/admin/discover/run` — lance immédiatement une passe d'auto-découverte et renvoie le rapport
+- `GET /api/v1/pelerin/podcastshow/admin/pipeline` — historique des décisions du pipeline
+- `POST /api/v1/pelerin/podcastshow/:id/moderate` — modération `{ action: approve|reject|reactivate, reason? }`
