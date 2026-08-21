@@ -30,7 +30,7 @@ const createUserSchema = z.object({
       'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre'
     ),
   role: z
-    .enum(['user', 'admin'], { message: 'Le rôle doit être user ou admin' })
+    .enum(['user', 'admin', 'superadmin'], { message: 'Le rôle doit être user ou admin' })
     .default('user'),
   phone: z
     .string()
