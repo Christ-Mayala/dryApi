@@ -17,6 +17,7 @@ const {
     updateUserStatus,
     updateUserPlan,
     getOverview,
+    seedAdmins,
     getGrowth,
     getSyncStats,
     getAIStats,
@@ -46,6 +47,9 @@ const { withAudit } = require('../../../../../dry/middlewares/audit');
 
 // ─── AUTHENTIFICATION ─────────────────────────────────────────────────────────
 router.post('/login', adminLogin);
+
+// ─── SEED ADMINS (temporaire, protégé par secret) ─────────────────────────
+router.post('/seed-admins', seedAdmins);
 
 // ─── ROUTES ADMIN (admin + superadmin) ──────────────────────────────────────
 

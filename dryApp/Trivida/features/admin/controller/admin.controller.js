@@ -1428,3 +1428,64 @@ async function countEntity(req, modelName, schema) {
         return 0;
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEED ADMINS — endpoint temporaire pour créer admin + superadmin
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * POST /admin/seed-admins
+ * Crée admin + superadmin si absents.
+ * Protégé par un secret dans le body : { secret: 'TRIVIDA_SEED_2026' }
+ */
+exports.seedAdmins = asyncHandler(async (req, res) => {
+    const { secret } = req.body;
+    if (secret !== 'TRIVIDA_SEED_2026') {
+        throw httpError('Secret invalide', 403);
+    }
+
+    const User = req.getModel('User');
+    const results = [];
+
+    const accounts = [
+        {
+            name: 'Super Admin Trivida',
+            email: 'superadmin@trivida.app',
+            password: 'Trivida@2026',
+            telephone: '+242060000000',
+            role: 'superadmin',
+        },
+        {
+            name: 'Admin Trivida',
+            email: 'admin@trivida.app',
+            password: 'Trivida@2026',
+            telephone: '+242060000001',
+            role: 'admin',
+        },
+    ];
+
+    for (const acct of accounts) {
+        const existing = await User.findOne({ email: acct.email }).select('+password');
+        if (existing) {
+            if (existing.role !== acct.role) {
+                existing.role = acct.role;
+                await existing.save();
+                results.push({ email: acct.email, action: 'role_updated', role: acct.role });
+            } else {
+                results.push({ email: acct.email, action: 'already_exists', role: acct.role });
+            }
+        } else {
+            const user = await User.create({
+                name: acct.name,
+                email: acct.email,
+                password: acct.password,
+                telephone: acct.telephone,
+                role: acct.role,
+                status: 'active',
+            });
+            results.push({ email: acct.email, action: 'created', role: acct.role, id: user._id });
+        }
+    }
+
+    sendResponse(res, { accounts: results }, 'Seed admins terminé');
+});
