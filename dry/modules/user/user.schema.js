@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     //     select: false
     // },
     password: { type: String, select: false },
-    role: { type: String, enum: ['user', 'admin', 'client', 'prestataire', 'professional'], default: 'user' },
+    role: { type: String, enum: ['user', 'admin', 'client', 'prestataire', 'professional', 'superadmin'], default: 'user' },
     // subtype: null = chercheur de pros | 'prestataire' = peut répondre aux leads
     subtype: { type: String, enum: [null, 'prestataire'], default: null },
     isPremium: { type: Boolean, default: false },
