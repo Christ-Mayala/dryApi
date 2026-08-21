@@ -1447,45 +1447,80 @@ exports.seedAdmins = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
     const results = [];
 
+    // On crée les deux avec role 'admin' d'abord (compatible tout schema)
     const accounts = [
         {
             name: 'Super Admin Trivida',
             email: 'superadmin@trivida.app',
             password: 'Trivida@2026',
             telephone: '+242060000000',
-            role: 'superadmin',
+            desiredRole: 'superadmin',
         },
         {
             name: 'Admin Trivida',
             email: 'admin@trivida.app',
             password: 'Trivida@2026',
             telephone: '+242060000001',
-            role: 'admin',
+            desiredRole: 'admin',
         },
     ];
+
+    // Vérifier si le schema supporte 'superadmin'
+    const roleField = User.schema.path('role');
+    const enumValues = roleField && roleField.enumValues ? roleField.enumValues : ['user', 'admin'];
+    const hasSuperadmin = enumValues.includes('superadmin');
 
     for (const acct of accounts) {
         const existing = await User.findOne({ email: acct.email }).select('+password');
         if (existing) {
-            if (existing.role !== acct.role) {
-                existing.role = acct.role;
-                await existing.save();
-                results.push({ email: acct.email, action: 'role_updated', role: acct.role });
+            // Mettre à jour le role si possible
+            if (existing.role !== acct.desiredRole) {
+                if (hasSuperadmin || acct.desiredRole === 'admin') {
+                    // Mise à jour via save (validé par le schema)
+                    existing.role = acct.desiredRole;
+                    await existing.save();
+                    results.push({ email: acct.email, action: 'role_updated', role: acct.desiredRole });
+                } else {
+                    // Schema ne supporte pas 'superadmin', mettre en admin
+                    results.push({ email: acct.email, action: 'role_kept_admin', note: 'Schema ne supporte pas superadmin encore' });
+                }
             } else {
                 results.push({ email: acct.email, action: 'already_exists', role: acct.role });
             }
         } else {
+            // Créer avec 'admin' d'abord (safe pour tout schema)
+            const createRole = acct.desiredRole === 'admin' ? 'admin' : 'admin';
             const user = await User.create({
                 name: acct.name,
                 email: acct.email,
                 password: acct.password,
                 telephone: acct.telephone,
-                role: acct.role,
+                role: createRole,
                 status: 'active',
             });
-            results.push({ email: acct.email, action: 'created', role: acct.role, id: user._id });
+            
+            // Si on veut superadmin et que le schema le supporte, mettre à jour
+            if (acct.desiredRole === 'superadmin' && hasSuperadmin) {
+                user.role = 'superadmin';
+                await user.save();
+            }
+            
+            results.push({
+                email: acct.email,
+                action: 'created',
+                role: acct.desiredRole === 'superadmin' && !hasSuperadmin ? 'admin' : acct.desiredRole,
+                id: user._id,
+                note: acct.desiredRole === 'superadmin' && !hasSuperadmin ? 'Schema ancien: créé en admin, met à jour après déploiement du nouveau schema' : undefined
+            });
         }
     }
 
-    sendResponse(res, { accounts: results }, 'Seed admins terminé');
+    // Info sur le schema
+    sendResponse(res, {
+        accounts: results,
+        schemaInfo: {
+            roleEnum: enumValues,
+            hasSuperadmin
+        }
+    }, 'Seed admins terminé');
 });
