@@ -9,7 +9,7 @@ const TrividaUserSchema = new mongoose.Schema({
     telephone: { type: String, trim: true },
     
     // Rôle admin (superadmin = accès complet au panel admin)
-    role: { type: String, enum: ['user', 'admin', 'superadmin'], default: 'user' },
+    role: { type: String, enum: ['user', 'admin', 'superadmin', 'client', 'prestataire', 'professional'], default: 'user' },
     
     // Avatar
     avatarUrl: { type: String, default: null },
