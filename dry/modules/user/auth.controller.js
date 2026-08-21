@@ -259,9 +259,14 @@ exports.verifyResetCode = asyncHandler(async (req, res) => {
 });
 
 // --- RESET PASSWORD ---
-exports.resetPassword = asyncHandler(async (req, res) => {
-    const { email, code, newPassword } = req.body;
+exports.resetPassword = asyncHandler(async (req, res) => {    // Accepte 'password' (mobile) ou 'newPassword' (ancien format)
+    const newPassword = req.body.newPassword || req.body.password;
+    const { email, code } = req.body;
     const User = req.getModel('User');
+
+    if (!newPassword) {
+        throw httpError('Nouveau mot de passe requis', 400);
+    }
 
     const user = await User.findOne({ 
         email,
@@ -273,7 +278,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
         throw httpError('Code invalide ou expiré', 400);
     }
 
-    // Mettre Ã  jour le mot de passe
+    // Mettre à jour le mot de passe
     user.password = newPassword;
     user.resetCode = undefined;
     user.resetCodeExpires = undefined;
