@@ -8,14 +8,9 @@ const path = require('path');
 function createFrontendRouter() {
   const router = express.Router();
 
-  // Serve dashboard at /dashboard
-  router.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/dashboard.html'));
-  });
-
-  // Redirect root to dashboard
+  // Serve dashboard at root (since router is mounted at /dashboard)
   router.get('/', (req, res) => {
-    res.redirect('/dashboard');
+    res.sendFile(path.join(__dirname, '../../frontend/dashboard.html'));
   });
 
   return router;

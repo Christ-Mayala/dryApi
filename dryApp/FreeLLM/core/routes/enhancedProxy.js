@@ -437,38 +437,12 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
 
         let route;
         try {
-          // ── Try Provider Mesh first (intelligent routing) ──
-          try {
-            const allModels = await ModelsModel.find({ enabled: true, deletedAt: null }).lean();
-            const allKeys = await ApiKeysModel.find({ enabled: true, deletedAt: null }).lean();
-
-            route = await meshRoute({
-              models: allModels,
-              apiKeys: allKeys,
-              requestId,
-              taskType,
-              hasTools,
-              totalTokens: inputTokens + max_tokens,
-              skipKeys,
-              preferredModel,
-              userId,
-            });
-          } catch (meshErr) {
-            // Fallback to legacy router if mesh fails
-            route = await routeRequest(
-              ModelsModel, ApiKeysModel, FallbackConfigModel,
-              inputTokens + max_tokens, skipKeys.size > 0 ? skipKeys : undefined,
-              preferredModel, taskType, isIdeMode, hasTools, userId, allowSharedKeysFallback
-            );
-          }
-          // If mesh returned null (provider not found locally), use legacy router
-          if (!route) {
-            route = await routeRequest(
-              ModelsModel, ApiKeysModel, FallbackConfigModel,
-              inputTokens + max_tokens, skipKeys.size > 0 ? skipKeys : undefined,
-              preferredModel, taskType, isIdeMode, hasTools, userId, allowSharedKeysFallback
-            );
-          }
+          // ── Route via legacy router (proven & fast) ──
+          route = await routeRequest(
+            ModelsModel, ApiKeysModel, FallbackConfigModel,
+            inputTokens + max_tokens, skipKeys.size > 0 ? skipKeys : undefined,
+            preferredModel, taskType, isIdeMode, hasTools, userId, allowSharedKeysFallback
+          );
           profiler.mark('routing');
           keyId = route.keyId;
         } catch (err) {
