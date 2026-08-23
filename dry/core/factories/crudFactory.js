@@ -92,7 +92,7 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     }
 
     const doc = await Model.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     });
 
@@ -211,7 +211,7 @@ function crudFactory(Model, options = {}) {
   const update = asyncHandler(async (req, res) => {
     const payload = filterFields(req.body);
     const doc = await Model.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     });
     if (!doc) {

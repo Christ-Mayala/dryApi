@@ -17,13 +17,13 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
   console.log('Ensuring FreeLLM model catalog...');
 
   const models = [
-      // Google
-      ['google', 'gemini-2.5-pro', 'Gemini 2.5 Pro', 14, 8, 'Frontier', 5, 50, 250000, null, '~6M', 1048576, false],
-      ['google', 'gemini-2.5-flash', 'Gemini 2.5 Flash', 20, 5, 'Large', 10, 20, 250000, null, '~3M', 1048576, true],
-      ['google', 'gemini-2.5-flash-lite', 'Gemini 2.5 Flash-Lite', 26, 3, 'Medium', 15, 20, 250000, null, '~3M', 1048576, true],
-      ['google', 'gemini-3.1-flash-lite-preview', 'Gemini 3.1 Flash-Lite Preview', 18, 3, 'Medium', 15, 20, 250000, null, '~3M', 1048576, true],
-      ['google', 'gemini-3-flash-preview', 'Gemini 3 Flash Preview', 11, 5, 'Large', 10, 20, 250000, null, '~3M', 1048576, true],
-      ['google', 'gemini-3.1-pro-preview', 'Gemini 3.1 Pro Preview', 1, 8, 'Frontier', 5, 20, 250000, null, '~3M', 1048576, true],
+      // Google (free tier: 15 RPM, 1M TPM per model)
+      ['google', 'gemini-2.5-pro', 'Gemini 2.5 Pro', 14, 8, 'Frontier', 15, 1500, 400000, 20000000, '~6M', 1048576, false],
+      ['google', 'gemini-2.5-flash', 'Gemini 2.5 Flash', 20, 5, 'Large', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
+      ['google', 'gemini-2.5-flash-lite', 'Gemini 2.5 Flash-Lite', 26, 3, 'Medium', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
+      ['google', 'gemini-3.1-flash-lite-preview', 'Gemini 3.1 Flash-Lite Preview', 18, 3, 'Medium', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
+      ['google', 'gemini-3-flash-preview', 'Gemini 3 Flash Preview', 11, 5, 'Large', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
+      ['google', 'gemini-3.1-pro-preview', 'Gemini 3.1 Pro Preview', 1, 8, 'Frontier', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
 
       // OpenRouter
       ['openrouter', 'minimax/minimax-m2.5:free', 'MiniMax M2.5 (free)', 1, 9, 'Frontier', 20, 200, null, null, '~6M', 196608, true],
@@ -44,39 +44,39 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
       ['openrouter', 'liquid/lfm-2.5-1.2b-instruct:free', 'Liquid LFM 2.5 1.2B (free)', 30, 10, 'Small', 20, 200, null, null, '~6M', 32768, true],
       ['openrouter', 'google/gemma-4-31b-it:free', 'Gemma 4 31B (free)', 19, 9, 'Medium', 20, 200, null, null, '~6M', 262144, true],
 
-      // Cerebras
-      ['cerebras', 'qwen-3-235b-a22b-instruct-2507', 'Qwen3 235B', 6, 1, 'Frontier', 30, 14400, 60000, 1000000, '~30M', 131072, true],
-      ['cerebras', 'gpt-oss-120b', 'GPT-OSS 120B (Cerebras)', 6, 1, 'Large', 30, 1000, 60000, 1000000, '~30M', 131072, true],
-      ['cerebras', 'llama3.1-8b', 'Llama 3.1 8B (Cerebras)', 28, 1, 'Small', 30, 1000, 60000, 1000000, '~30M', 131072, true],
+      // Cerebras (free tier: 30 RPM, 60K TPM)
+      ['cerebras', 'qwen-3-235b-a22b-instruct-2507', 'Qwen3 235B', 6, 1, 'Frontier', 30, 14400, 120000, 5000000, '~30M', 131072, true],
+      ['cerebras', 'gpt-oss-120b', 'GPT-OSS 120B (Cerebras)', 6, 1, 'Large', 30, 14400, 120000, 5000000, '~30M', 131072, true],
+      ['cerebras', 'llama3.1-8b', 'Llama 3.1 8B (Cerebras)', 28, 1, 'Small', 30, 14400, 120000, 5000000, '~30M', 131072, true],
 
-      // GitHub Models
-      ['github', 'openai/gpt-4.1', 'GPT-4.1 (GitHub)', 20, 7, 'Large', 10, 50, null, null, '~9M', 128000, true],
-      ['github', 'gpt-4o', 'GPT-4o', 25, 7, 'Large', 10, 50, null, null, '~18M', 8000, true],
+      // GitHub Models (free: 15 RPM, ~100K TPM)
+      ['github', 'openai/gpt-4.1', 'GPT-4.1 (GitHub)', 20, 7, 'Large', 15, 200, 150000, 3000000, '~9M', 128000, true],
+      ['github', 'gpt-4o', 'GPT-4o', 25, 7, 'Large', 15, 200, 150000, 3000000, '~18M', 8000, true],
 
-      // SambaNova
-      ['sambanova', 'DeepSeek-V3.2', 'DeepSeek V3.2', 4, 9, 'Frontier', 20, 20, null, 200000, '~3M', 131072, true],
-      ['sambanova', 'DeepSeek-V3.1', 'DeepSeek V3.1', 5, 9, 'Frontier', 20, 20, null, 200000, '~3M', 131072, true],
-      ['sambanova', 'Llama-4-Maverick-17B-128E-Instruct', 'Llama 4 Maverick', 11, 9, 'Large', 20, 20, null, 200000, '~3M', 8192, true],
-      ['sambanova', 'gpt-oss-120b', 'GPT-OSS 120B (SambaNova)', 6, 9, 'Large', 20, 20, null, 200000, '~3M', 131072, true],
-      ['sambanova', 'DeepSeek-V3.1-cb', 'DeepSeek V3.1 (CB)', 5, 9, 'Frontier', 20, 20, null, 200000, '~3M', 131072, true],
-      ['sambanova', 'gemma-3-12b-it', 'Gemma 3 12B (SambaNova)', 22, 9, 'Medium', 20, 20, null, 200000, '~3M', 131072, true],
+      // SambaNova (free tier: 20 RPM, unlimited TPM)
+      ['sambanova', 'DeepSeek-V3.2', 'DeepSeek V3.2', 4, 9, 'Frontier', 20, 1000, null, 2000000, '~3M', 131072, true],
+      ['sambanova', 'DeepSeek-V3.1', 'DeepSeek V3.1', 5, 9, 'Frontier', 20, 1000, null, 2000000, '~3M', 131072, true],
+      ['sambanova', 'Llama-4-Maverick-17B-128E-Instruct', 'Llama 4 Maverick', 11, 9, 'Large', 20, 1000, null, 2000000, '~3M', 8192, true],
+      ['sambanova', 'gpt-oss-120b', 'GPT-OSS 120B (SambaNova)', 6, 9, 'Large', 20, 1000, null, 2000000, '~3M', 131072, true],
+      ['sambanova', 'DeepSeek-V3.1-cb', 'DeepSeek V3.1 (CB)', 5, 9, 'Frontier', 20, 1000, null, 2000000, '~3M', 131072, true],
+      ['sambanova', 'gemma-3-12b-it', 'Gemma 3 12B (SambaNova)', 22, 9, 'Medium', 20, 1000, null, 2000000, '~3M', 131072, true],
 
-      // Groq
-      ['groq', 'llama-3.3-70b-versatile', 'Llama 3.3 70B', 17, 2, 'Medium', 30, 1000, 12000, 500000, '~15M', 131072, true],
-      ['groq', 'meta-llama/llama-4-scout-17b-16e-instruct', 'Llama 4 Scout', 12, 2, 'Medium', 30, 1000, 6000, 1000000, '~30M', 131072, true],
-      ['groq', 'openai/gpt-oss-120b', 'GPT-OSS 120B (Groq)', 6, 2, 'Large', 30, 1000, 8000, 200000, '~6M', 131072, true],
-      ['groq', 'openai/gpt-oss-20b', 'GPT-OSS 20B (Groq)', 18, 2, 'Medium', 30, 1000, 8000, 200000, '~6M', 131072, true],
-      ['groq', 'qwen/qwen3-32b', 'Qwen3 32B (Groq)', 19, 2, 'Medium', 60, 1000, 6000, 500000, '~15M', 131072, true],
-      ['groq', 'llama-3.1-8b-instant', 'Llama 3.1 8B Instant', 28, 2, 'Small', 30, 14400, 6000, 500000, '~15M', 131072, true],
-      ['groq', 'groq/compound', 'Compound (Groq)', 6, 2, 'Large', 30, 1000, 8000, 200000, '~6M', 131072, true],
-      ['groq', 'groq/compound-mini', 'Compound Mini (Groq)', 18, 2, 'Medium', 30, 1000, 8000, 200000, '~6M', 131072, true],
+      // Groq (free tier: 30 RPM, 13K TPM / paid: higher)
+      ['groq', 'llama-3.3-70b-versatile', 'Llama 3.3 70B', 17, 2, 'Medium', 30, 1440, 30000, 2000000, '~15M', 131072, true],
+      ['groq', 'meta-llama/llama-4-scout-17b-16e-instruct', 'Llama 4 Scout', 12, 2, 'Medium', 30, 1440, 30000, 2000000, '~30M', 131072, true],
+      ['groq', 'openai/gpt-oss-120b', 'GPT-OSS 120B (Groq)', 6, 2, 'Large', 30, 1440, 30000, 2000000, '~6M', 131072, true],
+      ['groq', 'openai/gpt-oss-20b', 'GPT-OSS 20B (Groq)', 18, 2, 'Medium', 30, 1440, 30000, 2000000, '~6M', 131072, true],
+      ['groq', 'qwen/qwen3-32b', 'Qwen3 32B (Groq)', 19, 2, 'Medium', 60, 1440, 30000, 2000000, '~15M', 131072, true],
+      ['groq', 'llama-3.1-8b-instant', 'Llama 3.1 8B Instant', 28, 2, 'Small', 30, 1440, 30000, 2000000, '~15M', 131072, true],
+      ['groq', 'groq/compound', 'Compound (Groq)', 6, 2, 'Large', 30, 1440, 30000, 2000000, '~6M', 131072, true],
+      ['groq', 'groq/compound-mini', 'Compound Mini (Groq)', 18, 2, 'Medium', 30, 1440, 30000, 2000000, '~6M', 131072, true],
 
-      // Mistral
-      ['mistral', 'mistral-large-latest', 'Mistral Large 3', 14, 8, 'Large', 2, null, 500000, null, '~50-100M', 131072, true],
-      ['mistral', 'magistral-medium-latest', 'Magistral Medium', 21, 8, 'Large', 2, null, 500000, null, '~50-100M', 40000, true],
-      ['mistral', 'codestral-latest', 'Codestral', 16, 6, 'Medium', 2, null, 500000, null, '~50-100M', 32000, true],
-      ['mistral', 'devstral-latest', 'Devstral', 16, 8, 'Medium', 2, null, 500000, null, '~50-100M', 131072, true],
-      ['mistral', 'mistral-medium-latest', 'Mistral Medium 3.5', 14, 8, 'Large', 2, null, 500000, null, '~50-100M', 131072, true],
+      // Mistral (free tier: ~30 RPM, ~500K TPM)
+      ['mistral', 'mistral-large-latest', 'Mistral Large 3', 14, 8, 'Large', 30, 1000, 500000, 10000000, '~50-100M', 131072, true],
+      ['mistral', 'magistral-medium-latest', 'Magistral Medium', 21, 8, 'Large', 30, 1000, 500000, 10000000, '~50-100M', 40000, true],
+      ['mistral', 'codestral-latest', 'Codestral', 16, 6, 'Medium', 30, 1000, 500000, 10000000, '~50-100M', 32000, true],
+      ['mistral', 'devstral-latest', 'Devstral', 16, 8, 'Medium', 30, 1000, 500000, 10000000, '~50-100M', 131072, true],
+      ['mistral', 'mistral-medium-latest', 'Mistral Medium 3.5', 14, 8, 'Large', 30, 1000, 500000, 10000000, '~50-100M', 131072, true],
 
       // NVIDIA
       ['nvidia', 'meta/llama-3.1-70b-instruct', 'Llama 3.1 70B (NV)', 17, 6, 'Large', 40, null, null, null, '~3M (1k credits)', 131072, true],

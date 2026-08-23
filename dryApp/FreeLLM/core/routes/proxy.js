@@ -78,15 +78,15 @@ function delay(ms) {
 }
 
 const RETRY_POLICY = {
-  timeout: 0, // ZERO retries for timeout (évite les cascades)
-  '429': 0,    // ZERO retries for rate limit
-  '503': 0,    // ZERO retries for service unavailable
-  network: 0,  // ZERO retries for network errors
-  default: 0   // ZERO retries by default
+  timeout: 0,    // ZERO retries for timeout (évite les cascades)
+  '429': 1,      // 1 retry for rate limit (with backoff)
+  '503': 1,      // 1 retry for service unavailable
+  network: 0,    // ZERO retries for network errors
+  default: 0     // ZERO retries by default
 };
 
-const MAX_RETRIES = 0; // NO MORE RETRIES AT ALL TO PREVENT CASCADES
-const MAX_FALLBACKS = 1; // MAX 1 FALLBACK PROVIDER
+const MAX_RETRIES = 1; // Allow 1 retry on 429/503 to handle transient rate limits
+const MAX_FALLBACKS = 3; // MAX 3 FALLBACK PROVIDERS for better resilience
 const BASE_BACKOFF_MS = 1000;
 
 // GLOBAL RUNTIME TOKEN BUDGET PER CONVERSATION
@@ -587,7 +587,10 @@ function createFreeLLMProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigModel
         recordRateLimitHit(route.modelDbId);
         lastError = err;
         fallbackCount++;
-        console.log(`[Orchestrator] ${err.message.slice(0, 60)} from ${route.displayName}, fallback ${fallbackCount}/${MAX_FALLBACKS}`);
+        // Wait before fallback to let rate limit window reset
+        const backoffMs = Math.min(BASE_BACKOFF_MS * fallbackCount, 5000);
+        console.log(`[Orchestrator] ${err.message.slice(0, 60)} from ${route.displayName}, fallback ${fallbackCount}/${MAX_FALLBACKS} (waiting ${backoffMs}ms)`);
+        await delay(backoffMs);
         continue;
         }
 

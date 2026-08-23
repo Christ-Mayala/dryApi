@@ -96,7 +96,7 @@ exports.getAiQuota = asyncHandler(async (req, res) => {
         aiRequestsResetAt: getNextMidnight(),
       },
     },
-    { new: true, select: 'aiRequestsToday aiRequestsResetAt premiumPlan' }
+    { returnDocument: 'after', select: 'aiRequestsToday aiRequestsResetAt premiumPlan' }
   );
 
   if (!user) {
@@ -191,7 +191,7 @@ exports.consumeAiRequest = asyncHandler(async (req, res) => {
     {
       $inc: { aiRequestsToday: 1 },
     },
-    { new: true, select: 'aiRequestsToday aiRequestsResetAt' }
+    { returnDocument: 'after', select: 'aiRequestsToday aiRequestsResetAt' }
   );
 
   if (!result) {

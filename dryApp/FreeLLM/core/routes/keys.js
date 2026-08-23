@@ -79,7 +79,7 @@ function createKeysRouter(ApiKeysModel) {
     const doc = await ApiKeysModel.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       { deletedAt: new Date() },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!doc) {
@@ -99,7 +99,7 @@ function createKeysRouter(ApiKeysModel) {
     const doc = await ApiKeysModel.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       { enabled },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!doc) {

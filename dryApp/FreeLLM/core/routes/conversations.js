@@ -111,7 +111,7 @@ function createConversationsRouter(ConversationsModel, ConversationMessagesModel
         title: title || 'Nouvelle conversation',
         updatedAt: new Date()
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (!doc) {

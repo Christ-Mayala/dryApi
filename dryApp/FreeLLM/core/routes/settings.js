@@ -27,7 +27,7 @@ function createSettingsRouter(SettingsModel) {
     const doc = await SettingsModel.findOneAndUpdate(
       { key: 'unified_api_key', deletedAt: null },
       { $set: { value: apiKey } },
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     );
     res.json({ apiKey });
   });
