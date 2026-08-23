@@ -1,5 +1,5 @@
 const express = require('express');
-const protect = require('../../../../dry/middlewares/protection/auth.middleware').protect;
+const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 
 function createPolicyRulesRouter(PolicyRulesModel) {
   const router = express.Router();

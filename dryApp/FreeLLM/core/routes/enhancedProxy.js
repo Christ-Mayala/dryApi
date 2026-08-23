@@ -457,6 +457,14 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
               preferredModel, taskType, isIdeMode, hasTools, userId, allowSharedKeysFallback
             );
           }
+          // If mesh returned null (provider not found locally), use legacy router
+          if (!route) {
+            route = await routeRequest(
+              ModelsModel, ApiKeysModel, FallbackConfigModel,
+              inputTokens + max_tokens, skipKeys.size > 0 ? skipKeys : undefined,
+              preferredModel, taskType, isIdeMode, hasTools, userId, allowSharedKeysFallback
+            );
+          }
           profiler.mark('routing');
           keyId = route.keyId;
         } catch (err) {

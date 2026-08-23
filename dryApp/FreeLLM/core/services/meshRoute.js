@@ -92,10 +92,9 @@ async function meshRoute({
   const apiKeyRecord = findApiKey(apiKeys, best.provider, best.keyId);
 
   if (!providerInstance) {
-    throw {
-      status: 500,
-      message: `Provider adapter not found for '${best.provider}'`,
-    };
+    // Provider instance not found in local adapters —
+    // signal enhancedProxy to use legacy router
+    return null;
   }
 
   // ═══ STEP 9: Start attempt tracking ═══
