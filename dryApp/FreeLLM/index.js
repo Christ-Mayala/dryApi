@@ -144,9 +144,9 @@ function mountFreeLLMRoutes(app, appName, User, Models, ApiKeys, FallbackConfig,
   freeLLMRouter.use(`/api/chaos-api`, chaosApiRouter);
   console.log('   ✅ /api/chaos-api → chaosApiRouter');
 
-  // Frontend (Dashboard)
+  // Frontend (Dashboard) — mounted on main app directly
   const frontendRouter = createFrontendRouter();
-  freeLLMRouter.use('/', frontendRouter);
+  app.use('/dashboard', frontendRouter);
   console.log('   ✅ /dashboard → frontendRouter');
 
   app.use(freeLLMRouter);
