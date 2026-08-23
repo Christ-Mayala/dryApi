@@ -1,168 +1,112 @@
 const express = require('express');
+const router = express.Router();
+
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const PolicyRulesSchema = require('../model/policyRules.schema');
 
-function createPolicyRulesRouter(PolicyRulesModel) {
-  const router = express.Router();
-  router.use(protect);
+// ─── Setup model via middleware ────────────────────────────────
+const setupModel = (req, res, next) => {
+  req.targetModel = req.getModel('PolicyRules', PolicyRulesSchema);
+  next();
+};
 
-  // GET /api/policies — List all rules
-  router.get('/', async (req, res) => {
-    try {
-      const rules = await PolicyRulesModel.find({ deletedAt: null })
-        .sort({ priority: 1 })
-        .lean();
-      res.json(rules);
-    } catch (err) {
-      res.status(500).json({ error: { message: 'Failed to fetch policy rules' } });
+// ─── GET / — List all rules ───────────────────────────────────
+router.get('/', protect, setupModel, async (req, res) => {
+  try {
+    const rules = await req.targetModel.find({ deletedAt: null })
+      .sort({ priority: 1 })
+      .lean();
+    res.json(rules);
+  } catch (err) {
+    res.status(500).json({ error: { message: 'Failed to fetch policy rules' } });
+  }
+});
+
+// ─── GET /:id — Get one rule ──────────────────────────────────
+router.get('/:id', protect, setupModel, async (req, res) => {
+  try {
+    const rule = await req.targetModel.findById(req.params.id).lean();
+    if (!rule) return res.status(404).json({ error: { message: 'Rule not found' } });
+    res.json(rule);
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ─── POST / — Create a rule ───────────────────────────────────
+router.post('/', protect, setupModel, async (req, res) => {
+  try {
+    const { name, description, condition, action, priority, enabled } = req.body;
+    if (!name) return res.status(400).json({ error: { message: 'name is required' } });
+
+    const rule = await req.targetModel.create({
+      name,
+      description: description || '',
+      condition: condition || {},
+      action: action || {},
+      priority: priority || 5,
+      enabled: enabled !== false,
+      createdBy: req.user._id,
+    });
+
+    res.status(201).json(rule);
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ─── PUT /:id — Update a rule ─────────────────────────────────
+router.put('/:id', protect, setupModel, async (req, res) => {
+  try {
+    const rule = await req.targetModel.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true }
+    ).lean();
+    if (!rule) return res.status(404).json({ error: { message: 'Rule not found' } });
+    res.json(rule);
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ─── DELETE /:id — Soft delete ────────────────────────────────
+router.delete('/:id', protect, setupModel, async (req, res) => {
+  try {
+    const rule = await req.targetModel.findByIdAndUpdate(
+      req.params.id,
+      { deletedAt: new Date() },
+      { new: true }
+    );
+    if (!rule) return res.status(404).json({ error: { message: 'Rule not found' } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ─── POST /seed — Seed demo rules ─────────────────────────────
+router.post('/seed', protect, setupModel, async (req, res) => {
+  try {
+    const existing = await req.targetModel.countDocuments({ deletedAt: null });
+    if (existing > 0) {
+      return res.json({ message: 'Rules already seeded', count: existing });
     }
-  });
 
-  // POST /api/policies — Create a rule
-  router.post('/', async (req, res) => {
-    try {
-      const { name, description, severity, priority, trigger, action, enabled } = req.body;
+    const demoRules = [
+      { name: 'Block expensive models for free users', condition: { plan: 'free', maxCost: 0.01 }, action: { fallback: true }, priority: 1 },
+      { name: 'Prioritize coding models for code tasks', condition: { taskType: 'code' }, action: { preferCapabilities: ['coding'] }, priority: 2 },
+      { name: 'Disable rate-limited providers', condition: { providerErrorRate: 0.5 }, action: { disable: true }, priority: 3 },
+    ];
 
-      if (!name) {
-        return res.status(400).json({ error: { message: 'name is required' } });
-      }
-      if (!action?.type) {
-        return res.status(400).json({ error: { message: 'action.type is required' } });
-      }
+    await req.targetModel.insertMany(demoRules.map(r => ({
+      ...r, enabled: true, createdBy: req.user._id,
+    })));
 
-      const rule = new PolicyRulesModel({
-        name,
-        description: description || '',
-        severity: severity || 'warning',
-        priority: priority ?? 100,
-        trigger: trigger || {},
-        action,
-        enabled: enabled !== false,
-        createdBy: req.user._id,
-      });
+    res.status(201).json({ success: true, count: demoRules.length });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
 
-      await rule.save();
-      res.status(201).json(rule);
-    } catch (err) {
-      res.status(500).json({ error: { message: err.message } });
-    }
-  });
-
-  // PATCH /api/policies/:id — Update a rule
-  router.patch('/:id', async (req, res) => {
-    try {
-      const { name, description, severity, priority, trigger, action, enabled } = req.body;
-      const update = {};
-      if (name !== undefined) update.name = name;
-      if (description !== undefined) update.description = description;
-      if (severity !== undefined) update.severity = severity;
-      if (priority !== undefined) update.priority = priority;
-      if (trigger !== undefined) update.trigger = trigger;
-      if (action !== undefined) update.action = action;
-      if (enabled !== undefined) update.enabled = enabled;
-
-      const rule = await PolicyRulesModel.findByIdAndUpdate(
-        req.params.id,
-        { $set: update },
-        { new: true }
-      );
-
-      if (!rule) {
-        return res.status(404).json({ error: { message: 'Rule not found' } });
-      }
-      res.json(rule);
-    } catch (err) {
-      res.status(500).json({ error: { message: err.message } });
-    }
-  });
-
-  // DELETE /api/policies/:id — Soft delete
-  router.delete('/:id', async (req, res) => {
-    try {
-      const rule = await PolicyRulesModel.findByIdAndUpdate(
-        req.params.id,
-        { $set: { deletedAt: new Date() } },
-        { new: true }
-      );
-      if (!rule) {
-        return res.status(404).json({ error: { message: 'Rule not found' } });
-      }
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({ error: { message: err.message } });
-    }
-  });
-
-  // POST /api/policies/:id/toggle — Toggle enabled/disabled
-  router.post('/:id/toggle', async (req, res) => {
-    try {
-      const rule = await PolicyRulesModel.findById(req.params.id);
-      if (!rule) {
-        return res.status(404).json({ error: { message: 'Rule not found' } });
-      }
-      rule.enabled = !rule.enabled;
-      await rule.save();
-      res.json({ id: rule._id, enabled: rule.enabled });
-    } catch (err) {
-      res.status(500).json({ error: { message: err.message } });
-    }
-  });
-
-  // POST /api/policies/seed — Seed default rules
-  router.post('/seed', async (req, res) => {
-    try {
-      const count = await PolicyRulesModel.countDocuments({ deletedAt: null });
-      if (count > 0) {
-        return res.json({ message: 'Rules already seeded', count });
-      }
-
-      const defaults = [
-        {
-          name: 'Block high error rate providers',
-          description: 'Automatically block providers with > 50% error rate',
-          severity: 'block',
-          priority: 10,
-          trigger: { minErrorRate: 0.5 },
-          action: { type: 'block', message: 'Provider error rate too high' },
-        },
-        {
-          name: 'Deprioritize slow providers',
-          description: 'Lower priority for providers with > 5s avg latency',
-          severity: 'deprioritize',
-          priority: 20,
-          trigger: { minLatencyMs: 5000 },
-          action: { type: 'deprioritize', penalty: 30 },
-        },
-        {
-          name: 'Prefer fast providers for IDE mode',
-          description: 'Boost Groq and Cerebras when in IDE mode',
-          severity: 'prefer',
-          priority: 30,
-          trigger: { taskType: 'code' },
-          action: { type: 'prefer', message: 'IDE mode: prefer fast providers' },
-        },
-        {
-          name: 'Log quota warnings',
-          description: 'Log when any provider quota exceeds 80%',
-          severity: 'info',
-          priority: 50,
-          trigger: { maxQuotaPercent: 80 },
-          action: { type: 'log', message: 'Provider quota above 80%' },
-        },
-      ];
-
-      const docs = defaults.map(d => ({
-        ...d,
-        createdBy: req.user._id,
-      }));
-
-      await PolicyRulesModel.insertMany(docs);
-      res.status(201).json({ success: true, count: docs.length });
-    } catch (err) {
-      res.status(500).json({ error: { message: err.message } });
-    }
-  });
-
-  return router;
-}
-
-module.exports = { createPolicyRulesRouter };
+module.exports = router;
