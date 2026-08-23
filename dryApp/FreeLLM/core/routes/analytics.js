@@ -316,6 +316,56 @@ function createAnalyticsRouter(ModelsModel, RequestsModel) {
     });
   });
 
+  // ═══ ENHANCED ANALYTICS (NEW MODULES) ═══════════════════════
+
+  // GET /api/analytics/enhanced-health
+  router.get('/enhanced-health', async (req, res) => {
+    const { monitor: healthMonitor } = require('../services/providerHealthMonitor');
+    const cbV2 = require('../services/circuitBreaker');
+    const { degradedMode } = require('../services/degradedMode');
+    const capabilityRegistry = require('../services/modelCapabilityRegistry');
+
+    res.json({
+      healthMonitor: healthMonitor.getAllHealth(),
+      circuitBreakers: cbV2.getAllStatus(),
+      degradedMode: degradedMode.getStatus(),
+      capabilities: capabilityRegistry.getAllCapabilities(),
+    });
+  });
+
+  // GET /api/analytics/policies
+  router.get('/policies', async (req, res) => {
+    const policyEngine = require('../services/policyEngine');
+    res.json({ rules: policyEngine.getActiveRules() });
+  });
+
+  // GET /api/analytics/quotas
+  router.get('/quotas', async (req, res) => {
+    const { quotaEngine } = require('../services/quotaEngine');
+    res.json({ quotas: quotaEngine.getAllProviderQuotas() });
+  });
+
+  // GET /api/analytics/system-status
+  router.get('/system-status', async (req, res) => {
+    const { monitor: healthMonitor } = require('../services/providerHealthMonitor');
+    const cbV2 = require('../services/circuitBreaker');
+    const { degradedMode } = require('../services/degradedMode');
+    const policyEngine = require('../services/policyEngine');
+    const { quotaEngine } = require('../services/quotaEngine');
+
+    const healthyProviders = healthMonitor.getAllHealth().filter(h => h.successRate > 0.9);
+    const openCircuits = cbV2.getAllStatus().filter(cb => cb.state === 'open');
+
+    res.json({
+      overallHealth: degradedMode.isOffline() ? 'offline' : degradedMode.isDegraded() ? 'degraded' : 'healthy',
+      activeProviders: healthyProviders.length,
+      openCircuits: openCircuits.length,
+      degradedMode: degradedMode.getStatus().state,
+      activePolicies: policyEngine.getActiveRules().filter(r => r.enabled).length,
+      totalQuotaTracked: quotaEngine.getAllProviderQuotas().length,
+    });
+  });
+
   return router;
 }
 

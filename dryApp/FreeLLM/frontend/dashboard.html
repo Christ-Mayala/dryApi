@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeLLM Dashboard</title>
+<style>
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#1e1e2e;--text:#e0e0e0;--muted:#666;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'SF Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh}
+.header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.header h1{font-size:18px;font-weight:600}
+.header .status{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px;gap:0}
+.tab{padding:12px 20px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:.2s;font-size:13px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.content{padding:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.card h3{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.card .value{font-size:28px;font-weight:700}
+.card .detail{font-size:12px;color:var(--muted);margin-top:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-yellow{background:rgba(234,179,8,.15);color:var(--yellow)}
+.badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+.badge-cyan{background:rgba(6,182,212,.15);color:var(--cyan)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11px;text-transform:uppercase}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:hover{background:rgba(255,255,255,.03)}
+.section{display:none}
+.section.active{display:block}
+.meter{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+.meter-fill{height:100%;border-radius:3px;transition:width .5s}
+.log-entry{padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;display:flex;gap:12px}
+.log-entry .time{color:var(--muted);min-width:80px}
+.log-entry .provider{min-width:80px}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit}
+.btn:hover{border-color:var(--blue)}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.1)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading{text-align:center;padding:40px;color:var(--muted)}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="status"></div>
+  <h1>FreeLLM Dashboard</h1>
+  <span style="color:var(--muted);font-size:12px" id="lastUpdate"></span>
+  <div style="flex:1"></div>
+  <button class="btn" onclick="refreshAll()">↻ Refresh</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">Overview</div>
+  <div class="tab" onclick="switchTab('providers')">Providers</div>
+  <div class="tab" onclick="switchTab('routing')">Routing</div>
+  <div class="tab" onclick="switchTab('mcp')">MCP</div>
+  <div class="tab" onclick="switchTab('a2a')">A2A</div>
+  <div class="tab" onclick="switchTab('chaos')">Chaos</div>
+  <div class="tab" onclick="switchTab('tokens')">Tokens</div>
+  <div class="tab" onclick="switchTab('logs')">Logs</div>
+</div>
+
+<div class="content">
+
+<!-- OVERVIEW -->
+<div class="section active" id="sec-overview">
+  <div class="grid" id="overview-cards"></div>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">PROVIDER HEALTH</h3>
+    <div id="provider-bars"></div>
+  </div>
+</div>
+
+<!-- PROVIDERS -->
+<div class="section" id="sec-providers">
+  <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">CREDENTIAL STATUS</h3>
+  <table><thead><tr><th>Provider</th><th>Status</th><th>Score</th><th>Success Rate</th><th>Avg Latency</th><th>Consecutive Failures</th></tr></thead>
+  <tbody id="provider-table"></tbody></table>
+</div>
+
+<!-- ROUTING -->
+<div class="section" id="sec-routing">
+  <div class="grid" id="routing-stats"></div>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">CIRCUIT BREAKERS</h3>
+    <table><thead><tr><th>Provider</th><th>State</th><th>Failures</th><th>Last Failure</th></tr></thead>
+  <tbody id="cb-table"></tbody></table>
+  </div>
+</div>
+
+<!-- MCP -->
+<div class="section" id="sec-mcp">
+  <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">MCP SERVERS</h3>
+  <table><thead><tr><th>Server</th><th>Status</th><th>Tools</th><th>Calls</th><th>Errors</th><th>Avg Latency</th></tr></thead>
+  <tbody id="mcp-table"></tbody></table>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">MCP TOOLS</h3>
+    <div id="mcp-tools"></div>
+  </div>
+</div>
+
+<!-- A2A -->
+<div class="section" id="sec-a2a">
+  <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">REGISTERED AGENTS</h3>
+  <table><thead><tr><th>Agent</th><th>Status</th><th>Capabilities</th><th>Active</th><th>Total</th><th>Success Rate</th></tr></thead>
+  <tbody id="a2a-table"></tbody></table>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">RECENT MESSAGES</h3>
+    <div id="a2a-messages"></div>
+  </div>
+</div>
+
+<!-- CHAOS -->
+<div class="section" id="sec-chaos">
+  <div class="grid" id="chaos-controls"></div>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">AVAILABLE SCENARIOS</h3>
+    <div id="chaos-scenarios"></div>
+  </div>
+</div>
+
+<!-- TOKENS -->
+<div class="section" id="sec-tokens">
+  <div class="grid" id="token-stats"></div>
+  <div style="margin-top:24px">
+    <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">RECENT OPTIMIZATIONS</h3>
+    <div id="token-recent"></div>
+  </div>
+</div>
+
+<!-- LOGS -->
+<div class="section" id="sec-logs">
+  <h3 style="font-size:13px;color:var(--muted);margin-bottom:12px">RECENT LOGS</h3>
+  <div id="log-entries"></div>
+</div>
+
+</div>
+
+<script>
+const API = window.location.origin;
+let currentTab = 'overview';
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`sec-${tab}`).classList.add('active');
+  currentTab = tab;
+  refreshTab(tab);
+}
+
+async function fetchJSON(path) {
+  try {
+    const token = localStorage.getItem('freellm_token') || '';
+    const res = await fetch(`${API}${path}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+function refreshAll() { refreshTab(currentTab); }
+
+async function refreshTab(tab) {
+  document.getElementById('lastUpdate').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+  switch(tab) {
+    case 'overview': return renderOverview();
+    case 'providers': return renderProviders();
+    case 'routing': return renderRouting();
+    case 'mcp': return renderMCP();
+    case 'a2a': return renderA2A();
+    case 'chaos': return renderChaos();
+    case 'tokens': return renderTokens();
+    case 'logs': return renderLogs();
+  }
+}
+
+async function renderOverview() {
+  const [dash, health, mcp, a2a] = await Promise.all([
+    fetchJSON('/api/dashboard/overview'),
+    fetchJSON('/api/dashboard/providers'),
+    fetchJSON('/api/mcp/status'),
+    fetchJSON('/api/a2a/status'),
+  ]);
+
+  const cards = document.getElementById('overview-cards');
+  cards.innerHTML = '';
+
+  if (dash) {
+    const s = dash.system || {};
+    const r = dash.requests || {};
+    const p = dash.providers || {};
+    cards.innerHTML += card('System Status', s.status || 'unknown', '', s.status === 'healthy' ? 'green' : 'red');
+    cards.innerHTML += card('Requests', r.total || 0, `Success: ${r.successRate || 'N/A'}`, 'blue');
+    cards.innerHTML += card('Providers', `${p.healthy || 0}/${p.total || 0}`, `Open circuits: ${p.openCircuits || 0}`, 'cyan');
+    cards.innerHTML += card('Avg Latency', `${r.avgLatencyMs || 0}ms`, '', 'purple');
+    cards.innerHTML += card('Tokens', formatNumber(r.totalTokens || 0), `Cache hit: ${r.cacheHitRate || 'N/A'}`, 'yellow');
+    cards.innerHTML += card('Fallbacks', dash.fallbacks?.total || 0, `Rate: ${dash.fallbacks?.rate || '0%'}`, 'yellow');
+  }
+
+  if (mcp) {
+    cards.innerHTML += card('MCP Servers', mcp.connectedServers || 0, `Tools: ${mcp.activeTools || 0}`, 'cyan');
+  }
+
+  if (a2a) {
+    cards.innerHTML += card('A2A Agents', a2a.availableAgents || 0, `Capacity: ${a2a.totalCapacity || 0}`, 'purple');
+  }
+
+  // Provider bars
+  const bars = document.getElementById('provider-bars');
+  if (health && health.length) {
+    bars.innerHTML = health.map(h => {
+      const rate = (h.successRate * 100).toFixed(0);
+      const color = rate > 90 ? 'var(--green)' : rate > 50 ? 'var(--yellow)' : 'var(--red)';
+      return `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span>${h.provider || h.platform || 'unknown'}</span>
+          <span>${rate}% (${Math.round(h.avgLatency || 0)}ms)</span>
+        </div>
+        <div class="meter"><div class="meter-fill" style="width:${rate}%;background:${color}"></div></div>
+      </div>`;
+    }).join('');
+  } else {
+    bars.innerHTML = '<div class="empty">No provider data yet</div>';
+  }
+}
+
+async function renderProviders() {
+  const data = await fetchJSON('/api/dashboard/providers');
+  const tbody = document.getElementById('provider-table');
+  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No providers</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => {
+    const rate = p.successRate != null ? (p.successRate * 100).toFixed(1) + '%' : 'N/A';
+    const badge = p.successRate > 0.9 ? 'green' : p.successRate > 0.5 ? 'yellow' : 'red';
+    return `<tr>
+      <td><strong>${p.provider || p.platform || '?'}</strong></td>
+      <td><span class="badge badge-${badge}">${p.status || 'unknown'}</span></td>
+      <td>${p.score || '-'}</td>
+      <td>${rate}</td>
+      <td>${Math.round(p.avgLatency || 0)}ms</td>
+      <td>${p.consecutiveFailures || 0}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function renderRouting() {
+  const [mesh, cbs] = await Promise.all([
+    fetchJSON('/api/dashboard/system'),
+    fetchJSON('/api/dashboard/providers'),
+  ]);
+
+  const stats = document.getElementById('routing-stats');
+  stats.innerHTML = '';
+  if (mesh?.observability) {
+    const o = mesh.observability;
+    stats.innerHTML += card('Total Requests', o.totalRequests || 0, '', 'blue');
+    stats.innerHTML += card('Success Rate', o.successRate || 'N/A', '', 'green');
+    stats.innerHTML += card('Avg Latency', `${o.avgLatencyMs || 0}ms`, '', 'purple');
+  }
+
+  const cbTable = document.getElementById('cb-table');
+  if (mesh?.circuitBreakers) {
+    cbTable.innerHTML = mesh.circuitBreakers.map(cb => {
+      const badge = cb.state === 'closed' ? 'green' : cb.state === 'half_open' ? 'yellow' : 'red';
+      return `<tr>
+        <td>${cb.provider || cb.key || '?'}</td>
+        <td><span class="badge badge-${badge}">${cb.state || 'unknown'}</span></td>
+        <td>${cb.failureCount || 0}</td>
+        <td>${cb.lastFailure ? new Date(cb.lastFailure).toLocaleTimeString() : '-'}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    cbTable.innerHTML = '<tr><td colspan="4" class="empty">No circuit breaker data</td></tr>';
+  }
+}
+
+async function renderMCP() {
+  const [status, tools] = await Promise.all([
+    fetchJSON('/api/mcp/status'),
+    fetchJSON('/api/mcp/tools'),
+  ]);
+
+  const table = document.getElementById('mcp-table');
+  if (status?.servers?.length) {
+    table.innerHTML = status.servers.map(s => `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td><span class="badge badge-${s.status === 'connected' ? 'green' : 'red'}">${s.status}</span></td>
+      <td>${s.toolCount || 0}</td>
+      <td>${s.metrics?.totalCalls || 0}</td>
+      <td>${s.metrics?.failureCalls || 0}</td>
+      <td>${Math.round(s.metrics?.avgLatencyMs || 0)}ms</td>
+    </tr>`).join('');
+  } else {
+    table.innerHTML = '<tr><td colspan="6" class="empty">No MCP servers connected</td></tr>';
+  }
+
+  const toolsDiv = document.getElementById('mcp-tools');
+  if (tools?.data?.length) {
+    toolsDiv.innerHTML = tools.data.map(t => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <span class="badge badge-cyan">MCP</span> <strong>${t.function?.name || t.name}</strong>
+      <span style="color:var(--muted);margin-left:8px">${t.function?.description || ''}</span>
+    </div>`).join('');
+  } else {
+    toolsDiv.innerHTML = '<div class="empty">No MCP tools registered</div>';
+  }
+}
+
+async function renderA2A() {
+  const status = await fetchJSON('/api/a2a/status');
+  const table = document.getElementById('a2a-table');
+  if (status?.agents?.length) {
+    table.innerHTML = status.agents.map(a => `<tr>
+      <td><strong>${a.name}</strong></td>
+      <td><span class="badge badge-${a.status === 'idle' ? 'green' : a.status === 'busy' ? 'yellow' : 'red'}">${a.status}</span></td>
+      <td>${(a.capabilities || []).map(c => `<span class="badge badge-blue">${c}</span>`).join(' ')}</td>
+      <td>${a.activeRequests || 0}</td>
+      <td>${a.totalRequests || 0}</td>
+      <td>${a.successRate || 'N/A'}</td>
+    </tr>`).join('');
+  } else {
+    table.innerHTML = '<tr><td colspan="6" class="empty">No agents registered</td></tr>';
+  }
+
+  const msgs = document.getElementById('a2a-messages');
+  if (status?.messageHistory > 0) {
+    msgs.innerHTML = `<div style="color:var(--muted);font-size:12px">${status.messageHistory} messages in history</div>`;
+  } else {
+    msgs.innerHTML = '<div class="empty">No A2A messages yet</div>';
+  }
+}
+
+async function renderChaos() {
+  const [status, scenarios] = await Promise.all([
+    fetchJSON('/api/chaos-api/status'),
+    fetchJSON('/api/chaos-api/scenarios'),
+  ]);
+
+  const controls = document.getElementById('chaos-controls');
+  controls.innerHTML = '';
+  controls.innerHTML += card('Chaos Enabled', status?.enabled ? 'YES' : 'NO', '', status?.enabled ? 'red' : 'green');
+  controls.innerHTML += card('Active Injections', status?.active?.length || 0, '', 'yellow');
+  controls.innerHTML += card('Total Triggers', status?.totalTriggers || 0, '', 'blue');
+
+  const scenariosDiv = document.getElementById('chaos-scenarios');
+  if (scenarios?.data?.length) {
+    scenariosDiv.innerHTML = scenarios.data.map(s => `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <strong style="font-size:13px">${s.name}</strong>
+        <div style="font-size:11px;color:var(--muted)">${s.description || ''}</div>
+      </div>
+    </div>`).join('');
+  } else {
+    scenariosDiv.innerHTML = '<div class="empty">No scenarios available</div>';
+  }
+}
+
+async function renderTokens() {
+  const data = await fetchJSON('/api/token-optimization/stats');
+  const stats = document.getElementById('token-stats');
+  stats.innerHTML = '';
+  if (data?.stats) {
+    const s = data.stats;
+    stats.innerHTML += card('Requests Optimized', s.optimizedRequests || 0, `of ${s.totalRequests || 0}`, 'cyan');
+    stats.innerHTML += card('Tokens Saved', formatNumber(s.totalSaved || 0), `Avg: ${s.avgReduction || '0%'}`, 'green');
+    stats.innerHTML += card('Tokens Before', formatNumber(s.tokensBefore || 0), '', 'yellow');
+    stats.innerHTML += card('Tokens After', formatNumber(s.tokensAfter || 0), '', 'blue');
+    stats.innerHTML += card('Deduplications', s.deduplicationCount || 0, '', 'purple');
+    stats.innerHTML += card('Compressions', s.compressionCount || 0, '', 'purple');
+    stats.innerHTML += card('Summaries', s.summaryCount || 0, '', 'purple');
+    stats.innerHTML += card('Errors', s.errors || 0, '', s.errors > 0 ? 'red' : 'green');
+  } else {
+    stats.innerHTML = '<div class="empty">No token optimization data yet</div>';
+  }
+
+  const recent = document.getElementById('token-recent');
+  if (data?.recentRequests?.length) {
+    recent.innerHTML = data.recentRequests.slice(-10).reverse().map(r => `<div class="log-entry">
+      <span class="time">${new Date(r.timestamp || Date.now()).toLocaleTimeString()}</span>
+      <span>${r.tokensBefore || 0} → ${r.tokensAfter || 0} tokens</span>
+      <span class="badge badge-green">${r.compressionRatio || '0%'}</span>
+      <span style="color:var(--muted)">${r.mode || '?'}</span>
+    </div>`).join('');
+  } else {
+    recent.innerHTML = '<div class="empty">No recent optimizations</div>';
+  }
+}
+
+async function renderLogs() {
+  const dash = await fetchJSON('/api/dashboard/traces');
+  const entries = document.getElementById('log-entries');
+  if (dash?.data?.length) {
+    entries.innerHTML = dash.data.slice(-20).reverse().map(t => `<div class="log-entry">
+      <span class="time">${new Date(t.timestamp || t.createdAt).toLocaleTimeString()}</span>
+      <span class="provider">${t.platform || t.provider || '?'}</span>
+      <span class="badge badge-${t.status === 'success' ? 'green' : 'red'}">${t.status || '?'}</span>
+      <span>${t.modelId || ''}</span>
+      <span style="color:var(--muted)">${t.latencyMs || 0}ms</span>
+    </div>`).join('');
+  } else {
+    entries.innerHTML = '<div class="empty">No recent logs</div>';
+  }
+}
+
+function card(title, value, detail, color = 'blue') {
+  return `<div class="card">
+    <h3>${title}</h3>
+    <div class="value" style="color:var(--${color})">${value}</div>
+    ${detail ? `<div class="detail">${detail}</div>` : ''}
+  </div>`;
+}
+
+function formatNumber(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(n);
+}
+
+// Auto-refresh every 30s
+setInterval(() => refreshTab(currentTab), 30000);
+
+// Initial load
+refreshAll();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ const { getProvider } = require('../providers/index.js');
 const { circuitBreaker } = require('./inferenceLogger.js');
 const { getSuccessRate, getAvgLatency } = require('./performanceMetrics.js');
 const { getProviderScore, getKeyStats, IDE_PREFERRED_PROVIDERS } = require('./keyPoolManager.js');
+const capabilityRegistry = require('./modelCapabilityRegistry.js');
 
 // Index round-robin par plateforme pour distribuer les clés équitablement
 const roundRobinIndex = new Map();
@@ -156,9 +157,6 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     modelMap.set(String(model._id), model);
   }
 
-  // Providers qui supportent les outils (function calling)
-  const TOOLS_SUPPORTED = new Set(['google', 'openrouter']);
-
   // Calculer les scores et trier du meilleur au moins bon
   const scoredChain = [];
   for (const entry of fallbackChain) {
@@ -171,17 +169,13 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     });
   }
 
+  // Capability-aware filtering using the registry (replaces hardcoded TOOLS_SUPPORTED)
   const filteredChain = scoredChain.filter(entry => {
-    // Si la requête contient des outils, ne garder que les providers compatibles
-    if (hasTools) {
-      const platformLower = entry.model.platform.toLowerCase();
-      for (const goodPlatform of TOOLS_SUPPORTED) {
-        if (platformLower.includes(goodPlatform)) {
-          return true;
-        }
-      }
-      return false;
-    }
+    const caps = capabilityRegistry.getCapabilities(entry.model.platform, entry.model.modelId);
+
+    // Filter by tool calling capability
+    if (hasTools && !caps.tool_calling) return false;
+
     return true;
   });
 

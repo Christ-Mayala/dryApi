@@ -30,6 +30,7 @@ const PROVIDER_CONTEXT_LIMITS = {
 };
 
 function estimateMessageTokens(message) {
+  if (!message) return 0;
   let content = '';
   if (typeof message.content === 'string') {
     content = message.content;

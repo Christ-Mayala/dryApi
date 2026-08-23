@@ -1,383 +1,276 @@
+/**
+ * Context Manager — Gestion intelligente du contexte conversationnel.
+ *
+ * Améliorations :
+ * - Priority layers (CRITICAL → HIGH → NORMAL → LOW → DISCARDABLE)
+ * - Protected content (system instructions, tool schemas jamais compressés)
+ * - Deduplication intelligente
+ * - Safe compression (jamais les instructions critiques)
+ * - Tool-safe mode (préserve les paires assistant/tool_call)
+ * - Metrics de compression
+ *
+ * backward-compat : manageContext() et anciens exports conservés.
+ */
+
 const { estimateTotalTokens, compressContext } = require('./tokenEstimator.js');
 
-const conversationMemories = new Map();
-const MEMORY_TTL_MS = 3600000;
+// ═══ Priority System ═════════════════════════════════════════
+const Priority = {
+  CRITICAL: 0,   // System instructions, tool schemas, security policies
+  HIGH: 1,       // Recent user messages, active task, tool calls
+  NORMAL: 2,     // Working memory, recent conversation
+  LOW: 3,        // Old messages, summaries
+  DISCARDABLE: 4, // Greetings, filler, repeated content
+};
 
-// Context Layering: Core Identity Layer - system prompt and constraints
-function getCoreIdentityLayer(messages) {
-  const systemMessages = messages.filter(m => m.role === 'system');
-  return systemMessages.length > 0 ? [...systemMessages] : [];
-}
-
-// Context Layering: Active Task State - last task, tool calls, recent results
-function getActiveTaskStateLayer(messages) {
-  const taskLayer = [];
-  
-  // Look for last tool calls and responses
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'assistant' && msg.tool_calls) {
-      // Add this tool call
-      taskLayer.unshift(msg);
-      // Look for corresponding tool response
-      if (i + 1 < messages.length && messages[i + 1].role === 'tool') {
-        taskLayer.push(messages[i + 1]);
-      }
-      // Stop after finding one set of tool interactions
-      break;
-    } else if (msg.role === 'user' || msg.role === 'assistant') {
-      // Add the last 1-2 non-tool messages as active task
-      taskLayer.unshift(msg);
-      if (taskLayer.length >= 2) break;
-    }
+function extractText(message) {
+  if (!message) return '';
+  if (typeof message.content === 'string') return message.content;
+  if (Array.isArray(message.content)) {
+    return message.content.filter(p => p.type === 'text').map(p => p.text).join(' ');
   }
-  
-  return taskLayer;
+  return '';
 }
 
-// Context Layering: Working Memory - recent useful messages
-function getWorkingMemoryLayer(messages, maxCount = 6) {
-  const workingLayer = [];
-  
-  // Iterate from the end, preserving tool pairs
-  let i = messages.length - 1;
-  while (i >= 0 && workingLayer.length < maxCount) {
-    const msg = messages[i];
-    if (msg.role === 'tool') {
-      // Tool message, check for corresponding assistant message before it
-      if (i - 1 >= 0 && messages[i - 1].role === 'assistant' && messages[i - 1].tool_calls) {
-        workingLayer.unshift(messages[i - 1]);
-        workingLayer.unshift(msg);
-        i -= 2;
-      } else {
-        workingLayer.unshift(msg);
-        i -= 1;
-      }
-    } else {
-      workingLayer.unshift(msg);
-      i -= 1;
-    }
+function classifyMessagePriority(message) {
+  if (!message) return Priority.DISCARDABLE;
+  if (message.role === 'system') return Priority.CRITICAL;
+  if (message.role === 'tool') return Priority.HIGH;
+  if (message.tool_calls?.length > 0) return Priority.HIGH;
+  if (message.role === 'assistant') {
+    return extractText(message).length > 50 ? Priority.HIGH : Priority.NORMAL;
   }
-  
-  return workingLayer;
-}
-
-// Context Layering: Archived Memory - summary of older messages
-function createArchivedMemorySummary(messages, cutoffIndex) {
-  if (cutoffIndex <= 0) return null;
-
-  const summaryParts = [];
-
-  for (let i = 0; i < cutoffIndex; i++) {
-    const msg = messages[i];
-    if (msg.role === 'user' || msg.role === 'assistant') {
-      let content = '';
-      if (typeof msg.content === 'string') {
-        content = msg.content;
-      } else if (Array.isArray(msg.content)) {
-        content = msg.content.filter(p => p.type === 'text').map(p => p.text).join(' ');
-      }
-
-      if (content.length > 50) {
-        summaryParts.push(`${msg.role.toUpperCase()}: ${content.slice(0, 100)}...`);
-      }
-    }
+  if (message.role === 'user') {
+    const text = extractText(message);
+    if (text.length < 10) return Priority.DISCARDABLE;
+    if (/^(hi|hello|hey|salut|bonjour|ok|yes|no|oui|non)\s*$/i.test(text)) return Priority.DISCARDABLE;
+    return Priority.HIGH;
   }
-
-  if (summaryParts.length === 0) return null;
-
-  return `[ARCHIVED CONVERSATION SUMMARY]\n${summaryParts.slice(-10).join('\n')}\n[END ARCHIVED SUMMARY]`;
+  return Priority.NORMAL;
 }
 
-function getConversationKey(messages) {
-  const firstUser = messages.find(m => m.role === 'user');
-  if (!firstUser) return null;
-
-  let content = '';
-  if (typeof firstUser.content === 'string') {
-    content = firstUser.content.slice(0, 200);
-  } else if (Array.isArray(firstUser.content)) {
-    content = JSON.stringify(firstUser.content).slice(0, 200);
-  }
-
-  return require('crypto').createHash('sha256').update(content).digest('hex');
+function isProtected(message) {
+  if (!message || message.role !== 'system') return false;
+  const text = extractText(message).toLowerCase();
+  return ['security', 'instruction', 'policy', 'constraint', 'rule',
+    'must not', 'do not', 'never', 'always', 'json schema', 'tool', 'function', 'api'
+  ].some(p => text.includes(p));
 }
 
-function getConversationMemory(conversationKey) {
-  if (!conversationKey) return null;
-
-  const memory = conversationMemories.get(conversationKey);
-  if (!memory) return null;
-
-  if (Date.now() - memory.lastUpdated > MEMORY_TTL_MS) {
-    conversationMemories.delete(conversationKey);
-    return null;
-  }
-
-  return memory;
-}
-
-function updateConversationMemory(conversationKey, summary, recentMessages) {
-  if (!conversationKey) return;
-
-  conversationMemories.set(conversationKey, {
-    summary,
-    recentMessages,
-    lastUpdated: Date.now()
+function deduplicateMessages(messages) {
+  const seen = new Set();
+  return messages.filter(msg => {
+    const text = extractText(msg).toLowerCase().trim().slice(0, 100);
+    if (text && seen.has(text) && msg.role !== 'tool') return false;
+    if (text) seen.add(text);
+    return true;
   });
 }
 
-function createConversationSummary(messages) {
-  if (messages.length <= 4) return null;
+// ═══ Tool-Safe Context ══════════════════════════════════════
+function manageToolSafeContext(messages, maxTokens = 16000) {
+  const systemMessages = messages.filter(m => m.role === 'system');
+  const nonSystem = messages.filter(m => m.role !== 'system');
 
-  const summaryParts = [];
-
-  for (let i = 0; i < messages.length - 4; i++) {
-    const msg = messages[i];
-    if (msg.role === 'user' || msg.role === 'assistant') {
-      let content = '';
-      if (typeof msg.content === 'string') {
-        content = msg.content;
-      } else if (Array.isArray(msg.content)) {
-        content = msg.content.filter(p => p.type === 'text').map(p => p.text).join(' ');
-      }
-
-      if (content.length > 100) {
-        summaryParts.push(`${msg.role.toUpperCase()}: ${content.slice(0, 150)}...`);
-      }
+  // Build tool pairs (assistant tool_call + tool response)
+  const chunks = [];
+  let i = 0;
+  while (i < nonSystem.length) {
+    const msg = nonSystem[i];
+    if (msg.role === 'assistant' && msg.tool_calls?.length > 0 && i + 1 < nonSystem.length && nonSystem[i + 1].role === 'tool') {
+      chunks.push([msg, nonSystem[i + 1]]);
+      i += 2;
+    } else {
+      chunks.push([msg]);
+      i++;
     }
   }
 
-  if (summaryParts.length === 0) return null;
+  let result = [...systemMessages];
+  let tokens = estimateTotalTokens(result);
 
-  return `[CONVERSATION SUMMARY]\n${summaryParts.join('\n')}\n[END SUMMARY]`;
+  // Add chunks from most recent to oldest
+  for (let j = chunks.length - 1; j >= 0; j--) {
+    const chunkTokens = estimateTotalTokens(chunks[j]);
+    if (tokens + chunkTokens <= maxTokens) {
+      result.push(...chunks[j]);
+      tokens += chunkTokens;
+    }
+  }
+
+  // Compress oldest if still over budget
+  while (tokens > maxTokens && result.length > 4) {
+    // Find first non-system, non-tool message to compress
+    for (let k = systemMessages.length; k < result.length; k++) {
+      if (result[k].role === 'system' || result[k].role === 'tool') continue;
+      const content = extractText(result[k]);
+      if (content.length > 200) {
+        result[k] = { ...result[k], content: content.slice(0, 100) + '... [compressed]' };
+        tokens = estimateTotalTokens(result);
+        break;
+      }
+    }
+    break; // Safety: don't loop forever
+  }
+
+  return result;
 }
 
-function manageToolSafeContext(messages, maxTokens = 16000) {
+// ═══ Main API ════════════════════════════════════════════════
+
+function manageContext(messages, maxTokens = 8000, hasTools = false) {
   const start = Date.now();
   const originalTokens = estimateTotalTokens(messages);
 
-  const conversationKey = getConversationKey(messages);
-  let finalMessages = [];
-
-  const systemMessage = messages[0]?.role === 'system' ? messages[0] : null;
-  if (systemMessage) {
-    finalMessages.push(systemMessage);
+  // Tool-safe mode
+  if (hasTools) {
+    const result = manageToolSafeContext(messages, maxTokens);
+    const finalTokens = estimateTotalTokens(result);
+    const tokensSaved = originalTokens - finalTokens;
+    return {
+      messages: result,
+      compressed: tokensSaved > 0,
+      compressionRatio: originalTokens > 0 ? tokensSaved / originalTokens : 0,
+      tokensSaved,
+      originalTokens,
+      finalTokens,
+      duration: Date.now() - start,
+    };
   }
 
-  const messageChunks = [];
-  let i = systemMessage ? 1 : 0;
+  // No compression needed
+  if (originalTokens <= maxTokens) {
+    return {
+      messages, compressed: false, compressionRatio: 0, tokensSaved: 0,
+      originalTokens, finalTokens: originalTokens, duration: Date.now() - start,
+    };
+  }
 
-  while (i < messages.length) {
-    const msg = messages[i];
+  // Priority-based compression
+  const classified = messages.map((msg, idx) => ({
+    message: msg,
+    priority: classifyMessagePriority(msg),
+    protected: isProtected(msg),
+    tokens: estimateTotalTokens([msg]),
+    index: idx,
+  }));
 
-    if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
-      let toolResponse = null;
-      if (i + 1 < messages.length && messages[i + 1].role === 'tool') {
-        toolResponse = messages[i + 1];
-      }
+  const protectedMessages = classified.filter(m => m.protected);
+  const unprotected = classified.filter(m => !m.protected);
 
-      if (toolResponse) {
-        messageChunks.push({
-          type: 'tool-pair',
-          messages: [msg, toolResponse]
-        });
-        i += 2;
-      } else {
-        messageChunks.push({
-          type: 'single',
-          messages: [msg]
-        });
-        i++;
-      }
-    } else if (msg.role === 'tool') {
-      messageChunks.push({
-        type: 'single',
-        messages: [msg]
-      });
-      i++;
-    } else {
-      messageChunks.push({
-        type: 'single',
-        messages: [msg]
-      });
-      i++;
+  // Always keep protected
+  const kept = [...protectedMessages];
+  let currentTokens = kept.reduce((sum, m) => sum + m.tokens, 0);
+
+  // Sort unprotected by priority then recency
+  unprotected.sort((a, b) => a.priority !== b.priority ? a.priority - b.priority : b.index - a.index);
+
+  for (const item of unprotected) {
+    if (currentTokens + item.tokens <= maxTokens) {
+      kept.push(item);
+      currentTokens += item.tokens;
     }
   }
 
-  let recentChunkCount = 12;
-  let selectedChunks = messageChunks.slice(-recentChunkCount);
-  let finalTokens = 0;
+  // Sort by original order
+  kept.sort((a, b) => a.index - b.index);
 
-  for (const chunk of selectedChunks) {
-    finalMessages.push(...chunk.messages);
-  }
+  let finalMessages = kept.map(m => m.message);
+  let finalTokens = estimateTotalTokens(finalMessages);
 
-  finalTokens = estimateTotalTokens(finalMessages);
-
-  while (finalTokens > maxTokens && selectedChunks.length > 4) {
-    recentChunkCount--;
-    selectedChunks = messageChunks.slice(-recentChunkCount);
-
-    finalMessages = [];
-    if (systemMessage) finalMessages.push(systemMessage);
-    for (const chunk of selectedChunks) {
-      finalMessages.push(...chunk.messages);
-    }
-    finalTokens = estimateTotalTokens(finalMessages);
-  }
-
+  // Compress oldest non-system messages if still over budget
   if (finalTokens > maxTokens) {
-    const recentChunks = messageChunks.slice(-4);
-    finalMessages = [];
-
-    if (systemMessage) finalMessages.push(systemMessage);
-    finalMessages.push({
-      role: 'system',
-      content: '[CONVERSATION SUMMARY: Older messages omitted to preserve tool sequence integrity]'
-    });
-
-    for (const chunk of recentChunks) {
-      finalMessages.push(...chunk.messages);
-    }
+    finalMessages = compressOldestMessages(finalMessages, maxTokens * 0.9);
     finalTokens = estimateTotalTokens(finalMessages);
   }
 
   const tokensSaved = originalTokens - finalTokens;
-  const compressionRatio = 1 - (finalTokens / originalTokens);
-  const duration = Date.now() - start;
-
-  console.log(`[ContextManager] ToolSafeContext: ${(compressionRatio * 100).toFixed(1)}% reduction | ${tokensSaved} tokens saved | ${duration}ms`);
 
   return {
     messages: finalMessages,
     compressed: tokensSaved > 0,
-    compressionRatio,
+    compressionRatio: originalTokens > 0 ? tokensSaved / originalTokens : 0,
     tokensSaved,
     originalTokens,
     finalTokens,
-    isToolSafeMode: true,
-    duration
+    duration: Date.now() - start,
   };
 }
 
-function manageContext(messages, maxTokens = 8000, hasTools = false) {
-  if (hasTools) {
-    return manageToolSafeContext(messages, maxTokens);
-  }
-
-  const start = Date.now();
-  const originalTokens = estimateTotalTokens(messages);
-  const conversationKey = getConversationKey(messages);
-  const existingMemory = getConversationMemory(conversationKey);
-
-  if (originalTokens <= maxTokens) {
-    const duration = Date.now() - start;
-    console.log(`[ContextManager] No compression needed: ${originalTokens} tokens | ${duration}ms`);
-    return {
-      messages,
-      compressed: false,
-      compressionRatio: 0,
-      tokensSaved: 0,
-      originalTokens,
-      finalTokens: originalTokens,
-      duration
-    };
-  }
-
-  // Context Layering: Build the context layer by layer
-  let finalMessages = [];
-  
-  // Layer 1: Core Identity (system prompts)
-  const coreIdentity = getCoreIdentityLayer(messages);
-  finalMessages.push(...coreIdentity);
-  
-  // Layer 2: Archived Memory (summary of older messages)
-  const cutoffIndex = Math.max(0, messages.length - 20);
-  const archivedSummary = createArchivedMemorySummary(messages, cutoffIndex);
-  if (archivedSummary) {
-    finalMessages.push({
-      role: 'system',
-      content: archivedSummary
-    });
-  }
-  
-  // Layer 3: Working Memory (recent messages)
-  const workingMemory = getWorkingMemoryLayer(messages.slice(cutoffIndex), 10);
-  finalMessages.push(...workingMemory);
-  
-  // Layer 4: Active Task State (last task/tool interactions)
-  const activeTaskState = getActiveTaskStateLayer(messages);
-  // Avoid duplicating messages that are already in working memory
-  const activeTaskIds = new Set(activeTaskState.map(m => JSON.stringify(m)));
-  const workingMemoryIds = new Set(workingMemory.map(m => JSON.stringify(m)));
-  for (const msg of activeTaskState) {
-    if (!workingMemoryIds.has(JSON.stringify(msg))) {
-      finalMessages.push(msg);
+function compressOldestMessages(messages, targetTokens) {
+  const result = [...messages];
+  let currentTokens = estimateTotalTokens(result);
+  for (let i = 0; i < result.length && currentTokens > targetTokens; i++) {
+    if (result[i].role === 'system') continue;
+    const content = extractText(result[i]);
+    if (content.length > 200) {
+      result[i] = { ...result[i], content: content.slice(0, 100) + '... [compressed]' };
+      currentTokens = estimateTotalTokens(result);
     }
   }
+  return result;
+}
 
-  let finalTokens = estimateTotalTokens(finalMessages);
-  
-  // If still over token limit, compress more aggressively
-  if (finalTokens > maxTokens) {
-    const compressed = compressContext(finalMessages, maxTokens * 0.9);
-    finalMessages = compressed.messages;
-    finalTokens = compressed.compressedTokens;
+// ═══ Legacy Exports (backward compat) ═══════════════════════
+const conversationMemories = new Map();
+const MEMORY_TTL_MS = 3600000;
+
+function getConversationKey(messages) {
+  const firstUser = messages.find(m => m.role === 'user');
+  if (!firstUser) return null;
+  let content = typeof firstUser.content === 'string' ? firstUser.content.slice(0, 200) : JSON.stringify(firstUser.content).slice(0, 200);
+  return require('crypto').createHash('sha256').update(content).digest('hex');
+}
+
+function getConversationMemory(key) {
+  if (!key) return null;
+  const m = conversationMemories.get(key);
+  if (!m) return null;
+  if (Date.now() - m.lastUpdated > MEMORY_TTL_MS) { conversationMemories.delete(key); return null; }
+  return m;
+}
+
+function updateConversationMemory(key, summary, recentMessages) {
+  if (!key) return;
+  conversationMemories.set(key, { summary, recentMessages, lastUpdated: Date.now() });
+}
+
+function createConversationSummary(messages) {
+  if (messages.length <= 4) return null;
+  const parts = [];
+  for (let i = 0; i < messages.length - 4; i++) {
+    const msg = messages[i];
+    if (msg.role === 'user' || msg.role === 'assistant') {
+      const content = extractText(msg);
+      if (content.length > 100) parts.push(`${msg.role.toUpperCase()}: ${content.slice(0, 150)}...`);
+    }
   }
-
-  const tokensSaved = originalTokens - finalTokens;
-  const compressionRatio = 1 - (finalTokens / originalTokens);
-  const duration = Date.now() - start;
-
-  if (conversationKey && finalMessages.length > 4) {
-    const newSummary = createConversationSummary(finalMessages);
-    updateConversationMemory(conversationKey, newSummary, finalMessages.slice(-4));
-  }
-
-  console.log(`[ContextManager] Compressed with Context Layering: ${(compressionRatio * 100).toFixed(1)}% reduction | ${tokensSaved} tokens saved | ${duration}ms`);
-
-  return {
-    messages: finalMessages,
-    compressed: true,
-    compressionRatio,
-    tokensSaved,
-    originalTokens,
-    finalTokens,
-    duration
-  };
+  return parts.length > 0 ? `[SUMMARY]\n${parts.join('\n')}\n[END]` : null;
 }
 
 function pruneNonEssentialMessages(messages) {
   return messages.filter(msg => {
-    if (!msg.content) return false;
-
-    let content = '';
-    if (typeof msg.content === 'string') {
-      content = msg.content.trim();
-    } else if (Array.isArray(msg.content)) {
-      content = msg.content.filter(p => p.type === 'text').map(p => p.text).join(' ').trim();
-    }
-
+    const content = extractText(msg).trim();
     if (content.length < 10) return false;
-    if (content.toLowerCase().includes('ok') && content.length < 20) return false;
-    if (content.toLowerCase().includes('thanks') && content.length < 30) return false;
-
+    if (/^(ok|thanks)\s*$/i.test(content)) return false;
     return true;
   });
 }
 
 module.exports = {
+  // Priority system
+  Priority,
+  classifyMessagePriority,
+  isProtected,
+  deduplicateMessages,
+  extractText,
+  // Main API
   manageContext,
+  manageToolSafeContext,
+  // Legacy
   createConversationSummary,
   pruneNonEssentialMessages,
   getConversationKey,
   getConversationMemory,
   updateConversationMemory,
-  // Context Layering exports
-  getCoreIdentityLayer,
-  getActiveTaskStateLayer,
-  getWorkingMemoryLayer,
-  createArchivedMemorySummary
 };
-
