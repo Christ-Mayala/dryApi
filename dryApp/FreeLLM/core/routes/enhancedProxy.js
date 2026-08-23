@@ -50,6 +50,10 @@ const { requestAttemptRegistry } = require('../services/requestAttemptRegistry.j
 // ─────────────────────────────────────────────────────────────
 
 const AUTO_MODEL_ID = 'auto';
+
+function isAutoModel(modelId) {
+  return modelId === AUTO_MODEL_ID;
+}
 const MAX_FALLBACKS = 4;
 const CONVERSATION_TOKEN_BUDGET = 1_000_000;
 const FALLBACK_GLOBAL_TIMEOUT_MS = 60_000;
