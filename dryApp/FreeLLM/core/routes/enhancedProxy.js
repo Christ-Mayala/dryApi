@@ -423,7 +423,7 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
       } else { preferredModel = getStickyModel(messages); }
 
       const skipKeys = new Set();
-      let lastError = null;
+      const lastError = null;
       const fallbackStartTime = Date.now();
       fallbackMetrics.totalRequests++;
 

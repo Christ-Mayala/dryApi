@@ -22,6 +22,9 @@ const {
   startScimBonPlanExpiryScheduler,
 } = require('./dry/services/cleanup/scimBonPlanExpiry.scheduler');
 const {
+  startScimPdfFallbackScheduler,
+} = require('./dry/services/notification/scimPdfFallback.scheduler');
+const {
   startPodcastRssScheduler,
   PODCAST_APP,
 } = require('./dryApp/Pelerin/services/podcastRss.scheduler');
@@ -73,6 +76,7 @@ const startServer = async () => {
   startHealthMonitor();
   startScimReservationReminderScheduler();
   startScimBonPlanExpiryScheduler();
+  startScimPdfFallbackScheduler();
 
   // Surcharges de scoring persistées par l'admin (priorité sur le .env) :
   // les charge au démarrage pour que le pipeline les applique dès le 1er run.

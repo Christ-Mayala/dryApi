@@ -74,7 +74,16 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
 
         // 3. Transformation des opérateurs (gt, gte, lt, lte, in, ne, or, eq) en syntaxe Mongo ($gt, etc.)
         let queryStr = JSON.stringify(reqQuery);
+        const operatorRegex = /\$[a-zA-Z0-9_]+/g;
+        const protectedOperators = new Map();
+        let opCounter = 0;
+        queryStr = queryStr.replace(operatorRegex, (match) => {
+            const key = `__MONGO_OP_${opCounter++}__`;
+            protectedOperators.set(key, match);
+            return key;
+        });
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|ne|or|eq)\b/g, match => `$${match}`);
+        queryStr = queryStr.replace(/__MONGO_OP_(\d+)__/g, (match, index) => protectedOperators.get(match) || match);
 
         // 4. Construction de la requête de base
         let findQuery = JSON.parse(queryStr);

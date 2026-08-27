@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../model/reservation.schema');
-const MessageSchema = require('../../message/model/message.schema');
+const PropertySchema = require('../../property/model/property.schema');
 const {
     buildStatusHistoryEntry,
     decorateReservationForClient,
@@ -11,11 +11,13 @@ const {
     getRequestTypeLabel,
     sendReservationContactNotifications,
     notifyNewMessage,
+    createReservationSystemMessage,
 } = require('./reservation.support.util');
 
 const ALLOWED_STATUSES = new Set(['en_attente', 'confirmee', 'annulee', 'terminee']);
 
 const STAGE_BY_STATUS = {
+    en_attente: 'pending',
     confirmee: 'confirmation',
     annulee: 'cancellation',
     terminee: 'completion',
@@ -29,7 +31,6 @@ const NEXT_STEPS_BY_TYPE = {
 
 module.exports = asyncHandler(async (req, res) => {
     const Reservation = req.getModel('Reservation', ReservationSchema);
-    const Message = req.getModel('Message', MessageSchema);
 
     const { status } = req.body;
     const nextStatus = String(status || '').trim().toLowerCase();
@@ -74,6 +75,13 @@ module.exports = asyncHandler(async (req, res) => {
 
     await reservation.save();
 
+    if (nextStatus === 'terminee' && reservation.property) {
+        try {
+            const Property = req.getModel('Property', PropertySchema);
+            await Property.findByIdAndUpdate(reservation.property, { status: 'inactive' });
+        } catch (_) {}
+    }
+
     const clientId = reservation.user?._id || reservation.user;
     const requestTypeKey = normalizeRequestTypeKey(reservation.requestType);
     const requestTypeLabel = getRequestTypeLabel(requestTypeKey);
@@ -87,18 +95,6 @@ module.exports = asyncHandler(async (req, res) => {
         terminee: `Votre demande de ${requestTypeLabel.toLowerCase()} a été marquée comme terminée. Merci pour votre confiance !\n\n📋 Référence : ${ref}\n🏠 Bien : ${reservation.property?.titre || 'le bien'}\n\nN'hésitez pas à nous solliciter à nouveau pour vos futurs projets immobiliers.`,
     };
 
-    if (clientId && statusMessageMap[nextStatus]) {
-        try {
-            const msg = await Message.create({
-                expediteur: req.user.id,
-                destinataire: clientId,
-                sujet: `${requestTypeLabel} ${nextStatus === 'confirmee' ? 'confirmée' : nextStatus === 'annulee' ? 'annulée' : 'terminée'} — ${reservation.property?.titre || 'votre bien'}`,
-                contenu: statusMessageMap[nextStatus],
-            });
-            await notifyNewMessage(req, Message, msg);
-        } catch (_) {}
-    }
-
     if (STAGE_BY_STATUS[nextStatus]) {
         try {
             await sendReservationContactNotifications({
@@ -107,6 +103,17 @@ module.exports = asyncHandler(async (req, res) => {
                 propertyTitle: reservation.property?.titre,
                 visitDate: reservation.date,
                 stage: STAGE_BY_STATUS[nextStatus],
+                reason,
+            });
+        } catch (_) {}
+
+        try {
+            await createReservationSystemMessage({
+                stage: STAGE_BY_STATUS[nextStatus],
+                reservation,
+                propertyTitle: reservation.property?.titre,
+                visitDate: reservation.date,
+                actorId: req.user.id,
                 reason,
             });
         } catch (_) {}

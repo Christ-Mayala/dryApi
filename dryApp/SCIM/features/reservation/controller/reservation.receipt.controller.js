@@ -23,6 +23,10 @@ module.exports = asyncHandler(async (req, res) => {
     const data = decorateReservationForClient(reservation);
     const filename = `recu-${data.reference || data._id}.pdf`;
 
+    reservation.support = reservation.support || {};
+    reservation.support.pdfAcknowledged = true;
+    await reservation.save();
+
     return PdfService.stream(
         (doc) => buildReservationReceiptPdf(doc, {
             reservation: data,

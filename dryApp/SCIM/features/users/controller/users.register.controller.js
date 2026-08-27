@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { signAccessToken, signRefreshToken } = require('../../../../../dry/utils/auth/jwt');
+const { signAccessToken, signRefreshToken, hashToken } = require('../../../../../dry/utils/auth/jwt');
 const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
 const { isValidContactPhone, normalizePhoneE164 } = require('../../reservation/controller/reservation.support.util');
 const { generateApiKey } = require('../../../../../dry/services/auth/apiKey.service');
@@ -57,9 +57,10 @@ module.exports = asyncHandler(async (req, res) => {
 
     const token = signAccessToken(user._id);
     const rt = signRefreshToken(user._id);
+    const hashedRt = hashToken(rt);
 
     user.refreshTokens = user.refreshTokens || [];
-    user.refreshTokens.push(rt);
+    user.refreshTokens.push(hashedRt);
     if (user.refreshTokens.length > 10) {
         user.refreshTokens = user.refreshTokens.slice(-10);
     }
@@ -72,6 +73,7 @@ module.exports = asyncHandler(async (req, res) => {
         res,
         {
             token,
+            refreshToken: rt,
             user: {
                 _id: user._id,
                 name: user.name,
@@ -80,7 +82,7 @@ module.exports = asyncHandler(async (req, res) => {
                 telephone: user.telephone,
                 role: user.role,
                 avatarUrl: user.avatarUrl,
-                apiKey: user.apiKey, // Inclure la clé API dans la réponse
+                apiKey: user.apiKey,
             },
         },
         'Inscription réussie.',

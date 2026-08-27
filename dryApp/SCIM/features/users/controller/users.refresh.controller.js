@@ -36,5 +36,5 @@ module.exports = asyncHandler(async (req, res) => {
 
     res.cookie('rt', newRefreshToken, refreshCookieOptions());
     res.cookie('jwt', newAccessToken, accessTokenCookieOptions());
-    return sendResponse(res, { token: newAccessToken }, 'Token renouvelé');
+    return sendResponse(res, { token: newAccessToken, refreshToken: newRefreshToken }, 'Token renouvelé');
 });

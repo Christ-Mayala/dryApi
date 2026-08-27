@@ -50,6 +50,8 @@ const updateSystemSettings = require('../controller/admin.settings.update.contro
 
 const getActivityReport = require('../controller/admin.reports.activity.controller');
 
+const runSeed = require('../controller/admin.seed.controller');
+
 router.use(protect);
 router.use(authorize('admin'));
 router.get('/dashboard/stats', getDashboardStats);
@@ -118,8 +120,6 @@ router.patch('/users/:id/restore', validateId, restoreUser);
 // Middleware de transformation : le frontend envoie status=unread/read, le schema Message utilise lu (boolean)
 const mapMessageStatus = (req, res, next) => {
     if (req.query.status && req.query.status !== 'all') {
-        // req.query est un getter (Express re-parse l'URL à chaque accès) : muter ses
-        // propriétés ne persiste pas. On redéfinit la propriété avec une valeur figée.
         const nextQuery = { ...req.query, lu: req.query.status === 'unread' ? false : true };
         delete nextQuery.status;
         Object.defineProperty(req, 'query', {
@@ -131,7 +131,35 @@ const mapMessageStatus = (req, res, next) => {
     }
     next();
 };
+
+const filterAdminMessages = (req, res, next) => {
+    const currentQuery = { ...(req.query || {}) };
+    const adminId = req.user?.id || req.user?._id;
+    if (!adminId) return next();
+    const mongoose = require('mongoose');
+    const adminObjectId = mongoose.Types.ObjectId.isValid(adminId) ? new mongoose.Types.ObjectId(adminId) : adminId;
+
+    const status = String(req.query?.status || '').trim().toLowerCase();
+    if (status === 'unread' || status === 'read') {
+        currentQuery.destinataire = adminObjectId;
+    } else {
+        currentQuery.$or = [
+            { destinataire: adminObjectId },
+            { expediteur: adminObjectId },
+        ];
+    }
+
+    Object.defineProperty(req, 'query', {
+        value: currentQuery,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+    });
+    next();
+};
+
 router.get('/messages',
+    filterAdminMessages,
     mapMessageStatus,
     queryBuilder(
         (req) => req.getModel('Message', MessageSchema),
@@ -154,5 +182,8 @@ router.get('/reports/activity', getActivityReport);
 
 router.get('/settings', getSystemSettings);
 router.put('/settings', updateSystemSettings);
+
+// ⚠️  Route de seed — à utiliser une seule fois pour peupler SCIMDB
+router.post('/seed-db', runSeed);
 
 module.exports = router;

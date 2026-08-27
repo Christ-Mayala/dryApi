@@ -86,7 +86,7 @@ function manageToolSafeContext(messages, maxTokens = 16000) {
     }
   }
 
-  let result = [...systemMessages];
+  const result = [...systemMessages];
   let tokens = estimateTotalTokens(result);
 
   // Add chunks from most recent to oldest
@@ -218,7 +218,7 @@ const MEMORY_TTL_MS = 3600000;
 function getConversationKey(messages) {
   const firstUser = messages.find(m => m.role === 'user');
   if (!firstUser) return null;
-  let content = typeof firstUser.content === 'string' ? firstUser.content.slice(0, 200) : JSON.stringify(firstUser.content).slice(0, 200);
+  const content = typeof firstUser.content === 'string' ? firstUser.content.slice(0, 200) : JSON.stringify(firstUser.content).slice(0, 200);
   return require('crypto').createHash('sha256').update(content).digest('hex');
 }
 

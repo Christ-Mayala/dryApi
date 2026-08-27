@@ -38,6 +38,7 @@ module.exports = asyncHandler(async (req, res) => {
         res,
         {
             token,
+            refreshToken: rt,
             user: {
                 _id: user._id,
                 name: user.name,

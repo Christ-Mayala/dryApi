@@ -37,6 +37,10 @@ module.exports = asyncHandler(async (req, res) => {
     const data = decorateReservationForClient(reservation);
     const filename = `contrat-${data.reference || data._id}.pdf`;
 
+    reservation.support = reservation.support || {};
+    reservation.support.pdfAcknowledged = true;
+    await reservation.save();
+
     return PdfService.stream(
         (doc) => buildReservationContractPdf(doc, {
             reservation: data,

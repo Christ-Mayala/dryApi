@@ -1,6 +1,7 @@
 const config = require('../../../../../config/database');
 const emailService = require('../../../../../dry/services/auth/email.service');
 const logger = require('../../../../../dry/utils/logging/logger');
+const MessageSchema = require('../../message/model/message.schema');
 
 const parseBool = (value, fallback = false) => {
     if (value === undefined || value === null || value === '') return fallback;
@@ -270,10 +271,15 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
     const actionLabel = getRequestTypeActionLabel(requestTypeKey);
     const nounLabel = requestTypeKey === 'visite' ? 'visite' : getRequestTypeLabel(requestTypeKey).toLowerCase();
     const cleanReason = String(reason || '').trim();
+    const support = reservation?.support || {};
 
     let subject, baseText, ackText;
 
-    if (stage === 'reminder') {
+    if (stage === 'pending') {
+        subject = `📨 Votre demande de visite est en attente — ${title} (${reference})`;
+        baseText = `Nous avons bien reçu votre demande de visite pour <strong>"${title}"</strong>. Notre équipe va l'étudier et revenir vers vous sous <strong>${support.expectedResponseMinutes} min</strong>.`;
+        ackText = `Vous pouvez suivre le statut de votre demande depuis votre tableau de bord.`;
+    } else if (stage === 'reminder') {
         subject = `Rappel — Votre ${nounLabel} "${title}" (${reference})`;
         baseText = `Rappel SCIM : votre ${actionLabel} pour "${title}" (réf. ${reference}) est prévue le ${dateLabel}. Merci de confirmer votre présence.`;
         ackText = '';
@@ -295,12 +301,10 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
 
     const html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#09090b;color:#f4f4f5;border-radius:16px;overflow:hidden">
-          <div style="background:${stage === 'cancellation' ? '#27272a' : 'linear-gradient(135deg,#d4af37,#92700a)'};padding:28px;text-align:center">
-            <h1 style="margin:0;color:${stage === 'cancellation' ? '#d4af37' : '#09090b'};font-size:22px;font-weight:900">SCIM Immobilier</h1>
-            <p style="margin:8px 0 0;color:${stage === 'cancellation' ? '#a1a1aa' : '#09090b'};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:0.8">
-              ${stage === 'cancellation' ? 'Visite annulée' : stage === 'reminder' ? 'Rappel de visite' : stage === 'completion' ? 'Demande terminée' : 'Visite confirmée'}
-            </p>
-          </div>
+          <div style="background:#18181b;padding:28px;text-align:center;border-bottom:1px solid #3f3f46">
+             <h1 style="margin:0;color:#d4af37;font-size:22px;font-weight:900">SCIM Immobilier</h1>
+             <p style="margin:8px 0 0;color:#ffffff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px">${stage === 'cancellation' ? 'Visite annulée' : stage === 'pending' ? 'Demande en attente' : stage === 'reminder' ? 'Rappel de visite' : stage === 'completion' ? 'Demande terminée' : 'Visite confirmée'}</p>
+           </div>
           <div style="padding:28px">
             <p style="font-size:15px;color:#a1a1aa;line-height:1.7">${baseText}</p>
             ${ackText ? `<p style="font-size:14px;color:#a1a1aa;line-height:1.7">${ackText}</p>` : ''}
@@ -311,15 +315,18 @@ const buildReservationContactContent = ({ reservation, propertyTitle, visitDate,
                 <tr><td style="padding:7px 0;color:#71717a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Date</td><td style="color:#d4af37;font-weight:700">${dateLabel}</td></tr>
               </table>
             </div>
-            <p style="font-size:13px;color:#71717a;margin-top:24px">L'équipe SCIM Immobilier<br/><span style="color:#52525b">Congo-Brazzaville</span></p>
-          </div>
+             <p style="font-size:13px;color:#71717a;margin-top:24px">L'équipe SCIM Immobilier<br/><span style="color:#52525b">63 bis, rue Moundzombo, Moungali, Brazzaville, RC</span></p>
+             <p style="font-size:13px;color:#71717a;margin-top:8px">📞 +242 06 57 45 422</p>
+           </div>
           <div style="background:#18181b;padding:14px;text-align:center">
             <p style="margin:0;color:#52525b;font-size:11px">© ${new Date().getFullYear()} SCIM Immobilier</p>
           </div>
         </div>
     `;
 
-    const smsBaseText = stage === 'cancellation'
+    const smsBaseText = stage === 'pending'
+        ? `SCIM: Votre demande de visite (réf. ${reference}) pour "${title}" est en attente de traitement. Vous serez notifié(e) sous ${support.expectedResponseMinutes} min.`
+        : stage === 'cancellation'
         ? `SCIM: Votre ${nounLabel} (réf. ${reference}) pour "${title}" le ${dateLabel} a été annulée.${cleanReason ? ` Motif : ${cleanReason}.` : ''} Contactez-nous pour en planifier une nouvelle.`
         : stage === 'reminder'
         ? `Rappel SCIM: ${nounLabel} pour "${title}" le ${dateLabel} (réf. ${reference}). Confirmez votre présence.`
@@ -459,7 +466,7 @@ const sendReservationContactNotifications = async ({ reservation, user, property
     }
 
     if (!result.email.sent && !result.sms.sent && !result.whatsapp.sent) {
-        logger(`Reservation notification non envoyee (${content.reference})`, 'warning');
+        logger(`Reservation notification non envoyee (${content.reference}) | email=${result.email.reason} sms=${result.sms.reason} whatsapp=${result.whatsapp.reason}`, 'warning');
     }
 
     return result;
@@ -522,6 +529,75 @@ const notifyNewMessage = async (req, Message, message) => {
     } catch (_) {}
 };
 
+const createReservationSystemMessage = async ({ stage, reservation, propertyTitle, visitDate, actorId, reason = '' } = {}) => {
+    try {
+        const getModel = require('../../../../../dry/core/factories/modelFactory');
+        const mongoose = require('mongoose');
+        const MessageModel = getModel('SCIM', 'Message', MessageSchema);
+        const UserModel = getModel('SCIM', 'User', require('../../users/model/userPublic.schema.js'));
+
+        const reference = reservation?.reference || reservation?._id || '';
+        const title = propertyTitle || reservation?.property?.titre || 'le bien';
+        const dateLabel = formatVisitDate(visitDate || reservation?.date);
+        const statusLabel = getReservationStatusLabel(stage);
+
+        const rawClientId = reservation?.user || reservation?.userId;
+        const clientId = rawClientId ? String(rawClientId._id || rawClientId) : null;
+        const adminUsers = await UserModel.find({ role: 'admin' }).select('_id').limit(5);
+        const adminIds = adminUsers.map((u) => String(u._id));
+        const actor = actorId ? String(actorId) : adminIds[0] || null;
+
+        const baseSubject = `[SCIM] Réservation ${reference} — ${statusLabel}`;
+        const baseContent = [
+            `Référence: ${reference}`,
+            `Bien: "${title}"`,
+            `Date: ${dateLabel}`,
+            `Statut: ${statusLabel}`,
+            reason ? `Motif: ${reason}` : '',
+        ]
+            .filter(Boolean)
+            .join('\n');
+
+        const createdMessages = [];
+
+        if (stage === 'pending' && clientId) {
+            const adminDest = adminIds[0];
+            if (adminDest) {
+                createdMessages.push(
+                    await MessageModel.create({
+                        expediteur: actor || adminDest,
+                        destinataire: adminDest,
+                        sujet: `Nouvelle demande: ${reference}`,
+                        contenu: `Nouvelle demande de visite enregistrée.\n\n${baseContent}`,
+                    })
+                );
+            }
+            createdMessages.push(
+                await MessageModel.create({
+                    expediteur: actor || adminDest,
+                    destinataire: clientId,
+                    sujet: baseSubject,
+                    contenu: baseContent,
+                })
+            );
+        } else if (clientId) {
+            createdMessages.push(
+                await MessageModel.create({
+                    expediteur: actor || adminIds[0] || clientId,
+                    destinataire: clientId,
+                    sujet: baseSubject,
+                    contenu: baseContent,
+                })
+            );
+        }
+
+        return createdMessages;
+    } catch (error) {
+        logger(`SCIM system message creation failed: ${error?.message || error}`, 'warning');
+        return [];
+    }
+};
+
 module.exports = {
     normalizeWhatsappPhone,
     normalizePhoneE164,
@@ -548,4 +624,5 @@ module.exports = {
     sendReservationContactNotifications,
     sendAdminWhatsAppNotification,
     notifyNewMessage,
+    createReservationSystemMessage,
 };

@@ -20,7 +20,9 @@ const {
     getRequestTypeLabel,
     getRequestTypeActionLabel,
     sendAdminWhatsAppNotification,
+    sendReservationContactNotifications,
     notifyNewMessage,
+    createReservationSystemMessage,
 } = require('./reservation.support.util');
 const config = require('../../../../../config/database');
 
@@ -33,6 +35,8 @@ module.exports = asyncHandler(async (req, res) => {
     const { propertyId, date, telephone, isWhatsapp } = req.body;
     const requestType = normalizeRequestTypeKey(req.body.requestType);
     const userId = req.user.id;
+
+    const normalizedPhone = normalizePhoneE164(telephone || '');
 
     if (!propertyId || !date) return sendResponse(res, null, 'propertyId et date sont requis.', false);
 
@@ -66,13 +70,12 @@ module.exports = asyncHandler(async (req, res) => {
             return sendResponse(res, null, 'Reservation possible uniquement entre 10h00 et 17h00.', false);
         }
     }
-
     const requester = await User.findById(userId).select('_id name nom email telephone');
+
     if (!requester) return sendResponse(res, null, 'Utilisateur introuvable.', false);
 
-    const bodyPhoneRaw = String(telephone || '').trim();
     const fallbackPhoneRaw = String(requester.telephone || '').trim();
-    const effectivePhoneRaw = fallbackPhoneRaw || bodyPhoneRaw;
+    const effectivePhoneRaw = fallbackPhoneRaw || normalizedPhone;
 
     if (!effectivePhoneRaw) {
         return sendResponse(res, null, 'Numero de telephone requis pour reserver.', false);
@@ -149,6 +152,28 @@ module.exports = asyncHandler(async (req, res) => {
     ];
 
     await reservation.save();
+
+    try {
+        await sendReservationContactNotifications({
+            reservation,
+            user: requester,
+            propertyTitle: property.titre,
+            visitDate: when,
+            stage: 'pending',
+        });
+    } catch (error) {
+        logger(`Erreur email demande en attente ${reservation.reference}: ${error?.message || error}`, 'warning');
+    }
+
+    try {
+        await createReservationSystemMessage({
+            stage: 'pending',
+            reservation,
+            propertyTitle: property.titre,
+            visitDate: when,
+            actorId: userId,
+        });
+    } catch (_) {}
 
     const requestTypeLabel = getRequestTypeLabel(requestType);
     const requestActionLabel = getRequestTypeActionLabel(requestType);

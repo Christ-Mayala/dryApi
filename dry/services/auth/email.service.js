@@ -232,6 +232,16 @@ class EmailService {
       textContent: options.text,
     };
 
+    if (Array.isArray(options.attachments) && options.attachments.length) {
+      payload.attachment = options.attachments
+        .filter((a) => a && a.content && a.filename)
+        .map((a) => ({
+          name: String(a.filename),
+          content: String(a.content),
+          ...(a.encoding ? { encoding: String(a.encoding) } : {}),
+        }));
+    }
+
     // Timeout 10s
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);

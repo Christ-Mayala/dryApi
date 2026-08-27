@@ -15,7 +15,8 @@ const CONTENT_WIDTH = 460;
 
 const formatMoney = (amount, currency = 'XAF') => {
     const n = Number(amount || 0);
-    const formatted = new Intl.NumberFormat('fr-FR').format(Math.round(n));
+    const rounded = Math.round(n);
+    const formatted = String(rounded).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return `${formatted} ${currency}`;
 };
 
@@ -50,6 +51,15 @@ const personName = (person) => {
 };
 
 const contentX = (doc) => (doc.page.width - CONTENT_WIDTH) / 2;
+
+const bottomMargin = (doc) => doc.page.height - doc.page.margins.bottom;
+const ensureSpace = (doc, needed = 40) => {
+    if (doc.y + needed > bottomMargin(doc)) {
+        doc.addPage();
+        doc.x = contentX(doc);
+        doc.y = doc.page.margins.top;
+    }
+};
 
 const drawHeader = (doc, { title, subtitle, reference }) => {
     const bandHeight = 105;
@@ -112,20 +122,20 @@ const drawFooter = (doc, note) => {
 };
 
 const drawSectionTitle = (doc, text) => {
-    doc.moveDown(0.5);
+    doc.moveDown(0.8);
     doc.x = contentX(doc);
-    doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(10).text(text.toUpperCase(), contentX(doc), doc.y, { width: CONTENT_WIDTH, characterSpacing: 0.5 });
-    doc.moveDown(0.2);
+    doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(11).text(text.toUpperCase(), contentX(doc), doc.y, { width: CONTENT_WIDTH, characterSpacing: 0.6 });
+    doc.moveDown(0.3);
 };
 
 const drawKeyValueRow = (doc, label, value) => {
     const startX = contentX(doc);
     const y = doc.y;
-    doc.fillColor(GREY).font('Helvetica-Bold').fontSize(9).text(label, startX, y, { width: 145 });
+    doc.fillColor(GREY).font('Helvetica-Bold').fontSize(9).text(label, startX, y, { width: 150 });
     const valueHeight = doc.fillColor(DARK).font('Helvetica').fontSize(9.5)
-        .heightOfString(String(value ?? '—'), { width: CONTENT_WIDTH - 145 });
-    doc.text(String(value ?? '—'), startX + 145, y, { width: CONTENT_WIDTH - 145 });
-    doc.y = y + Math.max(13, valueHeight) + 4;
+        .heightOfString(String(value ?? '—'), { width: CONTENT_WIDTH - 150 });
+    doc.text(String(value ?? '—'), startX + 150, y, { width: CONTENT_WIDTH - 150 });
+    doc.y = y + Math.max(10, valueHeight) + 2;
     doc.x = contentX(doc);
 };
 
@@ -289,19 +299,19 @@ const buildReservationContractPdf = (doc, { reservation, property, client, owner
  */
 const drawHighlightCards = (doc, cards) => {
     const startX = contentX(doc);
-    const gap = 10;
+    const gap = 12;
     const cardWidth = (CONTENT_WIDTH - gap * (cards.length - 1)) / cards.length;
-    const cardHeight = 60;
+    const cardHeight = 64;
     const y = doc.y;
 
     cards.forEach((card, i) => {
         const x = startX + i * (cardWidth + gap);
-        doc.roundedRect(x, y, cardWidth, cardHeight, 10).lineWidth(1).strokeColor(LIGHT_GREY).stroke();
-        doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(17).text(String(card.value), x + 2, y + 11, { width: cardWidth - 4, align: 'center' });
-        doc.fillColor(GREY).font('Helvetica-Bold').fontSize(7).text(card.label.toUpperCase(), x + 2, y + 38, { width: cardWidth - 4, align: 'center', characterSpacing: 0.3 });
+        doc.roundedRect(x, y, cardWidth, cardHeight, 12).lineWidth(1).strokeColor(LIGHT_GREY).stroke();
+        doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(18).text(String(card.value), x + 2, y + 12, { width: cardWidth - 4, align: 'center' });
+        doc.fillColor(GREY).font('Helvetica-Bold').fontSize(8).text(card.label.toUpperCase(), x + 2, y + 42, { width: cardWidth - 4, align: 'center', characterSpacing: 0.4 });
     });
 
-    doc.y = y + cardHeight + 16;
+    doc.y = y + cardHeight + 14;
     doc.x = startX;
 };
 
@@ -317,22 +327,25 @@ const buildActivityReportPdf = (doc, { stats, range, generatedBy, periodLabel } 
     });
 
     const totalReservations = stats?.totalReservations ?? 0;
-    const confirmedOrDone = (stats?.reservationsByStatus?.confirmee ?? 0) + (stats?.reservationsByStatus?.terminee ?? 0);
-    const confirmationRate = totalReservations ? Math.round((confirmedOrDone / totalReservations) * 100) : 0;
+    const completedReservations = stats?.reservationsByStatus?.terminee ?? 0;
+    const completionRate = totalReservations ? Math.round((completedReservations / totalReservations) * 100) : 0;
 
+    ensureSpace(doc, 70);
     drawHighlightCards(doc, [
         { value: totalReservations, label: 'Réservations' },
-        { value: `${confirmationRate}%`, label: 'Taux confirmation' },
+        { value: `${completionRate}%`, label: 'Taux de finalisation' },
         { value: stats?.newProperties ?? 0, label: 'Nouveaux biens' },
         { value: stats?.newUsers ?? 0, label: 'Nouveaux clients' },
     ]);
 
-    drawSectionTitle(doc, 'Vue d\'ensemble');
+    ensureSpace(doc, 30);
+    drawSectionTitle(doc, "Vue d'ensemble");
     drawKeyValueRow(doc, 'Biens actifs', stats?.activeProperties ?? 0);
     drawKeyValueRow(doc, 'Nouveaux biens (période)', stats?.newProperties ?? 0);
     drawKeyValueRow(doc, 'Utilisateurs', stats?.totalUsers ?? 0);
     drawKeyValueRow(doc, 'Nouveaux utilisateurs (période)', stats?.newUsers ?? 0);
 
+    ensureSpace(doc, 30);
     drawSectionTitle(doc, 'Réservations');
     drawKeyValueRow(doc, 'Total sur la période', stats?.totalReservations ?? 0);
     drawKeyValueRow(doc, '— Visites', stats?.reservationsByType?.visite ?? 0);
@@ -343,20 +356,29 @@ const buildActivityReportPdf = (doc, { stats, range, generatedBy, periodLabel } 
     drawKeyValueRow(doc, 'Terminées', stats?.reservationsByStatus?.terminee ?? 0);
     drawKeyValueRow(doc, 'Annulées', stats?.reservationsByStatus?.annulee ?? 0);
 
+    ensureSpace(doc, 30);
     drawSectionTitle(doc, 'Messagerie');
     drawKeyValueRow(doc, 'Messages échangés (période)', stats?.newMessages ?? 0);
     drawKeyValueRow(doc, 'Messages non lus', stats?.unreadMessages ?? 0);
 
     if (Array.isArray(stats?.topProperties) && stats.topProperties.length) {
+        ensureSpace(doc, 160);
         drawSectionTitle(doc, 'Biens les plus consultés');
         stats.topProperties.slice(0, 8).forEach((p, idx) => {
-            drawKeyValueRow(doc, `${idx + 1}. ${p.titre || 'Bien'}`, `${p.vues ?? 0} vues — ${p.ville || ''}`);
+            const startX = contentX(doc);
+            const y = doc.y;
+            doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(9).text(`${idx + 1}.`, startX, y, { width: 20 });
+            doc.fillColor(DARK).font('Helvetica').fontSize(9).text(`${p.titre || 'Bien'} — ${p.ville || ''}`, startX + 22, y, { width: CONTENT_WIDTH - 120 });
+            doc.fillColor(GREY).font('Helvetica-Bold').fontSize(9).text(`${p.vues ?? 0} vues`, startX + CONTENT_WIDTH - 90, y, { width: 80, align: 'right' });
+            doc.y = y + 14;
+            doc.x = contentX(doc);
         });
     }
 
+    ensureSpace(doc, 30);
     doc.moveDown(1);
     doc.fillColor(GREY).font('Helvetica').fontSize(8).text(
-        `Rapport généré par ${generatedBy || 'l\'administration SCIM'} le ${formatDateTimeFr(new Date())}.`,
+        `Rapport généré par ${generatedBy || "l'administration SCIM"} le ${formatDateTimeFr(new Date())}.`,
         contentX(doc), doc.y, { width: CONTENT_WIDTH, align: 'center' },
     );
 

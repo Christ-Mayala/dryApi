@@ -3,7 +3,7 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 
 const ReservationSchema = require('../../reservation/model/reservation.schema');
 const PropertySchema = require('../../property/model/property.schema');
-const { CONFIRMED_STATUS_VALUES } = require('../../reservation/controller/reservation.support.util');
+const { COMPLETED_STATUS_VALUES } = require('../../reservation/controller/reservation.support.util');
 
 const parseRangeDate = (value, fallback) => {
     const d = value ? new Date(value) : fallback;
@@ -23,7 +23,7 @@ module.exports = asyncHandler(async (req, res) => {
     if (from) dateMatch.$gte = from;
     if (to) dateMatch.$lte = to;
 
-    const baseMatch = { status: { $in: CONFIRMED_STATUS_VALUES } };
+    const baseMatch = { status: { $in: COMPLETED_STATUS_VALUES } };
     if (from || to) baseMatch.createdAt = dateMatch;
 
     const pipeline = [
@@ -86,12 +86,12 @@ module.exports = asyncHandler(async (req, res) => {
         const y = x._id?.y;
         const m = x._id?.m;
         const label = y && m ? `${String(y)}-${String(m).padStart(2, '0')}` : null;
-        return { month: label, revenue: x.revenue || 0, count: x.count || 0 };
+        return { month: label, revenue: x.revenue || 0, completed: x.count || 0 };
     });
 
     const payload = {
         totalRevenue: totals?.totalRevenue || 0,
-        totalConfirmedReservations: totals?.totalConfirmedReservations || 0,
+        totalCompletedReservations: totals?.totalConfirmedReservations || 0,
         monthlyRevenue,
         revenueByType: (revenueByTypeAgg || []).map((x) => ({ type: x._id || 'unknown', revenue: x.revenue || 0, count: x.count || 0 })),
     };

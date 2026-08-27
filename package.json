@@ -24,6 +24,7 @@
     "seed": "node scripts/seed/seed-all.js",
     "seed:clean": "node scripts/seed/seed-clean.js",
     "seed:reset": "node scripts/seed/seed-clean.js && node scripts/seed/seed-all.js",
+    "seed:scim": "node dryApp/SCIM/scripts/seed-scim-db.js",
     "seed:pelerin-bible": "node scripts/seed/seed-pelerin-bible.js",
     "seed:pelerin-demo": "node scripts/seed/seed-pelerin-demo.js",
     "seed:pelerin-reading-plan": "node scripts/seed/seed-pelerin-reading-plan.js",

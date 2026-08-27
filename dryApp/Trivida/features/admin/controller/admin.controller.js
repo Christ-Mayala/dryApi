@@ -1186,7 +1186,7 @@ exports.sendMessage = asyncHandler(async (req, res) => {
     
     // Utiliser un template si spécifié
     let finalSubject = subject || 'Message Trivida';
-    let finalMessage = message;
+    const finalMessage = message;
     
     if (templateKey && settings.messageTemplates?.[templateKey]) {
         const tpl = settings.messageTemplates[templateKey];

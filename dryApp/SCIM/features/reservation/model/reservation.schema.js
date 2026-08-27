@@ -90,6 +90,9 @@ const ReservationSchema = new mongoose.Schema(
             lastContactAt: { type: Date, default: null },
             lastContactChannel: { type: String, trim: true, default: '' },
             asyncNotice: { type: String, trim: true, default: '' },
+            pdfAcknowledged: { type: Boolean, default: false },
+            pdfEmailedAt: { type: Date, default: null },
+            pdfEmailAttempts: { type: Number, default: 0, min: 0 },
         },
     },
     {
