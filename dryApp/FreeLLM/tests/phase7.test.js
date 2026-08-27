@@ -132,7 +132,7 @@ test('Streaming Recovery: sendPartialResponse closes stream', () => {
   tracker.addChunk({ choices: [{ delta: { content: 'Hello' } }] });
   tracker.markInterrupted('timeout');
 
-  let written = [];
+  const written = [];
   let ended = false;
   const fakeRes = {
     write: (data) => { written.push(data); return true; },
