@@ -393,7 +393,7 @@ const seed = async () => {
     await models.Property.deleteMany({});
     await models.Reservation.deleteMany({});
     await models.Message.deleteMany({});
-    await models.User.deleteMany({ email: { $nin: [config.SEED_ADMIN_EMAIL] } });
+    await models.User.deleteMany({});
 
     console.log('Création des utilisateurs...');
     const hashedPassword = await bcrypt.hash('password123', SALT_ROUNDS);
