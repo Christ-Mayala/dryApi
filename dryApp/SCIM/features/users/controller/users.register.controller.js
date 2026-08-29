@@ -4,6 +4,8 @@ const { signAccessToken, signRefreshToken, hashToken } = require('../../../../..
 const { refreshCookieOptions, accessTokenCookieOptions } = require('../../../../../dry/utils/http/cookies');
 const { isValidContactPhone, normalizePhoneE164 } = require('../../reservation/controller/reservation.support.util');
 const { generateApiKey } = require('../../../../../dry/services/auth/apiKey.service');
+const emailService = require('../../../../../dry/services/auth/email.service');
+const config = require('../../../../../config/database');
 
 module.exports = asyncHandler(async (req, res) => {
     const User = req.getModel('User');
@@ -68,6 +70,19 @@ module.exports = asyncHandler(async (req, res) => {
 
     res.cookie('rt', rt, refreshCookieOptions());
     res.cookie('jwt', token, accessTokenCookieOptions());
+
+    // Email de bienvenu — fire-and-forget, non bloquant
+    const shouldSend = (config.SEND_WELCOME_EMAIL_ON_REGISTER || 'true') === 'true';
+    if (shouldSend && user.email) {
+        Promise.resolve(
+            emailService.sendGenericEmail({
+                email: user.email,
+                subject: 'Bienvenue sur SCIM Immobilier',
+                html: emailService.generateWelcomeTemplate(user.name || user.nom || '', 'SCIM'),
+                text: `Bienvenue ${user.name || ''} ! Votre compte SCIM Immobilier a été créé avec succès.`,
+            })
+        ).catch(() => {});
+    }
 
     return sendResponse(
         res,

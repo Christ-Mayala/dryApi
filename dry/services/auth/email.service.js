@@ -482,6 +482,18 @@ class EmailService {
       }
     }
 
+    // Template dédié SCIM — thème sombre/or
+    if (String(tenantId).toLowerCase() === 'scim') {
+      const raw = this.loadTemplate('scim-welcome.html');
+      if (raw) {
+        return this.renderTemplate(raw, {
+          NAME: name,
+          APP_URL: appUrl,
+          YEAR: new Date().getFullYear(),
+        });
+      }
+    }
+
     const raw = this.loadTemplate('welcome.html');
     if (!raw) {
       return `Bienvenue ${name}`;
