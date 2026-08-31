@@ -40,6 +40,9 @@ const {
     getMessageTemplates,
     getPerformanceDashboard,
     getUsersEnriched,
+    getIntelOverview,
+    getIntelProfiles,
+    getIntelHealth,
 } = require('../controller/admin.controller');
 
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
@@ -85,6 +88,11 @@ router.get('/messaging/templates', protect, requireSuperAdmin(), withAudit('ADMI
 
 // Performance
 router.get('/performance/dashboard', protect, requireSuperAdmin(), withAudit('ADMIN_PERF_DASHBOARD'), getPerformanceDashboard);
+
+// Intel
+router.get('/intel/overview', protect, requireSuperAdmin(), withAudit('ADMIN_INTEL_OVERVIEW'), getIntelOverview);
+router.get('/intel/profiles', protect, requireSuperAdmin(), withAudit('ADMIN_INTEL_PROFILES'), getIntelProfiles);
+router.get('/intel/health', protect, requireSuperAdmin(), withAudit('ADMIN_INTEL_HEALTH'), getIntelHealth);
 
 // Journal d'audit
 router.get('/logs', protect, requireSuperAdmin(), withAudit('ADMIN_GET_LOGS'), getAdminLogs);
