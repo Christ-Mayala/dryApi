@@ -39,6 +39,7 @@ const {
     sendMessage,
     getMessageTemplates,
     getPerformanceDashboard,
+    getUsersEnriched,
 } = require('../controller/admin.controller');
 
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
@@ -54,6 +55,7 @@ router.post('/seed-admins', seedAdmins);
 // ─── ROUTES ADMIN (admin + superadmin) ──────────────────────────────────────
 
 // Utilisateurs (lecture)
+router.get('/users/enriched', protect, requireSuperAdmin(), withAudit('ADMIN_GET_USERS_ENRICHED'), getUsersEnriched);
 router.get('/users', protect, requireSuperAdmin(), withAudit('ADMIN_GET_USERS'), getUsers);
 router.get('/users/:id', protect, requireSuperAdmin(), withAudit('ADMIN_GET_USER'), getUserById);
 

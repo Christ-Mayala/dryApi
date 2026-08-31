@@ -198,6 +198,104 @@ exports.getUsers = asyncHandler(async (req, res) => {
 });
 
 /**
+ * GET /admin/users/enriched
+ * Liste paginée des utilisateurs avec stats d'activité EN UNE SEULE REQUÊTE.
+ * Retourne : transactions, lastTransactionAt, savingsGoals, debts pour chaque user.
+ * Query params: page, limit, search, plan, status
+ */
+exports.getUsersEnriched = asyncHandler(async (req, res) => {
+    const User = req.getModel('User');
+    
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+    
+    // Construction du filtre (même logique que getUsers)
+    const filter = {};
+    if (req.query.search) {
+        const searchRegex = new RegExp(req.query.search, 'i');
+        filter.$or = [{ name: searchRegex }, { email: searchRegex }];
+    }
+    if (req.query.plan && ['free', 'basic', 'premium'].includes(req.query.plan)) {
+        filter.premiumPlan = req.query.plan;
+    }
+    if (req.query.status && ['active', 'inactive', 'deleted'].includes(req.query.status)) {
+        filter.status = req.query.status;
+    }
+    
+    const sortField = req.query.sort || 'createdAt';
+    const sortOrder = req.query.order === 'asc' ? 1 : -1;
+    
+    // 1. Fetch users paginés
+    const [users, total] = await Promise.all([
+        User.find(filter).sort({ [sortField]: sortOrder }).skip(skip).limit(limit).lean(),
+        User.countDocuments(filter),
+    ]);
+    
+    if (users.length === 0) {
+        return sendResponse(res, [], 'Aucun utilisateur', true, { page, limit, total, pages: Math.ceil(total / limit) });
+    }
+    
+    const userIds = users.map(u => u._id);
+    
+    // 2. Compter les entités + dernière transaction EN PARALLÈLE (4 requêtes max)
+    let TxModel, SgModel, DebtModel;
+    try { TxModel = req.getModel('TrividaTransaction', TransactionSchema); } catch (e) { TxModel = null; }
+    try { SgModel = req.getModel('TrividaSavingsGoal', SavingsGoalSchema); } catch (e) { SgModel = null; }
+    try { DebtModel = req.getModel('TrividaDebt', DebtSchema); } catch (e) { DebtModel = null; }
+    
+    const [txCounts, lastTxs, sgCounts, debtCounts] = await Promise.all([
+        // Transactions count per user
+        TxModel ? TxModel.aggregate([
+            { $match: { userId: { $in: userIds } } },
+            { $group: { _id: '$userId', count: { $sum: 1 } } },
+        ]) : [],
+        // Last transaction date per user
+        TxModel ? TxModel.aggregate([
+            { $match: { userId: { $in: userIds } } },
+            { $group: { _id: '$userId', lastAt: { $max: '$createdAt' } } },
+        ]) : [],
+        // Savings goals count per user
+        SgModel ? SgModel.aggregate([
+            { $match: { userId: { $in: userIds } } },
+            { $group: { _id: '$userId', count: { $sum: 1 } } },
+        ]) : [],
+        // Debts count per user
+        DebtModel ? DebtModel.aggregate([
+            { $match: { userId: { $in: userIds } } },
+            { $group: { _id: '$userId', count: { $sum: 1 } } },
+        ]) : [],
+    ]);
+    
+    // 3. Construire les maps pour accès O(1)
+    const txMap = {};
+    txCounts.forEach(r => { txMap[String(r._id)] = r.count; });
+    const lastTxMap = {};
+    lastTxs.forEach(r => { lastTxMap[String(r._id)] = r.lastAt; });
+    const sgMap = {};
+    sgCounts.forEach(r => { sgMap[String(r._id)] = r.count; });
+    const debtMap = {};
+    debtCounts.forEach(r => { debtMap[String(r._id)] = r.count; });
+    
+    // 4. Enrichir les users
+    const enriched = users.map(u => ({
+        ...u,
+        _txCount: txMap[String(u._id)] || 0,
+        _lastTransactionAt: lastTxMap[String(u._id)] || null,
+        _savingsCount: sgMap[String(u._id)] || 0,
+        _debtCount: debtMap[String(u._id)] || 0,
+        _hasActivity: (txMap[String(u._id)] || 0) > 0,
+    }));
+    
+    sendResponse(res, enriched, 'Utilisateurs enrichis récupérés', true, {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+    });
+});
+
+/**
  * GET /admin/users/:id
  * Détail complet d'un utilisateur + stats d'activité
  */
