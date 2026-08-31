@@ -249,6 +249,14 @@ const registerApplicationRoutes = async (app) => {
   const trividaAdminRoutes = require('../../dryApp/Trivida/features/admin/route/admin.routes');
   app.use('/api/v1/trivida/admin', trividaAdminRoutes);
 
+  // Routes Parrainage Trivida
+  const trividaReferralRoutes = require('../../dryApp/Trivida/features/referral/route/referral.routes');
+  app.use('/api/v1/trivida/referral', injectTrivida, trividaReferralRoutes);
+
+  // Routes Analytics Trivida
+  const trividaAnalyticsRoutes = require('../../dryApp/Trivida/features/analytics/route/analytics.routes');
+  app.use('/api/v1/trivida/analytics', injectTrivida, trividaAnalyticsRoutes);
+
   // Routes alertes administrateur
   app.use('/api/v1/admin/alerts', systemPasswordMiddleware, alertsRoutes);
 

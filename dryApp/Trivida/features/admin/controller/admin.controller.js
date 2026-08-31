@@ -1168,6 +1168,20 @@ exports.sendMessage = asyncHandler(async (req, res) => {
                 ],
             };
             break;
+        case 'no_transaction': {
+            // Trouver les users qui n'ont aucune transaction
+            // Utiliser une agrégation pour trouver les userId dans TrividaTransaction
+            let txUserIds = [];
+            try {
+                const TxModel = req.getModel('TrividaTransaction', TransactionSchema);
+                txUserIds = await TxModel.distinct('userId');
+            } catch (e) { /* model pas dispo */ }
+            filter = {
+                status: 'active',
+                _id: { $nin: txUserIds },
+            };
+            break;
+        }
         case 'custom':
             if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
                 throw httpError('userIds requis pour target=custom', 400);
