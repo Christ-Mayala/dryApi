@@ -179,45 +179,52 @@ function isChristianLoose(video) {
 //      Gratuit, aucune dépendance native. Instances tournantes en rotation.
 //   3. @distube/ytdl-core (dernier recours) : si Piped est down ou bloqué.
 
-// Instances Piped publiques en rotation — on essaie dans l'ordre, on passe
-// à la suivante si une échoue (down, rate-limit, etc.).
+// Instances Piped publiques — testées régulièrement. On lance les appels en
+// parallèle (Promise.any) : la première qui répond gagne, les autres sont
+// annulées. Configurables via PIPED_INSTANCES (CSV).
 const PIPED_INSTANCES = (process.env.PIPED_INSTANCES || [
+  'https://api.piped.projectsegfau.lt',
   'https://pipedapi.kavin.rocks',
   'https://piped-api.garudalinux.org',
-  'https://api.piped.projectsegfau.lt',
-  'https://piped-api.codespace.cz',
+  'https://piped.syncpundit.io',
 ].join(',')).split(',').map((s) => s.trim()).filter(Boolean);
 
 /**
  * Résout l'URL audio via l'API Piped (fallback sans binaire ni cookies).
- * Essaie les instances dans l'ordre jusqu'à en trouver une qui fonctionne.
+ * Envoie les requêtes à toutes les instances EN PARALLÈLE et retourne la
+ * première réponse valide (Promise.any). Timeout 6s par instance.
  * @param {string} id  videoId YouTube validé
  * @returns {Promise<string>} URL du flux audio (proxifiée par Piped)
  */
 async function _getAudioUrlViaPiped(id) {
-  let lastErr;
-  for (const instance of PIPED_INSTANCES) {
-    try {
-      const { data } = await axios.get(`${instance}/streams/${id}`, {
-        timeout: 10000,
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-      });
-      // Choisit le flux audio avec le meilleur débit.
-      const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
-      if (!streams.length) continue;
-      const best = streams.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
-      if (best?.url && /^https?:\/\//.test(best.url)) {
-        return best.url;
-      }
-    } catch (err) {
-      lastErr = err;
-      // Instance down ou rate-limit : on tente la suivante
-    }
+  if (!PIPED_INSTANCES.length) {
+    const e = new Error('Aucune instance Piped configurée');
+    e.statusCode = 502;
+    throw e;
   }
-  const msg = lastErr?.message || 'Toutes les instances Piped ont échoué';
-  const e = new Error(`Extraction audio impossible via Piped (${msg})`);
-  e.statusCode = 502;
-  throw e;
+
+  const attempt = (instance) =>
+    axios.get(`${instance}/streams/${id}`, {
+      timeout: 6000,
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    }).then(({ data }) => {
+      const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
+      const best = streams.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
+      if (!best?.url || !/^https?:\/\//.test(best.url)) {
+        throw new Error(`Pas de flux audio sur ${instance}`);
+      }
+      return best.url;
+    });
+
+  try {
+    // Promise.any : retourne dès la première réussite, ignore les échecs
+    return await Promise.any(PIPED_INSTANCES.map(attempt));
+  } catch {
+    // AggregateError : toutes les instances ont échoué
+    const e = new Error('Extraction audio impossible via Piped (toutes instances indisponibles)');
+    e.statusCode = 502;
+    throw e;
+  }
 }
 
 const audioUrlCache = new Map(); // videoId -> { url, expiresAt }
