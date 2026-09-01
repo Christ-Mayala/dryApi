@@ -170,16 +170,55 @@ function isChristianLoose(video) {
 
 // ─── Extraction du flux audio ────────────────────────────────────────────────
 //
-// Stratégie à deux niveaux :
-//   1. yt-dlp  (méthode principale) : binaire installé via `pip3 install yt-dlp`
-//      dans le Build Command de Render (voir render.yaml). Génère des URLs
-//      non-IP-locked grâce aux clients android/ios/tv — lisibles directement
-//      par le mobile.
-//   2. @distube/ytdl-core (fallback) : librairie Node.js pure, sans binaire.
-//      Utilisée automatiquement quand yt-dlp est absent (ENOENT). Utilise les
-//      clients IOS/ANDROID qui produisent des URLs moins restrictives.
-//      ⚠️ Ces URLs sont liées à l'IP du serveur — valides ~6 h, à ne pas
-//      mettre en cache longtemps.
+// Stratégie à trois niveaux (ordre de priorité) :
+//   1. yt-dlp + cookies (méthode principale) : binaire installé via postinstall.
+//      Avec YTDLP_COOKIES ou YTDLP_COOKIES_FILE contourne le 429 sur datacenter.
+//   2. Piped API (fallback sans binaire, sans cookies) : appel HTTP à une
+//      instance Piped publique (frontend YouTube open-source). L'URL retournée
+//      passe par le proxy de Piped — YouTube ne voit pas l'IP de Render.
+//      Gratuit, aucune dépendance native. Instances tournantes en rotation.
+//   3. @distube/ytdl-core (dernier recours) : si Piped est down ou bloqué.
+
+// Instances Piped publiques en rotation — on essaie dans l'ordre, on passe
+// à la suivante si une échoue (down, rate-limit, etc.).
+const PIPED_INSTANCES = (process.env.PIPED_INSTANCES || [
+  'https://pipedapi.kavin.rocks',
+  'https://piped-api.garudalinux.org',
+  'https://api.piped.projectsegfau.lt',
+  'https://piped-api.codespace.cz',
+].join(',')).split(',').map((s) => s.trim()).filter(Boolean);
+
+/**
+ * Résout l'URL audio via l'API Piped (fallback sans binaire ni cookies).
+ * Essaie les instances dans l'ordre jusqu'à en trouver une qui fonctionne.
+ * @param {string} id  videoId YouTube validé
+ * @returns {Promise<string>} URL du flux audio (proxifiée par Piped)
+ */
+async function _getAudioUrlViaPiped(id) {
+  let lastErr;
+  for (const instance of PIPED_INSTANCES) {
+    try {
+      const { data } = await axios.get(`${instance}/streams/${id}`, {
+        timeout: 10000,
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+      });
+      // Choisit le flux audio avec le meilleur débit.
+      const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
+      if (!streams.length) continue;
+      const best = streams.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
+      if (best?.url && /^https?:\/\//.test(best.url)) {
+        return best.url;
+      }
+    } catch (err) {
+      lastErr = err;
+      // Instance down ou rate-limit : on tente la suivante
+    }
+  }
+  const msg = lastErr?.message || 'Toutes les instances Piped ont échoué';
+  const e = new Error(`Extraction audio impossible via Piped (${msg})`);
+  e.statusCode = 502;
+  throw e;
+}
 
 const audioUrlCache = new Map(); // videoId -> { url, expiresAt }
 
@@ -301,7 +340,18 @@ async function getYoutubeAudioUrl(videoId) {
     return url;
   }
 
-  // ── Tentative 2 : @distube/ytdl-core (fallback) ──────────────────────────
+  // ── Tentative 2 : Piped API (fallback sans binaire ni cookies) ───────────
+  try {
+    const url = await _getAudioUrlViaPiped(id);
+    // Cache 20 min : les URLs Piped expirent plus vite que celles de yt-dlp.
+    audioUrlCache.set(id, { url, expiresAt: Date.now() + 20 * 60 * 1000 });
+    return url;
+  } catch (pipedErr) {
+    // Piped a échoué (toutes instances down) → on tente ytdl-core en dernier recours
+    console.warn('[youtubeAudio] Piped a échoué, tentative ytdl-core:', pipedErr.message);
+  }
+
+  // ── Tentative 3 : @distube/ytdl-core (dernier recours) ───────────────────
   try {
     const url = await _getAudioUrlViaYtdlCore(id);
     // Cache plus court (5 min) : ces URLs sont liées à l'IP du serveur
