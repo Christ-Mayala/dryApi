@@ -309,21 +309,25 @@ async function getYoutubeAudioUrl(videoId) {
     stdout = String(out || '');
   } catch (err) {
     const message = String(err?.stderr || err?.message || err || '');
-    // ENOENT = binaire absent → bascule sur le fallback
+    // ENOENT = binaire absent → bascule sur Piped
     if (err?.code === 'ENOENT' || /ENOENT|not found|no such file/i.test(message)) {
       ytdlpMissing = true;
-      console.warn('[youtubeAudio] yt-dlp introuvable — utilisation du fallback @distube/ytdl-core');
+      console.warn('[youtubeAudio] yt-dlp introuvable — bascule sur Piped API');
+    } else if (/429|Too Many Requests/i.test(message)) {
+      // 429 YouTube sur l'IP de Render → bascule sur Piped (pas de cache d'échec ici)
+      ytdlpMissing = true;
+      console.warn('[youtubeAudio] yt-dlp bloqué par YouTube (429) — bascule sur Piped API');
     } else {
       const firstLine = message.split('\n').find((l) => l.trim()) || message;
       const friendly = firstLine.slice(0, 200);
       audioUrlCache.set(id, {
         url: null,
         error: `Extraction audio impossible (${friendly})`,
-        statusCode: /429/.test(friendly) ? 503 : 502,
+        statusCode: 502,
         expiresAt: Date.now() + 2 * 60 * 1000,
       });
       const e = new Error(`Extraction audio impossible (${friendly})`);
-      e.statusCode = /429/.test(friendly) ? 503 : 502;
+      e.statusCode = 502;
       throw e;
     }
   }
