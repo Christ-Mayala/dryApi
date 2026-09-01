@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dryapi
+    runtime: node
+    plan: free
+    buildCommand: pip3 install yt-dlp && npm ci --production
+    startCommand: node server.js
+    healthCheckPath: /health/live
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: YTDLP_BIN
+        value: yt-dlp

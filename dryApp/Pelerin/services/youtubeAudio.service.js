@@ -3,13 +3,14 @@
  *
  * Deux rôles :
  *  1. EXTRACTION AUDIO (écoute hors application / en arrière-plan) : un
- *     videoId YouTube → URL de flux audio directe, via `yt-dlp`
- *     (`-f bestaudio -g`). Le mobile lit cette URL avec expo-audio : écran
- *     éteint, notification, écran verrouillé, vitesse, sleep timer — tout le
- *     confort des podcasts.
- *     ⚠️ yt-dlp doit être installé sur le serveur (voir README) ; sans lui,
- *     l'endpoint renvoie une erreur explicite. Les URLs YouTube sont signées
- *     et expirent (~6 h) : on les met en cache 30 min, jamais en base.
+ *     videoId YouTube → URL de flux audio directe.
+ *     Méthode principale : `yt-dlp` (`-f bestaudio -g`), installé via
+ *     `pip3 install yt-dlp` dans le Build Command de Render (voir render.yaml).
+ *     Fallback automatique : `@distube/ytdl-core` (pure Node.js, sans binaire)
+ *     si yt-dlp est absent (ENOENT). Le mobile lit cette URL avec expo-audio :
+ *     écran éteint, notification, écran verrouillé, vitesse, sleep timer.
+ *     Les URLs YouTube sont signées et expirent (~6 h) : on les met en cache
+ *     30 min (yt-dlp) / 5 min (fallback ytdl-core), jamais en base.
  *
  *  2. DÉCOUVERTE AUTOMATIQUE (bibliothèque Audio) : recherche sur YouTube
  *     (Data API, clé partagée avec les prédications) de contenus chrétiens
@@ -131,14 +132,53 @@ function isChristianLoose(video) {
   return !NON_CHRISTIAN_MARKERS.some((m) => hay.includes(norm(m)));
 }
 
-// ─── Extraction du flux audio (yt-dlp) ───────────────────────────────────────
+// ─── Extraction du flux audio ────────────────────────────────────────────────
+//
+// Stratégie à deux niveaux :
+//   1. yt-dlp  (méthode principale) : binaire installé via `pip3 install yt-dlp`
+//      dans le Build Command de Render (voir render.yaml). Génère des URLs
+//      non-IP-locked grâce aux clients android/ios/tv — lisibles directement
+//      par le mobile.
+//   2. @distube/ytdl-core (fallback) : librairie Node.js pure, sans binaire.
+//      Utilisée automatiquement quand yt-dlp est absent (ENOENT). Utilise les
+//      clients IOS/ANDROID qui produisent des URLs moins restrictives.
+//      ⚠️ Ces URLs sont liées à l'IP du serveur — valides ~6 h, à ne pas
+//      mettre en cache longtemps.
 
 const audioUrlCache = new Map(); // videoId -> { url, expiresAt }
 
 /**
- * URL de flux audio directe pour un videoId YouTube. Cache 30 min (les URLs
- * signées par YouTube expirent ~6 h). Lève une erreur claire si yt-dlp est
- * absent ou si l'extraction échoue.
+ * Extrait l'URL audio via @distube/ytdl-core (fallback sans yt-dlp).
+ * Utilise les player clients IOS puis ANDROID pour maximiser les chances
+ * d'obtenir une URL exploitable.
+ * @param {string} id  videoId YouTube validé
+ * @returns {Promise<string>} URL du flux audio
+ */
+async function _getAudioUrlViaYtdlCore(id) {
+  const ytdl = require('@distube/ytdl-core');
+  const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, {
+    playerClients: ['IOS', 'ANDROID', 'TV'],
+    requestOptions: { maxRetries: 2 },
+  });
+
+  // Choisit le meilleur format audio seul (m4a/webm), ou le meilleur format
+  // général si l'audio seul n'est pas disponible (ex. SABR uniquement).
+  let format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
+  if (!format) {
+    format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+  }
+  if (!format || !format.url) {
+    const e = new Error('Aucun flux audio disponible pour cette vidéo (ytdl-core).');
+    e.statusCode = 502;
+    throw e;
+  }
+  return format.url;
+}
+
+/**
+ * URL de flux audio directe pour un videoId YouTube.
+ * Cache 30 min (méthode principale) / 5 min (fallback ytdl-core).
+ * Tente d'abord yt-dlp ; si absent, bascule automatiquement sur @distube/ytdl-core.
  * @param {string} videoId
  * @returns {Promise<string>}
  */
@@ -153,13 +193,16 @@ async function getYoutubeAudioUrl(videoId) {
   const cached = audioUrlCache.get(id);
   if (cached && cached.expiresAt > Date.now()) {
     if (cached.url) return cached.url;
-    // Échec récent (ex. 429) : on ne martèle pas YouTube pendant 2 min.
+    // Échec récent mis en cache : évite de marteler YouTube (ex. 429).
     const e = new Error(cached.error || 'Extraction audio impossible (réessaie dans quelques instants)');
     e.statusCode = cached.statusCode || 502;
     throw e;
   }
 
+  // ── Tentative 1 : yt-dlp ────────────────────────────────────────────────
   let stdout = '';
+  let ytdlpMissing = false;
+
   try {
     const { stdout: out } = await execFileAsync(
       YTDLP_BIN,
@@ -168,35 +211,57 @@ async function getYoutubeAudioUrl(videoId) {
     );
     stdout = String(out || '');
   } catch (err) {
-    const message = String(err?.stderr || err?.message || err);
-    if (/not recognized|not found|not a valid/i.test(message) && !/youtube/i.test(message)) {
-      const e = new Error('yt-dlp est introuvable sur le serveur — installe-le (python -m pip install yt-dlp) pour activer l\'écoute audio.');
-      e.statusCode = 503;
+    const message = String(err?.stderr || err?.message || err || '');
+    // ENOENT = binaire absent → bascule sur le fallback
+    if (err?.code === 'ENOENT' || /ENOENT|not found|no such file/i.test(message)) {
+      ytdlpMissing = true;
+      console.warn('[youtubeAudio] yt-dlp introuvable — utilisation du fallback @distube/ytdl-core');
+    } else {
+      const firstLine = message.split('\n').find((l) => l.trim()) || message;
+      const friendly = firstLine.slice(0, 200);
+      audioUrlCache.set(id, {
+        url: null,
+        error: `Extraction audio impossible (${friendly})`,
+        statusCode: /429/.test(friendly) ? 503 : 502,
+        expiresAt: Date.now() + 2 * 60 * 1000,
+      });
+      const e = new Error(`Extraction audio impossible (${friendly})`);
+      e.statusCode = /429/.test(friendly) ? 503 : 502;
       throw e;
     }
-    const firstLine = message.split('\n').find((l) => l.trim()) || message;
-    const friendly = firstLine.slice(0, 200);
-    // Cache d'échec court : évite de marteler YouTube quand il limite (429).
+  }
+
+  // yt-dlp a réussi : extraire l'URL de stdout
+  if (!ytdlpMissing) {
+    const url = stdout.trim().split('\n')[0];
+    if (!url || !/^https?:\/\//.test(url)) {
+      const e = new Error('Aucun flux audio disponible pour cette vidéo.');
+      e.statusCode = 502;
+      throw e;
+    }
+    audioUrlCache.set(id, { url, expiresAt: Date.now() + 30 * 60 * 1000 });
+    return url;
+  }
+
+  // ── Tentative 2 : @distube/ytdl-core (fallback) ──────────────────────────
+  try {
+    const url = await _getAudioUrlViaYtdlCore(id);
+    // Cache plus court (5 min) : ces URLs sont liées à l'IP du serveur
+    // et expireront côté YouTube si l'IP change entre le cache et la lecture.
+    audioUrlCache.set(id, { url, expiresAt: Date.now() + 5 * 60 * 1000 });
+    return url;
+  } catch (fallbackErr) {
+    const msg = String(fallbackErr?.message || fallbackErr).slice(0, 200);
     audioUrlCache.set(id, {
       url: null,
-      error: `Extraction audio impossible (${friendly})`,
-      statusCode: /429/.test(friendly) ? 503 : 502,
+      error: `Extraction audio impossible (${msg})`,
+      statusCode: fallbackErr?.statusCode || 502,
       expiresAt: Date.now() + 2 * 60 * 1000,
     });
-    const e = new Error(`Extraction audio impossible (${friendly})`);
-    e.statusCode = /429/.test(friendly) ? 503 : 502;
+    const e = new Error(`Extraction audio impossible (${msg})`);
+    e.statusCode = fallbackErr?.statusCode || 502;
     throw e;
   }
-
-  const url = stdout.trim().split('\n')[0];
-  if (!url || !/^https?:\/\//.test(url)) {
-    const e = new Error('Aucun flux audio disponible pour cette vidéo.');
-    e.statusCode = 502;
-    throw e;
-  }
-
-  audioUrlCache.set(id, { url, expiresAt: Date.now() + 30 * 60 * 1000 });
-  return url;
 }
 
 // ─── Découverte automatique (YouTube Data API) ───────────────────────────────

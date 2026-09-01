@@ -7,7 +7,7 @@ const { resolveChannelId, getUploadsPlaylistId } = require('../../../services/ho
 /** Extrait le handle YouTube d'une URL (@ICCTV, youtube.com/@ICCTV, …). */
 function extractHandle(input = '') {
   const s = String(input).trim();
-  const m = s.match(/youtube\.com\/@([A-Za-z0-9_.\-ç%]+)/i);
+  const m = s.match(/youtube\.com\/\/?@([A-Za-z0-9_.\-ç%]+)/i);
   if (m) return '@' + m[1];
   if (/^@[A-Za-z0-9_.\-ç%]+$/.test(s)) return s;
   return null;
