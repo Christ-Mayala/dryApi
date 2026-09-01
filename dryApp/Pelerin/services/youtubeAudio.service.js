@@ -43,12 +43,48 @@ const MAX_AUDIO_TRACKS = Math.max(50, parseInt(process.env.YOUTUBE_AUDIO_MAX || 
 // parfois indisponible (expérience SABR) → le fallback `best` renvoie un mp4
 // audio+vidéo (itag 18) que le lecteur audio joue sans souci.
 const YTDLP_EXTRACTOR_ARGS = 'youtube:player_client=android,ios,tv';
-const YTDLP_ARGS = [
+const YTDLP_ARGS_BASE = [
   '-f', 'bestaudio/best',
   '-g',
   '--no-playlist',
   '--extractor-args', YTDLP_EXTRACTOR_ARGS,
 ];
+
+/**
+ * Construit les arguments yt-dlp en injectant les cookies si disponibles.
+ * Cookies acceptés sous deux formats via variables d'env :
+ *   YTDLP_COOKIES_FILE   = chemin absolu vers un fichier cookies Netscape
+ *   YTDLP_COOKIES        = contenu Netscape brut (sera écrit dans /tmp)
+ */
+function buildYtdlpArgs(videoUrl) {
+  const args = [...YTDLP_ARGS_BASE];
+
+  const cookiesFile = process.env.YTDLP_COOKIES_FILE;
+  const cookiesContent = process.env.YTDLP_COOKIES;
+
+  if (cookiesFile) {
+    args.push('--cookies', cookiesFile);
+  } else if (cookiesContent) {
+    // Écrit les cookies dans un fichier temporaire à la première utilisation
+    // (évite de créer un fichier à chaque requête).
+    if (!buildYtdlpArgs._tmpFile) {
+      const os = require('os');
+      const path = require('path');
+      const fs = require('fs');
+      const tmpPath = path.join(os.tmpdir(), 'yt-cookies.txt');
+      try {
+        fs.writeFileSync(tmpPath, cookiesContent, 'utf8');
+        buildYtdlpArgs._tmpFile = tmpPath;
+      } catch { /* silencieux : on continue sans cookies */ }
+    }
+    if (buildYtdlpArgs._tmpFile) {
+      args.push('--cookies', buildYtdlpArgs._tmpFile);
+    }
+  }
+
+  args.push(videoUrl);
+  return args;
+}
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
@@ -228,7 +264,7 @@ async function getYoutubeAudioUrl(videoId) {
   try {
     const { stdout: out } = await execFileAsync(
       YTDLP_BIN,
-      [...YTDLP_ARGS, `https://www.youtube.com/watch?v=${id}`],
+      buildYtdlpArgs(`https://www.youtube.com/watch?v=${id}`),
       { timeout: 45000, maxBuffer: 2 * 1024 * 1024, windowsHide: true },
     );
     stdout = String(out || '');
