@@ -149,17 +149,39 @@ const audioUrlCache = new Map(); // videoId -> { url, expiresAt }
 
 /**
  * Extrait l'URL audio via @distube/ytdl-core (fallback sans yt-dlp).
- * Utilise les player clients IOS puis ANDROID pour maximiser les chances
- * d'obtenir une URL exploitable.
+ * Utilise uniquement les player clients IOS/ANDROID (non bloqués par YouTube
+ * sur les IPs de datacenter). Si YOUTUBE_COOKIES est défini en variable
+ * d'environnement (JSON exporté depuis EditThisCookie), il est utilisé pour
+ * passer le rate-limit YouTube (429).
  * @param {string} id  videoId YouTube validé
  * @returns {Promise<string>} URL du flux audio
  */
 async function _getAudioUrlViaYtdlCore(id) {
   const ytdl = require('@distube/ytdl-core');
-  const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, {
-    playerClients: ['IOS', 'ANDROID', 'TV'],
-    requestOptions: { maxRetries: 2 },
-  });
+
+  // Cookies optionnels : réduisent drastiquement le risque de 429 sur serveur.
+  // Exporter les cookies YouTube depuis le navigateur (format JSON EditThisCookie)
+  // et les mettre dans YOUTUBE_COOKIES (variable d'env Render).
+  let agent;
+  try {
+    const cookiesEnv = process.env.YOUTUBE_COOKIES;
+    if (cookiesEnv) {
+      const cookies = JSON.parse(cookiesEnv);
+      agent = ytdl.createAgent(cookies);
+    }
+  } catch {
+    // Cookies malformés : on continue sans
+  }
+
+  const options = {
+    // IOS et ANDROID ne sont pas bloqués par l'anti-bot YouTube sur les
+    // IPs de datacenter contrairement au client WEB.
+    playerClients: ['IOS', 'ANDROID'],
+    requestOptions: { maxRetries: 3 },
+  };
+  if (agent) options.agent = agent;
+
+  const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, options);
 
   // Choisit le meilleur format audio seul (m4a/webm), ou le meilleur format
   // général si l'audio seul n'est pas disponible (ex. SABR uniquement).
