@@ -20,6 +20,8 @@ const UserSchema = new mongoose.Schema({
     premiumPlan: { type: String, enum: ['free', 'starter', 'community', 'pro', 'enterprise', 'premium', 'business', 'standard'], default: 'community' },
     aiRequestsToday: { type: Number, default: 0 },
     aiRequestsResetAt: { type: Date },
+    // Bonus IA permanent gagné via parrainage (s'ajoute au quota quotidien de base)
+    aiBonusRequests: { type: Number, default: 0 },
     trialUsed: { type: Boolean, default: false },
     paymentHistory: [{
         plan: { type: String },

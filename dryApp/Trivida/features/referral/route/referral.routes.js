@@ -11,10 +11,16 @@ const {
   getStats,
   validateCode,
   activateReward,
+  getReferralInfo,
 } = require('../controller/referral.controller');
 
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { withAudit } = require('../../../../../dry/middlewares/audit');
+
+// Public : lien de parrainage partagé (GET ?code=XXX, sans auth).
+// Sans cette route, un clic sur le lien partagé renvoyait « Route introuvable »
+// (la route POST homonyme est authentifiée et réservée au flux d'inscription).
+router.get('/validate', getReferralInfo);
 
 // Routes authentifiées
 router.get('/code', protect, withAudit('REFERRAL_GET_CODE'), getMyCode);

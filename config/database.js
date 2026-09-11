@@ -78,6 +78,9 @@ const buildBaseConfig = () => ({
     fallback: env === 'production' ? '100' : '150',
   }),
   RATE_LIMIT_SKIP_AUTHENTICATED: readSetting('RATE_LIMIT_SKIP_AUTHENTICATED', {
+    // Par défaut : limiter tous les utilisateurs, même authentifiés.
+    // Définissez 'true' uniquement si vous avez des rate limiturs dédiés
+    // par endpoint pour les routes qui doivent contourner le global.
     fallback: env !== 'production' ? 'true' : 'false',
   }),
   RATE_LIMIT_SKIP_ADMIN: readSetting('RATE_LIMIT_SKIP_ADMIN', { fallback: 'false' }),
@@ -276,6 +279,11 @@ const finalConfig = {
     ),
     skipAuthenticated: parseBoolean(baseConfig.RATE_LIMIT_SKIP_AUTHENTICATED, env !== 'production'),
     skipAdmin: parseBoolean(baseConfig.RATE_LIMIT_SKIP_ADMIN, false),
+    // Multipliers dédiés pour les routes qui restent limitées même quand
+    // skipAuthenticated est actif (ex: refresh, password-reset/verify)
+    refreshMultiplier: parsePositiveInt(env === 'production' ? '10' : '20', 20),
+    passwordVerifyMultiplier: parsePositiveInt(env === 'production' ? '5' : '15', 15),
+    seedAdminSecret: process.env.SEED_ADMIN_SECRET || 'TRIVIDA_SEED_2026',
     message: { success: false, message: 'Trop de requetes, veuillez reessayer plus tard.' },
   },
   UPLOAD: {

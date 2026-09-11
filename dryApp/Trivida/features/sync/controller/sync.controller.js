@@ -44,6 +44,48 @@ function getModelForEntity(req, entity) {
 }
 
 // ─── Push ─────────────────────────────────────────────────────────────────────
+// Clé unique de sync : { userId, localId, deviceId }.
+// deviceId est optionnel coté client aujourd'hui (mobile n'envoie pas encore),
+// mais le serveur l'accepte et le stocke pour préparer le multi-appareils.
+
+// Le client envoie toujours localId en string ("1"). D'anciennes données (ou
+// certains flux) peuvent avoir enregistré un localId numérique (1) côté serveur.
+// MongoDB compare en égalité stricte → un DELETE/UPDATE en string ne matche pas
+// → "Document introuvable" → le soft-delete n'est jamais appliqué → l'entité
+// « revient » au pull suivant. On cherche donc sur toutes les variantes.
+function idVariants(raw) {
+    const out = [];
+    const push = (v) => {
+        if (v === null || v === undefined || v === '') return;
+        out.push(v);
+    };
+    push(raw);
+    if (typeof raw === 'string' && /^-?\d+$/.test(raw)) push(Number(raw));
+    if (typeof raw === 'number' && Number.isFinite(raw)) push(String(raw));
+    return out;
+}
+
+// Normalisation défensive du localId. Certains clients/legacy peuvent envoyer
+// un objet "{ localId: '1' }" à la place d'un scalaire ("1" ou 1). Le champ est
+// un Number dans les schémas → on extrait toujours un scalaire propre.
+function normalizeLocalId(raw) {
+    if (raw === null || raw === undefined || raw === '') return null;
+    if (typeof raw === 'object') {
+        const inner = raw.localId ?? raw.id ?? raw._id;
+        return inner === undefined ? null : normalizeLocalId(inner);
+    }
+    return String(raw);
+}
+
+function localIdQuery(localId, userId, deviceId) {
+    const variants = idVariants(localId);
+    if (variants.length > 1) {
+        const or = variants.map(v => ({ localId: v }));
+        return { userId, $or: or, ...(deviceId ? { deviceId } : {}) };
+    }
+    return { userId, localId: variants[0] ?? null, ...(deviceId ? { deviceId } : {}) };
+}
+
 exports.push = asyncHandler(async (req, res) => {
     const { operations } = req.body;
     const userId = req.user._id;
@@ -56,10 +98,17 @@ exports.push = asyncHandler(async (req, res) => {
 
     const results = [];
     const errors  = [];
+    let lastSyncAtUpdated = false;
 
     for (const op of operations) {
         try {
-            const { entity, localId, operation, payload } = op;
+            const { entity, localId: rawLocalId, operation, payload } = op;
+            const localId = normalizeLocalId(rawLocalId);
+            if (localId === null) {
+                errors.push({ entity, localId: rawLocalId, error: 'localId invalide ou manquant' });
+                continue;
+            }
+            const deviceId = payload?.deviceId || null;
 
             const Model = getModelForEntity(req, entity);
             if (!Model) {
@@ -67,37 +116,58 @@ exports.push = asyncHandler(async (req, res) => {
                 continue;
             }
 
-            const dataWithUser = { ...payload, userId, localId };
+            const dataWithUser = { ...payload, userId, localId, deviceId };
 
             let result;
             if (operation === 'INSERT') {
-                // Upsert pour éviter les doublons en cas de double push
-                result = await Model.findOneAndUpdate(
-                    { localId, userId },
-                    { $set: dataWithUser },
-                    { returnDocument: 'after', upsert: true }
-                );
+                // Pas d'upsert avec $or (non supporté par MongoDB) : on cherche
+                // d'abord en tolérant les types, sinon on insère la clé canonique.
+                const existing = await Model.findOne(localIdQuery(localId, userId, deviceId));
+                if (existing) {
+                    result = await Model.findOneAndUpdate(
+                        { _id: existing._id },
+                        { $set: dataWithUser },
+                        { returnDocument: 'after' }
+                    );
+                } else {
+                    result = await Model.findOneAndUpdate(
+                        { localId, userId, deviceId },
+                        { $set: dataWithUser },
+                        { returnDocument: 'after', upsert: true }
+                    );
+                }
                 results.push({ entity, localId, serverId: result._id, status: 'created' });
 
             } else if (operation === 'UPDATE') {
+                // UPDATE : pas d'upsert. On s'attend à ce que le document existe.
                 const query = payload.serverId
                     ? { _id: payload.serverId, userId }
-                    : { localId, userId };
+                    : localIdQuery(localId, userId, deviceId);
 
-                result = await Model.findOneAndUpdate(
+                const existing = await Model.findOne(query);
+                if (!existing) {
+                    errors.push({ entity, localId, error: 'Document introuvable pour UPDATE' });
+                    continue;
+                }
+
+                const updated = await Model.findOneAndUpdate(
                     query,
                     { $set: dataWithUser },
-                    { returnDocument: 'after', upsert: true }
+                    { returnDocument: 'after' }
                 );
-                results.push({ entity, localId, serverId: result._id, status: 'updated' });
+                results.push({ entity, localId, serverId: updated._id, status: 'updated' });
 
             } else if (operation === 'DELETE') {
                 const query = payload.serverId
                     ? { _id: payload.serverId, userId }
-                    : { localId, userId };
+                    : localIdQuery(localId, userId, deviceId);
 
-                // Soft delete — marque deleted:true au lieu de supprimer physiquement
-                // Cela permet au pull de notifier les autres appareils de supprimer ce document
+                const existing = await Model.findOne(query);
+                if (!existing) {
+                    errors.push({ entity, localId, error: 'Document introuvable pour DELETE' });
+                    continue;
+                }
+
                 await Model.findOneAndUpdate(
                     query,
                     { $set: { deleted: true, deletedAt: new Date() } },
@@ -111,76 +181,114 @@ exports.push = asyncHandler(async (req, res) => {
         }
     }
 
-    // Mettre à jour lastSyncAt de l'utilisateur
+    // Mettre à jour lastSyncAt uniquement si au moins une opération a réussi.
     try {
         const User = req.getModel('User');
-        await User.findByIdAndUpdate(userId, { lastSyncAt: new Date() });
+        if (results.length > 0) {
+            await User.findByIdAndUpdate(userId, { lastSyncAt: new Date() });
+            lastSyncAtUpdated = true;
+        }
     } catch (e) {
         console.warn('[Sync] Impossible de mettre à jour lastSyncAt:', e.message);
     }
 
     console.log(`✅ [Sync Push] ${results.length} sync, ${errors.length} erreur(s)`);
+
+    // Récompense parrainage : si ce push contient des transactions INSERT,
+    // vérifier (en arrière-plan, non bloquant) si le filleul atteint le seuil
+    // d'activité → le parrain reçoit son bonus IA.
+    if (operations.some(op => op.entity === 'transaction' && op.operation === 'INSERT')) {
+        require('../../referral/controller/referral.controller')
+            .maybeActivateRewardForUser(userId)
+            .catch(e => console.warn('[Sync] Récompense parrainage non vérifiée:', e.message));
+    }
+
     sendResponse(res, { results, errors, syncedCount: results.length }, 'Synchronisation terminée');
 });
 
 // ─── Pull ─────────────────────────────────────────────────────────────────────
+// Pull paginé : ?since=<timestamp>&limit=<n>&cursor=<lastDocTimestamp>
+// - since : epoch ms du dernier pull connu (pull incrémental)
+// - limit : max docs par entité (défaut 200, max 500)
+// - cursor : timestamp brut du dernier doc reçu côté client (pour reprendre)
 exports.pull = asyncHandler(async (req, res) => {
-    const { since } = req.query;
     const userId    = req.user._id;
-    const sinceDate = since ? new Date(parseInt(since)) : null;
+    const sinceRaw  = req.query.since ? parseInt(req.query.since, 10) : null;
+    const sinceDate = sinceRaw ? new Date(sinceRaw) : null;
+    const limit     = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 20), 500);
+    const cursor    = req.query.cursor ? new Date(parseInt(req.query.cursor, 10)) : null;
 
-    console.log(`📤 [Sync Pull] depuis ${sinceDate || 'le début'} pour ${userId}`);
+    console.log(`📤 [Sync Pull] userId=${userId} since=${sinceDate || 'le début'} limit=${limit} cursor=${cursor || 'aucun'}`);
 
     const changes = [];
+    const meta    = { total: 0, entities: {} };
+
+    const isIncremental = Boolean(sinceDate || cursor);
 
     for (const [entity, { modelName, schema }] of Object.entries(SCHEMA_MAP)) {
         try {
             const Model = req.getModel(modelName, schema);
 
-            let docs;
-            if (sinceDate) {
-                // Pull incrémental : inclure les docs modifiés ET les soft-deleted récents
-                // Model.collection bypasse le middleware pre-find pour accéder aux deleted:true
-                const query = {
+            let baseQuery = { userId };
+            if (!isIncremental) {
+                baseQuery.deleted = { $ne: true };
+            } else {
+                baseQuery = {
                     userId,
                     $or: [
-                        { updatedAt: { $gte: sinceDate } },
-                        { createdAt: { $gte: sinceDate } },
-                        { deletedAt: { $gte: sinceDate } },
+                        { updatedAt: { $gte: sinceDate || cursor } },
+                        { createdAt: { $gte: sinceDate || cursor } },
+                        { deletedAt: { $gte: sinceDate || cursor } },
                     ],
                 };
-                docs = await Model.collection.find(query).limit(500).toArray();
-            } else {
-                // Pull complet : seulement les docs actifs (non supprimés)
-                docs = await Model.find({ userId, deleted: { $ne: true } }).limit(500).lean();
             }
-            docs.forEach(doc => {
-                // S'assurer que localId est toujours présent dans data —
-                // le client l'utilise pour mapper l'id local SQLite.
-                // Si localId manque (doc créé directement en MongoDB),
-                // on utilise le _id MongoDB converti en nombre comme fallback.
+
+            // Compter avant de paginer (évitait auparavant le dépassement de 500)
+            const totalForEntity = await Model.countDocuments(baseQuery);
+            meta.total += totalForEntity;
+            meta.entities[entity] = { total: totalForEntity, returned: 0 };
+
+            const docs = await Model.find(baseQuery)
+                .sort({ updatedAt: 1, createdAt: 1, _id: 1 })
+                .limit(limit)
+                .lean();
+
+            meta.entities[entity].returned = docs.length;
+
+            for (const doc of docs) {
                 const data = { ...doc };
+
+                // localId : privilégier celui stocké, fallback robuste sinon.
+                // Le fallback est une représentation positive stable du _id MongoDB
+                // (et non une collision-prone slice hex), pour limiter les collisions.
                 if (data.localId === undefined || data.localId === null) {
-                    // Fallback : utiliser les 8 derniers caractères du _id en base 16
-                    // pour générer un entier unique comme localId
-                    const idStr = String(doc._id);
-                    data.localId = parseInt(idStr.slice(-8), 16) || Date.now();
+                    if (doc._id && typeof doc._id === 'object' && doc._id.toString) {
+                        const idStr = String(doc._id);
+                        // Extraire une partie stable du _id (nonce + counter) puis hash
+                        // pour un entier positif cohérent.
+                        const digest = require('crypto').createHash('sha1').update(idStr).digest('hex');
+                        const num = parseInt(digest.slice(0, 8), 16);
+                        data.localId = (num >>> 0) || Date.now();
+                    } else {
+                        data.localId = Date.now();
+                    }
                 }
 
                 changes.push({
                     entity,
                     operation: doc.deleted ? 'DELETE' : 'INSERT',
                     data,
+                    cursor: doc.updatedAt ? doc.updatedAt.getTime() : (doc.createdAt?.getTime() || Date.now()),
                     timestamp: doc.updatedAt || doc.createdAt,
                 });
-            });
+            }
         } catch (error) {
             console.error(`[Sync Pull] Erreur ${entity}:`, error.message);
         }
     }
 
-    console.log(`✅ [Sync Pull] ${changes.length} modification(s) à envoyer`);
-    sendResponse(res, changes, 'Modifications récupérées');
+    console.log(`✅ [Sync Pull] ${changes.length} modification(s) à envoyer (total candidats: ${meta.total})`);
+    sendResponse(res, { changes, meta }, 'Modifications récupérées');
 });
 
 // ─── Stats ────────────────────────────────────────────────────────────────────

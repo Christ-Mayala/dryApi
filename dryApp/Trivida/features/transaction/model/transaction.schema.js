@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  deviceId: { type: String },
   localId: { type: Number },  type: { 
     type: String, 
     required: true,

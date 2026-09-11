@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ProductCatalogSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  deviceId: { type: String },
   localId: { type: String },
   barcode: { type: String, required: true },
   name: { type: String, required: true },

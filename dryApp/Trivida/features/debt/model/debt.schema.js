@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const DebtSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  deviceId: { type: String },
     localId: { type: Number },
     
     contactName: { type: String, required: true },

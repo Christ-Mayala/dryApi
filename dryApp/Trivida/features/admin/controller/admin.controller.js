@@ -1723,15 +1723,33 @@ async function countEntity(req, modelName, schema) {
 /**
  * POST /admin/seed-admins
  * Crée admin + superadmin si absents.
- * Protégé par un secret dans le body : { secret: 'TRIVIDA_SEED_2026' }
+ * Ça ne doit être appelé qu'UNE SEULE FOIS par tenant (première initialisation).
+ * Aprés ça, désactiver l'endpoint ou lever le secret dans le .env (voir route).
  */
 exports.seedAdmins = asyncHandler(async (req, res) => {
-    const { secret } = req.body;
-    if (secret !== 'TRIVIDA_SEED_2026') {
-        throw httpError('Secret invalide', 403);
+    // Le routeur injecte déjà req.body.secret == config.seedAdminSecret,
+    // mais on re-vérifie pour rester robuste si le routeur est monté ailleurs.
+    const { secret } = req.body || {};
+    const configuredSecret = config.seedAdminSecret || 'TRIVIDA_SEED_2026';
+    if (!secret || secret !== configuredSecret) {
+        throw httpError('Secret invalide ou manquant', 403);
     }
 
     const User = req.getModel('User');
+
+    // Empêcher les appels répétés : si les deux comptes existent déjà,
+    // on répond simplement sans réécrire les mots de passe.
+    const superadmin = await User.findOne({ email: 'superadmin@trivida.app' }).select('+password');
+    const admin = await User.findOne({ email: 'admin@trivida.app' }).select('+password');
+    if (superadmin && admin && superadmin.role === 'superadmin' && admin.role === 'admin') {
+        return sendResponse(res, {
+            accounts: [
+                { email: 'superadmin@trivida.app', action: 'already_exists', role: 'superadmin' },
+                { email: 'admin@trivida.app', action: 'already_exists', role: 'admin' },
+            ],
+            schemaInfo: { roleEnum: (User.schema.path('role')?.enumValues || ['user', 'admin']), hasSuperadmin: User.schema.path('role')?.enumValues?.includes('superadmin') },
+        }, 'Seed admins déjà effectué');
+    }
     const results = [];
 
     // On crée les deux avec role 'admin' d'abord (compatible tout schema)

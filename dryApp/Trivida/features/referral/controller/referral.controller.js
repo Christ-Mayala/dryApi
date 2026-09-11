@@ -97,7 +97,7 @@ exports.getMyCode = asyncHandler(async (req, res) => {
     totalInvited,
     totalRegistered,
     totalRewarded,
-    premiumDaysEarned: totalRewarded * 7, // 7 jours Premium par filleul actif
+    aiRequestsEarned: totalRewarded, // +1 requête IA par filleul actif
   }, 'Code de parrainage');
 });
 
@@ -120,7 +120,8 @@ exports.getStats = asyncHandler(async (req, res) => {
     pending: referrals.filter(r => r.status === 'pending').length,
     completed: referrals.filter(r => r.status === 'completed').length,
     rewarded: referrals.filter(r => r.status === 'rewarded').length,
-    premiumDaysEarned: referrals.filter(r => r.status === 'rewarded').length * 7,
+    premiumDaysEarned: referrals.filter(r => r.status === 'rewarded').length * 1,
+    aiRequestsEarned: referrals.filter(r => r.status === 'rewarded').length, // +1 requête IA par filleul actif
     referrals: referrals.map(r => ({
       email: r.referredEmail || r.referrerEmail,
       status: r.status,
@@ -131,6 +132,82 @@ exports.getStats = asyncHandler(async (req, res) => {
   };
   
   sendResponse(res, stats, 'Statistiques de parrainage');
+});
+
+/**
+ * GET /referral/validate (public — ?code=XXX)
+ * Point d'arrivée du lien partagé : valide un code et renvoie les infos du
+ * parrain, sans authentification. Purement informatif (aucune attribution) —
+ * la validation réelle s'effectue via POST /referral/validate lors de
+ * l'inscription dans l'application.
+ */
+exports.getReferralInfo = asyncHandler(async (req, res) => {
+  const Referral = getReferralModel(req);
+  if (!Referral) throw httpError('Service de parrainage indisponible', 503);
+
+  const { code } = req.query;
+  const normalizedCode = (code || '').trim().toUpperCase();
+
+  if (normalizedCode.length < 4) {
+    throw httpError('Code de parrainage invalide', 400);
+  }
+
+  const referral = await Referral.findOne({ referralCode: normalizedCode, deleted: { $ne: true } }).lean();
+  if (!referral) {
+    throw httpError('Code de parrainage introuvable', 404);
+  }
+
+  let referrerName = 'Un ami';
+  try {
+    const User = req.getModel('User');
+    const referrer = await User.findById(referral.referrerId).select('name').lean();
+    if (referrer?.name) referrerName = referrer.name;
+  } catch (e) {
+    // Silencieux — on affiche « Un ami » en secours
+  }
+
+  const payload = {
+    code: normalizedCode,
+    valid: true,
+    referrerName,
+    message: `Rejoins Trivida avec le code ${normalizedCode} et gagne des requêtes IA gratuites !`,
+  };
+
+  // Clic depuis un navigateur → petite page de présentation lisible
+  // (l'app consomme le JSON ; l'humain consomme l'HTML).
+  const acceptsHtml = (req.headers.accept || '').includes('text/html');
+  if (acceptsHtml) {
+    const deepLink = `trivida://open?code=${normalizedCode}`;
+    const storePackage = 'com.christ_mayala.trivida';
+    const storeUrl = `https://play.google.com/store/apps/details?id=${storePackage}&referrer=utm_source%3Dreferral%26utm_campaign%3D${normalizedCode}`;
+    const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trivida — Invitation</title>
+<style>
+  body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#0A1F16,#006B4D 60%,#00A876);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center}
+  .card{padding:40px 24px;max-width:440px}
+  .logo{font-size:44px;font-weight:900;letter-spacing:1px}
+  .sub{opacity:.85;margin-top:10px;font-size:17px;line-height:1.5}
+  .code{margin:26px auto;padding:16px;background:rgba(255,255,255,.14);border:1px dashed rgba(255,255,255,.5);border-radius:14px;font-size:26px;font-weight:800;letter-spacing:4px;max-width:280px}
+  .btns{display:flex;flex-direction:column;gap:12px;margin-top:8px;align-items:stretch}
+  .btn{display:block;padding:15px 30px;background:#FFD54F;color:#12281F;font-weight:800;border-radius:999px;text-decoration:none;font-size:16px}
+  .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35)}
+  .small{margin-top:18px;font-size:13px;opacity:.7}
+</style></head>
+<body><div class="card">
+  <div class="logo">Trivida</div>
+  <div class="sub">${referrerName.replace(/[<>&"']/g, '')} t'invite à prendre le contrôle de tes finances.</div>
+  <div class="code">${normalizedCode}</div>
+  <div class="btns">
+    <a class="btn" href="${deepLink}">Ouvrir Trivida</a>
+    <a class="btn ghost" href="${storeUrl}">Installer Trivida (Play Store)</a>
+  </div>
+  <div class="small">Code valide : 1 requête IA gratuite pour ton filleul comme pour toi.</div>
+</div></body></html>`;
+    return res.type('html').send(html);
+  }
+
+  sendResponse(res, payload, 'Code de parrainage valide');
 });
 
 /**
@@ -176,30 +253,84 @@ exports.validateCode = asyncHandler(async (req, res) => {
   referral.registeredAt = new Date();
   await referral.save();
   
-  // Créer une récompense pour le filleul (3 jours Premium)
-  const REWARD_DAYS_NEW_USER = 3;
+  // Récompense immédiate pour le filleul : +1 requête IA (bonus permanent)
+  const REWARD_AI_REQUESTS_NEW_USER = 1;
   const User = req.getModel('User');
   try {
-    const user = await User.findById(userId);
-    if (user) {
-      user.isPremium = true;
-      user.premiumPlan = 'premium';
-      const currentExpiry = user.premiumUntil && new Date(user.premiumUntil) > new Date() 
-        ? new Date(user.premiumUntil) 
-        : new Date();
-      user.premiumUntil = new Date(currentExpiry.getTime() + REWARD_DAYS_NEW_USER * 24 * 60 * 60 * 1000);
-      await user.save();
-    }
+    await User.findByIdAndUpdate(
+      userId,
+      { $inc: { aiBonusRequests: REWARD_AI_REQUESTS_NEW_USER } },
+      { new: true }
+    );
   } catch (e) {
-    console.warn('[Referral] Impossible de give premium au filleul:', e.message);
+    console.warn('[Referral] Impossible d’ajouter le bonus IA au filleul:', e.message);
   }
   
   sendResponse(res, {
     referrerName: req.user.name || 'Votre ami',
-    rewardDays: REWARD_DAYS_NEW_USER,
-    message: `Bienvenue ! Vous recevez ${REWARD_DAYS_NEW_USER} jours Premium grâce à votre parrainage.`,
+    rewardAiRequests: REWARD_AI_REQUESTS_NEW_USER,
+    message: `Bienvenue ! Vous recevez +${REWARD_AI_REQUESTS_NEW_USER} requête IA gratuite grâce à votre parrainage.`,
   }, 'Code de parrainage validé');
 });
+
+/**
+ * Helper — Vérifier et activer la récompense du parrain d'un filleul donné.
+ * Appelé automatiquement par le sync push quand des transactions sont insérées.
+ * Ne lève jamais d'erreur (fire-and-forget).
+ */
+exports.maybeActivateRewardForUser = async function (referredUserId) {
+  try {
+    // Accès direct aux modèles Trivida (hors cycle request) via la fabrique tenant.
+    // Ne PAS utiliser mongoose.model() : les modèles Trivida sont compilés sur la
+    // connexion dédiée (TrividaDB via useDb), pas sur la connexion par défaut.
+    const getModel = require('../../../../../dry/core/factories/modelFactory');
+    const ReferralSchema = require('../model/referral.schema');
+    const TransactionSchema = require('../../transaction/model/transaction.schema');
+
+    let Referral, TxModel, User;
+    try {
+      Referral = getModel('Trivida', 'TrividaReferral', ReferralSchema);
+      TxModel = getModel('Trivida', 'TrividaTransaction', TransactionSchema);
+      User = getModel('Trivida', 'User');
+    } catch (e) {
+      return; // connexion cluster pas encore prête (serveur froid) — silencieux
+    }
+
+    const referral = await Referral.findOne({
+      referredUserId,
+      status: 'completed',
+      deleted: { $ne: true },
+    }).lean();
+    if (!referral) return; // ce user n'est pas un filleul en attente de récompense
+
+    const txCount = await TxModel.countDocuments({ userId: referredUserId, deleted: { $ne: true } });
+    const ACTIVITY_THRESHOLD = 5;
+    if (txCount < ACTIVITY_THRESHOLD) return;
+
+    // Seuil atteint → récompenser le parrain (+1 requête IA)
+    const REWARD_AI_REQUESTS_REFERRER = 1;
+    await User.findByIdAndUpdate(
+      referral.referrerId,
+      { $inc: { aiBonusRequests: REWARD_AI_REQUESTS_REFERRER } }
+    );
+
+    await Referral.updateOne(
+      { _id: referral._id },
+      {
+        $set: {
+          status: 'rewarded',
+          referrerReward: REWARD_AI_REQUESTS_REFERRER,
+          referredReward: REWARD_AI_REQUESTS_REFERRER,
+          rewardType: 'ai_requests',
+          rewardedAt: new Date(),
+        },
+      }
+    );
+    console.log(`🎁 [Referral] Parrain ${referral.referrerId} récompensé (+${REWARD_AI_REQUESTS_REFERRER} requête IA) via filleul ${referredUserId} (${txCount} transactions)`);
+  } catch (e) {
+    console.warn('[Referral] maybeActivateRewardForUser:', e.message);
+  }
+};
 
 /**
  * POST /referral/reward
@@ -239,37 +370,32 @@ exports.activateReward = asyncHandler(async (req, res) => {
     return sendResponse(res, { txCount, threshold: ACTIVITY_THRESHOLD }, 'Seuil pas encore atteint');
   }
   
-  // Récompenser le parrain (7 jours Premium)
-  const REWARD_DAYS_REFERRER = 7;
+  // Récompenser le parrain : +1 requête IA (bonus permanent)
+  const REWARD_AI_REQUESTS_REFERRER = 1;
   const User = req.getModel('User');
   
   try {
-    const referrer = await User.findById(referral.referrerId);
-    if (referrer) {
-      referrer.isPremium = true;
-      referrer.premiumPlan = 'premium';
-      const currentExpiry = referrer.premiumUntil && new Date(referrer.premiumUntil) > new Date()
-        ? new Date(referrer.premiumUntil)
-        : new Date();
-      referrer.premiumUntil = new Date(currentExpiry.getTime() + REWARD_DAYS_REFERRER * 24 * 60 * 60 * 1000);
-      await referrer.save();
-    }
+    await User.findByIdAndUpdate(
+      referral.referrerId,
+      { $inc: { aiBonusRequests: REWARD_AI_REQUESTS_REFERRER } },
+      { new: true }
+    );
   } catch (e) {
-    console.warn('[Referral] Impossible de give premium au parrain:', e.message);
+    console.warn('[Referral] Impossible d’ajouter le bonus IA au parrain:', e.message);
   }
   
   // Mettre à jour le statut
   referral.status = 'rewarded';
-  referral.referrerReward = REWARD_DAYS_REFERRER;
-  referral.referredReward = 3;
-  referral.rewardType = 'premium_days';
+  referral.referrerReward = REWARD_AI_REQUESTS_REFERRER;
+  referral.referredReward = REWARD_AI_REQUESTS_REFERRER;
+  referral.rewardType = 'ai_requests';
   referral.rewardedAt = new Date();
   await referral.save();
   
   sendResponse(res, {
     referrerId: referral.referrerId,
     referredUserId,
-    rewardDays: REWARD_DAYS_REFERRER,
-    message: `Parrain récompensé ! +${REWARD_DAYS_REFERRER} jours Premium.`,
+    rewardAiRequests: REWARD_AI_REQUESTS_REFERRER,
+    message: `Parrain récompensé ! +${REWARD_AI_REQUESTS_REFERRER} requête IA gratuite.`,
   }, 'Récompense activée');
 });

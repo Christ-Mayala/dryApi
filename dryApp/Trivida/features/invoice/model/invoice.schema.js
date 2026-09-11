@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const InvoiceSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  deviceId: { type: String },
   localId: { type: Number },
   invoiceNumber: { type: String, required: true },
   customerId: { type: mongoose.Schema.Types.Mixed }, // Mixed pour accepter nombres (SQLite)

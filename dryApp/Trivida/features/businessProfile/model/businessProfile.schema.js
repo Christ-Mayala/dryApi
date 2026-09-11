@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const BusinessProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true, unique: true },
+  deviceId: { type: String },
   localId: { type: Number },
   businessName: { type: String },
   address: { type: String },

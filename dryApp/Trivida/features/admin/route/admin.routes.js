@@ -52,8 +52,20 @@ const { withAudit } = require('../../../../../dry/middlewares/audit');
 // ─── AUTHENTIFICATION ─────────────────────────────────────────────────────────
 router.post('/login', adminLogin);
 
-// ─── SEED ADMINS (temporaire, protégé par secret) ─────────────────────────
-router.post('/seed-admins', seedAdmins);
+// ─── SEED ADMINS — protégé (auth + superadmin) + secret env
+// Utilisation temporaire uniquement pour la première initialisation du tenant Trivida.
+// Ne jamais déployer en production avec le secret hardcodé TRIVIDA_SEED_2026.
+// À la place, définir SEED_ADMIN_SECRET dans le .env du tenant.
+const SEED_ADMIN_SECRET = process.env.SEED_ADMIN_SECRET || 'TRIVIDA_SEED_2026';
+router.post('/seed-admins', protect, requireSuperAdmin(true), (req, res, next) => {
+    const { secret } = req.body;
+    if (!secret || secret !== SEED_ADMIN_SECRET) {
+        return res.status(403).json({ success: false, message: 'Secret invalide ou manquant' });
+    }
+    req.body = req.body || {};
+    req.body.secret = SEED_ADMIN_SECRET;
+    next();
+}, seedAdmins);
 
 // ─── ROUTES ADMIN (admin + superadmin) ──────────────────────────────────────
 

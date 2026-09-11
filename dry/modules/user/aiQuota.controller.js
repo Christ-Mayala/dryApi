@@ -114,8 +114,12 @@ exports.getAiQuota = asyncHandler(async (req, res) => {
     return sendResponse(res, { remaining: -1, dailyLimit: -1, resetAt: user.aiRequestsResetAt, unlimited: true });
   }
 
-  const remaining = Math.max(0, dailyLimit - (user.aiRequestsToday || 0));
-  return sendResponse(res, { remaining, dailyLimit, resetAt: user.aiRequestsResetAt });
+  // Bonus IA permanent (parrainage, défis…) : s'ajoute au quota de base du jour
+  const bonus = user.aiBonusRequests || 0;
+  const totalLimit = dailyLimit + bonus;
+
+  const remaining = Math.max(0, totalLimit - (user.aiRequestsToday || 0));
+  return sendResponse(res, { remaining, dailyLimit: totalLimit, baseLimit: dailyLimit, bonus, resetAt: user.aiRequestsResetAt });
 });
 
 /**
@@ -179,14 +183,21 @@ exports.consumeAiRequest = asyncHandler(async (req, res) => {
   }
 
   // ── Etape 2 : Incrementation atomique du compteur ──
-  // findOneAndUpdate avec $lt: dailyLimit fait office de verrou :
+  // findOneAndUpdate avec $lt: totalLimit fait office de verrou :
   // MongoDB serialise les ecritures sur le meme document, donc
   // deux requetes simultanees ne peuvent PAS passer le $lt ensemble.
   // La condition et l'increment sont atomiques (meme operation).
+  // totalLimit = quota de base + bonus permanent (parrainage, défis…)
+  let limitDoc = null;
+  if (dailyLimit !== Infinity) {
+    limitDoc = await User.findById(userId).select('aiBonusRequests');
+  }
+  const totalLimit = dailyLimit === Infinity ? Infinity : dailyLimit + (limitDoc?.aiBonusRequests || 0);
+
   const result = await User.findOneAndUpdate(
     {
       _id: userId,
-      aiRequestsToday: { $lt: dailyLimit },
+      aiRequestsToday: { $lt: totalLimit },
     },
     {
       $inc: { aiRequestsToday: 1 },
@@ -200,15 +211,16 @@ exports.consumeAiRequest = asyncHandler(async (req, res) => {
       return sendResponse(res, null, 'Utilisateur non trouve', false, undefined, 404);
     }
 
-    const user = await User.findById(userId).select('aiRequestsToday aiRequestsResetAt premiumPlan');
+    const user = await User.findById(userId).select('aiRequestsToday aiRequestsResetAt premiumPlan aiBonusRequests');
+    const totalLimit2 = dailyLimit + (user?.aiBonusRequests || 0);
     return sendResponse(
       res,
-      { remaining: 0, dailyLimit, resetAt: user?.aiRequestsResetAt || nextMidnight, quotaExceeded: true },
-      'Limite de requetes IA atteinte. Revenez demain ou passez a un forfait superieur.',
+      { remaining: 0, dailyLimit: totalLimit2, baseLimit: dailyLimit, bonus: user?.aiBonusRequests || 0, resetAt: user?.aiRequestsResetAt || nextMidnight, quotaExceeded: true },
+      'Limite de requetes IA atteinte. Revenez demain, parraine un ami pour +1 requete, ou passez a un forfait superieur.',
       false, undefined, 429
     );
   }
 
-  const remaining = Math.max(0, dailyLimit - (result.aiRequestsToday || 0));
-  return sendResponse(res, { remaining, dailyLimit, resetAt: result.aiRequestsResetAt || nextMidnight });
+  const remaining = Math.max(0, totalLimit - (result.aiRequestsToday || 0));
+  return sendResponse(res, { remaining, dailyLimit: totalLimit, baseLimit: dailyLimit, bonus: limitDoc?.aiBonusRequests || 0, resetAt: result.aiRequestsResetAt || nextMidnight });
 });

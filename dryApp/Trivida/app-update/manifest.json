@@ -1,0 +1,12 @@
+{
+  "latest": "1.2.0",
+  "minimum": "1.1.1",
+  "force": false,
+  "changelog": [
+    "Synchronisation plus rapide",
+    "Corrections de bugs",
+    "Nouvelles fonctionnalités"
+  ],
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.christ_mayala.trivida",
+  "appStoreUrl": "https://apps.apple.com/app/trivida"
+}

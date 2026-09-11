@@ -24,8 +24,7 @@ const AUTO_MODEL_ID = 'auto';
 function sanitizeMessageContent(content) {
   if (typeof content !== 'string') return content;
   let s = content;
-  // Téléphones Congo/Afrique centrale
-  s = s.replace(/(\+?243|00243)\s?[6-9]\d[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}/g, '[NUMÉRO]');
+  // Téléphones Congo-Brazzaville / Afrique centrale
   s = s.replace(/(\+?242|00242)\s?[0-9]\d[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}/g, '[NUMÉRO]');
   // Numéros internationaux génériques
   s = s.replace(/\+?\d{1,3}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{3,4}[\s\-]?\d{3,4}/g, '[NUMÉRO]');

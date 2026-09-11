@@ -18,7 +18,7 @@ const ReferralSchema = new mongoose.Schema({
   // Récompenses
   referrerReward: { type: Number, default: 0 },       // Jours Premium offerts au parrain
   referredReward: { type: Number, default: 0 },        // Jours Premium offerts au filleul
-  rewardType: { type: String, enum: ['premium_days', 'feature_unlock', null], default: null },
+  rewardType: { type: String, enum: ['premium_days', 'feature_unlock', 'ai_requests', null], default: null },
   
   // Dates
   invitedAt: { type: Date, default: Date.now },

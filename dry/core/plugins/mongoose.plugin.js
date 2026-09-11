@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const LogSchema = require('../../modules/log/log.schema');
 
 module.exports = function (schema, _options) {
+    // Collections à exclure de la génération automatique de slug : les logs
+    // d'audit/historique. L'ancien format (source + 4 derniers chiffres de
+    // Date.now()) provoquait des collisions E11000 (ex: "view-0901") quand
+    // plusieurs logs de même action étaient créés dans la même fenêtre ~10 s.
+    const SLUG_EXCLUDED_COLLECTIONS = new Set(['auditlogs', 'logs', 'log']);
     // ---------------------------------------------------------
     // 1. Definition des champs standards DRY
     // ---------------------------------------------------------
@@ -57,7 +62,7 @@ module.exports = function (schema, _options) {
         }
 
         // [LOGIC] Generation de Slug
-        if (!doc.slug) {
+        if (!doc.slug && !SLUG_EXCLUDED_COLLECTIONS.has(schema.options?.collection)) {
             const source = doc.name || doc.label || doc.titre || doc.title || doc.subject;
             if (source) {
                 doc.slug = slugify(source, { lower: true, strict: true }) + '-' + Date.now().toString().slice(-4);

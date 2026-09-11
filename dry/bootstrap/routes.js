@@ -253,6 +253,33 @@ const registerApplicationRoutes = async (app) => {
   const trividaReferralRoutes = require('../../dryApp/Trivida/features/referral/route/referral.routes');
   app.use('/api/v1/trivida/referral', injectTrivida, trividaReferralRoutes);
 
+  // Manifeste de mise à jour Trivida (public — consulté au démarrage de l'app).
+  // Voir dryApp/Trivida/features/appUpdate/route/appUpdate.routes.js et manifest.json.
+  const trividaAppUpdateRoutes = require('../../dryApp/Trivida/features/appUpdate/route/appUpdate.routes');
+  app.use('/api/v1/trivida/app', trividaAppUpdateRoutes);
+
+  // ── App Links Android (association de domaine) ─────────────────────────────
+  // Google vérifie ce fichier pour activer l'ouverture directe de l'app sur
+  // https://dryapi.onrender.com/api/v1/trivida/referral/... (intentFilters).
+  // La clé SHA-256 doit être celle du certificat de SIGNATURE de l'AAB publié
+  // sur le Play Store (Play Console → Intégrité de l'application) :
+  //   export ANDROID_ASSETLINK_SHA256="AA:BB:CC:..."
+  app.get('/.well-known/assetlinks.json', (req, res) => {
+    const fingerprint = (process.env.ANDROID_ASSETLINK_SHA256 || 'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99')
+      .replace(/[^A-Fa-f0-9:]/g, '')
+      .toUpperCase();
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(JSON.stringify([{
+      relation: ['delegate_permission/common.handle_all_urls'],
+      target: {
+        namespace: 'android_app',
+        package_name: 'com.christ_mayala.trivida',
+        sha256_cert_fingerprints: [fingerprint],
+      },
+    }]));
+  });
+
   // Routes Analytics Trivida
   const trividaAnalyticsRoutes = require('../../dryApp/Trivida/features/analytics/route/analytics.routes');
   app.use('/api/v1/trivida/analytics', injectTrivida, trividaAnalyticsRoutes);
