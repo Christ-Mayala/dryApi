@@ -9,5 +9,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: SERVER_URL
+        value: https://dryapi.onrender.com
+      - key: FRONTEND_URL
+        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
+      - key: ALLOWED_ORIGINS
+        value: https://spirit-kes.netlify.app,https://scim-alvine.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
+      - key: CORS_ORIGINS
+        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
       - key: YTDLP_BIN
         value: yt-dlp

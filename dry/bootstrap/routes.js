@@ -201,29 +201,6 @@ const registerApplicationRoutes = async (app) => {
   registerHealthRoutes(app);
   registerDocumentationRoutes(app);
 
-  // ── Manifeste de mise à jour de l'app mobile Trivida ────────────────────
-  // Consommé par AppUpdateService (trivida-v2/src/utils/AppUpdateService.js) :
-  //   - latest   : dernière version publiée ;
-  //   - minimum  : version minimale supportée (en dessous → mise à jour FORCÉE) ;
-  //   - force    : forcer la mise à jour dès maintenant (correctif critique) ;
-  //   - changelog: nouveautés affichées dans le dialogue.
-  // À mettre à jour à CHAQUE release Play Store.
-  const APP_UPDATE_MANIFEST = {
-    latest: '1.2.0',
-    minimum: '1.1.1',
-    force: false,
-    changelog: [
-      'Synchronisation plus rapide et fiable',
-      'Verrouillage élargi : empreinte, Face ID, code PIN ou schéma',
-      'QR code de facture pour un encaissement par simple scan',
-      'Nouveaux documents avec logo Trivida',
-      'Corrections de bugs et améliorations',
-    ],
-  };
-  app.get('/api/v1/app/update', (req, res) => {
-    sendResponse(res, APP_UPDATE_MANIFEST, 'Manifeste de mise à jour récupéré', true);
-  });
-
   // Middleware qui injecte req.getModel et req.appName pour les routes globales
   // (senepay, billing) qui sont hors du scope du bootloader multi-tenant
   const injectTrivida = (req, res, next) => {
@@ -300,21 +277,6 @@ const registerApplicationRoutes = async (app) => {
   app.use('/admin', require('express').static(trividaAdminDir));
   app.get('/admin/{*splat}', (req, res) => {
     res.sendFile(path.join(trividaAdminDir, 'index.html'));
-  });
-
-  // SPA fallback : pour les routes frontend non-API, servir index.html
-  const trividaWebDir = path.join(__dirname, '../../../trivida-v2/dist');
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api/') ||
-        req.path.startsWith('/admin/') ||
-        req.path.startsWith('/health/') ||
-        req.path.startsWith('/system/') ||
-        req.path.startsWith('/api-docs/') ||
-        req.path.startsWith('/payment/') ||
-        req.path.startsWith('/metrics')) {
-      return next();
-    }
-    res.sendFile(path.join(trividaWebDir, 'index.html'));
   });
 
   // 404
