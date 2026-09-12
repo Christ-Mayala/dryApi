@@ -1,11 +1,12 @@
 {
-  "latest": "1.2.1",
+  "latest": "1.2.2",
   "minimum": "1.2.1",
   "force": true,
   "changelog": [
-    "Synchronisation plus rapide",
-    "Corrections de bugs",
-    "Nouvelles fonctionnalités"
+    "Connexion Google mobile corrigée",
+    "Correction de la boucle de mise à jour forcée",
+    "Splash affichant le logo Trivida",
+    "Synchronisation plus rapide"
   ],
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.christ_mayala.trivida",
   "appStoreUrl": "https://apps.apple.com/app/trivida"
