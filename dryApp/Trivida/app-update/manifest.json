@@ -1,7 +1,7 @@
 {
   "latest": "1.2.1",
-  "minimum": "1.1.1",
-  "force": false,
+  "minimum": "1.2.1",
+  "force": true,
   "changelog": [
     "Synchronisation plus rapide",
     "Corrections de bugs",
