@@ -142,10 +142,13 @@ const errorHandler = async (err, req, res, _next) => {
     } else if (err?.type === 'entity.too.large' || err?.name === 'PayloadTooLargeError') {
         message = 'Données envoyées trop volumineuses.';
         statusCode = 413;
-    } else if (err?.code === 11000) {
+} else if (err?.code === 11000) {
         const key = Object.keys(err?.keyValue || {})[0];
         if (key === 'email') message = 'Cet email est déjà utilisé.';
-        else message = 'Valeur déjà utilisée.';
+        else if (key === 'referredUserId') {
+            message = 'Vous avez déjà utilisé un code de parrainage.';
+            statusCode = 409;
+        } else message = 'Valeur déjà utilisée.';
         statusCode = 409;
     } else if (err?.name === 'ValidationError') {
         message = formatMongooseValidation(err);
@@ -168,9 +171,13 @@ const errorHandler = async (err, req, res, _next) => {
         statusCode = err.statusCode;
     }
 
-    dispatchApiErrorAlert(err, req, rid, message);
+dispatchApiErrorAlert(err, req, rid, message);
 
-    return sendResponse(res, null, message, false, undefined, statusCode);
+    // Erreurs métier stables (ex: REFERRAL_*) : on expose le code dans data.code
+    // pour permettre au client de distinguer les cas sans parser le message.
+    const data = err?.apiCode ? { code: err.apiCode } : null;
+
+    return sendResponse(res, data, message, false, undefined, statusCode);
 };
 
 module.exports = errorHandler;

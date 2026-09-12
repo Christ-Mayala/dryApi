@@ -112,6 +112,29 @@ const buildBaseConfig = () => ({
   FACEBOOK_CALLBACK_URL: readSetting('FACEBOOK_CALLBACK_URL'),
   // Schémas d'URI des apps mobiles (OAuth) autorisés comme redirection, ex: "trivida"
   MOBILE_APP_SCHEMES: readSetting('MOBILE_APP_SCHEMES', { fallback: 'trivida' }),
+  // Récompenses et seuil du programme de parrainage (recentralisées ici,
+  // anciennement hardcodées dans referral.controller.js)
+  REFERRAL_REWARD_NEW_USER: readSetting('REFERRAL_REWARD_NEW_USER', {
+    fallback: '1',
+    testFallback: '1',
+  }),
+  REFERRAL_REWARD_REFERRER: readSetting('REFERRAL_REWARD_REFERRER', {
+    fallback: '1',
+    testFallback: '1',
+  }),
+  REFERRAL_ACTIVITY_THRESHOLD: readSetting('REFERRAL_ACTIVITY_THRESHOLD', {
+    fallback: '5',
+    testFallback: '5',
+  }),
+  // Rate limiting du programme de parrainage (validate = souple, claim = strict)
+  REFERRAL_RATE_LIMIT_VALIDATE_WINDOW_MS: readSetting('REFERRAL_RATE_LIMIT_VALIDATE_WINDOW_MS', { fallback: '900000' }),
+  REFERRAL_RATE_LIMIT_VALIDATE_MAX: readSetting('REFERRAL_RATE_LIMIT_VALIDATE_MAX', {
+    fallback: env === 'production' ? '60' : '200',
+  }),
+  REFERRAL_RATE_LIMIT_CLAIM_WINDOW_MS: readSetting('REFERRAL_RATE_LIMIT_CLAIM_WINDOW_MS', { fallback: '3600000' }),
+  REFERRAL_RATE_LIMIT_CLAIM_MAX: readSetting('REFERRAL_RATE_LIMIT_CLAIM_MAX', {
+    fallback: env === 'production' ? '10' : '50',
+  }),
   ALERT_WEBHOOK_URL: readSetting('ALERT_WEBHOOK_URL'),
   SLACK_WEBHOOK_URL: readSetting('SLACK_WEBHOOK_URL'),
   DISCORD_WEBHOOK_URL: readSetting('DISCORD_WEBHOOK_URL'),
@@ -285,6 +308,21 @@ const finalConfig = {
     passwordVerifyMultiplier: parsePositiveInt(env === 'production' ? '5' : '15', 15),
     seedAdminSecret: process.env.SEED_ADMIN_SECRET || 'TRIVIDA_SEED_2026',
     message: { success: false, message: 'Trop de requetes, veuillez reessayer plus tard.' },
+  },
+  REFERRAL: {
+    rewardNewUser: parsePositiveInt(baseConfig.REFERRAL_REWARD_NEW_USER, 1),
+    rewardReferrer: parsePositiveInt(baseConfig.REFERRAL_REWARD_REFERRER, 1),
+    activityThreshold: parsePositiveInt(baseConfig.REFERRAL_ACTIVITY_THRESHOLD, 5),
+    rateLimit: {
+      validate: {
+        windowMs: parsePositiveInt(baseConfig.REFERRAL_RATE_LIMIT_VALIDATE_WINDOW_MS, 900000),
+        max: parsePositiveInt(baseConfig.REFERRAL_RATE_LIMIT_VALIDATE_MAX, env === 'production' ? 60 : 200),
+      },
+      claim: {
+        windowMs: parsePositiveInt(baseConfig.REFERRAL_RATE_LIMIT_CLAIM_WINDOW_MS, 3600000),
+        max: parsePositiveInt(baseConfig.REFERRAL_RATE_LIMIT_CLAIM_MAX, env === 'production' ? 10 : 50),
+      },
+    },
   },
   UPLOAD: {
     maxFileSize: 5 * 1024 * 1024,

@@ -19,6 +19,12 @@ const ReferralSchema = new mongoose.Schema({
   referrerReward: { type: Number, default: 0 },       // Jours Premium offerts au parrain
   referredReward: { type: Number, default: 0 },        // Jours Premium offerts au filleul
   rewardType: { type: String, enum: ['premium_days', 'feature_unlock', 'ai_requests', null], default: null },
+  // Flags d'idempotence : garantissent qu'une récompense n'est accordée qu'UNE fois,
+  // même en cas de retry réseau ou d'appels simultanés (0 crédit en double).
+  referredRewardGranted: { type: Boolean, default: false },
+  referrerRewardGranted: { type: Boolean, default: false },
+  // Code désactivé (ex: abus signalé, parrain banni) → REFERRAL_CODE_INACTIVE
+  active: { type: Boolean, default: true },
   
   // Dates
   invitedAt: { type: Date, default: Date.now },
@@ -40,6 +46,21 @@ const ReferralSchema = new mongoose.Schema({
 ReferralSchema.index({ referralCode: 1 });
 ReferralSchema.index({ referrerId: 1, status: 1 });
 ReferralSchema.index({ referredUserId: 1 });
+
+// Index unique PARTIEL : un filleul ne peut être lié à QU'UN SEUL parrain.
+// Les documents avec referredUserId null/sans champ sont exclus du contraintes.
+// Garantit l'idempotence du claim au niveau base (E11000 → 409 REFERRAL_ALREADY_CLAIMED),
+// même en cas de requêtes simultanées — remplace la course validate/findOne/save.
+ReferralSchema.index(
+  { referredUserId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      referredUserId: { $type: 'objectId' },
+      deleted: { $ne: true },
+    },
+  }
+);
 
 // Exclure les referrals supprimés
 ReferralSchema.pre(/^find/, function() {
