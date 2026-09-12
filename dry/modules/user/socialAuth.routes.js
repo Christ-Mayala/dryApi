@@ -23,19 +23,50 @@ const getFrontendUrl = (req, stateContext = {}) => {
 
 const normalize = (value) => String(value ?? '').trim();
 
-// Liste blanche stricte des origines autorisées
-const ALLOWED_ORIGINS_SET = new Set(
-  String(config.ALLOWED_ORIGINS || '')
+// Origines autorisées : ALLOWED_ORIGINS (+ FRONTEND_URL, qui liste les frontends
+// OAuth légitimes et doit donc servir à la validation des redirections).
+// NB: Render dashboard priore sur render.yaml — cette liste élargie rend le
+// flux robuste même si le dashboard n'a pas été mis à jour.
+const getAllowedOrigins = () => {
+  const raw =
+    String(config.ALLOWED_ORIGINS || '') + ',' + String(config.FRONTEND_URL || '');
+  const origins = raw
     .split(',')
     .map(s => s.trim())
     .filter(Boolean)
-);
+    .map((s) => {
+      try {
+        const origin = new URL(s).origin;
+        return origin !== 'null' ? origin : null;
+      } catch (_) {
+        return s.includes('.') ? s : null;
+      }
+    })
+    .filter(Boolean);
+  return [...new Set(origins)];
+};
+
+const ALLOWED_ORIGINS_LIST = getAllowedOrigins();
+const ALLOWED_ORIGINS_SET = new Set(ALLOWED_ORIGINS_LIST);
 
 const isUrlAllowed = (url) => {
   if (!url) return false;
   try {
     const origin = new URL(url).origin;
-    return ALLOWED_ORIGINS_SET.has(origin);
+    if (ALLOWED_ORIGINS_SET.has(origin)) return true;
+
+    // Même tolérance que le middleware CORS (http.js) : un sous-domaine
+    // d'un domaine ".netlify.app" listé est accepté. Ex: trivida.netlify.app
+    // est accepté si un domaine netlify.app est listé dans la config.
+    const netlifyMatch = ALLOWED_ORIGINS_LIST.find((allowed) => {
+      if (!allowed.includes('netlify.app')) return false;
+      const allowedHost = allowed.replace(/\/$/, '').replace(/^https?:\/\//i, '').toLowerCase();
+      const originHost = origin.replace(/\/$/, '').replace(/^https?:\/\//i, '').toLowerCase();
+      return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
+    });
+    if (netlifyMatch) return true;
+
+    return false;
   } catch (_) {
     return false;
   }
