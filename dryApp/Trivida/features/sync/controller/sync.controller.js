@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../../../../dry/utils/http/response');
+const crypto = require('crypto');
 
 // Chargement des schémas Trivida
 const TransactionSchema     = require('../../transaction/model/transaction.schema');
@@ -43,31 +44,9 @@ function getModelForEntity(req, entity) {
     }
 }
 
-// ─── Push ─────────────────────────────────────────────────────────────────────
-// Clé unique de sync : { userId, localId, deviceId }.
-// deviceId est optionnel coté client aujourd'hui (mobile n'envoie pas encore),
-// mais le serveur l'accepte et le stocke pour préparer le multi-appareils.
+// ─── Push helpers ─────────────────────────────────────────────────────────────
 
-// Le client envoie toujours localId en string ("1"). D'anciennes données (ou
-// certains flux) peuvent avoir enregistré un localId numérique (1) côté serveur.
-// MongoDB compare en égalité stricte → un DELETE/UPDATE en string ne matche pas
-// → "Document introuvable" → le soft-delete n'est jamais appliqué → l'entité
-// « revient » au pull suivant. On cherche donc sur toutes les variantes.
-function idVariants(raw) {
-    const out = [];
-    const push = (v) => {
-        if (v === null || v === undefined || v === '') return;
-        out.push(v);
-    };
-    push(raw);
-    if (typeof raw === 'string' && /^-?\d+$/.test(raw)) push(Number(raw));
-    if (typeof raw === 'number' && Number.isFinite(raw)) push(String(raw));
-    return out;
-}
-
-// Normalisation défensive du localId. Certains clients/legacy peuvent envoyer
-// un objet "{ localId: '1' }" à la place d'un scalaire ("1" ou 1). Le champ est
-// un Number dans les schémas → on extrait toujours un scalaire propre.
+// Normalisation défensive du localId
 function normalizeLocalId(raw) {
     if (raw === null || raw === undefined || raw === '') return null;
     if (typeof raw === 'object') {
@@ -77,14 +56,131 @@ function normalizeLocalId(raw) {
     return String(raw);
 }
 
-function localIdQuery(localId, userId, deviceId) {
-    const variants = idVariants(localId);
-    if (variants.length > 1) {
-        const or = variants.map(v => ({ localId: v }));
-        return { userId, $or: or, ...(deviceId ? { deviceId } : {}) };
-    }
-    return { userId, localId: variants[0] ?? null, ...(deviceId ? { deviceId } : {}) };
+// Toutes les variantes scalaire d'un localId (number/string) pour matcher
+// l'ancienne base de données côté serveur où le type peut être différent.
+function idVariants(raw) {
+    const out = [];
+    const push = (v) => {
+        if (v === null || v === undefined || v === '') return;
+        out.push(v);
+    };
+    push(raw);
+    if (typeof raw === 'string' && /^-?\d+$/.test(raw)) push(Number(raw));
+    if (typeof raw === 'number' && Number.isFinite(raw)) push(String(raw));
+    return [...new Set(out)];
 }
+
+// ── Comparaison de contenu ─────────────────────────────────────────────────────
+// Compare deux documents (doc = document stocké, payload = dataWithUser côté client)
+// pour décider s'il s'agit du MÊME enregistrement (ré-écriture/idempotence) ou
+// de DEUX enregistrements distincts ayant un même localId (conflit inter-appareils).
+
+const COMPARE_SKIP_KEYS = new Set([
+    '_id', 'userId', 'localId', 'deviceId', 'id', 'aliases',
+    'deleted', 'deletedAt', 'updatedAt', 'createdAt', 'synced', 'serverId',
+]);
+
+function normalizeVal(v) {
+    if (v === null || v === undefined) return null;
+    if (v instanceof Date) return v.getTime();
+    if (typeof v === 'object' && v && typeof v.getTime === 'function') return v.getTime();
+    if (typeof v === 'string' && /^\d+$/.test(v) && v.length <= 15) return Number(v);
+    return v;
+}
+
+function equiv(a, b) {
+    const na = normalizeVal(a);
+    const nb = normalizeVal(b);
+    if (na === nb) return true;
+    if (na === null && nb === null) return true;
+    if (na === null || nb === null) return false;
+    if (typeof na === 'number' && typeof nb === 'number') {
+        return Number.isFinite(na) && Number.isFinite(nb) && Math.abs(na - nb) < 1e-9;
+    }
+    return String(na) === String(nb);
+}
+
+/**
+ * Renvoie true si le contenu de `doc` correspond à `incoming`.
+ * Ignore les métadonnées (userId, localId, timestamps, etc.).
+ */
+function contentEquals(doc, incoming) {
+    if (!doc || !incoming) return false;
+    const incomingKeys = Object.keys(incoming).filter(k => !COMPARE_SKIP_KEYS.has(k));
+    if (incomingKeys.length === 0) return false;
+    for (const k of incomingKeys) {
+        if (doc[k] === undefined) continue; // champ absent côté serveur (legacy / whitelist)
+        if (!equiv(doc[k], incoming[k])) return false;
+    }
+    return true;
+}
+
+// ── Recherche de documents candidats (localId OU aliases) ─────────────────────
+// Cherche dans une collection toutes les lignes dont le localId OU un alias
+// correspond aux variantes du localId demandé. Ne retourne JAMAIS les docs
+// soft-deletés (suppression par le pre-find hook).
+
+async function findCandidates(Model, userId, variants) {
+    const clauses = [{ localId: { $in: variants } }];
+    for (const v of variants) clauses.push({ aliases: v });
+    return Model.find({ userId, $or: clauses }).lean();
+}
+
+// ── Allouer un localId unique (anti-collision) ────────────────────────────────
+// Dérivé de sha1(originalLocalId:userId:deviceId) → entier positif 32 bits.
+// En cas de collision (probabilité ≈ 1e-7), on progresse via LCG borné.
+
+function hashLocalId(original, userId, deviceId) {
+    const seed = String(original) + ':' + String(userId) + ':' + String(deviceId || '');
+    const digest = crypto.createHash('sha1').update(seed).digest('hex');
+    return (parseInt(digest.slice(0, 8), 16) >>> 0) || 1;
+}
+
+async function allocateUniqueLocalId(Model, userId, original, deviceId) {
+    let candidate = hashLocalId(original, userId, deviceId);
+    let guard = 50;
+    while (guard-- > 0) {
+        const exists = await Model.findOne({
+            userId,
+            $or: [{ localId: candidate }, { aliases: String(candidate) }],
+        }).select('_id').lean();
+        if (!exists) break;
+        candidate = ((candidate * 2654435761) >>> 0) || 1; // LCG borné, évite 0
+    }
+    return candidate;
+}
+
+// ── Invoice : unicité du numéro par utilisateur ───────────────────────────────
+// Au sein des factures non supprimées d'un même utilisateur, on garantit que
+// deux live factures ne partagent pas le même `invoiceNumber` — sinon
+// l'INSERT OR REPLACE côté client (SQLite UNIQUE) échouerait en pull.
+
+async function nextFreeInvoiceNumber(req, Model, userId, baseNumber, excludeId, takenNumbers) {
+    if (baseNumber === undefined || baseNumber === null) return baseNumber;
+    const str = String(baseNumber);
+    let candidate = str;
+    let n = 2;
+    const guard = 500;
+    while (n <= guard) {
+        const inMemoryTaken = takenNumbers && takenNumbers.has(candidate);
+        if (!inMemoryTaken) {
+            const taken = await Model.findOne({
+                userId,
+                invoiceNumber: candidate,
+                ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+            }).select('_id').lean();
+            if (!taken) break;
+        }
+        candidate = `${str}-${n}`;
+        n++;
+    }
+    return candidate;
+}
+
+// ─── Push ─────────────────────────────────────────────────────────────────────
+// Clé unique de sync : { userId, localId, deviceId }.
+// deviceId est optionnel côté client aujourd'hui (mobile n'envoie pas encore
+// systématiquement), mais le serveur l'accepte et le stocke.
 
 exports.push = asyncHandler(async (req, res) => {
     const { operations } = req.body;
@@ -117,59 +213,136 @@ exports.push = asyncHandler(async (req, res) => {
             }
 
             const dataWithUser = { ...payload, userId, localId, deviceId };
+            const variants = idVariants(localId);
 
-            let result;
+            // ── INSERT ──────────────────────────────────────────────────────
             if (operation === 'INSERT') {
-                // Pas d'upsert avec $or (non supporté par MongoDB) : on cherche
-                // d'abord en tolérant les types, sinon on insère la clé canonique.
-                const existing = await Model.findOne(localIdQuery(localId, userId, deviceId));
-                if (existing) {
-                    result = await Model.findOneAndUpdate(
-                        { _id: existing._id },
+                const candidates = await findCandidates(Model, userId, variants);
+                const sameRecord = candidates.find(d => contentEquals(d, dataWithUser));
+
+                if (sameRecord) {
+                    // Idempotence ou ré-écriture du MÊME enregistrement →
+                    // on met à jour en conservant le localId canonique existant.
+                    const updated = await Model.findOneAndUpdate(
+                        { _id: sameRecord._id },
                         { $set: dataWithUser },
                         { returnDocument: 'after' }
                     );
+                    results.push({ entity, localId, serverId: updated._id, status: 'created' });
+
+                    // Invoice : garantir unicité du numéro même sur mise à jour
+                    if (entity === 'invoice' && dataWithUser.invoiceNumber) {
+                        await Model.updateOne(
+                            { _id: updated._id },
+                            { $set: { invoiceNumber: await nextFreeInvoiceNumber(req, Model, userId, dataWithUser.invoiceNumber, updated._id) } }
+                        );
+                    }
+
+                } else if (candidates.length > 0) {
+                    // ╔═══════════════════════════════════════════════════════╗
+                    // ║  COLLISION INTER-APPAREILS (différent contenu)       ║
+                    // ║  → On préserve les DEUX enregistrements.            ║
+                    // ║  → Le nouveau document reçoit un localId unique       ║
+                    // ║    dérivé de sha1 pour ne pas écraser l'original.     ║
+                    // ║  → Le localId original est stocké dans `aliases`      ║
+                    // ║    pour que les futurs UPDATE/DELETE retrouvent bien   ║
+                    // ║    le bon document via ce localId.                   ║
+                    // ╚═══════════════════════════════════════════════════════╝
+                    const newLocalId = await allocateUniqueLocalId(Model, userId, localId, deviceId);
+                    const created = await Model.findOneAndUpdate(
+                        { localId: newLocalId, userId, deviceId },
+                        { $set: { ...dataWithUser, localId: newLocalId },
+                          $addToSet: { aliases: String(localId) } },
+                        { returnDocument: 'after', upsert: true }
+                    );
+                    // echo le localId ORIGINAL pour que l'app confirme l'op
+                    // (confirmedKeys se base sur `entity|localId` côté client)
+                    results.push({ entity, localId, serverId: created._id, status: 'created', reassignedLocalId: newLocalId });
+
+                    // Invoice : garantir unicité
+                    if (entity === 'invoice' && dataWithUser.invoiceNumber) {
+                        await Model.updateOne(
+                            { _id: created._id },
+                            { $set: { invoiceNumber: await nextFreeInvoiceNumber(req, Model, userId, dataWithUser.invoiceNumber, created._id) } }
+                        );
+                    }
+
                 } else {
-                    result = await Model.findOneAndUpdate(
-                        { localId, userId, deviceId },
+                    // Nouveau document → insert upsert classique
+                    const created = await Model.findOneAndUpdate(
+                        { localId: variants[0] ?? localId, userId, deviceId },
                         { $set: dataWithUser },
                         { returnDocument: 'after', upsert: true }
                     );
-                }
-                results.push({ entity, localId, serverId: result._id, status: 'created' });
+                    results.push({ entity, localId, serverId: created._id, status: 'created' });
 
+                    if (entity === 'invoice' && dataWithUser.invoiceNumber) {
+                        await Model.updateOne(
+                            { _id: created._id },
+                            { $set: { invoiceNumber: await nextFreeInvoiceNumber(req, Model, userId, dataWithUser.invoiceNumber, created._id) } }
+                        );
+                    }
+                }
+
+            // ── UPDATE ─────────────────────────────────────────────────────
             } else if (operation === 'UPDATE') {
-                // UPDATE : pas d'upsert. On s'attend à ce que le document existe.
                 const query = payload.serverId
                     ? { _id: payload.serverId, userId }
-                    : localIdQuery(localId, userId, deviceId);
+                    : { userId, $or: [{ localId: { $in: variants } }, { aliases: { $in: variants } }] };
 
-                const existing = await Model.findOne(query);
+                let existing;
+                if (payload.serverId) {
+                    existing = await Model.findOne(query);
+                } else {
+                    const candidates = await Model.find(query).lean();
+                    // Préférer le document dont le contenu correspond à l'incoming
+                    existing = candidates.find(d => contentEquals(d, dataWithUser)) || candidates[0] || null;
+                    if (existing) existing = await Model.findOne({ _id: existing._id });
+                }
+
                 if (!existing) {
                     errors.push({ entity, localId, error: 'Document introuvable pour UPDATE' });
                     continue;
                 }
 
                 const updated = await Model.findOneAndUpdate(
-                    query,
+                    { _id: existing._id },
                     { $set: dataWithUser },
                     { returnDocument: 'after' }
                 );
                 results.push({ entity, localId, serverId: updated._id, status: 'updated' });
 
+                if (entity === 'invoice' && dataWithUser.invoiceNumber) {
+                    await Model.updateOne(
+                        { _id: updated._id },
+                        { $set: { invoiceNumber: await nextFreeInvoiceNumber(req, Model, userId, dataWithUser.invoiceNumber, updated._id) } }
+                    );
+                }
+
+            // ── DELETE ─────────────────────────────────────────────────────
             } else if (operation === 'DELETE') {
                 const query = payload.serverId
                     ? { _id: payload.serverId, userId }
-                    : localIdQuery(localId, userId, deviceId);
+                    : { userId, $or: [{ localId: { $in: variants } }, { aliases: { $in: variants } }] };
 
-                const existing = await Model.findOne(query);
+                let existing;
+                if (payload.serverId) {
+                    existing = await Model.findOne(query);
+                } else {
+                    const candidates = await Model.find(query).lean();
+                    // Pour un DELETE sans serverId, préférer le doc dont
+                    // localId correspond exactement (propriétaire original)
+                    existing = candidates.find(d => variants.includes(d.localId)) || candidates[0] || null;
+                    if (existing) existing = await Model.findOne({ _id: existing._id });
+                }
+
                 if (!existing) {
                     errors.push({ entity, localId, error: 'Document introuvable pour DELETE' });
                     continue;
                 }
 
                 await Model.findOneAndUpdate(
-                    query,
+                    { _id: existing._id },
                     { $set: { deleted: true, deletedAt: new Date() } },
                     { returnDocument: 'after' }
                 );
@@ -194,9 +367,7 @@ exports.push = asyncHandler(async (req, res) => {
 
     console.log(`✅ [Sync Push] ${results.length} sync, ${errors.length} erreur(s)`);
 
-    // Récompense parrainage : si ce push contient des transactions INSERT,
-    // vérifier (en arrière-plan, non bloquant) si le filleul atteint le seuil
-    // d'activité → le parrain reçoit son bonus IA.
+    // Récompense parrainage
     if (operations.some(op => op.entity === 'transaction' && op.operation === 'INSERT')) {
         require('../../referral/controller/referral.controller')
             .maybeActivateRewardForUser(userId)
@@ -207,10 +378,7 @@ exports.push = asyncHandler(async (req, res) => {
 });
 
 // ─── Pull ─────────────────────────────────────────────────────────────────────
-// Pull paginé : ?since=<timestamp>&limit=<n>&cursor=<lastDocTimestamp>
-// - since : epoch ms du dernier pull connu (pull incrémental)
-// - limit : max docs par entité (défaut 200, max 500)
-// - cursor : timestamp brut du dernier doc reçu côté client (pour reprendre)
+
 exports.pull = asyncHandler(async (req, res) => {
     const userId    = req.user._id;
     const sinceRaw  = req.query.since ? parseInt(req.query.since, 10) : null;
@@ -243,7 +411,6 @@ exports.pull = asyncHandler(async (req, res) => {
                 };
             }
 
-            // Compter avant de paginer (évitait auparavant le dépassement de 500)
             const totalForEntity = await Model.countDocuments(baseQuery);
             meta.total += totalForEntity;
             meta.entities[entity] = { total: totalForEntity, returned: 0 };
@@ -255,23 +422,41 @@ exports.pull = asyncHandler(async (req, res) => {
 
             meta.entities[entity].returned = docs.length;
 
+            // Pour les factures : déduplication `invoiceNumber` dans la réponse
+            // afin que le client SQLite UNIQUE ne soit jamais violé.
+            const seenInvoiceNumbers = entity === 'invoice' ? new Set() : null;
+
             for (const doc of docs) {
                 const data = { ...doc };
 
-                // localId : privilégier celui stocké, fallback robuste sinon.
-                // Le fallback est une représentation positive stable du _id MongoDB
-                // (et non une collision-prone slice hex), pour limiter les collisions.
+                // localId fallback (stable, basé sur _id)
                 if (data.localId === undefined || data.localId === null) {
                     if (doc._id && typeof doc._id === 'object' && doc._id.toString) {
                         const idStr = String(doc._id);
-                        // Extraire une partie stable du _id (nonce + counter) puis hash
-                        // pour un entier positif cohérent.
-                        const digest = require('crypto').createHash('sha1').update(idStr).digest('hex');
+                        const digest = crypto.createHash('sha1').update(idStr).digest('hex');
                         const num = parseInt(digest.slice(0, 8), 16);
                         data.localId = (num >>> 0) || Date.now();
                     } else {
                         data.localId = Date.now();
                     }
+                }
+
+                // Invoice deduplication : renommer dans la réponse ET persister
+                // pour que les pulls futurs restent cohérents.
+                if (seenInvoiceNumbers && data.invoiceNumber !== null && data.invoiceNumber !== undefined) {
+                    let number = String(data.invoiceNumber);
+                    if (seenInvoiceNumbers.has(number)) {
+                        number = await nextFreeInvoiceNumber(req, Model, userId, number, doc._id, seenInvoiceNumbers);
+                        // Persister au mieux-effort (best effort)
+                        if (number !== String(data.invoiceNumber)) {
+                            await Model.updateOne(
+                                { _id: doc._id },
+                                { $set: { invoiceNumber: number } }
+                            ).catch(() => {});
+                        }
+                    }
+                    seenInvoiceNumbers.add(number);
+                    data.invoiceNumber = number;
                 }
 
                 changes.push({

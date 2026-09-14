@@ -19,6 +19,7 @@ const TransactionSchema = new mongoose.Schema({
   items: { type: String },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 TransactionSchema.index({ userId: 1, date: -1 });

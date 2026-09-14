@@ -14,6 +14,7 @@ const InvoiceSchema = new mongoose.Schema({
   pdfPath: { type: String },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 InvoiceSchema.index({ userId: 1, invoiceNumber: 1 });

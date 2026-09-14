@@ -11,6 +11,7 @@ const ActivityRecetteSchema = new mongoose.Schema({
   notes: { type: String },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 ActivityRecetteSchema.index({ userId: 1, activityId: 1 });

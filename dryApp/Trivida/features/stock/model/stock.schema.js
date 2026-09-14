@@ -13,6 +13,7 @@ const StockSchema = new mongoose.Schema({
   updatedAt: { type: Date },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 StockSchema.index({ userId: 1, name: 1 });

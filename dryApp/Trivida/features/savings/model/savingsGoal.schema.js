@@ -14,6 +14,7 @@ const SavingsGoalSchema = new mongoose.Schema({
     // Soft delete
     deleted: { type: Boolean, default: false },
     deletedAt: { type: Date },
+    aliases: { type: [String], default: [] },
 }, {
     timestamps: true,
     versionKey: false,

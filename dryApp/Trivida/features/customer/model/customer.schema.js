@@ -12,6 +12,7 @@ const CustomerSchema = new mongoose.Schema({
   activityId: { type: mongoose.Schema.Types.Mixed }, // Mixed pour accepter nombres (SQLite) et ObjectId
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 CustomerSchema.index({ userId: 1, name: 1 });

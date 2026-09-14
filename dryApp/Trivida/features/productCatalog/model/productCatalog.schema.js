@@ -11,6 +11,7 @@ const ProductCatalogSchema = new mongoose.Schema({
   updatedAt: { type: Date },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 ProductCatalogSchema.index({ userId: 1, barcode: 1 }, { unique: true });

@@ -16,6 +16,7 @@ const BusinessProfileSchema = new mongoose.Schema({
   createdAt: { type: Date },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 // Middleware: exclure les documents supprimés

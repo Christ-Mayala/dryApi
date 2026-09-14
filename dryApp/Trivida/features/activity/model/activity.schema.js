@@ -11,6 +11,7 @@ const ActivitySchema = new mongoose.Schema({
   metadata: { type: mongoose.Schema.Types.Mixed },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  aliases: { type: [String], default: [] },
 }, { timestamps: true, versionKey: false });
 
 ActivitySchema.index({ userId: 1, name: 1 });
