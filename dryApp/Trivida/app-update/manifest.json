@@ -1,6 +1,6 @@
 {
-  "latest": "1.2.3",
-  "minimum": "1.2.1",
+  "latest": "1.2.4",
+  "minimum": "1.1.1",
   "force": true,
   "changelog": [
     "Connexion Google corrigée (capture fiable du lien de retour)",
