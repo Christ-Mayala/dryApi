@@ -21,6 +21,9 @@ InvoiceSchema.index({ userId: 1, invoiceNumber: 1 });
 InvoiceSchema.index({ userId: 1, status: 1 });
 
 InvoiceSchema.pre(/^find/, function() {
+  // Le pull de sync doit pouvoir inclure les tombstones (soft-deleted)
+  // pour propager les suppressions entre appareils.
+  if (this.options?.includeDeleted) return;
   this.where({ deleted: { $ne: true } });
 });
 

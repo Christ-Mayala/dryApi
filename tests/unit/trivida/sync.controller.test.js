@@ -123,6 +123,7 @@ describe('Sync Controller (multi-appareils)', () => {
     /** Configure le chaînage mongoose Model.find().sort().limit().lean() pour pull */
     function mockFindForPull(model, docs, count = docs.length) {
         model.find.mockReturnValue({
+            setOptions: jest.fn().mockReturnThis(),
             sort: jest.fn().mockReturnValue({
                 limit: jest.fn().mockReturnValue({
                     lean: jest.fn().mockResolvedValue(docs),
@@ -136,6 +137,7 @@ describe('Sync Controller (multi-appareils)', () => {
     function makeEmptyPullModel() {
         return {
             find: jest.fn().mockReturnValue({
+                setOptions: jest.fn().mockReturnThis(),
                 sort: jest.fn().mockReturnValue({
                     limit: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }),
                 }),

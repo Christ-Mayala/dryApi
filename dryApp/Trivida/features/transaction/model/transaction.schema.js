@@ -15,7 +15,8 @@ const TransactionSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   activityId: { type: mongoose.Schema.Types.Mixed }, // Mixed pour accepter nombres (SQLite) et ObjectId
   linkedId: { type: mongoose.Schema.Types.Mixed },   // Mixed pour accepter nombres (SQLite) et ObjectId
-  moduleType: { type: String, enum: ['debt', 'activity', null] },
+  moduleType: { type: String, enum: ['debt', 'activity', 'activity_recette', 'savings', 'invoice', null] },
+  isBusiness: { type: Number, default: 0 }, // 1 = transaction professionnelle (recette/vente)
   items: { type: String },
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
@@ -27,6 +28,9 @@ TransactionSchema.index({ userId: 1, type: 1 });
 TransactionSchema.index({ userId: 1, category: 1 });
 
 TransactionSchema.pre(/^find/, function() {
+  // Le pull de sync doit pouvoir inclure les tombstones (soft-deleted)
+  // pour propager les suppressions entre appareils.
+  if (this.options?.includeDeleted) return;
   this.where({ deleted: { $ne: true } });
 });
 

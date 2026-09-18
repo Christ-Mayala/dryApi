@@ -25,6 +25,9 @@ SavingsGoalSchema.index({ userId: 1, name: 1 });
 
 // Exclure les objectifs supprimés
 SavingsGoalSchema.pre(/^find/, function() {
+    // Le pull de sync doit pouvoir inclure les tombstones (soft-deleted)
+    // pour propager les suppressions entre appareils.
+    if (this.options?.includeDeleted) return;
     this.where({ deleted: { $ne: true } });
 });
 

@@ -416,6 +416,9 @@ exports.pull = asyncHandler(async (req, res) => {
             meta.entities[entity] = { total: totalForEntity, returned: 0 };
 
             const docs = await Model.find(baseQuery)
+                // Inclure les tombstones (soft-deleted) pour propager les DELETE
+                // entre appareils (sinon le pre-hook /^find/ les exclurait).
+                .setOptions({ includeDeleted: true })
                 .sort({ updatedAt: 1, createdAt: 1, _id: 1 })
                 .limit(limit)
                 .lean();
