@@ -1,12 +1,13 @@
 {
-  "latest": "1.2.4",
+  "latest": "1.2.5",
   "minimum": "1.1.1",
   "force": true,
   "changelog": [
-    "Connexion Google corrigée (capture fiable du lien de retour)",
-    "Programme de parrainage renforcé et sécurisé",
-    "Synchronisation plus rapide",
-    "Splash affichant le logo Trivida"
+    "Ajout rapide : montants saisis avec espace ou virgule acceptés",
+    "Objectif d'épargne journalier calculé sur les dépenses hors épargne",
+    "Retraits d'épargne bloqués au-delà du solde épargné",
+    "Correctifs de synchronisation (dettes, stocks, épargne)",
+    "Stabilité du tableau de bord et de la calculatrice"
   ],
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.christ_mayala.trivida",
   "appStoreUrl": "https://apps.apple.com/app/trivida"
