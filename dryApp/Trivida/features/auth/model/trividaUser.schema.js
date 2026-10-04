@@ -40,7 +40,7 @@ const TrividaUserSchema = new mongoose.Schema({
 
     // Profil Intel — compagnon de vie intelligent (Trivida Intel V1)
     intelProfile: {
-        mainGoal: { type: String, enum: ['maison', 'voiture', 'voyage', 'entreprise', 'emploi', 'etudes', 'general'], default: null },
+        mainGoal: { type: String, enum: ['maison', 'voiture', 'voyage', 'entreprise', 'emploi', 'etudes', 'famille', 'sante', 'investir', 'custom', 'general'], default: null },
         blockers: { type: [String], default: [] },
         monthlyTargetAmount: { type: Number, default: 0 },
         habits: { type: [String], default: [] },

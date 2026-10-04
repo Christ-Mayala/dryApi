@@ -38,7 +38,7 @@ exports.upsertProfile = asyncHandler(async (req, res) => {
     throw httpError('monthlyTargetAmount doit être un nombre positif supérieur à 0', 400);
   }
 
-  const validGoals = ['maison', 'voiture', 'voyage', 'entreprise', 'emploi', 'etudes', 'general'];
+  const validGoals = ['maison', 'voiture', 'voyage', 'entreprise', 'emploi', 'etudes', 'famille', 'sante', 'investir', 'custom', 'general'];
   if (!validGoals.includes(mainGoal)) {
     throw httpError(`mainGoal invalide. Valeurs acceptées : ${validGoals.join(', ')}`, 400);
   }

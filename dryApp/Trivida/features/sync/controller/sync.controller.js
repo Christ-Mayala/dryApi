@@ -13,6 +13,7 @@ const ActivityRecetteSchema = require('../../activityRecette/model/activityRecet
 const StockSchema           = require('../../stock/model/stock.schema');
 const ProductCatalogSchema  = require('../../productCatalog/model/productCatalog.schema');
 const BusinessProfileSchema = require('../../businessProfile/model/businessProfile.schema');
+const RecurringFlowSchema  = require('../../recurringFlow/model/recurringFlow.schema');
 
 // Map nom d'entité → schéma
 const SCHEMA_MAP = {
@@ -26,6 +27,7 @@ const SCHEMA_MAP = {
     stock:            { modelName: 'TrividaStock',            schema: StockSchema },
     product_catalog:  { modelName: 'TrividaProductCatalog',   schema: ProductCatalogSchema },
     business_profile: { modelName: 'TrividaBusinessProfile',  schema: BusinessProfileSchema },
+    recurring_flow:   { modelName: 'TrividaRecurringFlow',    schema: RecurringFlowSchema },
 };
 
 exports.SCHEMA_MAP = SCHEMA_MAP;
@@ -301,7 +303,28 @@ exports.push = asyncHandler(async (req, res) => {
                 }
 
                 if (!existing) {
-                    errors.push({ entity, localId, error: 'Document introuvable pour UPDATE' });
+                    // UPSERT : le client envoie un UPDATE alors que le serveur
+                    // n'a jamais vu ce document. Cas réel et fréquent :
+                    //   - enregistrement créé hors ligne sur un autre appareil ;
+                    //   - donnée créée avant que le client ne mette l'entité
+                    //     en file (les INSERT manquants sont alors joués en UPDATE).
+                    // Échouer ici perdait définitivement la donnée.
+                    //
+                    // Sûr vis-à-vis des suppressions : findCandidates ne filtre
+                    // PAS `deleted`, donc un enregistrement soft-deleted aurait
+                    // été trouvé plus haut. existing === null implique donc
+                    // qu'aucun document (ni vivant ni tombstone) n'existe, et
+                    // cette branche ne peut pas ressusciter une suppression.
+                    //
+                    // Seule la dernière sous-branche de l'INSERT est atteignable
+                    // ici : `candidates` est vide, donc ni `sameRecord` ni la
+                    // collision inter-appareils ne peuvent s'appliquer.
+                    const created = await Model.findOneAndUpdate(
+                        { localId: variants[0] ?? localId, userId, deviceId },
+                        { $set: dataWithUser },
+                        { returnDocument: 'after', upsert: true }
+                    );
+                    results.push({ entity, localId, serverId: created._id, status: 'created' });
                     continue;
                 }
 
@@ -337,7 +360,13 @@ exports.push = asyncHandler(async (req, res) => {
                 }
 
                 if (!existing) {
-                    errors.push({ entity, localId, error: 'Document introuvable pour DELETE' });
+                    // Un DELETE sur un document déjà absent atteint l'état
+                    // recherché : c'est un succès, pas une erreur. Le traiter
+                    // comme un échec faisait boucler l'opération dans la file
+                    // jusqu'au dead-letter, alors qu'il n'y a rien à corriger.
+                    // Cas réel : un flux créé puis supprimé hors ligne, dont
+                    // l'INSERT n'a jamais abouti.
+                    results.push({ entity, localId, status: 'already_absent' });
                     continue;
                 }
 

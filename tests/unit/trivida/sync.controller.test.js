@@ -10,7 +10,7 @@
  *   6. UPDATE introuvable → erreur
  *   7. DELETE via localId canonique
  *   8. DELETE via aliases (après split)
- *   9. DELETE introuvable → erreur
+ *   9. DELETE introuvable → succès idempotent (déjà absent)
  *  10. Invoice INSERT collision → numéro renommé
  *  11. Pull → fallback localId pour doc sans localId
  *  12. Pull → deduplication invoiceNumber
@@ -294,9 +294,16 @@ describe('Sync Controller (multi-appareils)', () => {
             expect(sendResponse.mock.calls[0][1].results[0].status).toBe('updated');
         });
 
-        it('6. UPDATE introuvable → erreur dans errors[]', async () => {
+        // Changement de comportement assumé : un UPDATE dont le document est
+        // inconnu crée désormais le document (upsert) au lieu d'échouer.
+        // C'est le cas réel rencontré avec recurring_flow : le flux existait
+        // côté client mais aucun INSERT n'avait jamais été poussé, donc
+        // l'UPDATE ne pouvait aboutir et la donnée était perdue.
+        it('6. UPDATE introuvable → crée le document (upsert)', async () => {
             mockFindForVariants(mockTransactionModel, []);
             mockTransactionModel.findOne.mockResolvedValue(null);
+            const created = makeDoc({ _id: 'NEW1', localId: 999 });
+            mockTransactionModel.findOneAndUpdate.mockResolvedValue(created);
 
             req.body.operations = [{
                 entity: 'transaction',
@@ -307,8 +314,16 @@ describe('Sync Controller (multi-appareils)', () => {
 
             await syncController.push(req, res, jest.fn());
 
-            expect(sendResponse.mock.calls[0][1].errors).toHaveLength(1);
-            expect(sendResponse.mock.calls[0][1].errors[0].error).toMatch(/introuvable/);
+            const body = sendResponse.mock.calls[0][1];
+            expect(body.errors).toHaveLength(0);
+            expect(body.results).toHaveLength(1);
+            expect(body.results[0].status).toBe('created');
+            // upsert: true est indispensable, sans quoi rien n'est persisté.
+            expect(mockTransactionModel.findOneAndUpdate).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.anything(),
+                expect.objectContaining({ upsert: true })
+            );
         });
     });
 
@@ -352,7 +367,10 @@ describe('Sync Controller (multi-appareils)', () => {
             expect(sendResponse.mock.calls[0][1].results[0].status).toBe('deleted');
         });
 
-        it('9. DELETE introuvable → erreur', async () => {
+        it('9. DELETE introuvable → succès idempotent (aucune erreur)', async () => {
+            // Un DELETE sur un document déjà absent atteint l'état voulu.
+            // Le compter comme une erreur faisait tourner l'opération en
+            // boucle jusqu'au dead-letter pour rien.
             mockFindForVariants(mockTransactionModel, []);
             mockTransactionModel.findOne.mockResolvedValue(null);
 
@@ -365,8 +383,10 @@ describe('Sync Controller (multi-appareils)', () => {
 
             await syncController.push(req, res, jest.fn());
 
-            expect(sendResponse.mock.calls[0][1].errors).toHaveLength(1);
-            expect(sendResponse.mock.calls[0][1].errors[0].error).toMatch(/introuvable/);
+            expect(sendResponse.mock.calls[0][1].errors).toHaveLength(0);
+            expect(sendResponse.mock.calls[0][1].results[0].status).toBe('already_absent');
+            // Aucune écriture inutile sur un document inexistant.
+            expect(mockTransactionModel.findOneAndUpdate).not.toHaveBeenCalled();
         });
     });
 

@@ -349,4 +349,4 @@ Pour toute question :
 
 **Version** : 1.0.0  
 **Auteur** : Alvine (avec Kiro AI)  
-**Date** : Juin 2026
+**Date** : Juin 2026  
