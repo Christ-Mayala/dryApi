@@ -277,6 +277,7 @@ Lecture séquentielle (chaque page a une navigation ⬅ précédent / suivant �
 - [09 · Scope produit](docs/09_PRODUCT_SCOPE.md)
 - [10 · Social Auth](docs/10_SOCIAL_AUTH.md)
 - [11 · Générateur de frontend](docs/11_GENERATEUR_FRONTEND.md)
+- [Stockage des fichiers : Cloudinary et Cloudflare R2](docs/STOCKAGE_FICHIERS.md)
 
 Références ponctuelles (non séquentielles) :
 

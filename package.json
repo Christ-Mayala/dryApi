@@ -26,6 +26,10 @@
     "seed:clean": "node scripts/seed/seed-clean.js",
     "seed:reset": "node scripts/seed/seed-clean.js && node scripts/seed/seed-all.js",
     "seed:scim": "node dryApp/SCIM/scripts/seed-scim-db.js",
+    "seed:library-categories": "node dryApp/EnglishDigitalLibrary/scripts/seed-categories.js",
+    "seed:library-category-images": "node dryApp/EnglishDigitalLibrary/scripts/seed-category-images.js",
+    "seed:library-books": "node dryApp/EnglishDigitalLibrary/scripts/seed-demo-books.js",
+    "promote:library-admin": "node dryApp/EnglishDigitalLibrary/scripts/promote-admin.js",
     "seed:pelerin-bible": "node scripts/seed/seed-pelerin-bible.js",
     "seed:pelerin-demo": "node scripts/seed/seed-pelerin-demo.js",
     "seed:pelerin-reading-plan": "node scripts/seed/seed-pelerin-reading-plan.js",
@@ -90,6 +94,8 @@
     "delay": 2500
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1159.0",
+    "@aws-sdk/s3-request-presigner": "^3.1159.0",
     "@distube/ytdl-core": "^4.16.12",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",

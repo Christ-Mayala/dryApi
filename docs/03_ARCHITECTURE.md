@@ -51,6 +51,7 @@ flowchart TD
     Mongo[("🍃 MongoDB\n(1 cluster, N bases par tenant)")]
     Redis[("🔴 Redis\n(Cache, Rate Limit, Sessions)")]
     Cloudinary["☁️ Cloudinary\n(Upload média)"]
+    R2["☁️ Cloudflare R2\n(Fichiers, PDF privés)"]
     Stripe["💳 Stripe\n(Paiements)"]
     OAuth["🔐 OAuth\n(Google, Facebook)"]
 
@@ -62,11 +63,14 @@ flowchart TD
     Kernel --> Redis
     Apps --> Mongo
     Apps --> Cloudinary
+    Apps --> R2
     Apps --> Stripe
     Kernel --> OAuth
 ```
 
 **Principe clé** : Un seul processus Node.js, une seule connexion MongoDB partagée, mais chaque tenant dispose de sa propre base logique (`<NomApp>DB`) et de ses propres routes sous `/api/v1/<app>`.
+
+Pour la répartition des fichiers, les images utilisent Cloudinary et les PDF privés peuvent utiliser l'adaptateur R2 commun du kernel. La bibliothèque numérique a déjà ses 147 images de catégories dans R2 ; elles sont conservées ainsi pour le moment. Voir le [guide du stockage des fichiers](./STOCKAGE_FICHIERS.md).
 
 ## 2. Flux d'une requete
 
@@ -139,6 +143,7 @@ Modules optionnels:
 
 - Redis
 - Cloudinary
+- Cloudflare R2 (`dry/services/storage/`)
 - Stripe
 - Socket.IO
 - OAuth providers

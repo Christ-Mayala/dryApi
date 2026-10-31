@@ -148,6 +148,7 @@ Chargés automatiquement sur `/api/v1/<nom-du-dossier>` (voir `dry/bootstrap/rou
 | `cache/redis.service.js`           | Client Redis partagé (no-op si `REDIS_ENABLED=false`).                                                                                                            |
 | `cleanup/`                         | Purge des documents soft-deleted (cron), expiration des "bons plans" SCIM.                                                                                        |
 | `cloudinary/cloudinary.service.js` | Upload d'images/fichiers vers Cloudinary (avatars, etc.).                                                                                                         |
+| `storage/r2ObjectStorage.service.js` | Adaptateur partagé Cloudflare R2/S3 pour stocker, lire et supprimer des fichiers ; voir le [guide du stockage](./STOCKAGE_FICHIERS.md). |
 | `export/export.service.js`         | Conversion JSON → CSV.                                                                                                                                            |
 | `health/health.service.js`         | Vérifie DB, Redis, disque, apps actives — alimente `/health/ready` et `/system/status`.                                                                           |
 | `media/`                           | Téléchargement multi-plateforme (pour MediaDL) et suivi de jobs asynchrones.                                                                                      |
