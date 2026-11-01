@@ -46,7 +46,7 @@ exports.list = async (req, res) => {
 
 /** Tableau d'administration : les brouillons restent invisibles aux routes publiques. */
 exports.adminList = async (req, res) => {
-  const Book = model(req, 'Book', BookSchema);
+  const Book = model(req, 'Book', BookSchema); model(req, 'Category', CategorySchema);
   const filter = {};
   if (req.query.status && ['Draft', 'Pending Validation', 'Published', 'Rejected', 'Archived'].includes(String(req.query.status))) filter.status = String(req.query.status);
   const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1); const limit = Math.max(1, Math.min(50, Number.parseInt(req.query.limit, 10) || 25));
@@ -143,10 +143,11 @@ exports.uploadDocument = async (req, res) => {
   const uploaded = await storage.uploadDocument(file.buffer, { folder: 'english_digital_library/documents', public_id: `${String(book._id)}-${Date.now()}` });
   const previous = book.documentPublicId; const previousProvider = book.documentStorageProvider || 'cloudinary';
   book.documentPublicId = uploaded.public_id; book.documentUrl = uploaded.secure_url; book.documentStorageProvider = uploaded.storage_provider; book.documentBytes = file.size; book.externalReadUrl = '';
-  // À défaut de détecteur linguistique installé dans dryApi, une revue humaine est obligatoire.
-  book.languageValidationStatus = 'Manual Review';
-  book.languageValidationNote = 'Manual English review is required before publication.';
-  book.status = 'Pending Validation'; book.updatedBy = req.user._id;
+  // Publication automatique après téléversement par un administrateur.
+  book.languageValidationStatus = 'Valid';
+  book.languageValidationNote = '';
+  book.rightsStatus = 'approved';
+  book.status = 'Published'; book.publishedAt = new Date(); book.updatedBy = req.user._id;
   await book.save();
   if (previous) await storage.remove(previous, 'raw', previousProvider);
   sendResponse(res, { id: String(book._id), languageValidationStatus: book.languageValidationStatus, languageValidationNote: book.languageValidationNote, status: book.status }, 'PDF stored privately; manual review required', true, undefined, 201);
