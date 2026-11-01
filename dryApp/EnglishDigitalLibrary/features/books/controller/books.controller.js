@@ -64,11 +64,12 @@ exports.getBySlug = async (req, res) => {
 
 exports.create = async (req, res) => {
   const data = req.body || {};
-  if (typeof data.title !== 'string' || data.title.trim().length < 2 || !Array.isArray(data.authors) || !data.authors.length || !mongoose.Types.ObjectId.isValid(data.categoryId)) return fail(res, 400, 'Title, at least one author, and a valid category are required.');
+  if (typeof data.title !== 'string' || data.title.trim().length < 2 || !mongoose.Types.ObjectId.isValid(data.categoryId)) return fail(res, 400, 'Title and a valid category are required.');
+  const authors = Array.isArray(data.authors) ? data.authors.filter(a => typeof a === 'string' && a.trim()).map(a => a.trim()) : [];
   const Book = model(req, 'Book', BookSchema); const path = await categoryPath(req, data.categoryId);
   // Les champs de stockage et de publication ne sont jamais acceptés depuis le formulaire.
   const input = {
-    title: data.title.trim(), authors: data.authors, description: data.description || '', categoryId: data.categoryId,
+    title: data.title.trim(), authors, description: data.description || '', categoryId: data.categoryId,
     tags: Array.isArray(data.tags) ? data.tags : [], publisher: data.publisher || '', publicationYear: data.publicationYear,
     isbn: data.isbn || '', pageCount: data.pageCount, readingLevel: data.readingLevel || '', externalReadUrl: data.externalReadUrl || '',
     visibility: data.visibility || 'public', downloadAllowed: data.downloadAllowed === true,
@@ -111,7 +112,7 @@ exports.review = async (req, res) => {
   if (rightsStatus !== undefined) {
     if (req.user.role !== 'admin') return fail(res, 403, 'Only an administrator can approve distribution rights.');
     if (!['approved', 'rejected', 'pending'].includes(rightsStatus)) return fail(res, 400, 'Invalid rights review status.');
-    if (rightsStatus === 'approved' && (!book.license?.trim() || !book.source?.trim())) return fail(res, 409, 'Add the document license and source before approving distribution rights.');
+    if (rightsStatus === 'approved' && !book.source?.trim()) return fail(res, 409, 'Add the source before approving distribution rights.');
     book.rightsStatus = rightsStatus;
   }
   book.languageValidationNote = String(note).slice(0, 1000);

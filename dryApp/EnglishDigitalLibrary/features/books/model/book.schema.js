@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const BookSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true, maxlength: 300 },
   slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  authors: { type: [String], required: true, validate: v => v.length > 0 },
+  authors: { type: [String], default: [] },
   description: { type: String, default: '', maxlength: 5000 },
   language: { type: String, default: 'English', enum: ['English'] },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
