@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const sendResponse = require('../../utils/http/response');
 const queryBuilder = require('../../middlewares/query/queryBuilder');
+const logger = require('../../utils/logging/logger');
 
 /**
  * @typedef {import('mongoose').Model} Model
@@ -15,6 +16,8 @@ const queryBuilder = require('../../middlewares/query/queryBuilder');
  * @typedef {Object} CrudOptions
  * @property {function({req: Request, mode: string, payload: Object}): Promise<Object>} [transformInput] - Fonction pour transformer les données entrantes avant création/mise à jour.
  * @property {string[]} [allowedFields] - Liste des champs autorisés pour la création/mise à jour.
+ * @property {function({req: Request, doc: Object, payload: Object}): Promise<void>} [afterCreate] - Effet de bord après création (ex: envoi d'email). Non bloquant.
+ * @property {function({req: Request, doc: Object, previous: Object, payload: Object}): Promise<void>} [afterUpdate] - Effet de bord après mise à jour. Non bloquant.
  */
 
 /**
@@ -54,6 +57,9 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     transformOutput,
     // populateFields permet de faire des populate automatiques
     populateFields = '',
+    // afterCreate / afterUpdate : effets de bord non bloquants (ex: envoi d'email)
+    afterCreate,
+    afterUpdate,
   } = options;
 
   /**
@@ -75,6 +81,12 @@ function buildCrudHandlers(modelName, schema, options = {}) {
       doc = await transformOutput({ req, doc });
     }
 
+    if (afterCreate) {
+      Promise.resolve(afterCreate({ req, doc, payload })).catch((err) => {
+        logger(`[crudFactory] afterCreate ${modelName}: ${err.message}`, 'error');
+      });
+    }
+
     sendResponse(res, doc, `${modelName} créé`, true);
   });
 
@@ -91,6 +103,8 @@ function buildCrudHandlers(modelName, schema, options = {}) {
       payload = await transformInput({ req, mode: 'update', payload });
     }
 
+    const previous = afterUpdate ? await Model.findById(req.params.id).lean() : null;
+
     const doc = await Model.findByIdAndUpdate(req.params.id, payload, {
       returnDocument: 'after',
       runValidators: true,
@@ -98,6 +112,12 @@ function buildCrudHandlers(modelName, schema, options = {}) {
 
     if (!doc) {
       throw new Error(`${modelName} introuvable`);
+    }
+
+    if (afterUpdate) {
+      Promise.resolve(afterUpdate({ req, doc, previous, payload })).catch((err) => {
+        logger(`[crudFactory] afterUpdate ${modelName}: ${err.message}`, 'error');
+      });
     }
 
     sendResponse(res, doc, `${modelName} mis à jour`, true);

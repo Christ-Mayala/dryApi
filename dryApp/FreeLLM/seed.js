@@ -1,6 +1,16 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+const { encrypt } = require('./core/lib/crypto');
 
-async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, SystemSettingsModel) {
+/**
+ * Fournisseurs gratuits qui n'exigent aucune authentification.
+ * Le routeur n'appelle un fournisseur qu'en présence d'une clé en base : on
+ * enregistre donc une clé partagée « marqueur » (valeur ignorée par le
+ * fournisseur) afin que ces modèles restent routables sans configuration.
+ */
+const PLATEFORMES_SANS_CLE = ['kilo', 'pollinations', 'llm7'];
+
+async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, SystemSettingsModel, ApiKeysModel) {
   console.log('Seeding FreeLLM data...');
   
   const existingAllowRegistration = await SystemSettingsModel.findOne({ key: 'allowRegistration' });
@@ -121,18 +131,19 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
       ['ollama', 'gpt-oss:20b', 'GPT-OSS 20B (Ollama)', 18, 10, 'Medium', null, null, null, null, '~20-30M', 131072, true],
       ['ollama', 'gemma4:31b', 'Gemma 4 31B (Ollama)', 22, 10, 'Medium', null, null, null, null, '~20-30M', 131072, true],
 
-      // Kilo
+      // Kilo (modèles `:free` accessibles sans clé, 200 req/h/IP)
+      ['kilo', 'kilo-auto/free', 'Kilo Auto (free)', 15, 8, 'Frontier', null, null, null, null, '~2-3M (200/hr)', 262144, true],
       ['kilo', 'nvidia/nemotron-3-super-120b-a12b:free', 'Nemotron 3 Super 120B (Kilo)', 22, 9, 'Frontier', null, null, null, null, '~2-3M (200/hr)', 262144, true],
+      ['kilo', 'poolside/laguna-s-2.1:free', 'Laguna S 2.1 (Kilo, free)', 24, 9, 'Large', null, null, null, null, '~2-3M (200/hr)', 131072, true],
 
       // Pollinations
       ['pollinations', 'openai-fast', 'GPT-OSS 20B (Pollinations)', 18, 10, 'Medium', null, null, null, null, '~? (anon)', 131072, true],
 
-      // LLM7
-      ['llm7', 'gpt-oss-20b', 'GPT-OSS 20B (LLM7)', 18, 10, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 131072, true],
-      ['llm7', 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo', 'Llama 3.1 8B Turbo (LLM7)', 28, 10, 'Small', 100, null, null, null, '~2-3M (100/hr)', 131072, true],
+      // LLM7 (API gratuite accessible sans clé : identifiants « turbo » uniquement)
+      ['llm7', 'mistral-Nemo-Instruct-2407', 'Mistral Nemo (LLM7)', 21, 10, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 128000, true],
+      ['llm7', 'gpt-oss:20b', 'GPT-OSS 20B (LLM7)', 18, 10, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 131072, true],
+      ['llm7', 'nemotron-3-nano:30b', 'Nemotron 3 Nano 30B (LLM7)', 22, 10, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 1000000, true],
       ['llm7', 'codestral-latest', 'Codestral (LLM7)', 16, 8, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 32000, true],
-      ['llm7', 'ministral-8b-2512', 'Ministral 8B (LLM7)', 28, 10, 'Small', 100, null, null, null, '~2-3M (100/hr)', 131072, true],
-      ['llm7', 'GLM-4.6V-Flash', 'GLM-4.6V Flash (LLM7)', 15, 9, 'Large', 100, null, null, null, '~2-3M (100/hr)', 131072, true],
 
       // OpenAI
       ['openai', 'gpt-4o', 'GPT-4o', 1, 5, 'Frontier', null, null, null, null, 'Paid (your key)', 128000, true],
@@ -188,6 +199,19 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
     }
   }
   console.log(`Model catalog ready (inserted=${insertedModels}, updated=${updatedModels}).`);
+
+  // LLM7 a renommé ses identifiants : on désactive les anciens modèles obsolètes
+  // restés en base, sinon le routeur les essaierait et échouerait dessus.
+  const llm7Valides = modelDocs.filter((m) => m.platform === 'llm7').map((m) => m.modelId);
+  if (llm7Valides.length > 0) {
+    const desactives = await ModelsModel.updateMany(
+      { platform: 'llm7', modelId: { $nin: llm7Valides }, deletedAt: null, enabled: true },
+      { $set: { enabled: false } },
+    );
+    if (desactives.modifiedCount > 0) {
+      console.log(`LLM7: ${desactives.modifiedCount} ancien(s) identifiant(s) obsolète(s) désactivé(s).`);
+    }
+  }
 
   let enabledCount = await ModelsModel.countDocuments({ enabled: true, deletedAt: null });
   if (enabledCount === 0) {
@@ -255,6 +279,27 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
   }
 
   console.log('Seeding complete!');
+
+  // Clés partagées pour les fournisseurs anonymes (aucune authentification requise).
+  if (ApiKeysModel) {
+    for (const platform of PLATEFORMES_SANS_CLE) {
+      const existante = await ApiKeysModel.findOne({ platform, deletedAt: null }).lean();
+      if (!existante) {
+        const { encrypted, iv, authTag } = encrypt('anonymous');
+        await ApiKeysModel.create({
+          userId: new mongoose.Types.ObjectId(),
+          platform,
+          label: 'Clé partagée (fournisseur anonyme)',
+          encryptedKey: encrypted,
+          iv,
+          authTag,
+          status: 'healthy',
+          enabled: true,
+        });
+        console.log(`Shared key ensured for anonymous provider "${platform}".`);
+      }
+    }
+  }
 
   return unifiedKey;
 }

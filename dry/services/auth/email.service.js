@@ -242,40 +242,62 @@ class EmailService {
         }));
     }
 
-    // Timeout 10s
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    // Timeout porté à 30s (réseaux lents) + 1 nouvelle tentative sur
+    // timeout / erreur réseau. Un refus HTTP de Brevo n'est pas réessayé.
+    const TIMEOUT_MS = 30000;
+    const MAX_TENTATIVES = 2;
 
-    try {
-      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': apiKey,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
+    const envoyer = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-      clearTimeout(timeoutId);
+      try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': apiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
 
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message = data && (data.message || data.code);
-        const err = new Error(message || `Brevo HTTP ${response.status}`);
-        err.code = 'BREVO_HTTP_ERROR';
-        err.httpStatus = response.status;
-        throw err;
+        clearTimeout(timeoutId);
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message = data && (data.message || data.code);
+          const err = new Error(message || `Brevo HTTP ${response.status}`);
+          err.code = 'BREVO_HTTP_ERROR';
+          err.httpStatus = response.status;
+          throw err;
+        }
+
+        return true;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          const err = new Error(`Brevo API timeout après ${TIMEOUT_MS / 1000}s`);
+          err.code = 'BREVO_TIMEOUT';
+          throw err;
+        }
+        throw error;
       }
+    };
 
-      return true;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        throw new Error('Brevo API timeout après 10s');
+    for (let tentative = 1; ; tentative += 1) {
+      try {
+        return await envoyer();
+      } catch (error) {
+        // Réessai uniquement sur timeout ou erreur réseau (fetch = TypeError).
+        const reseau = error.code === 'BREVO_TIMEOUT' || error.name === 'TypeError';
+        if (tentative >= MAX_TENTATIVES || !reseau) throw error;
+        logger(
+          `Email Brevo: tentative ${tentative}/${MAX_TENTATIVES} échouée (${error.message}), nouvel essai`,
+          'warning'
+        );
       }
-      throw error;
     }
   }
 

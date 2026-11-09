@@ -1,12 +1,20 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const https = require('https');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const config = require('../../../config/database');
 
 const isCloudinaryConfigured = !!(config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET);
+
+// Delai maximal d'un transfert vers Cloudinary. Le SDK retombe sur 60s, mais
+// l'agent HTTPS global de Node impose un delai d'inactivite de 5s qui coupe les
+// televersements un peu lents (« Request Timeout »). On fournit donc un agent
+// dedie (connexions reutilisees + delai aligne) pour ces transferts.
+const UPLOAD_TIMEOUT_MS = 60000;
+const cloudinaryAgent = new https.Agent({ keepAlive: true, timeout: UPLOAD_TIMEOUT_MS });
 
 if (isCloudinaryConfigured) {
   cloudinary.config({
@@ -20,16 +28,18 @@ const storage = isCloudinaryConfigured
   ? new CloudinaryStorage({
     cloudinary,
     params: async (req, file) => {
-      let folderName = 'dry_app_uploads';
-
-      if (file.mimetype === 'application/pdf') {
-        folderName = 'dry_app_documents';
-      }
+      // Dossier racine cloisonne par application : le bootloader injecte
+      // `req.appName` (ex: 'Nova' pour /api/v1/nova) -> dossier Cloudinary 'nova'.
+      const appFolder = String(req?.appName || 'dry').trim().toLowerCase() || 'dry';
+      const folderName =
+        file.mimetype === 'application/pdf' ? `${appFolder}/documents` : appFolder;
 
       return {
         folder: folderName,
         resource_type: 'auto',
         public_id: `${file.fieldname}-${Date.now()}`,
+        timeout: UPLOAD_TIMEOUT_MS,
+        agent: cloudinaryAgent,
       };
     },
   })

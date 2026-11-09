@@ -48,7 +48,10 @@ function buildCrudRouter(modelName, schema, config = {}) {
   const applyAuth = (action) => {
     const role = auth[action] || (auth.all ? 'user' : null);
     if (!role) return (req, res, next) => next();
-    return [protect, authorize(role === 'user' ? [] : [role])];
+    // 'user' = simple authentification : tout utilisateur connecté est autorisé,
+    // sans restriction de rôle. Les autres valeurs désignent un rôle unique.
+    if (role === 'user') return [protect];
+    return [protect, authorize(role)];
   };
 
   // --- ROUTES ---

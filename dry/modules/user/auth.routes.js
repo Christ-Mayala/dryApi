@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 
 // 1. Import des contrôleurs (login, register, profil)
@@ -7,11 +8,42 @@ const { getAiQuota, consumeAiRequest } = require('./aiQuota.controller');
 
 
 const upload = require('../../services/cloudinary/cloudinary.service');
+const sendResponse = require('../../utils/http/response');
 
 // 2. Import du middleware d'auth et du rate limit spécifique
 const { protect } = require('../../middlewares/protection/auth.middleware');
 const authLimiter = require('../../middlewares/protection/authRateLimit');
 const { withAudit } = require('../../middlewares/audit');
+
+/**
+ * Enveloppe multer pour renvoyer les erreurs de televersement d'avatar en JSON
+ * clair (400) au lieu de laisser remonter une erreur non geree (500).
+ */
+const televerserAvatar = (req, res, next) => {
+  upload.single('avatar')(req, res, (erreur) => {
+    if (!erreur) return next();
+
+    if (erreur instanceof multer.MulterError && erreur.code === 'LIMIT_FILE_SIZE') {
+      return sendResponse(
+        res,
+        null,
+        "L'image de profil depasse la taille maximale autorisee (10 Mo).",
+        false,
+        undefined,
+        400
+      );
+    }
+
+    return sendResponse(
+      res,
+      null,
+      erreur.message || "Echec du televersement de l'image de profil.",
+      false,
+      undefined,
+      400
+    );
+  });
+};
 
 // --- ROUTES ---
 
@@ -23,7 +55,7 @@ router.post('/logout', protect, withAudit('LOGOUT'), logout);
 
 // Profil (protégé par JWT, utilisé par le frontend pour recharger la session)
 router.get('/profile', protect, withAudit('GET_PROFILE'), getMe);
-router.patch('/profile', protect, withAudit('UPDATE_PROFILE'), upload.single('avatar'), updateMe);
+router.patch('/profile', protect, withAudit('UPDATE_PROFILE'), televerserAvatar, updateMe);
 
 // Changement de mot de passe (protégé)
 router.patch('/password', protect, withAudit('CHANGE_PASSWORD'), changePassword);

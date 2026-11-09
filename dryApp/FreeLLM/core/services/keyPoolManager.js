@@ -64,8 +64,9 @@ const IDE_PREFERRED_PROVIDERS = {
   'zhipu': 200,
   'ollama': 150,
   'kilo': 100,
-  'pollinations': 80,
   'llm7': 50,
+  // Pollinations est fréquemment rate-limité/indisponible : essayé en dernier.
+  'pollinations': 20,
   'openai': 0
 };
 

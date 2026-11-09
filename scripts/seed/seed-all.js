@@ -56,6 +56,24 @@ const run = async () => {
   for (const appName of apps) {
     try {
       getTenantDB(appName);
+
+      // Laisser chaque app enregistrer son propre modele User (roles metier)
+      // AVANT toute compilation du User par defaut : sinon le schema generique
+      // du kernel est mis en cache pour ce tenant et les schemas applicatifs
+      // passes ensuite sont ignores (modelFactory retourne le modele existant).
+      // Miroir du bootloader : appModule.bootstrap(appName).
+      const appIndexPath = path.join(dryAppPath, appName, 'index.js');
+      if (fs.existsSync(appIndexPath)) {
+        try {
+          const appModule = require(appIndexPath);
+          if (typeof appModule.bootstrap === 'function') {
+            await appModule.bootstrap(appName);
+          }
+        } catch (bootstrapError) {
+          log(`${appName}: bootstrap ignore -> ${bootstrapError.message}`);
+        }
+      }
+
       const User = getModel(appName, 'User');
 
       const existing = await User.findOne({ email: adminEmail }).select('+password');

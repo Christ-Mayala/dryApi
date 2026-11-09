@@ -271,6 +271,11 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
           const { verifyToken } = require('../../../../dry/utils/auth/jwt.util');
           const decoded = verifyToken(token);
           userId = decoded.id;
+          // NOVA : l'assistant IA est embarqué dans l'application. Un utilisateur
+          // authentifié par son JWT doit pouvoir utiliser les clés partagées de
+          // l'instance (configurées par l'administrateur), exactement comme le
+          // fait la clé unifiée. Ses propres clés restent prioritaires.
+          allowSharedKeysFallback = true;
         } catch (err) {
           profiler.mark('auth');
           res.status(401).json({ error: { message: 'Invalid API key or JWT token', type: 'authentication_error' } });

@@ -50,7 +50,7 @@ async function initFreeLLM(appName) {
   
   await initEncryptionKey(Settings);
   
-  const seededKey = await seedFreeLLM(Models, FallbackConfig, Settings, SystemSettings);
+  const seededKey = await seedFreeLLM(Models, FallbackConfig, Settings, SystemSettings, ApiKeys);
   if (seededKey) unifiedApiKey = seededKey;
 
   // Initialize capability registry with all models

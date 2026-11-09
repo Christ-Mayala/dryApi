@@ -69,16 +69,26 @@ register(new OpenAICompatProvider({
   timeoutMs: 120000,
 }));
 
+// Kilo AI Gateway : endpoint officiel compatible OpenAI. Les modèles `:free`
+// sont accessibles sans clé (200 req/h/IP) ; le seed enregistre une clé
+// partagée « marqueur » pour rendre ces modèles routables sans configuration.
 register(new OpenAICompatProvider({
   platform: 'kilo',
   name: 'Kilo Gateway',
-  baseUrl: 'https://api.kilo.ai/api/gateway/v1',
+  baseUrl: 'https://ai-gateway.kilo.ai/api/v1',
+  timeoutMs: 30000,
 }));
 
+// Pollinations expose une API compatible OpenAI sur `https://text.pollinations.ai/v1`
+// (l'ancien chemin `/openai/v1` renvoie une erreur réseau). Aucune clé n'est
+// requise : une clé partagée marqueur est enregistrée par le seed.
 register(new OpenAICompatProvider({
   platform: 'pollinations',
   name: 'Pollinations',
-  baseUrl: 'https://text.pollinations.ai/openai/v1',
+  baseUrl: 'https://text.pollinations.ai/v1',
+  // Service souvent saturé (402/timeouts) : échec rapide pour laisser la main
+  // aux fournisseurs suivants au lieu de bloquer la requête ~30 s.
+  timeoutMs: 8000,
 }));
 
 register(new OpenAICompatProvider({

@@ -301,6 +301,50 @@ exports.resetPassword = asyncHandler(async (req, res) => {    // Accepte 'passwo
 });
 
 // --- CHANGE PASSWORD ---
+/**
+ * Prévient les administrateurs (et l'inviteur) qu'un membre invité vient
+ * d'accepter l'invitation en remplaçant son mot de passe provisoire.
+ * Non bloquant : toute erreur est ignorée silencieusement.
+ */
+async function notifierAcceptationInvitation(req, utilisateur) {
+    try {
+        const email = String(utilisateur?.email || '').trim().toLowerCase();
+        if (!email) return;
+
+        const Membre = req.getModel('Membre');
+        const Notification = req.getModel('Notification');
+        if (!Membre || !Notification) return;
+
+        const membre = await Membre.findOne({ email }).lean();
+        if (!membre) return;
+
+        await Membre.findByIdAndUpdate(membre._id, { $set: { derniereConnexion: new Date() } });
+
+        const admins = await Membre.find({ role: 'admin' }).lean();
+        const destinataires = new Set();
+        for (const admin of admins) {
+            if (admin.utilisateurId) destinataires.add(String(admin.utilisateurId));
+        }
+        if (membre.createdBy) destinataires.add(String(membre.createdBy));
+        if (destinataires.size === 0) return;
+
+        const nom = utilisateur.name || utilisateur.nom || email;
+        await Promise.all(
+            [...destinataires].map((destinataireId) =>
+                Notification.create({
+                    destinataireId,
+                    type: 'systeme',
+                    titre: 'Invitation acceptée',
+                    message: `${nom} a accepté l'invitation et rejoint l'espace de travail.`,
+                    lu: false,
+                })
+            )
+        );
+    } catch (_) {
+        // Notification non bloquante : le changement de mot de passe reste valide.
+    }
+}
+
 exports.changePassword = asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const User = req.getModel('User');
@@ -316,10 +360,19 @@ exports.changePassword = asyncHandler(async (req, res) => {
         throw httpError('Mot de passe actuel incorrect', 401);
     }
 
+    // Invitation en attente : le premier changement de mot de passe vaut acceptation.
+    const invitationEnAttente = user.mustChangePassword === true;
+
     // Maj password
     user.password = newPassword;
     user.passwordChangedAt = Date.now();
+    // Le mot de passe provisoire est remplacé : on lève l'obligation.
+    user.mustChangePassword = false;
     await user.save();
+
+    if (invitationEnAttente) {
+        await notifierAcceptationInvitation(req, user);
+    }
 
     sendResponse(res, null, 'Mot de passe mis à jour avec succès');
 });

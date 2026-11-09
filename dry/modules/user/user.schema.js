@@ -2,6 +2,19 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const config = require('../../../config/database');
 
+// Permissions NOVA explicites. Absentes (`undefined`) pour les comptes
+// autonomes : dans ce cas le frontend considère l'accès complet (propriétaire).
+const NovaPermissionsSchema = new mongoose.Schema(
+    {
+        lecture: { type: Boolean, default: true },
+        edition: { type: Boolean, default: true },
+        commentaire: { type: Boolean, default: true },
+        partage: { type: Boolean, default: false },
+        admin: { type: Boolean, default: false },
+    },
+    { _id: false }
+);
+
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: [true, 'Un nom est obligatoire'] },
     nom: { type: String, trim: true },
@@ -13,6 +26,14 @@ const UserSchema = new mongoose.Schema({
     // },
     password: { type: String, select: false },
     role: { type: String, enum: ['user', 'admin', 'librarian', 'client', 'agent', 'prestataire', 'professional', 'superadmin'], default: 'user' },
+    // Rôle et permissions propres à l'espace de travail NOVA (synchronisés avec
+    // la fiche Membre). `novaPermissions` prime sur `role` pour les droits fins.
+    novaRole: { type: String, enum: ['admin', 'membre', 'invite', null], default: null },
+    novaPermissions: { type: NovaPermissionsSchema, default: undefined },
+    // Espaces d'equipe (teamspaces) accessibles. Absent (`undefined`) pour les
+    // comptes autonomes/proprietaires = aucun filtrage. Un tableau (meme vide)
+    // restreint l'acces aux pages de ces espaces.
+    novaEspaceIds: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Espace' }], default: undefined },
     // subtype: null = chercheur de pros | 'prestataire' = peut répondre aux leads
     subtype: { type: String, enum: [null, 'prestataire'], default: null },
     isPremium: { type: Boolean, default: false },
@@ -70,6 +91,9 @@ const UserSchema = new mongoose.Schema({
     lastLogin: { type: Date },
     lastIp: { type: String },
     passwordChangedAt: { type: Date },
+    // Compte créé par invitation : mot de passe provisoire à remplacer
+    // impérativement à la première connexion (blocage côté client).
+    mustChangePassword: { type: Boolean, default: false },
 
     status: {
         type: String,

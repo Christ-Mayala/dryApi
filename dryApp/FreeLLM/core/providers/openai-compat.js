@@ -19,6 +19,23 @@ class OpenAICompatProvider extends BaseProvider {
     return this._name;
   }
 
+  /**
+   * En-têtes HTTP de la requête. Les modèles `:free` de Kilo s'utilisent sans
+   * authentification : on omet l'en-tête plutôt que d'envoyer le marqueur
+   * « anonymous », que la passerelle rejetterait comme une clé invalide.
+   */
+  construireEntetes(apiKey) {
+    const entetes = {
+      'Content-Type': 'application/json',
+      ...this.extraHeaders,
+    };
+    const cleAnonyme = !apiKey || apiKey === 'anonymous';
+    if (!(this.platform === 'kilo' && cleAnonyme)) {
+      entetes.Authorization = `Bearer ${apiKey}`;
+    }
+    return entetes;
+  }
+
   async chatCompletion(apiKey, messages, modelId, options) {
     // Providers qui NE supportent PAS les outils
     const NO_TOOLS_PLATFORMS = new Set(['nvidia', 'mistral']);
@@ -41,11 +58,7 @@ class OpenAICompatProvider extends BaseProvider {
     
     const res = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        ...this.extraHeaders,
-      },
+      headers: this.construireEntetes(apiKey),
       body: JSON.stringify(body),
     }, this.timeoutMs);
 
@@ -83,11 +96,7 @@ class OpenAICompatProvider extends BaseProvider {
     
     const res = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        ...this.extraHeaders,
-      },
+      headers: this.construireEntetes(apiKey),
       body: JSON.stringify(body),
     }, this.timeoutMs);
 
