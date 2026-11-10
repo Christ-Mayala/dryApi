@@ -1,6 +1,6 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateNova } = require('../../../validation/middleware');
 const VersionsSchema = require('../model/versions.schema');
@@ -43,7 +43,7 @@ const router = buildCrudRouter('Version', VersionsSchema, {
  * Restaure une version : l'etat courant est d'abord archive (pour rester
  * reversible), puis la page et ses blocs sont remplaces par l'instantane.
  */
-router.post('/:id/restaurer', validateId, protect, authorize('user'), async (req, res) => {
+router.post('/:id/restaurer', validateId, protect, async (req, res) => {
   const Version = req.getModel('Version', VersionsSchema);
   const Page = req.getModel('Page', PagesSchema);
   const Bloc = req.getModel('Bloc', BlocsSchema);

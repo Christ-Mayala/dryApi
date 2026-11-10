@@ -1,5 +1,6 @@
 const getModel = require('../../dry/core/factories/modelFactory');
 
+const WorkspacesSchema = require('./features/workspaces/model/workspaces.schema');
 const EspacesSchema = require('./features/espaces/model/espaces.schema');
 const PagesSchema = require('./features/pages/model/pages.schema');
 const BlocsSchema = require('./features/blocs/model/blocs.schema');
@@ -15,6 +16,7 @@ const PublicationsSchema = require('./features/publications/model/publications.s
 const IaSchema = require('./features/ia/model/ia.schema');
 const MembresSchema = require('./features/membres/model/membres.schema');
 const VersionsSchema = require('./features/versions/model/versions.schema');
+const MessagesSchema = require('./features/messages/model/messages.schema');
 const { normaliserPermissions } = require('./features/membres/services/invitation.service');
 
 /**
@@ -25,6 +27,7 @@ const { normaliserPermissions } = require('./features/membres/services/invitatio
  * `Espace` n'a jamais ete compile.
  */
 const MODELS = [
+  ['Workspace', WorkspacesSchema],
   ['Espace', EspacesSchema],
   ['Page', PagesSchema],
   ['Bloc', BlocsSchema],
@@ -40,6 +43,7 @@ const MODELS = [
   ['RequeteIA', IaSchema],
   ['Membre', MembresSchema],
   ['Version', VersionsSchema],
+  ['Message', MessagesSchema],
 ];
 
 /**

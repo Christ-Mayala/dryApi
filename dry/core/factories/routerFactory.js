@@ -33,6 +33,16 @@ function buildCrudRouter(modelName, schema, config = {}) {
     },
     // Middlewares d'upload
     upload = null,
+    // Middlewares additionnels inseres apres l'authentification et avant les
+    // handlers. Sert notamment au filtrage d'acces (ACL) cote serveur : un
+    // controleur peut y restreindre la liste a ce que l'utilisateur peut voir.
+    middlewares = {
+      list: [],
+      get: [],
+      create: [],
+      update: [],
+      delete: []
+    },
     // Validations (Joi)
     validation = {
       create: null,
@@ -41,6 +51,12 @@ function buildCrudRouter(modelName, schema, config = {}) {
     // Audit (si activé)
     audit = true
   } = config;
+
+  /** Normalise une entree de `middlewares` en tableau de middlewares. */
+  const asStack = (value) => {
+    if (!value) return [];
+    return Array.isArray(value) ? value.filter(Boolean) : [value];
+  };
 
   const handlers = buildCrudHandlers(modelName, schema, crudOptions);
 
@@ -59,17 +75,19 @@ function buildCrudRouter(modelName, schema, config = {}) {
   // GET / (Liste)
   const listStack = [];
   if (auth.list) listStack.push(...applyAuth('list'));
+  listStack.push(...asStack(middlewares.list));
   if (caching.list) listStack.push(cache(caching.list));
   router.get('/', ...listStack, handlers.getMany);
 
   // GET /:id (Détail)
   const getStack = [validateId];
   if (auth.get) getStack.push(...applyAuth('get'));
+  getStack.push(...asStack(middlewares.get));
   if (caching.get) getStack.push(cache(caching.get));
   router.get('/:id', ...getStack, handlers.getOne);
 
   // POST / (Création)
-  const createStack = [...applyAuth('create')];
+  const createStack = [...applyAuth('create'), ...asStack(middlewares.create)];
   if (upload) createStack.push(upload);
   if (validation.create) createStack.push(validation.create);
   if (audit) createStack.push(withAudit(`${modelName.toUpperCase()}_CREATE`));
@@ -77,7 +95,7 @@ function buildCrudRouter(modelName, schema, config = {}) {
   router.post('/', ...createStack, handlers.createOne);
 
   // PUT /:id (Mise à jour)
-  const updateStack = [validateId, ...applyAuth('update')];
+  const updateStack = [validateId, ...applyAuth('update'), ...asStack(middlewares.update)];
   if (upload) updateStack.push(upload);
   if (validation.update) updateStack.push(validation.update);
   if (audit) updateStack.push(withAudit(`${modelName.toUpperCase()}_UPDATE`));
@@ -85,7 +103,7 @@ function buildCrudRouter(modelName, schema, config = {}) {
   router.put('/:id', ...updateStack, handlers.updateOne);
 
   // DELETE /:id (Suppression)
-  const deleteStack = [validateId, ...applyAuth('delete')];
+  const deleteStack = [validateId, ...applyAuth('delete'), ...asStack(middlewares.delete)];
   if (audit) deleteStack.push(withAudit(`${modelName.toUpperCase()}_DELETE`));
   if (caching.list || caching.get) deleteStack.push(invalidateCache());
   router.delete('/:id', ...deleteStack, handlers.deleteOne);

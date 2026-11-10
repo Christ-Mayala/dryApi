@@ -13,6 +13,7 @@ const PagesSchema = new mongoose.Schema(
     icone: { type: String, default: '📄' },
     couverture: { type: String },
     espaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Espace' },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace' },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Page' },
     ordre: { type: Number, default: 0 },
     favori: { type: Boolean, default: false },

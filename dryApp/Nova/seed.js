@@ -13,6 +13,7 @@ const NotificationsSchema = require('./features/notifications/model/notification
 const ParametresSchema = require('./features/parametres/model/parametres.schema');
 const PublicationsSchema = require('./features/publications/model/publications.schema');
 const IaSchema = require('./features/ia/model/ia.schema');
+const seedTrivida = require('./seeds/trivida.seed');
 
 /**
  * Seed Nova — idempotent et additif.
@@ -650,6 +651,11 @@ module.exports = async ({ appName, getModel, logSeed }) => {
   for (const { cle, data } of commentaires) {
     await creerCommentaire(Commentaire, cle, data);
   }
+
+  // ---------------------------------------------------------------
+  // 14. Dossier Trivida (espace d'equipe, page maitre, tableaux, calendrier)
+  // ---------------------------------------------------------------
+  await seedTrivida({ appName, getModel, logSeed });
 
   // ---------------------------------------------------------------
   // Journalisation des ids crees

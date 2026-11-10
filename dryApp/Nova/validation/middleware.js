@@ -6,6 +6,7 @@ const { novaSchemas } = require('./schemas');
  * (le kernel genere ensuite un slug a partir du label).
  */
 const labelCandidates = {
+  workspaces: ['nom', 'titre', 'label'],
   espaces: ['nom', 'titre', 'label'],
   pages: ['titre', 'nom'],
   blocs: ['label'],
@@ -42,6 +43,10 @@ const ensureLabel = (featureKey) => (req, res, next) => {
 };
 
 const validateNova = {
+  workspaces: {
+    create: validate(novaSchemas.Workspaces.create),
+    update: validate(novaSchemas.Workspaces.update),
+  },
   espaces: {
     create: validate(novaSchemas.Espaces.create),
     update: validate(novaSchemas.Espaces.update),
@@ -101,6 +106,10 @@ const validateNova = {
   versions: {
     create: validate(novaSchemas.Versions.create),
     update: validate(novaSchemas.Versions.update),
+  },
+  messages: {
+    create: validate(novaSchemas.Messages.create),
+    update: validate(novaSchemas.Messages.update),
   },
 };
 

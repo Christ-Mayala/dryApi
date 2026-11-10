@@ -6,11 +6,30 @@ const { commonSchemas } = require('../../../dry/utils/validation/validation.util
 const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional();
 
 const novaSchemas = {
+  Workspaces: {
+    create: Joi.object({
+      nom: Joi.string().min(1).max(200).required(),
+      icone: Joi.string().max(20).optional(),
+      description: Joi.string().max(2000).optional(),
+      ordre: Joi.number().optional(),
+      label: Joi.string().min(2).max(200).optional(),
+      status: commonSchemas.status.optional(),
+    }),
+    update: Joi.object({
+      nom: Joi.string().min(1).max(200).optional(),
+      icone: Joi.string().max(20).optional(),
+      description: Joi.string().max(2000).optional(),
+      ordre: Joi.number().optional(),
+      label: Joi.string().min(2).max(200).optional(),
+      status: commonSchemas.status.optional(),
+    }),
+  },
   Espaces: {
     create: Joi.object({
       nom: Joi.string().min(2).max(200).required(),
       icone: Joi.string().max(20).optional(),
       description: Joi.string().max(2000).optional(),
+      workspaceId: objectId,
       visibilite: Joi.string().valid('ouvert', 'ferme', 'prive').optional(),
       ordre: Joi.number().optional(),
       estPrive: Joi.boolean().optional(),
@@ -21,6 +40,7 @@ const novaSchemas = {
       nom: Joi.string().min(2).max(200).optional(),
       icone: Joi.string().max(20).optional(),
       description: Joi.string().max(2000).optional(),
+      workspaceId: objectId,
       visibilite: Joi.string().valid('ouvert', 'ferme', 'prive').optional(),
       ordre: Joi.number().optional(),
       estPrive: Joi.boolean().optional(),
@@ -34,6 +54,7 @@ const novaSchemas = {
       icone: Joi.string().max(20).optional(),
       couverture: Joi.string().optional(),
       espaceId: objectId,
+      workspaceId: objectId,
       parentId: objectId,
       ordre: Joi.number().optional(),
       favori: Joi.boolean().optional(),
@@ -49,6 +70,7 @@ const novaSchemas = {
       icone: Joi.string().max(20).optional(),
       couverture: Joi.string().optional(),
       espaceId: objectId,
+      workspaceId: objectId,
       parentId: objectId,
       ordre: Joi.number().optional(),
       favori: Joi.boolean().optional(),
@@ -94,7 +116,8 @@ const novaSchemas = {
           'bloc_synchro',
           'lien_page',
           'ia_resume',
-          'ia_actions'
+          'ia_actions',
+          'note'
         )
         .required(),
       contenu: Joi.string().allow('').optional(),
@@ -137,7 +160,8 @@ const novaSchemas = {
           'bloc_synchro',
           'lien_page',
           'ia_resume',
-          'ia_actions'
+          'ia_actions',
+          'note'
         )
         .optional(),
       contenu: Joi.string().allow('').optional(),
@@ -308,6 +332,28 @@ const novaSchemas = {
       message: Joi.string().max(2000).optional(),
       pageId: objectId,
       lu: Joi.boolean().optional(),
+      label: Joi.string().min(2).max(200).optional(),
+      status: commonSchemas.status.optional(),
+    }),
+  },
+  Messages: {
+    create: Joi.object({
+      espaceId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
+      pageId: objectId,
+      auteurId: objectId,
+      auteurNom: Joi.string().max(200).optional(),
+      auteurAvatar: Joi.string().allow(null, '').optional(),
+      contenu: Joi.string().min(1).max(4000).required(),
+      label: Joi.string().min(2).max(200).optional(),
+      status: commonSchemas.status.optional(),
+    }),
+    update: Joi.object({
+      espaceId: objectId,
+      pageId: objectId,
+      auteurId: objectId,
+      auteurNom: Joi.string().max(200).optional(),
+      auteurAvatar: Joi.string().allow(null, '').optional(),
+      contenu: Joi.string().min(1).max(4000).optional(),
       label: Joi.string().min(2).max(200).optional(),
       status: commonSchemas.status.optional(),
     }),

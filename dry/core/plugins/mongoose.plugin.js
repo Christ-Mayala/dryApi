@@ -149,10 +149,20 @@ module.exports = function (schema, _options) {
         
         // Appliquer le filtre Soft Delete existant
         const currentFilter = this.getQuery() || {};
-        
-        // Si on demande explicitement les supprimes
-        if (currentFilter.includeDeleted === true) {
-            delete currentFilter.includeDeleted;
+
+        // Opt-in explicite : `includeDeleted` peut arriver via le filtre (appels
+        // internes), via les options de requête (`setOptions`) ou en chaîne
+        // « true » lorsqu'il provient des query params HTTP sérialisés.
+        const inclureSupprimes =
+            currentFilter.includeDeleted === true ||
+            currentFilter.includeDeleted === 'true' ||
+            this.getOptions()?.includeDeleted === true;
+
+        // Le marqueur ne fait pas partie du schéma : on le retire dans tous les
+        // cas, sinon Mongo chercherait un champ inexistant et ne renverrait rien.
+        delete currentFilter.includeDeleted;
+
+        if (inclureSupprimes) {
             return;
         }
 

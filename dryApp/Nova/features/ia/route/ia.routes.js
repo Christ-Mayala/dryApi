@@ -5,16 +5,8 @@ const { protect } = require('../../../../../dry/middlewares/protection/auth.midd
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { validateNova } = require('../../../validation/middleware');
+const { estAdminNova, forcerFiltre } = require('../../../services/acl.service');
 const IaSchema = require('../model/ia.schema');
-
-/** Un administrateur NOVA voit tout l'historique IA ; un membre voit le sien. */
-function estAdminNova(utilisateur) {
-  return (
-    utilisateur?.role === 'admin' ||
-    utilisateur?.role === 'superadmin' ||
-    utilisateur?.novaPermissions?.admin === true
-  );
-}
 
 const handlers = buildCrudHandlers('RequeteIA', IaSchema, {
   transformInput: async ({ req, payload }) => {
@@ -32,14 +24,7 @@ const handlers = buildCrudHandlers('RequeteIA', IaSchema, {
 /** Force le filtre `utilisateurId` pour les non-administrateurs. */
 const filtrerListe = (req, res, next) => {
   if (!estAdminNova(req.user)) {
-    // `req.query` est un accesseur en lecture seule (Express 5) : une simple
-    // affectation est silencieusement ignoree. On definit donc une propriete
-    // propre sur la requete pour imposer le filtre de proprietaire.
-    Object.defineProperty(req, 'query', {
-      value: { ...req.query, utilisateurId: String(req.user._id) },
-      writable: true,
-      configurable: true,
-    });
+    forcerFiltre(req, { utilisateurId: String(req.user._id) });
   }
   next();
 };

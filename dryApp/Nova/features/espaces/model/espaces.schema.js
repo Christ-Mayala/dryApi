@@ -12,6 +12,7 @@ const EspacesSchema = new mongoose.Schema(
     nom: { type: String, required: true, trim: true },
     icone: { type: String, default: '🏢' },
     description: { type: String },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace' },
     visibilite: { type: String, enum: ['ouvert', 'ferme', 'prive'], default: 'ouvert' },
     ordre: { type: Number, default: 0 },
     estPrive: { type: Boolean, default: false },
@@ -19,6 +20,7 @@ const EspacesSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+EspacesSchema.index({ workspaceId: 1, ordre: 1 });
 EspacesSchema.index({ nom: 1 });
 EspacesSchema.index({ ordre: 1 });
 

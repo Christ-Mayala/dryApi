@@ -25,6 +25,7 @@
     "seed": "node scripts/seed/seed-all.js",
     "seed:clean": "node scripts/seed/seed-clean.js",
     "seed:reset": "node scripts/seed/seed-clean.js && node scripts/seed/seed-all.js",
+    "seed:nova-trivida": "node scripts/seed/seed-nova-trivida.js",
     "seed:scim": "node dryApp/SCIM/scripts/seed-scim-db.js",
     "seed:library-categories": "node dryApp/EnglishDigitalLibrary/scripts/seed-categories.js",
     "seed:library-category-images": "node dryApp/EnglishDigitalLibrary/scripts/seed-category-images.js",

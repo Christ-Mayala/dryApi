@@ -105,10 +105,14 @@ function buildCrudHandlers(modelName, schema, options = {}) {
 
     const previous = afterUpdate ? await Model.findById(req.params.id).lean() : null;
 
-    const doc = await Model.findByIdAndUpdate(req.params.id, payload, {
-      returnDocument: 'after',
-      runValidators: true,
-    });
+    // `?includeDeleted=true` permet d'atteindre un document supprimé (soft
+    // delete) par son identifiant : restauration depuis la corbeille. Le
+    // marqueur est transmis en option pour que le plugin DRY n'ajoute pas son
+    // filtre `status: { $ne: 'deleted' }`.
+    const options = { returnDocument: 'after', runValidators: true };
+    if (req.query?.includeDeleted === 'true') options.includeDeleted = true;
+
+    const doc = await Model.findByIdAndUpdate(req.params.id, payload, options);
 
     if (!doc) {
       throw new Error(`${modelName} introuvable`);
@@ -130,7 +134,9 @@ function buildCrudHandlers(modelName, schema, options = {}) {
    */
   const deleteOne = asyncHandler(async (req, res) => {
     const Model = req.getModel(modelName, schema);
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    // `?includeDeleted=true` : purge définitive d'un document déjà supprimé.
+    const options = req.query?.includeDeleted === 'true' ? { includeDeleted: true } : {};
+    const doc = await Model.findByIdAndDelete(req.params.id, options);
 
     if (!doc) {
       const err = new Error(`${modelName} introuvable`);

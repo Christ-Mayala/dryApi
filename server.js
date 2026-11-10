@@ -53,6 +53,7 @@ const { createApp } = require('./dry/bootstrap/http');
 const { registerApplicationRoutes } = require('./dry/bootstrap/routes');
 const { createSocketServer } = require('./dry/bootstrap/socket');
 const { initAdminSocket } = require('./dryApp/Trivida/features/admin/services/adminSocket.service');
+const { initTempsReelNova } = require('./dryApp/Nova/services/tempsReel.service');
 const { startMetricsCron } = require('./dryApp/Trivida/features/admin/cron/adminMetricsCron');
 const { startHealthMonitor } = require('./dry/bootstrap/health-monitor');
 const { printStartupBanner } = require('./dry/bootstrap/startup-banner');
@@ -62,7 +63,9 @@ registerProcessHandlers();
 const { app, allowedOrigins } = createApp();
 
 const server = http.createServer(app);
-createSocketServer(server, app, allowedOrigins);
+const io = createSocketServer(server, app, allowedOrigins);
+// Espaces d'équipe NOVA : rooms temps réel (messages) + notifications.
+initTempsReelNova(io);
 // Socket.IO admin panel (notifications temps réel)
 initAdminSocket(server);
 

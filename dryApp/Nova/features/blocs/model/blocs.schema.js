@@ -44,6 +44,7 @@ const BlocsSchema = new mongoose.Schema(
         'lien_page',
         'ia_resume',
         'ia_actions',
+        'note',
       ],
     },
     contenu: { type: String, default: '' },

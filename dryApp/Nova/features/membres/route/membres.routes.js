@@ -1,9 +1,10 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const { httpError } = require('../../../../../dry/utils/http/httpError');
 const sendResponse = require('../../../../../dry/utils/http/response');
-const { protect, authorize } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateNova } = require('../../../validation/middleware');
+const { exigerAdministrationNova } = require('../../../services/acl.service');
 const MembresSchema = require('../model/membres.schema');
 const {
   notifierInvitationMembre,
@@ -39,13 +40,19 @@ async function avecStatut({ req, doc }) {
 }
 
 // Fabrique CRUD du noyau DRY : GET /, GET /:id, POST /, PUT /:id, DELETE /:id.
-// Liste réservée aux utilisateurs connectés ; écriture aux administrateurs.
+// Liste réservée aux utilisateurs connectés ; écriture au propriétaire ou à un
+// administrateur.
 const router = buildCrudRouter('Membre', MembresSchema, {
-  auth: { list: 'user', create: 'admin', update: 'admin', delete: 'admin' },
+  auth: { list: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.membres.create,
     update: validateNova.membres.update,
+  },
+  middlewares: {
+    create: [exigerAdministrationNova],
+    update: [exigerAdministrationNova],
+    delete: [exigerAdministrationNova],
   },
   crudOptions: {
     populateFields: '',
@@ -95,7 +102,7 @@ const router = buildCrudRouter('Membre', MembresSchema, {
  * régénéré afin de garantir que les identifiants reçus sont valides (utile
  * lorsque le premier e-mail n'a pas été reçu).
  */
-router.post('/:id/renvoyer-invitation', validateId, protect, authorize('admin'), async (req, res) => {
+router.post('/:id/renvoyer-invitation', validateId, protect, exigerAdministrationNova, async (req, res) => {
   const Membre = req.getModel('Membre', MembresSchema);
   const membre = await Membre.findById(req.params.id);
   if (!membre) return sendResponse(res, null, 'Membre introuvable', false, undefined, 404);
