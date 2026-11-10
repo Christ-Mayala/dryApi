@@ -487,19 +487,64 @@ class EmailService {
       APP_URL: appUrl,
       YEAR: new Date().getFullYear(),
     });
-  }generateWelcomeTemplate(name, tenantId) {    const appName = tenantId || config.APP_NAME || 'DRY API';    const appUrl = this.resolveAppUrl(tenantId);    // Template dédié Trivida — app mobile, pas de lien web    if (String(tenantId).toLowerCase() === 'trivida') {      const raw = this.loadTemplate('trivida-welcome.html');
-      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          YEAR: new Date().getFullYear(),        });
+  }
+
+  /**
+   * Gabarit de l'e-mail de bienvenue, adapté au tenant (Trivida, SCIM, NOVA…).
+   *
+   * Toutes les variables du gabarit sont fournies : un placeholder non renseigné
+   * resterait affiché tel quel dans l'e-mail reçu (cas du bouton NOVA qui
+   * pointait vers « {{APP_URL}}/login » faute d'URL injectée).
+   */
+  generateWelcomeTemplate(name, tenantId) {
+    const appName = tenantId || config.APP_NAME || 'DRY API';
+    const appUrl = this.resolveAppUrl(tenantId);
+    const annee = new Date().getFullYear();
+    const tenant = String(tenantId || '').toLowerCase();
+
+    // Trivida — application mobile : aucun bouton vers une version web.
+    if (tenant === 'trivida') {
+      const raw = this.loadTemplate('trivida-welcome.html');
+      if (raw) {
+        return this.renderTemplate(raw, { NAME: name, YEAR: annee });
       }
-    }    // Template dédié SCIM — thème sombre/or    if (String(tenantId).toLowerCase() === 'scim') {      const raw = this.loadTemplate('scim-welcome.html');
-      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          APP_URL: appUrl,          YEAR: new Date().getFullYear(),        });
+    }
+
+    // SCIM — thème sombre / or.
+    if (tenant === 'scim') {
+      const raw = this.loadTemplate('scim-welcome.html');
+      if (raw) {
+        return this.renderTemplate(raw, { NAME: name, APP_URL: appUrl, YEAR: annee });
       }
-    }    // Template dédié NOVA — noir et or    if (String(tenantId).toLowerCase() === 'nova') {      const raw = this.loadTemplate('nova-welcome.html');
-      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          YEAR: new Date().getFullYear(),
+    }
+
+    // NOVA — thème noir et or.
+    if (tenant === 'nova') {
+      const raw = this.loadTemplate('nova-welcome.html');
+      if (raw) {
+        return this.renderTemplate(raw, {
+          // Le gabarit commence par « Bienvenue {{NAME}} ! » : un nom vide
+          // laisserait une phrase tronquée, d'où ce repli lisible.
+          NAME: String(name || '').trim() || 'à bord',
+          APP_NAME: appName,
+          APP_URL: appUrl,
+          YEAR: annee,
         });
       }
-    }    // Template par défaut (compatibilité)    const raw = this.loadTemplate('welcome.html');
-    if (!raw) {      return `Bienvenue ${name}`;    }    return this.renderTemplate(raw, {      NAME: name,      APP_NAME: appName,      APP_URL: appUrl,      YEAR: new Date().getFullYear(),
-    });  }
+    }
+
+    // Gabarit générique (compatibilité).
+    const raw = this.loadTemplate('welcome.html');
+    if (!raw) {
+      return `Bienvenue ${name}`;
+    }
+    return this.renderTemplate(raw, {
+      NAME: name,
+      APP_NAME: appName,
+      APP_URL: appUrl,
+      YEAR: annee,
+    });
+  }
 
   generateLeadNotificationTemplate(lead, professionalName, tenantId, prosCount = 0) {
     const appName = tenantId || config.APP_NAME || 'La STREET';

@@ -268,85 +268,239 @@ async function synchroniserAccesUtilisateur({ req, membre }) {
 /** Gabarit HTML de l'e-mail d'invitation avec identifiants et consignes. */
 function gabaritInvitation({ email, nom, role, lien, motDePasseTemporaire, nomEspace, expediteur, annee }) {
   const roleLibelle = LIBELLES_ROLES[role] || 'Membre';
-  const badgeIdentifiants = motDePasseTemporaire
+  const destinataire = String(nom || '').trim();
+  const salutation = destinataire ? `Bonjour ${echapper(destinataire)},` : 'Bonjour,';
+  // L'invitant et l'espace portent parfois le même nom : on évite alors la
+  // formulation « NOVA vous invite à rejoindre NOVA ».
+  const invitation = expediteur && expediteur !== nomEspace
+    ? `<strong>${echapper(expediteur)}</strong> vous invite à rejoindre <strong>${echapper(nomEspace)}</strong>`
+    : `Vous êtes invité(e) à rejoindre <strong>${echapper(nomEspace)}</strong>`;
+
+  const blocIdentifiants = motDePasseTemporaire
     ? `
-      <div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:0 0 20px">
-        <p style="margin:0 0 10px;font-size:13px;font-weight:bold;color:#0f172a">Vos identifiants de connexion</p>
-        <p style="margin:0 0 6px;font-size:13px;color:#334155">
-          <span style="color:#64748b">Adresse e-mail :</span>
-          <strong>${echapper(email)}</strong>
-        </p>
-        <p style="margin:0;font-size:13px;color:#334155">
-          <span style="color:#64748b">Mot de passe provisoire :</span>
-          <strong style="font-family:Consolas,Menlo,monospace;font-size:15px;letter-spacing:0.5px">${echapper(motDePasseTemporaire)}</strong>
-        </p>
-      </div>`
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px 0;background-color:#fafafa;border:1px solid #eaeaea;border-radius:12px;">
+                    <tr>
+                      <td style="padding:18px 20px;">
+                        <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:0.6px;text-transform:uppercase;color:#8a8a90;">
+                          Vos identifiants de connexion
+                        </p>
+                        <p style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#3f3f46;">
+                          <span style="color:#8a8a90;">Adresse e-mail&nbsp;:</span>
+                          <strong style="color:#111114;">${echapper(email)}</strong>
+                        </p>
+                        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#3f3f46;">
+                          <span style="color:#8a8a90;">Mot de passe provisoire&nbsp;:</span>
+                          <strong style="color:#111114;font-family:Consolas,Menlo,monospace;font-size:15px;letter-spacing:0.5px;">${echapper(motDePasseTemporaire)}</strong>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>`
     : '';
 
   const etapeMotDePasse = motDePasseTemporaire
-    ? 'Saisissez votre adresse e-mail ainsi que le <strong>mot de passe provisoire</strong> ci-dessus.'
+    ? 'Saisissez votre adresse e-mail puis le <strong style="color:#111114;">mot de passe provisoire</strong> indiqué ci-dessus.'
     : 'Saisissez votre adresse e-mail et votre mot de passe habituel.';
 
-  return `
-  <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;line-height:1.55">
-    <div style="padding:20px 0;border-bottom:1px solid #e5e7eb">
-      <span style="font-size:18px;font-weight:bold">${echapper(nomEspace)}</span>
-    </div>
+  const derniereEtape = motDePasseTemporaire
+    ? 'Choisissez un <strong style="color:#111114;">mot de passe personnel</strong> : le mot de passe provisoire doit être remplacé dès cette première connexion.'
+    : 'Vous accédez directement à l’espace de travail.';
 
-    <h2 style="margin:22px 0 12px;font-size:19px">Vous êtes invité(e) à rejoindre ${echapper(nomEspace)}</h2>
-    <p style="margin:0 0 12px">
-      Bonjour${nom ? ` ${echapper(nom)}` : ''}, <strong>${echapper(expediteur)}</strong> vous invite à collaborer sur
-      <strong>${echapper(nomEspace)}</strong>, l'espace de travail tout-en-un pour vos notes, bases et projets.
-    </p>
-    <p style="margin:0 0 18px">Votre rôle dans cet espace : <strong>${echapper(roleLibelle)}</strong>.</p>
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <title>Invitation à rejoindre ${echapper(nomEspace)}</title>
+  <style>
+    /* Améliorations mobiles ; sans support, les styles en ligne suffisent. */
+    @media (max-width: 600px) {
+      .conteneur { width: 100% !important; }
+      .rembourrage { padding-left: 22px !important; padding-right: 22px !important; }
+      .retourligne { display: block !important; width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;-webkit-text-size-adjust:100%;">
 
-    ${badgeIdentifiants}
+  <!-- Aperçu affiché par la boîte de réception. -->
+  <div style="display:none;font-size:1px;color:#f4f4f5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    ${echapper(expediteur || nomEspace)} vous invite à collaborer sur ${echapper(nomEspace)}.
+  </div>
 
-    <p style="margin:0 0 14px">
-      <a href="${lien}"
-         style="display:inline-block;padding:11px 20px;border-radius:8px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:bold">
-        Activer mon compte
-      </a>
-    </p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f5;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
 
-    <h3 style="margin:24px 0 8px;font-size:15px">Votre première connexion en 3 étapes</h3>
-    <ol style="margin:0 0 20px;padding-left:20px;color:#334155">
-      <li style="margin-bottom:6px">Cliquez sur « Activer mon compte » (ou ouvrez le lien fourni plus bas).</li>
-      <li style="margin-bottom:6px">${etapeMotDePasse}</li>
-      <li>${
-        motDePasseTemporaire
-          ? 'Choisissez un <strong>nouveau mot de passe personnel</strong> : le mot de passe provisoire doit être modifié dès cette première connexion.'
-          : 'Vous accédez directement à votre espace de travail.'
-      }</li>
-    </ol>
+        <table role="presentation" class="conteneur" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
 
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin:0 0 20px">
-      <p style="margin:0;font-size:12.5px;color:#92400e">
-        <strong>Sécurité :</strong> ne partagez jamais ce mot de passe. Il vous est strictement personnel et
-        expire dès que vous le remplacez. Si vous n'êtes pas à l'origine de cette invitation, ignorez ce message.
-      </p>
-    </div>
+          <!-- En-tête : identité de l'espace -->
+          <tr>
+            <td align="center" style="background-color:#0b0b0d;padding:30px 24px;border-bottom:4px solid #f5c518;">
+              <span style="font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:900;letter-spacing:2px;color:#f5c518;text-transform:uppercase;">${echapper(nomEspace)}</span>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;color:#8b8b90;text-transform:uppercase;margin-top:6px;">
+                Espace de travail collaboratif
+              </div>
+            </td>
+          </tr>
 
-    <p style="margin:0 0 22px;color:#6b7280;font-size:12px;word-break:break-all">
-      Le bouton ne fonctionne pas ? Copiez ce lien dans votre navigateur :<br />
-      <a href="${lien}" style="color:#0ea5e9">${lien}</a>
-    </p>
+          <!-- Corps -->
+          <tr>
+            <td class="rembourrage" style="padding:40px 40px 8px 40px;font-family:Arial,Helvetica,sans-serif;">
 
-    <div style="border-top:1px solid #e5e7eb;padding-top:14px;color:#6b7280;font-size:11.5px">
-      <p style="margin:0 0 6px">
-        <strong>Mentions légales.</strong> Cette invitation est envoyée par ${echapper(nomEspace)} dans le cadre de
-        la gestion des accès à son espace de travail collaboratif. Votre adresse e-mail est utilisée uniquement
-        pour la création de votre compte et les notifications liées au service. Conformément à la réglementation
-        applicable sur la protection des données personnelles, vous disposez d'un droit d'accès, de rectification
-        et de suppression de vos données : vous pouvez l'exercer en écrivant à l'administrateur de l'espace
-        ou en vous adressant au support de ${echapper(nomEspace)}.
-      </p>
-      <p style="margin:0">
-        Cet e-mail vous a été adressé automatiquement, merci de ne pas y répondre.<br />
-        © ${annee} ${echapper(nomEspace)}. Tous droits réservés.
-      </p>
-    </div>
-  </div>`;
+              <h1 style="margin:0 0 16px 0;font-size:23px;line-height:1.35;font-weight:800;color:#111114;">
+                ${salutation}
+              </h1>
+
+              <p style="margin:0 0 16px 0;font-size:15.5px;line-height:1.7;color:#3f3f46;">
+                ${invitation}, l’espace de travail tout-en-un pour vos notes, vos bases de données et vos projets.
+              </p>
+
+              <p style="margin:0 0 26px 0;font-size:15.5px;line-height:1.7;color:#3f3f46;">
+                Votre rôle dans cet espace&nbsp;:
+                <span style="display:inline-block;padding:3px 10px;border-radius:999px;background-color:#fff8e1;border:1px solid #f5c518;color:#7a5c00;font-size:13px;font-weight:bold;">
+                  ${echapper(roleLibelle)}
+                </span>
+              </p>
+
+              ${blocIdentifiants}
+
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 30px auto;">
+                <tr>
+                  <td align="center" bgcolor="#f5c518" style="border-radius:12px;">
+                    <a href="${lien}"
+                       style="display:inline-block;padding:15px 36px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;color:#0b0b0d;text-decoration:none;border-radius:12px;">
+                      Activer mon compte
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Première connexion -->
+          <tr>
+            <td class="rembourrage" style="padding:0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fafafa;border:1px solid #eaeaea;border-radius:12px;">
+                <tr>
+                  <td style="padding:20px 22px;">
+                    <p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:0.6px;text-transform:uppercase;color:#8a8a90;">
+                      Votre première connexion en 3 étapes
+                    </p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="30" valign="top" style="padding:0 0 12px 0;">
+                          <span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:11px;background-color:#f5c518;color:#0b0b0d;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;">1</span>
+                        </td>
+                        <td valign="top" style="padding:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:14.5px;line-height:1.6;color:#3f3f46;">
+                          Cliquez sur « Activer mon compte » (ou copiez le lien fourni plus bas).
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="30" valign="top" style="padding:0 0 12px 0;">
+                          <span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:11px;background-color:#f5c518;color:#0b0b0d;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;">2</span>
+                        </td>
+                        <td valign="top" style="padding:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:14.5px;line-height:1.6;color:#3f3f46;">
+                          ${etapeMotDePasse}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="30" valign="top" style="padding:0;">
+                          <span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:11px;background-color:#f5c518;color:#0b0b0d;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;">3</span>
+                        </td>
+                        <td valign="top" style="font-family:Arial,Helvetica,sans-serif;font-size:14.5px;line-height:1.6;color:#3f3f46;">
+                          ${derniereEtape}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Avertissement de sécurité -->
+          <tr>
+            <td class="rembourrage" style="padding:18px 40px 0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fff8e1;border:1px solid #f5c518;border-radius:12px;">
+                <tr>
+                  <td style="padding:14px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#7a5c00;">
+                    <strong>Sécurité.</strong> Ne partagez jamais ce mot de passe&nbsp;: il vous est strictement
+                    personnel et cesse d’être valable dès que vous le remplacez. Si vous n’êtes pas à l’origine
+                    de cette invitation, ignorez simplement ce message.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Lien de secours -->
+          <tr>
+            <td class="rembourrage" style="padding:22px 40px 30px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#8a8a90;">
+              Le bouton ne fonctionne pas&nbsp;? Copiez ce lien dans votre navigateur&nbsp;:<br>
+              <a href="${lien}" style="color:#b58800;word-break:break-all;">${lien}</a>
+            </td>
+          </tr>
+
+          <!-- Pied de page -->
+          <tr>
+            <td style="background-color:#0b0b0d;padding:24px 40px;text-align:center;">
+              <p style="margin:0 0 10px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#a1a1aa;">
+                <strong style="color:#f5c518;">${echapper(nomEspace)}</strong> · Espace de travail tout-en-un
+              </p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#71717a;">
+                Cette invitation vous est adressée dans le cadre de la gestion des accès à l’espace de travail.
+                Votre adresse e-mail sert uniquement à la création de votre compte et aux notifications du
+                service. Vous disposez d’un droit d’accès, de rectification et de suppression de vos données,
+                à exercer auprès de l’administrateur de l’espace.<br>
+                © ${annee} ${echapper(nomEspace)}. Tous droits réservés.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+        <p style="margin:18px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#a1a1aa;">
+          Cet e-mail vous a été adressé automatiquement, merci de ne pas y répondre directement.
+        </p>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+/** Version texte brut de l'e-mail d'invitation (délivrabilité et clients sans HTML). */
+function texteInvitation({ email, nom, role, lien, motDePasseTemporaire, nomEspace, expediteur }) {
+  const roleLibelle = LIBELLES_ROLES[role] || 'Membre';
+  const destinataire = String(nom || '').trim();
+  const lignes = [
+    destinataire ? `Bonjour ${destinataire},` : 'Bonjour,',
+    '',
+    `${expediteur || nomEspace} vous invite à rejoindre ${nomEspace} (rôle : ${roleLibelle}).`,
+    '',
+    'Vos identifiants de connexion :',
+    `- Adresse e-mail : ${email}`,
+  ];
+  if (motDePasseTemporaire) {
+    lignes.push(`- Mot de passe provisoire : ${motDePasseTemporaire}`);
+  }
+  lignes.push(
+    '',
+    `Activez votre compte : ${lien}`,
+    '',
+    motDePasseTemporaire
+      ? 'Vous devrez choisir un nouveau mot de passe personnel dès la première connexion.'
+      : 'Connectez-vous avec votre mot de passe habituel.',
+    '',
+    `Sécurité : ne partagez jamais ce mot de passe. Si vous n'êtes pas à l'origine de cette invitation, ignorez ce message.`,
+    '',
+    `© ${new Date().getFullYear()} ${nomEspace}. Tous droits réservés.`,
+  );
+  return lignes.join('\n');
 }
 
 /** Nom de l'espace de travail configuré (repli : « NOVA »). */
@@ -399,24 +553,30 @@ async function notifierInvitationMembre({ req, membre, regenererMotDePasse = fal
     return false;
   }
 
-  const expediteur = nomPlateforme();
   const lien = resoudreLienInvitation(email);
   const nomEspace = await nomEspaceDe(req);
+  // L'invitant est l'utilisateur qui effectue l'ajout ; à défaut, l'invitation
+  // est présentée au nom de l'espace de travail.
+  const expediteur =
+    String(req?.user?.name || req?.user?.nom || '').trim() || nomEspace;
+  const annee = new Date().getFullYear();
+  const invitation = {
+    email,
+    nom: membre.nom,
+    role: membre.role,
+    lien,
+    motDePasseTemporaire,
+    nomEspace,
+    expediteur,
+    annee,
+  };
 
   try {
     const ok = await emailService.sendGenericEmail({
       email,
       subject: `Invitation à rejoindre ${nomEspace}`,
-      html: gabaritInvitation({
-        email,
-        nom: membre.nom,
-        role: membre.role,
-        lien,
-        motDePasseTemporaire,
-        nomEspace,
-        expediteur,
-        annee: new Date().getFullYear(),
-      }),
+      html: gabaritInvitation(invitation),
+      text: texteInvitation(invitation),
     });
     if (ok) logger(`[Nova] Invitation membre envoyée à ${email}`, 'info');
     return ok;
