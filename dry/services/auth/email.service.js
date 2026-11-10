@@ -487,47 +487,19 @@ class EmailService {
       APP_URL: appUrl,
       YEAR: new Date().getFullYear(),
     });
-  }
-
-  generateWelcomeTemplate(name, tenantId) {
-    const appName = tenantId || config.APP_NAME || 'DRY API';
-    const appUrl = this.resolveAppUrl(tenantId);
-
-    // Template dédié Trivida — app mobile, pas de lien web
-    if (String(tenantId).toLowerCase() === 'trivida') {
-      const raw = this.loadTemplate('trivida-welcome.html');
-      if (raw) {
-        return this.renderTemplate(raw, {
-          NAME: name,
-          YEAR: new Date().getFullYear(),
+  }generateWelcomeTemplate(name, tenantId) {    const appName = tenantId || config.APP_NAME || 'DRY API';    const appUrl = this.resolveAppUrl(tenantId);    // Template dédié Trivida — app mobile, pas de lien web    if (String(tenantId).toLowerCase() === 'trivida') {      const raw = this.loadTemplate('trivida-welcome.html');
+      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          YEAR: new Date().getFullYear(),        });
+      }
+    }    // Template dédié SCIM — thème sombre/or    if (String(tenantId).toLowerCase() === 'scim') {      const raw = this.loadTemplate('scim-welcome.html');
+      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          APP_URL: appUrl,          YEAR: new Date().getFullYear(),        });
+      }
+    }    // Template dédié NOVA — noir et or    if (String(tenantId).toLowerCase() === 'nova') {      const raw = this.loadTemplate('nova-welcome.html');
+      if (raw) {        return this.renderTemplate(raw, {          NAME: name,          YEAR: new Date().getFullYear(),
         });
       }
-    }
-
-    // Template dédié SCIM — thème sombre/or
-    if (String(tenantId).toLowerCase() === 'scim') {
-      const raw = this.loadTemplate('scim-welcome.html');
-      if (raw) {
-        return this.renderTemplate(raw, {
-          NAME: name,
-          APP_URL: appUrl,
-          YEAR: new Date().getFullYear(),
-        });
-      }
-    }
-
-    const raw = this.loadTemplate('welcome.html');
-    if (!raw) {
-      return `Bienvenue ${name}`;
-    }
-
-    return this.renderTemplate(raw, {
-      NAME: name,
-      APP_NAME: appName,
-      APP_URL: appUrl,
-      YEAR: new Date().getFullYear(),
-    });
-  }
+    }    // Template par défaut (compatibilité)    const raw = this.loadTemplate('welcome.html');
+    if (!raw) {      return `Bienvenue ${name}`;    }    return this.renderTemplate(raw, {      NAME: name,      APP_NAME: appName,      APP_URL: appUrl,      YEAR: new Date().getFullYear(),
+    });  }
 
   generateLeadNotificationTemplate(lead, professionalName, tenantId, prosCount = 0) {
     const appName = tenantId || config.APP_NAME || 'La STREET';
