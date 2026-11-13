@@ -655,11 +655,13 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
           }
 
           if (decision.action === 'fallback') {
-            // Skip to next key/provider
+            // Passage à un autre fournisseur/clé : aucun backoff. La limite
+            // rencontrée (429, quota, clé invalide…) est propre à la ressource
+            // qu'on quitte ; attendre n'apportait rien au suivant et ajoutait
+            // jusqu'à 10 s par étape, soit 20-30 s sur une chaîne courte.
             skipKeys.add(`${route.platform}:${route.modelId}:${route.keyId}`);
             fallbackCount++;
             fallbackMetrics.totalFallbacks++;
-            if (decision.delayMs > 0) await wait(decision.delayMs);
             continue;
           }
         }

@@ -172,6 +172,23 @@ function manageContext(messages, maxTokens = 8000, hasTools = false) {
     }
   }
 
+  // Le dernier message utilisateur porte la demande : il n'est jamais retiré,
+  // même si les messages système protégés dépassent à eux seuls le budget.
+  // Sans lui, le modèle reçoit un contexte sans question — il répond à côté
+  // (ou demande une précision) — et les fournisseurs stricts comme Google
+  // rejettent la requête (« GenerateContentRequest.contents: contents is not
+  // specified »), ce qui fait échouer l'appel au lieu de basculer ailleurs.
+  const dernierUtilisateur = [...messages].reverse().find(m => m && m.role === 'user');
+  if (dernierUtilisateur && !kept.some(item => item.message === dernierUtilisateur)) {
+    kept.push({
+      message: dernierUtilisateur,
+      priority: Priority.HIGH,
+      protected: false,
+      tokens: estimateTotalTokens([dernierUtilisateur]),
+      index: messages.indexOf(dernierUtilisateur),
+    });
+  }
+
   // Sort by original order
   kept.sort((a, b) => a.index - b.index);
 
