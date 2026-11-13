@@ -86,17 +86,21 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
       ['mistral', 'devstral-latest', 'Devstral', 16, 8, 'Medium', 30, 1000, 500000, 10000000, '~50-100M', 131072, true],
       ['mistral', 'mistral-medium-latest', 'Mistral Medium 3.5', 14, 8, 'Large', 30, 1000, 500000, 10000000, '~50-100M', 131072, true],
 
-      // NVIDIA
-      ['nvidia', 'meta/llama-3.1-70b-instruct', 'Llama 3.1 70B (NV)', 17, 6, 'Large', 40, null, null, null, '~3M (1k credits)', 131072, true],
-      ['nvidia', 'meta/llama-3.3-70b-instruct', 'Llama 3.3 70B (NV)', 17, 6, 'Large', 40, null, null, null, '~3M (credits)', 131072, true],
-      ['nvidia', 'meta/llama-4-maverick-17b-128e-instruct', 'Llama 4 Maverick (NV)', 11, 6, 'Large', 40, null, null, null, '~3M (credits)', 131072, true],
-      ['nvidia', 'deepseek-ai/deepseek-v4-pro', 'DeepSeek V4 Pro (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, true],
-      ['nvidia', 'mistralai/mistral-large-3-675b-instruct-2512', 'Mistral Large 3 675B (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, true],
-      ['nvidia', 'minimaxai/minimax-m2.7', 'MiniMax M2.7 (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 196608, true],
-      ['nvidia', 'nvidia/nemotron-3-super-120b-a12b', 'Nemotron 3 Super 120B (NV)', 22, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 262144, true],
-      ['nvidia', 'nvidia/nemotron-3-nano-30b-a3b', 'Nemotron 3 Nano 30B (NV)', 22, 9, 'Medium', 40, null, null, null, '~3M (credits)', 262144, true],
-      ['nvidia', 'google/gemma-4-31b-it', 'Gemma 4 31B (NV)', 19, 9, 'Medium', 40, null, null, null, '~3M (credits)', 262144, true],
-      ['nvidia', 'moonshotai/kimi-k2.6', 'Kimi K2.6 (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, true],
+      // NVIDIA NIM : désactivé. Tous les modèles renvoient « 410 Gone »
+      // (identifiants retirés / compte non opérationnel). Comme leurs scores
+      // sont élevés, le routeur les essayait en premier et gaspillait 3 à 4
+      // tentatives de fallback avant d'atteindre un fournisseur sain, ce qui
+      // provoquait des 429/504 en cascade. Réactiver après avoir rétabli l'accès.
+      ['nvidia', 'meta/llama-3.1-70b-instruct', 'Llama 3.1 70B (NV)', 17, 6, 'Large', 40, null, null, null, '~3M (1k credits)', 131072, false],
+      ['nvidia', 'meta/llama-3.3-70b-instruct', 'Llama 3.3 70B (NV)', 17, 6, 'Large', 40, null, null, null, '~3M (credits)', 131072, false],
+      ['nvidia', 'meta/llama-4-maverick-17b-128e-instruct', 'Llama 4 Maverick (NV)', 11, 6, 'Large', 40, null, null, null, '~3M (credits)', 131072, false],
+      ['nvidia', 'deepseek-ai/deepseek-v4-pro', 'DeepSeek V4 Pro (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, false],
+      ['nvidia', 'mistralai/mistral-large-3-675b-instruct-2512', 'Mistral Large 3 675B (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, false],
+      ['nvidia', 'minimaxai/minimax-m2.7', 'MiniMax M2.7 (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 196608, false],
+      ['nvidia', 'nvidia/nemotron-3-super-120b-a12b', 'Nemotron 3 Super 120B (NV)', 22, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 262144, false],
+      ['nvidia', 'nvidia/nemotron-3-nano-30b-a3b', 'Nemotron 3 Nano 30B (NV)', 22, 9, 'Medium', 40, null, null, null, '~3M (credits)', 262144, false],
+      ['nvidia', 'google/gemma-4-31b-it', 'Gemma 4 31B (NV)', 19, 9, 'Medium', 40, null, null, null, '~3M (credits)', 262144, false],
+      ['nvidia', 'moonshotai/kimi-k2.6', 'Kimi K2.6 (NV)', 3, 9, 'Frontier', 40, null, null, null, '~2M (credits)', 131072, false],
 
       // Cohere
       ['cohere', 'command-r-plus-08-2024', 'Command R+ (08-2024)', 27, 11, 'Large', 20, 33, null, null, '~1-2M', 131072, true],
@@ -229,6 +233,18 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
   );
   if (pollinationsDesactives.modifiedCount > 0) {
     console.log(`Pollinations: ${pollinationsDesactives.modifiedCount} modèle(s) désactivé(s) (accès anonyme supprimé).`);
+  }
+
+  // NVIDIA NIM renvoie « 410 Gone » sur tous ses modèles (accès/compte non
+  // opérationnel). Comme le seed ne met à jour `enabled` qu'à l'insertion, les
+  // documents déjà en base resteraient actifs et monteraient en tête de chaîne
+  // (bons scores), consommant le budget de fallback avant tout fournisseur sain.
+  const nvidiaDesactives = await ModelsModel.updateMany(
+    { platform: 'nvidia', deletedAt: null, enabled: true },
+    { $set: { enabled: false } },
+  );
+  if (nvidiaDesactives.modifiedCount > 0) {
+    console.log(`NVIDIA: ${nvidiaDesactives.modifiedCount} modèle(s) désactivé(s) (410 Gone).`);
   }
 
   let enabledCount = await ModelsModel.countDocuments({ enabled: true, deletedAt: null });
