@@ -12,12 +12,18 @@ const PagesSchema = new mongoose.Schema(
     titre: { type: String, required: true, trim: true },
     icone: { type: String, default: '📄' },
     couverture: { type: String },
+    // Affichage de l'image de couverture : 'remplir' (recadrée) ou 'contenir'
+    // (image entière visible), et son alignement vertical.
+    couvertureAjustement: { type: String, enum: ['remplir', 'contenir'], default: 'remplir' },
+    couverturePosition: { type: String, enum: ['haut', 'centre', 'bas'], default: 'centre' },
     espaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Espace' },
     workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace' },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Page' },
     ordre: { type: Number, default: 0 },
     favori: { type: Boolean, default: false },
     pleineLargeur: { type: Boolean, default: false },
+    // Page verrouillee : consultation seule, plus aucune modification possible.
+    verrouillee: { type: Boolean, default: false },
     publie: { type: Boolean, default: false },
     section: { type: String, enum: ['equipe', 'prive', 'partage'], default: 'equipe' },
     derniereVisite: { type: Date },

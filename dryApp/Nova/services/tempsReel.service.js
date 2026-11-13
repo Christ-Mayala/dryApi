@@ -20,6 +20,24 @@ const roomEquipe = (espaceId) => `equipe:${espaceId}`;
 /** Nom de la room Socket.IO personnelle d'un utilisateur. */
 const roomUtilisateur = (userId) => String(userId);
 
+/** Nom de la room Socket.IO d'une page (édition collaborative). */
+const roomPage = (pageId) => `page:${pageId}`;
+
+/** Teintes des pastilles de présence, attribuées par ordre d'arrivée. */
+const COULEURS_PRESENCE = [
+  '#e03e3e',
+  '#d9730d',
+  '#dfab01',
+  '#0f7b6c',
+  '#0b6e99',
+  '#6940a5',
+  '#ad1a72',
+  '#787774',
+];
+
+/** Présence par page : `pageId` -> Map(socketId -> participant). */
+const presencePages = new Map();
+
 /** Récupère l'instance Socket.IO attachée à l'application Express. */
 function ioDe(req) {
   try {
@@ -179,12 +197,102 @@ function initTempsReelNova(io) {
         /* le client ne rejoint simplement pas la room */
       }
     });
+
+    /* --- Édition collaborative : présence et synchronisation d'une page --- */
+
+    /** Pages rejointes par cette connexion (nettoyage à la déconnexion). */
+    const pagesRejointes = new Set();
+
+    /** Diffuse la liste des participants d'une page à ses membres. */
+    const diffuserPresence = (pageId) => {
+      const liste = presencePages.get(String(pageId)) || new Map();
+      io.to(roomPage(pageId)).emit('page:presence', {
+        pageId: String(pageId),
+        participants: Array.from(liste.values()),
+      });
+    };
+
+    /** Retire la connexion d'une page et met à jour la présence. */
+    const quitterPage = (pageId) => {
+      const cle = String(pageId);
+      const liste = presencePages.get(cle);
+      if (liste) {
+        liste.delete(socket.id);
+        if (!liste.size) presencePages.delete(cle);
+      }
+      socket.leave(roomPage(cle));
+      pagesRejointes.delete(cle);
+      diffuserPresence(cle);
+    };
+
+    // Rejoint la room d'une page consultée, après vérification de l'accès.
+    socket.on('page:rejoindre', async (payload) => {
+      const pageId = String(payload?.pageId || payload || '');
+      if (!pageId) return;
+      try {
+        const Page = getModel(APP, 'Page');
+        const page = await Page.findById(pageId).select('espaceId').lean();
+        if (!page) return;
+
+        const User = getModel(APP, 'User');
+        const utilisateur = await User.findById(userId)
+          .select('nom email role novaPermissions novaEspaceIds')
+          .lean();
+        const autorises = idsEspacesAutorises(utilisateur);
+        if (autorises !== null && page.espaceId && !autorises.includes(String(page.espaceId))) {
+          return;
+        }
+
+        socket.join(roomPage(pageId));
+        pagesRejointes.add(pageId);
+        const liste = presencePages.get(pageId) || new Map();
+        liste.set(socket.id, {
+          socketId: socket.id,
+          userId,
+          nom: utilisateur?.nom || utilisateur?.email || 'Membre',
+          couleur: COULEURS_PRESENCE[liste.size % COULEURS_PRESENCE.length],
+        });
+        presencePages.set(pageId, liste);
+        diffuserPresence(pageId);
+      } catch (e) {
+        logger(`[Nova] Présence page indisponible : ${e.message}`, 'warning');
+      }
+    });
+
+    socket.on('page:quitter', (payload) => {
+      const pageId = String(payload?.pageId || payload || '');
+      if (pageId) quitterPage(pageId);
+    });
+
+    // Relaie une modification de bloc aux autres éditeurs de la page.
+    socket.on('bloc:diffuser', (payload) => {
+      const pageId = String(payload?.pageId || '');
+      if (!pageId || !pagesRejointes.has(pageId)) return;
+      socket.to(roomPage(pageId)).emit('bloc:maj', payload);
+    });
+
+    socket.on('bloc:cree', (payload) => {
+      const pageId = String(payload?.pageId || '');
+      if (!pageId || !pagesRejointes.has(pageId)) return;
+      socket.to(roomPage(pageId)).emit('bloc:cree', payload);
+    });
+
+    socket.on('bloc:supprime', (payload) => {
+      const pageId = String(payload?.pageId || '');
+      if (!pageId || !pagesRejointes.has(pageId)) return;
+      socket.to(roomPage(pageId)).emit('bloc:supprime', payload);
+    });
+
+    socket.on('disconnect', () => {
+      Array.from(pagesRejointes).forEach(quitterPage);
+    });
   });
 }
 
 module.exports = {
   roomEquipe,
   roomUtilisateur,
+  roomPage,
   emettre,
   membresDeEspace,
   notifierActiviteEquipe,

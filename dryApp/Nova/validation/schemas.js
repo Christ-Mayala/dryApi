@@ -51,14 +51,19 @@ const novaSchemas = {
   Pages: {
     create: Joi.object({
       titre: Joi.string().min(1).max(300).required(),
-      icone: Joi.string().max(20).optional(),
-      couverture: Joi.string().optional(),
+      icone: Joi.string().max(20).allow('', null).optional(),
+      // `''` est accepté : le client envoie une chaîne vide pour retirer la
+      // couverture d'une page (Joi refuse les chaînes vides par défaut).
+      couverture: Joi.string().max(2000).allow('', null).optional(),
+      couvertureAjustement: Joi.string().valid('remplir', 'contenir').optional(),
+      couverturePosition: Joi.string().valid('haut', 'centre', 'bas').optional(),
       espaceId: objectId,
       workspaceId: objectId,
       parentId: objectId,
       ordre: Joi.number().optional(),
       favori: Joi.boolean().optional(),
       pleineLargeur: Joi.boolean().optional(),
+      verrouillee: Joi.boolean().optional(),
       publie: Joi.boolean().optional(),
       section: Joi.string().valid('equipe', 'prive', 'partage').optional(),
       derniereVisite: Joi.date().iso().optional(),
@@ -67,14 +72,17 @@ const novaSchemas = {
     }),
     update: Joi.object({
       titre: Joi.string().min(1).max(300).optional(),
-      icone: Joi.string().max(20).optional(),
-      couverture: Joi.string().optional(),
+      icone: Joi.string().max(20).allow('', null).optional(),
+      couverture: Joi.string().max(2000).allow('', null).optional(),
+      couvertureAjustement: Joi.string().valid('remplir', 'contenir').optional(),
+      couverturePosition: Joi.string().valid('haut', 'centre', 'bas').optional(),
       espaceId: objectId,
       workspaceId: objectId,
       parentId: objectId,
       ordre: Joi.number().optional(),
       favori: Joi.boolean().optional(),
       pleineLargeur: Joi.boolean().optional(),
+      verrouillee: Joi.boolean().optional(),
       publie: Joi.boolean().optional(),
       section: Joi.string().valid('equipe', 'prive', 'partage').optional(),
       derniereVisite: Joi.date().iso().optional(),
@@ -92,6 +100,9 @@ const novaSchemas = {
           'titre_1',
           'titre_2',
           'titre_3',
+          'titre_4',
+          'titre_5',
+          'titre_6',
           'liste_a_puces',
           'liste_numerotee',
           'a_faire',
@@ -117,7 +128,11 @@ const novaSchemas = {
           'lien_page',
           'ia_resume',
           'ia_actions',
-          'note'
+          'note',
+          'onglets',
+          'galerie',
+          'graphique',
+          'raccourci'
         )
         .required(),
       contenu: Joi.string().allow('').optional(),
@@ -136,6 +151,9 @@ const novaSchemas = {
           'titre_1',
           'titre_2',
           'titre_3',
+          'titre_4',
+          'titre_5',
+          'titre_6',
           'liste_a_puces',
           'liste_numerotee',
           'a_faire',
@@ -161,7 +179,11 @@ const novaSchemas = {
           'lien_page',
           'ia_resume',
           'ia_actions',
-          'note'
+          'note',
+          'onglets',
+          'galerie',
+          'graphique',
+          'raccourci'
         )
         .optional(),
       contenu: Joi.string().allow('').optional(),
