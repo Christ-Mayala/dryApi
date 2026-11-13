@@ -6,7 +6,7 @@ const protect = require('../../../../dry/middlewares/protection/auth.middleware'
 const PLATFORMS = [
   'google', 'groq', 'cerebras', 'sambanova', 'nvidia', 'mistral',
   'openrouter', 'github', 'cohere', 'cloudflare', 'zhipu', 'ollama',
-  'kilo', 'pollinations', 'llm7', 'openai',
+  'kilo', 'ovh', 'pollinations', 'llm7', 'openai',
 ];
 
 function createKeysRouter(ApiKeysModel) {

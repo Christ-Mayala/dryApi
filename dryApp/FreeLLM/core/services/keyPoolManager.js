@@ -65,6 +65,8 @@ const IDE_PREFERRED_PROVIDERS = {
   'ollama': 150,
   'kilo': 100,
   'llm7': 50,
+  // OVHcloud anonyme = 2 req/min : dernier recours, après les gateways rapides.
+  'ovh': 10,
   // Pollinations est fréquemment rate-limité/indisponible : essayé en dernier.
   'pollinations': 20,
   'openai': 0

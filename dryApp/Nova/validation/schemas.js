@@ -131,8 +131,10 @@ const novaSchemas = {
           'note',
           'onglets',
           'galerie',
+          'galerie_medias',
           'graphique',
-          'raccourci'
+          'raccourci',
+          'ia_page'
         )
         .required(),
       contenu: Joi.string().allow('').optional(),
@@ -182,8 +184,10 @@ const novaSchemas = {
           'note',
           'onglets',
           'galerie',
+          'galerie_medias',
           'graphique',
-          'raccourci'
+          'raccourci',
+          'ia_page'
         )
         .optional(),
       contenu: Joi.string().allow('').optional(),
@@ -439,7 +443,7 @@ const novaSchemas = {
       pageId: objectId,
       dureeMs: Joi.number().optional(),
       type: Joi.string()
-        .valid('question', 'redaction', 'resume', 'traduction', 'autoremplissage')
+        .valid('question', 'redaction', 'resume', 'traduction', 'autoremplissage', 'agent')
         .optional(),
       label: Joi.string().min(2).max(200).optional(),
       status: commonSchemas.status.optional(),
@@ -452,7 +456,7 @@ const novaSchemas = {
       pageId: objectId,
       dureeMs: Joi.number().optional(),
       type: Joi.string()
-        .valid('question', 'redaction', 'resume', 'traduction', 'autoremplissage')
+        .valid('question', 'redaction', 'resume', 'traduction', 'autoremplissage', 'agent')
         .optional(),
       label: Joi.string().min(2).max(200).optional(),
       status: commonSchemas.status.optional(),

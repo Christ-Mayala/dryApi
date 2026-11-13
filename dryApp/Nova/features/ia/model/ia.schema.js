@@ -20,7 +20,7 @@ const IaSchema = new mongoose.Schema(
     dureeMs: { type: Number },
     type: {
       type: String,
-      enum: ['question', 'redaction', 'resume', 'traduction', 'autoremplissage'],
+      enum: ['question', 'redaction', 'resume', 'traduction', 'autoremplissage', 'agent'],
       default: 'question',
     },
   },

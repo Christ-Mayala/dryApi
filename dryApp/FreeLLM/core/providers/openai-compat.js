@@ -1,5 +1,12 @@
 const { BaseProvider } = require('./base.js');
 
+/**
+ * Passerelles qui refusent toute clé : on omet l'en-tête `Authorization` plutôt
+ * que d'envoyer le marqueur « anonymous ». Kilo le rejette comme une clé
+ * invalide, OVHcloud renvoie 403 dès qu'un jeton est présent.
+ */
+const PLATEFORMES_SANS_ENTETE_AUTH = new Set(['kilo', 'ovh']);
+
 class OpenAICompatProvider extends BaseProvider {
   constructor(opts) {
     super();
@@ -20,9 +27,9 @@ class OpenAICompatProvider extends BaseProvider {
   }
 
   /**
-   * En-têtes HTTP de la requête. Les modèles `:free` de Kilo s'utilisent sans
+   * En-têtes HTTP de la requête. Certaines passerelles s'utilisent sans
    * authentification : on omet l'en-tête plutôt que d'envoyer le marqueur
-   * « anonymous », que la passerelle rejetterait comme une clé invalide.
+   * « anonymous », qu'elles rejetteraient comme une clé invalide.
    */
   construireEntetes(apiKey) {
     const entetes = {
@@ -30,7 +37,7 @@ class OpenAICompatProvider extends BaseProvider {
       ...this.extraHeaders,
     };
     const cleAnonyme = !apiKey || apiKey === 'anonymous';
-    if (!(this.platform === 'kilo' && cleAnonyme)) {
+    if (!(PLATEFORMES_SANS_ENTETE_AUTH.has(this.platform) && cleAnonyme)) {
       entetes.Authorization = `Bearer ${apiKey}`;
     }
     return entetes;

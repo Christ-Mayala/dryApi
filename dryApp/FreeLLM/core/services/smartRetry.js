@@ -25,7 +25,10 @@ const { logger } = require('./inferenceLogger');
 
 const DEFAULT_CONFIG = {
   maxRetries: 4,         // 4 fallbacks max
-  maxNetworkRetries: 2,  // 2 retries réseau sur même provider
+  // 1 seul retry réseau sur le même provider : avec un timeout fournisseur de
+  // ~15 s, deux tentatives consommaient tout le budget global (60 s) et aucun
+  // autre fournisseur n'était essayé (fallbackCount restait à 0).
+  maxNetworkRetries: 1,
   baseDelayMs: 500,
   maxDelayMs: 10_000,
   jitterFactor: 0.3,

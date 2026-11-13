@@ -8,7 +8,7 @@ const { encrypt } = require('./core/lib/crypto');
  * enregistre donc une clé partagée « marqueur » (valeur ignorée par le
  * fournisseur) afin que ces modèles restent routables sans configuration.
  */
-const PLATEFORMES_SANS_CLE = ['kilo', 'pollinations', 'llm7'];
+const PLATEFORMES_SANS_CLE = ['kilo', 'ovh', 'llm7'];
 
 async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, SystemSettingsModel, ApiKeysModel) {
   console.log('Seeding FreeLLM data...');
@@ -136,8 +136,16 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
       ['kilo', 'nvidia/nemotron-3-super-120b-a12b:free', 'Nemotron 3 Super 120B (Kilo)', 22, 9, 'Frontier', null, null, null, null, '~2-3M (200/hr)', 262144, true],
       ['kilo', 'poolside/laguna-s-2.1:free', 'Laguna S 2.1 (Kilo, free)', 24, 9, 'Large', null, null, null, null, '~2-3M (200/hr)', 131072, true],
 
-      // Pollinations
-      ['pollinations', 'openai-fast', 'GPT-OSS 20B (Pollinations)', 18, 10, 'Medium', null, null, null, null, '~? (anon)', 131072, true],
+      // OVHcloud AI Endpoints (tier anonyme : aucune clé, 2 req/min, hébergé en France)
+      // En fin de chaîne (speedRank 12) : le quota anonyme est trop bas pour du
+      // trafic interactif, ces modèles servent de dernier recours.
+      ['ovh', 'Meta-Llama-3_3-70B-Instruct', 'Llama 3.3 70B (OVH)', 17, 12, 'Large', 2, null, null, null, '~? (2 req/min anon)', 131072, true],
+      ['ovh', 'Mistral-Small-3.2-24B-Instruct-2506', 'Mistral Small 3.2 (OVH)', 22, 12, 'Medium', 2, null, null, null, '~? (2 req/min anon)', 131072, true],
+
+      // Pollinations : accès anonyme supprimé (clé désormais obligatoire).
+      // Désactivé pour ne plus consommer une tentative de fallback à chaque requête.
+      // Réactiver après avoir enregistré une clé dans /api/keys.
+      ['pollinations', 'openai-fast', 'GPT-OSS 20B (Pollinations)', 18, 10, 'Medium', null, null, null, null, '~? (anon)', 131072, false],
 
       // LLM7 (API gratuite accessible sans clé : identifiants « turbo » uniquement)
       ['llm7', 'mistral-Nemo-Instruct-2407', 'Mistral Nemo (LLM7)', 21, 10, 'Medium', 100, null, null, null, '~2-3M (100/hr)', 128000, true],
@@ -211,6 +219,18 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
     if (desactives.modifiedCount > 0) {
       console.log(`LLM7: ${desactives.modifiedCount} ancien(s) identifiant(s) obsolète(s) désactivé(s).`);
     }
+  }
+
+  // Pollinations a supprimé l'accès anonyme. Le seed ne met à jour `enabled`
+  // qu'à l'insertion : les documents déjà en base resteraient actifs et
+  // consommeraient une tentative de fallback à chaque requête. On les désactive
+  // donc explicitement (hors du filtre ci-dessus, qui ne suit que le catalogue).
+  const pollinationsDesactives = await ModelsModel.updateMany(
+    { platform: 'pollinations', deletedAt: null, enabled: true },
+    { $set: { enabled: false } },
+  );
+  if (pollinationsDesactives.modifiedCount > 0) {
+    console.log(`Pollinations: ${pollinationsDesactives.modifiedCount} modèle(s) désactivé(s) (accès anonyme supprimé).`);
   }
 
   let enabledCount = await ModelsModel.countDocuments({ enabled: true, deletedAt: null });

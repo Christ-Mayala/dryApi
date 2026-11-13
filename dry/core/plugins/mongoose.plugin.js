@@ -65,7 +65,12 @@ module.exports = function (schema, _options) {
         if (!doc.slug && !SLUG_EXCLUDED_COLLECTIONS.has(schema.options?.collection)) {
             const source = doc.name || doc.label || doc.titre || doc.title || doc.subject;
             if (source) {
-                doc.slug = slugify(source, { lower: true, strict: true }) + '-' + Date.now().toString().slice(-4);
+                // Suffixe non périodique : les 4 derniers chiffres de Date.now()
+                // bouclaient toutes les 10 s et entraînaient des E11000 entre
+                // documents de même source (ex. tous les blocs d'un même « type »).
+                const base = slugify(source, { lower: true, strict: true });
+                const alea = Math.random().toString(36).slice(2, 6).padEnd(4, '0');
+                doc.slug = `${base}-${Date.now().toString(36)}${alea}`;
             }
         }
 

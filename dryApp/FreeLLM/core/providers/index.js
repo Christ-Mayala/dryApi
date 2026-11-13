@@ -72,22 +72,36 @@ register(new OpenAICompatProvider({
 // Kilo AI Gateway : endpoint officiel compatible OpenAI. Les modèles `:free`
 // sont accessibles sans clé (200 req/h/IP) ; le seed enregistre une clé
 // partagée « marqueur » pour rendre ces modèles routables sans configuration.
+// Timeout court : les modèles `:free` sont mis en file d'attente et dépassent
+// souvent 30 s. Un échec rapide laisse le budget global de fallback (60 s)
+// servir à un autre fournisseur au lieu d'être consommé par un seul.
 register(new OpenAICompatProvider({
   platform: 'kilo',
   name: 'Kilo Gateway',
   baseUrl: 'https://ai-gateway.kilo.ai/api/v1',
+  timeoutMs: 15000,
+}));
+
+// OVHcloud AI Endpoints : API compatible OpenAI, modèles open-weight hébergés en
+// France. Le tier anonyme s'utilise SANS clé (aucun en-tête `Authorization`) et
+// est plafonné à 2 req/min ; le seed enregistre une clé partagée « marqueur » pour
+// rendre ces modèles routables sans configuration.
+// Timeout généreux : l'inférence européenne est plus lente que les gateways US.
+register(new OpenAICompatProvider({
+  platform: 'ovh',
+  name: 'OVHcloud AI Endpoints',
+  baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
   timeoutMs: 30000,
 }));
 
-// Pollinations expose une API compatible OpenAI sur `https://text.pollinations.ai/v1`
-// (l'ancien chemin `/openai/v1` renvoie une erreur réseau). Aucune clé n'est
-// requise : une clé partagée marqueur est enregistrée par le seed.
+// Pollinations a supprimé l'accès anonyme : l'endpoint compatible OpenAI exige
+// désormais une clé et a déménagé vers `gen.pollinations.ai`. L'URL est corrigée
+// mais les modèles sont désactivés par le seed : sans clé, chaque appel ne
+// consommait qu'une tentative de fallback. Réactiver après avoir enregistré une clé.
 register(new OpenAICompatProvider({
   platform: 'pollinations',
   name: 'Pollinations',
-  baseUrl: 'https://text.pollinations.ai/v1',
-  // Service souvent saturé (402/timeouts) : échec rapide pour laisser la main
-  // aux fournisseurs suivants au lieu de bloquer la requête ~30 s.
+  baseUrl: 'https://gen.pollinations.ai/v1',
   timeoutMs: 8000,
 }));
 

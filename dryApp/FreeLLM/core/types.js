@@ -12,6 +12,7 @@ const Platforms = [
   'zhipu',
   'ollama',
   'kilo',
+  'ovh',
   'pollinations',
   'llm7',
   'openai'
