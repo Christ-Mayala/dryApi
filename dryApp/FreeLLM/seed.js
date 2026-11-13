@@ -31,8 +31,8 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
       ['google', 'gemini-2.5-pro', 'Gemini 2.5 Pro', 14, 8, 'Frontier', 15, 1500, 400000, 20000000, '~6M', 1048576, false],
       ['google', 'gemini-2.5-flash', 'Gemini 2.5 Flash', 20, 5, 'Large', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
       ['google', 'gemini-2.5-flash-lite', 'Gemini 2.5 Flash-Lite', 26, 3, 'Medium', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
-      ['google', 'gemini-3.1-flash-lite-preview', 'Gemini 3.1 Flash-Lite Preview', 18, 3, 'Medium', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
-      ['google', 'gemini-3-flash-preview', 'Gemini 3 Flash Preview', 11, 5, 'Large', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
+      ['google', 'gemini-3.1-flash-lite-preview', 'Gemini 3.1 Flash-Lite Preview', 18, 3, 'Medium', 15, 1500, 250000, 20000000, '~3M', 1048576, false],
+      ['google', 'gemini-3-flash-preview', 'Gemini 3 Flash Preview', 11, 5, 'Large', 15, 1500, 250000, 20000000, '~3M', 1048576, false],
       ['google', 'gemini-3.1-pro-preview', 'Gemini 3.1 Pro Preview', 1, 8, 'Frontier', 15, 1500, 250000, 20000000, '~3M', 1048576, true],
 
       // OpenRouter
@@ -245,6 +245,19 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
   );
   if (nvidiaDesactives.modifiedCount > 0) {
     console.log(`NVIDIA: ${nvidiaDesactives.modifiedCount} modèle(s) désactivé(s) (410 Gone).`);
+  }
+
+  // Les versions « preview » de Google sont limitées en débit et mises en
+  // attente (503 « high demand » répétés, tentatives qui pendent jusqu'au
+  // timeout de 15 s). Comme leurs scores sont élevés, le routeur les essayait
+  // en premier : la latence moyenne et la variance en pâtissaient. On garde
+  // gemini-3.1-pro-preview, qui n'a pas montré ce comportement.
+  const googlePreviewsDesactives = await ModelsModel.updateMany(
+    { platform: 'google', modelId: { $in: ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview'] }, deletedAt: null, enabled: true },
+    { $set: { enabled: false } },
+  );
+  if (googlePreviewsDesactives.modifiedCount > 0) {
+    console.log(`Google: ${googlePreviewsDesactives.modifiedCount} modèle(s) « preview » désactivé(s) (503 « high demand »).`);
   }
 
   let enabledCount = await ModelsModel.countDocuments({ enabled: true, deletedAt: null });
