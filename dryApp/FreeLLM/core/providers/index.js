@@ -62,11 +62,15 @@ register(new OpenAICompatProvider({
   baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
 }));
 
+// Ollama Cloud : API compatible OpenAI.
+// Timeout aligné sur la philosophie du budget global de fallback (60 s) : à
+// 120 s, un seul fournisseur pouvait consommer — et dépasser — tout le budget,
+// empêchant tout repli vers un autre fournisseur.
 register(new OpenAICompatProvider({
   platform: 'ollama',
   name: 'Ollama Cloud',
   baseUrl: 'https://ollama.com/v1',
-  timeoutMs: 120000,
+  timeoutMs: 30000,
 }));
 
 // Kilo AI Gateway : endpoint officiel compatible OpenAI. Les modèles `:free`

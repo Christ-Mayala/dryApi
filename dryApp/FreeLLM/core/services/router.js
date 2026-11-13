@@ -179,18 +179,51 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     return true;
   });
 
-  filteredChain.sort((a, b) => b.score - a.score); // du plus haut score au plus bas
+  // Tri par score décroissant : le routeur doit essayer le meilleur modèle en
+  // premier. Auparavant on triait `filteredChain` mais la boucle parcourait
+  // `scoredChain` (ni trié, ni filtré) : le scoring était donc calculé pour rien
+  // et les modèles étaient essayés dans l'ordre statique de priorité.
+  filteredChain.sort((a, b) => b.score - a.score);
 
   // Session sticky : mettre le modèle préféré en tête de liste
   if (preferredModelDbId) {
-    const idx = scoredChain.findIndex(e => String(e.modelDbId) === String(preferredModelDbId));
+    const idx = filteredChain.findIndex(e => String(e.modelDbId) === String(preferredModelDbId));
     if (idx > 0) {
-      const [preferred] = scoredChain.splice(idx, 1);
-      scoredChain.unshift(preferred);
+      const [preferred] = filteredChain.splice(idx, 1);
+      filteredChain.unshift(preferred);
     }
   }
 
-  for (const entry of scoredChain) {
+  // ── Chargement groupé des clés ──
+  // Auparavant, on interrogeait la collection des clés à l'intérieur de la
+  // boucle des modèles (clés propres à l'utilisateur, puis clés partagées), soit
+  // jusqu'à 2 requêtes par modèle : avec ~91 modèles dans la chaîne, cela
+  // représentait ~180 allers-retours séquentiels vers Atlas et ~60 s de latence,
+  // ce qui consommait tout le budget global de fallback avant même d'appeler un
+  // fournisseur (d'où le 504 « all providers exhausted » sans aucune tentative
+  // enregistrée). On pré-charge désormais les clés en 2 requêtes seulement.
+  const baseKeyQuery = { enabled: true, status: { $ne: 'invalid' }, deletedAt: null };
+  const [userKeys, sharedKeys] = await Promise.all([
+    userId ? ApiKeysModel.find({ ...baseKeyQuery, userId }).lean() : Promise.resolve([]),
+    allowSharedKeysFallback ? ApiKeysModel.find(baseKeyQuery).lean() : Promise.resolve([]),
+  ]);
+
+  const keysByPlatform = new Map();
+  for (const key of sharedKeys) {
+    if (!keysByPlatform.has(key.platform)) keysByPlatform.set(key.platform, []);
+    keysByPlatform.get(key.platform).push(key);
+  }
+  // Les clés propres à l'utilisateur restent prioritaires, plateforme par plateforme.
+  if (userId) {
+    const userKeysByPlatform = new Map();
+    for (const key of userKeys) {
+      if (!userKeysByPlatform.has(key.platform)) userKeysByPlatform.set(key.platform, []);
+      userKeysByPlatform.get(key.platform).push(key);
+    }
+    for (const [platform, keys] of userKeysByPlatform) keysByPlatform.set(platform, keys);
+  }
+
+  for (const entry of filteredChain) {
     const model = entry.model;
     if (!model) continue;
 
@@ -203,25 +236,8 @@ async function routeRequest(ModelsModel, ApiKeysModel, FallbackConfigModel, esti
     const provider = getProvider(model.platform);
     if (!provider) continue;
 
-    // Récupérer les clés actives et valides pour cette plateforme.
-    // - Si userId fourni → chercher d'abord les clés propres à l'utilisateur
-    // - Si aucune clé trouvée ET allowSharedKeysFallback (Trivida) → utiliser les clés partagées
-    // - Les utilisateurs du site freellmapi (JWT) doivent avoir leurs propres clés, pas de fallback
-    const baseKeyQuery = {
-      platform: model.platform,
-      enabled: true,
-      status: { $ne: 'invalid' },
-      deletedAt: null
-    };
-    let keys = [];
-    if (userId) {
-      keys = await ApiKeysModel.find({ ...baseKeyQuery, userId }).lean();
-    }
-    // Fallback sur les clés partagées uniquement pour Trivida
-    if (keys.length === 0 && allowSharedKeysFallback) {
-      keys = await ApiKeysModel.find(baseKeyQuery).lean();
-    }
-
+    // Clés pré-chargées plus haut : plus aucune requête DB par modèle.
+    const keys = keysByPlatform.get(model.platform) || [];
     if (keys.length === 0) continue;
 
     // Récupérer les limites du modèle une seule fois

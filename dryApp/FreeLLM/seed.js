@@ -73,12 +73,10 @@ async function seedFreeLLM(ModelsModel, FallbackConfigModel, SettingsModel, Syst
 
       // Groq (free tier: 30 RPM, 13K TPM / paid: higher)
       ['groq', 'llama-3.3-70b-versatile', 'Llama 3.3 70B', 17, 2, 'Medium', 30, 1440, 30000, 2000000, '~15M', 131072, true],
-      ['groq', 'meta-llama/llama-4-scout-17b-16e-instruct', 'Llama 4 Scout', 12, 2, 'Medium', 30, 1440, 30000, 2000000, '~30M', 131072, true],
       ['groq', 'openai/gpt-oss-120b', 'GPT-OSS 120B (Groq)', 6, 2, 'Large', 30, 1440, 30000, 2000000, '~6M', 131072, true],
       ['groq', 'openai/gpt-oss-20b', 'GPT-OSS 20B (Groq)', 18, 2, 'Medium', 30, 1440, 30000, 2000000, '~6M', 131072, true],
       ['groq', 'qwen/qwen3-32b', 'Qwen3 32B (Groq)', 19, 2, 'Medium', 60, 1440, 30000, 2000000, '~15M', 131072, true],
       ['groq', 'llama-3.1-8b-instant', 'Llama 3.1 8B Instant', 28, 2, 'Small', 30, 1440, 30000, 2000000, '~15M', 131072, true],
-      ['groq', 'groq/compound', 'Compound (Groq)', 6, 2, 'Large', 30, 1440, 30000, 2000000, '~6M', 131072, true],
       ['groq', 'groq/compound-mini', 'Compound Mini (Groq)', 18, 2, 'Medium', 30, 1440, 30000, 2000000, '~6M', 131072, true],
 
       // Mistral (free tier: ~30 RPM, ~500K TPM)
