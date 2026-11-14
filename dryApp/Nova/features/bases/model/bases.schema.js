@@ -13,6 +13,9 @@ const BasesSchema = new mongoose.Schema(
     icone: { type: String, default: '📊' },
     pageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Page' },
     espaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Espace' },
+    // Visibilite de la base : « prive » par defaut. Une base privee n'apparait
+    // ni dans le repertoire de l'equipe ni pour les autres membres.
+    section: { type: String, enum: ['equipe', 'prive', 'partage'], default: 'prive' },
     enLigne: { type: Boolean, default: true },
     proprietes: [
       {
