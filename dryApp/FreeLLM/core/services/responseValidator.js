@@ -151,6 +151,53 @@ function validateResponse(response, options = {}) {
 }
 
 /**
+ * Détecte si un chunk de streaming porte un contenu exploitable.
+ *
+ * Tous les fournisseurs n'émettent pas le texte dans `delta.content` : certains
+ * utilisent `delta.reasoning_content` (modèles de raisonnement), d'autres
+ * renvoient un `message.content` non standard, d'autres encore n'émettent que
+ * des `tool_calls`. Un chunk qui n'apporte ni texte, ni raisonnement, ni
+ * tool_call (ex. delta vide, chunk de `usage` seul, chunk `finish_reason` seul)
+ * n'est pas un contenu et ne doit pas suffire à qualifier la génération.
+ *
+ * @param {object} chunk - Chunk SSE au format OpenAI
+ * @returns {boolean} true si le chunk contient un contenu exploitable
+ */
+function chunkHasMeaningfulContent(chunk) {
+  if (!chunk || typeof chunk !== 'object') return false;
+  const choices = Array.isArray(chunk.choices) ? chunk.choices : [];
+
+  for (const choice of choices) {
+    if (!choice || typeof choice !== 'object') continue;
+
+    const delta = choice.delta;
+    if (delta && typeof delta === 'object') {
+      if (typeof delta.content === 'string' && delta.content.length > 0) return true;
+      // Certains fournisseurs émettent `delta.content` sous forme de tableau de
+      // blocs (ex. [{ type: 'text', text: '…' }]) au lieu d'une chaîne : c'est un
+      // contenu valide, il ne doit pas être pris pour un flux vide.
+      if (Array.isArray(delta.content) && delta.content.length > 0) return true;
+      if (typeof delta.reasoning_content === 'string' && delta.reasoning_content.length > 0) return true;
+      if (typeof delta.reasoning === 'string' && delta.reasoning.length > 0) return true;
+      if (Array.isArray(delta.tool_calls) && delta.tool_calls.length > 0) return true;
+    }
+
+    const message = choice.message;
+    if (message && typeof message === 'object') {
+      if (typeof message.content === 'string' && message.content.length > 0) return true;
+      if (Array.isArray(message.content) && message.content.length > 0) return true;
+      if (Array.isArray(message.tool_calls) && message.tool_calls.length > 0) return true;
+    }
+
+    // Un provider peut signaler explicitement un blocage / appel d'outil dans
+    // le chunk final, sans texte : ce n'est pas un flux vide.
+    if (choice.finish_reason === 'content_filter' || choice.finish_reason === 'tool_calls') return true;
+  }
+
+  return false;
+}
+
+/**
  * Sanitize a response to ensure it has the expected OpenAI-compatible format.
  */
 function sanitizeResponse(response) {
@@ -195,4 +242,5 @@ module.exports = {
   ValidationIssue,
   validateResponse,
   sanitizeResponse,
+  chunkHasMeaningfulContent,
 };

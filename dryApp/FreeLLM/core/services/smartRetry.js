@@ -25,9 +25,10 @@ const { logger } = require('./inferenceLogger');
 
 const DEFAULT_CONFIG = {
   maxRetries: 4,         // 4 fallbacks max
-  // 1 seul retry réseau sur le même provider : avec un timeout fournisseur de
-  // ~15 s, deux tentatives consommaient tout le budget global (60 s) et aucun
-  // autre fournisseur n'était essayé (fallbackCount restait à 0).
+  // 1 seul retry sur le même provider, et uniquement pour une vraie erreur de
+  // connectivité : un TIMEOUT part directement en fallback (voir recordAttempt).
+  // Deux tentatives pendant ~15 s consommaient presque tout le budget global
+  // (45 s) et aucun autre fournisseur n'était essayé (fallbackCount restait à 0).
   maxNetworkRetries: 1,
   baseDelayMs: 500,
   maxDelayMs: 10_000,
@@ -62,9 +63,15 @@ class RetryState {
     classified.keyId = keyId;
     this.errors.push(classified);
 
-    // Network error: retry same provider if budget allows
-    if (classified.category === ErrorCategory.NETWORK_ERROR ||
-        classified.category === ErrorCategory.TIMEOUT) {
+    // Erreur réseau : la connectivité peut être transitoire, une seule nouvelle
+    // tentative sur le même fournisseur est autorisée.
+    //
+    // Un TIMEOUT, en revanche, n'est plus retenté ici : le fournisseur a déjà
+    // consommé tout son délai sans répondre, et un second essai sur le même
+    // fournisseur doublait l'attente (jusqu'à 30 s pour un timeout de 15 s)
+    // avant de basculer de toute façon. On passe directement au suivant, via
+    // la règle `skipToNextKey` du classifieur (TIMEOUT : skipToNextKey = true).
+    if (classified.category === ErrorCategory.NETWORK_ERROR) {
       if (this.networkRetries < this.config.maxNetworkRetries) {
         this.networkRetries++;
         const delay = this.calculateDelay(classified);

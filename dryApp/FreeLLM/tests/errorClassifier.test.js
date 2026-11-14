@@ -2,7 +2,8 @@
  * Tests pour ErrorClassifier
  */
 const assert = require('assert');
-const { classifyError, ErrorCategory, extractHttpCode, extractRetryAfter } = require('../core/services/errorClassifier');
+const { classifyError, ErrorCategory, extractHttpCode, extractRetryAfter, looksLikeModelUnavailable } = require('../core/services/errorClassifier');
+const { RetryState } = require('../core/services/smartRetry');
 
 let passed = 0;
 let failed = 0;
@@ -155,6 +156,67 @@ test('accepts string input', () => {
 test('includes provider in result', () => {
   const result = classifyError(new Error('timeout'), 'groq');
   assert.strictEqual(result.provider, 'groq');
+});
+
+// --- P2 : HTTP 400 « modèle indisponible » vs vraie requête invalide ---
+console.log('\nP2 — HTTP 400 : modèle indisponible vs requête invalide:');
+
+test('400 + "Model ... is currently unavailable" → MODEL_UNAVAILABLE (fallback autorisé)', () => {
+  const result = classifyError(new Error("LLM7 API error 400: Model 'nemotron-3-nano:30b' is currently unavailable."));
+  assert.strictEqual(result.httpCode, 400);
+  assert.strictEqual(result.category, ErrorCategory.MODEL_UNAVAILABLE);
+  assert.strictEqual(result.retryable, true);
+  assert.strictEqual(result.skipToNextKey, true);
+});
+
+test('400 + "model not found" → MODEL_UNAVAILABLE', () => {
+  const result = classifyError(new Error('400 model not found'));
+  assert.strictEqual(result.category, ErrorCategory.MODEL_UNAVAILABLE);
+});
+
+test('400 + "Model does not exist" → MODEL_UNAVAILABLE', () => {
+  const result = classifyError(new Error('API error 400: Model does not exist on this provider'));
+  assert.strictEqual(result.category, ErrorCategory.MODEL_UNAVAILABLE);
+});
+
+test('400 + "Provider model unavailable" → MODEL_UNAVAILABLE', () => {
+  const result = classifyError('400 Provider model unavailable');
+  assert.strictEqual(result.category, ErrorCategory.MODEL_UNAVAILABLE);
+});
+
+test('400 + invalid parameter → INVALID_REQUEST (aucun fallback)', () => {
+  const result = classifyError(new Error('400 Bad Request: invalid parameter "temperature"'));
+  assert.strictEqual(result.category, ErrorCategory.INVALID_REQUEST);
+  assert.strictEqual(result.retryable, false);
+  assert.strictEqual(result.skipToNextKey, false);
+});
+
+test('400 + malformed JSON → INVALID_REQUEST', () => {
+  const result = classifyError(new Error('400 Bad Request: malformed JSON body'));
+  assert.strictEqual(result.category, ErrorCategory.INVALID_REQUEST);
+  assert.strictEqual(result.retryable, false);
+});
+
+test('400 + "is not a valid model ID" (OpenRouter) → MODEL_UNAVAILABLE', () => {
+  const result = classifyError(new Error("400 OpenRouter API error: 'foo/bar:free' is not a valid model ID"));
+  assert.strictEqual(result.httpCode, 400);
+  assert.strictEqual(result.category, ErrorCategory.MODEL_UNAVAILABLE);
+  assert.strictEqual(result.retryable, true);
+});
+
+test('MODEL_UNAVAILABLE → décision fallback ; INVALID_REQUEST → décision fail', () => {
+  const stateA = new RetryState({ maxRetries: 4 });
+  const a = stateA.recordAttempt(new Error('400 Model is unavailable'), 'kilo', 'k1');
+  assert.strictEqual(a.action, 'fallback');
+
+  const stateB = new RetryState({ maxRetries: 4 });
+  const b = stateB.recordAttempt(new Error('400 invalid parameter "temperature"'), 'kilo', 'k1');
+  assert.strictEqual(b.action, 'fail');
+});
+
+test('looksLikeModelUnavailable distingue les deux messages', () => {
+  assert.strictEqual(looksLikeModelUnavailable("Model 'x' is currently unavailable."), true);
+  assert.strictEqual(looksLikeModelUnavailable('invalid parameter: temperature'), false);
 });
 
 console.log(`\n📊 Results: ${passed} passed, ${failed} failed\n`);

@@ -67,6 +67,7 @@ class OpenAICompatProvider extends BaseProvider {
       method: 'POST',
       headers: this.construireEntetes(apiKey),
       body: JSON.stringify(body),
+      signal: options?.signal,
     }, this.timeoutMs);
 
     if (!res.ok) {
@@ -105,6 +106,7 @@ class OpenAICompatProvider extends BaseProvider {
       method: 'POST',
       headers: this.construireEntetes(apiKey),
       body: JSON.stringify(body),
+      signal: options?.signal,
     }, this.timeoutMs);
 
     if (!res.ok) {

@@ -35,7 +35,7 @@ const { createProfiler, logger } = require('../services/inferenceLogger.js');
 
 // ─── NEW MODULES ─────────────────────────────────────────────
 const { classifyError } = require('../services/errorClassifier.js');
-const { validateResponse, sanitizeResponse } = require('../services/responseValidator.js');
+const { validateResponse, sanitizeResponse, chunkHasMeaningfulContent } = require('../services/responseValidator.js');
 const cbV2 = require('../services/circuitBreaker.js');
 const { monitor: healthMonitor } = require('../services/providerHealthMonitor.js');
 const { degradedMode } = require('../services/degradedMode.js');
@@ -56,9 +56,84 @@ function isAutoModel(modelId) {
 }
 const MAX_FALLBACKS = 4;
 const CONVERSATION_TOKEN_BUDGET = 1_000_000;
-const FALLBACK_GLOBAL_TIMEOUT_MS = 60_000;
+// Budget global de la chaîne de fallback. 45 s laisse la place à plusieurs
+// fournisseurs tout en bornant l'attente de l'utilisateur — la consigne est
+// qu'un appel légitime lent (jusqu'à ~20 s) doit aboutir, sans que l'échec
+// définitif dure une minute.
+//
+// IMPORTANT — trois durées distinctes, à ne pas confondre :
+//   • Budget de fallback (45 s) : borne la RECHERCHE d'un fournisseur disponible.
+//     Il est vérifié ENTRE deux tentatives ; il n'interrompt jamais une
+//     génération déjà commencée. Une génération légitime de 70 s lancée tôt dans
+//     la chaîne doit aboutir.
+//   • Timeout fournisseur (15-30 s, propre à chaque provider) : borne l'appel
+//     HTTP (obtention des en-têtes). Conservé tel quel, il n'est pas modifié.
+//   • Durée de génération : temps total de production du modèle, non borné par
+//     le proxy une fois le streaming démarré.
+const FALLBACK_GLOBAL_TIMEOUT_MS = 45_000;
+// Budget minimal pour qu'une tentative ait une chance réelle d'aboutir. En
+// dessous, on ne la démarre pas : une tentative lancée à 44 s avec un
+// fournisseur muet courait jusqu'à son propre timeout (15-30 s) et faisait
+// largement dépasser le budget global.
+const MIN_ATTEMPT_BUDGET_MS = 5_000;
 const conversationTokenUsage = new Map();
 const CONVERSATION_BUDGET_TTL = 86_400_000;
+
+/**
+ * Indique si une nouvelle tentative peut démarrer dans le budget global restant.
+ *
+ * @param {number} elapsedMs      - Temps déjà consommé par la chaîne (ms)
+ * @param {number} [totalBudgetMs] - Budget global (ms)
+ * @param {number} [minAttemptMs]  - Délai minimal exigé pour démarrer (ms)
+ * @returns {boolean}
+ */
+function hasBudgetForAttempt(
+  elapsedMs,
+  totalBudgetMs = FALLBACK_GLOBAL_TIMEOUT_MS,
+  minAttemptMs = MIN_ATTEMPT_BUDGET_MS
+) {
+  return totalBudgetMs - elapsedMs >= minAttemptMs;
+}
+
+/**
+ * Applique la pénalité fournisseur d'un échec, EN UN SEUL ENDROIT (D3).
+ *
+ * `classified.blacklistProvider` est la source unique de vérité produite par
+ * `errorClassifier` : une erreur imputable au client (INVALID_REQUEST,
+ * CONTENT_POLICY) n'applique rien, une erreur imputable au fournisseur (timeout,
+ * 5xx, réseau, auth, flux coupé, modèle mort…) applique le MÊME jeu de
+ * pénalités partout dans le proxy.
+ *
+ * Les quatre systèmes sont volontairement groupés :
+ *   • `cbV2`              — Circuit Breaker V2 (visibilité /health) ;
+ *   • `keyPoolManager`    — alimente le Circuit Breaker HISTORIQUE, celui que
+ *                           `router.js` consulte réellement pour écarter une
+ *                           plateforme : sans lui, une pénalité n'a aucun effet
+ *                           sur le routage ;
+ *   • `healthMonitor`     — santé par plateforme (`/health/enhanced`) ;
+ *   • `perfMetrics`       — taux de succès par (plateforme, modèle), consommé
+ *                           par le score du routeur.
+ *
+ * Auparavant, seuls les deux catchs généraux appliquaient les quatre ; les
+ * branches « flux vide », « flux interrompu en cours de génération » et
+ * « réponse invalide » n'en appliquaient qu'une partie, si bien qu'un
+ * fournisseur qui cassait systématiquement ses flux n'était jamais écarté du
+ * routage. Regrouper la règle garantit que les deux branches du proxy se
+ * comportent identiquement.
+ *
+ * @param {object} classified - Résultat de `classifyError`
+ * @param {object} route      - Route courante (platform, modelId, keyId)
+ * @param {number} latencyMs  - Latence observée de la tentative
+ * @returns {boolean} vrai si une pénalité a été appliquée
+ */
+function applyProviderPenalty(classified, route, latencyMs = 0) {
+  if (!classified || !classified.blacklistProvider) return false;
+  healthMonitor.recordFailure(route.platform, classified.rawMessage, latencyMs);
+  cbV2.recordFailure(route.platform);
+  perfMetrics.recordFailure(route.platform, route.modelId);
+  keyPoolManager.recordKeyFailure(route.platform, route.keyId, classified.rawMessage);
+  return true;
+}
 
 // ─── PII Sanitization (preserved from original) ──────────────
 function sanitizeMessageContent(content) {
@@ -239,6 +314,28 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
 
     const retryState = new RetryState({ maxRetries: MAX_FALLBACKS });
     const capabilityRequirements = buildRequirementsFromRequest(req.body);
+
+    // ─── P1 : annulation propre de la requête cliente ─────────────
+    // Un AbortController unique par requête propage la déconnexion du client
+    // jusqu'aux appels fournisseurs : le fetch en cours est annulé et les
+    // ressources (connexion, flux, timers) sont libérées immédiatement, sans
+    // pénaliser la santé du provider ni lancer un fallback inutile.
+    //
+    // IMPORTANT : on écoute 'close' sur `res` UNIQUEMENT — jamais sur `req`.
+    // Depuis Node 16, `IncomingMessage` émet 'close' dès que la requête est
+    // achevée, c'est-à-dire dès que le corps est entièrement lu (quelques
+    // millisecondes après le début du handler). L'écouter reviendrait à
+    // annuler l'appel fournisseur avant même qu'il ne parte. `ServerResponse`
+    // émet 'close' à la fin de la réponse OU à la rupture prématurée de la
+    // connexion : `writableEnded === false` identifie ce second cas.
+    const clientAbort = new AbortController();
+    let clientDisconnected = false;
+    const onClientClose = () => {
+      if (res.writableEnded) return; // réponse terminée normalement
+      clientDisconnected = true;
+      clientAbort.abort();
+    };
+    res.on('close', onClientClose);
 
     try {
       // ═══ STEP 0: DEGRADED MODE CHECK ═══
@@ -427,6 +524,10 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
       } else { preferredModel = getStickyModel(messages); }
 
       const skipKeys = new Set();
+      // Couples provider/modèle identifiés comme indisponibles pendant cette
+      // requête : un modèle absent chez un fournisseur l'est pour TOUTES ses
+      // clés, on évite donc d'y revenir (fallback vers le fournisseur suivant).
+      const unavailableModelRoutes = new Set();
       const lastError = null;
       const fallbackStartTime = Date.now();
       fallbackMetrics.totalRequests++;
@@ -480,26 +581,44 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
           continue;
         }
 
+        // Modèle déjà constaté indisponible chez ce fournisseur : inutile de
+        // retenter (même erreur garantie), on passe directement au suivant.
+        if (unavailableModelRoutes.has(`${route.platform}:${route.modelId}`)) {
+          skipKeys.add(`${route.platform}:${route.modelId}:${route.keyId}`);
+          fallbackCount++;
+          continue;
+        }
+
+        // Ne pas démarrer une tentative qui n'a plus le temps d'aboutir : sinon
+        // une tentative lancée en fin de budget court jusqu'au timeout propre au
+        // fournisseur (15-30 s) et dépasse largement le budget global.
+        if (!hasBudgetForAttempt(Date.now() - fallbackStartTime)) {
+          res.status(504).json({ error: { message: 'Request timeout: all providers exhausted', type: 'timeout_error', requestId } });
+          return;
+        }
+
         // ═══ PROVIDER CALL ═══
         recordRequest(route.platform, route.modelId, route.keyId);
         const requestStart = Date.now();
         profiler.mark('provider');
 
         const safeMessages = sanitizeMessages(processedMessages);
-
         try {
           if (stream) {
             // ── STREAMING ──
             let totalOutputTokens = 0;
             let streamStarted = false;
+            let meaningfulContent = false;
             try {
               const gen = route.provider.streamChatCompletion(
                 route.apiKey, safeMessages, route.modelId,
-                { temperature, max_tokens, top_p, tools, tool_choice, timeout: requestTimeout }
+                { temperature, max_tokens, top_p, tools, tool_choice, timeout: requestTimeout, signal: clientAbort.signal }
               );
 
               let firstChunk = true;
               for await (const chunk of gen) {
+                // Déconnexion client : on arrête la lecture du flux au plus tôt.
+                if (clientDisconnected) break;
                 if (firstChunk) { profiler.mark('providerStreamStart'); firstChunk = false; }
                 if (!streamStarted) {
                   res.setHeader('Content-Type', 'text/event-stream');
@@ -511,12 +630,42 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
                   res.setHeader('X-Circuit-Breaker', cbV2.isAvailable(route.platform) ? 'closed' : 'open');
                   streamStarted = true;
                 }
-                const text = chunk.choices?.[0]?.delta?.content || '';
+                // P3 : un chunk n'est « du contenu » que s'il transporte du texte
+                // réel (content, reasoning_content) ou des tool_calls.
+                if (chunkHasMeaningfulContent(chunk)) meaningfulContent = true;
+                // P3 : compter content ET reasoning_content — les modèles de
+                // raisonnement émettent d'abord du reasoning_content.
+                const delta = chunk?.choices?.[0]?.delta || {};
+                const text = delta.content || delta.reasoning_content || '';
                 totalOutputTokens += Math.ceil(text.length / 4);
                 res.write('data: ' + JSON.stringify(sanitizeStreamChunk(chunk)) + '\n\n');
               }
               profiler.mark('providerStreamEnd');
               profiler.mark('providerEnd');
+
+              // Client parti pendant le flux : plus rien à écrire, et aucune
+              // pénalité pour le fournisseur (la génération était légitime).
+              if (clientDisconnected) {
+                logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'client_aborted', inputTokens, totalOutputTokens, Date.now() - requestStart, 'client disconnected', taskType, fallbackCount, requestId);
+                return;
+              }
+
+              // P3 : un flux qui se termine sans contenu n'est PAS un succès.
+              // Si les en-têtes SSE ne sont pas encore partis, on peut basculer
+              // proprement vers un autre fournisseur ; sinon on signale l'erreur.
+              if (!meaningfulContent) {
+                if (!streamStarted) {
+                  throw new Error(`Empty stream from ${route.platform}: no content received`);
+                }
+                const emptyMsg = `Empty stream from ${route.platform}: [DONE] without content`;
+                // Un flux clos sans contenu est imputable au fournisseur : même
+                // jeu de pénalités que partout ailleurs (voir applyProviderPenalty).
+                applyProviderPenalty(classifyError(emptyMsg, route.platform), route, Date.now() - requestStart);
+                try { res.write('data: ' + JSON.stringify({ error: { message: `Provider error (${route.displayName}): empty stream`, type: 'stream_error' } }) + '\n\n'); } catch {}
+                try { res.write('data: [DONE]\n\n'); res.end(); } catch {}
+                logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', inputTokens, totalOutputTokens, Date.now() - requestStart, emptyMsg, taskType, fallbackCount, requestId);
+                return;
+              }
 
               if (!streamStarted) {
                 res.setHeader('Content-Type', 'text/event-stream');
@@ -545,11 +694,24 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
               return;
 
             } catch (streamErr) {
+              // Déconnexion client réelle : on n'écrit rien et on ne pénalise pas
+              // le fournisseur — la génération n'est pas en cause.
+              //
+              // Seul `clientDisconnected` est discriminant : un timeout fournisseur
+              // se présente comme la même `AbortError` (annulation du fetch par le
+              // timer local de fetchWithTimeout), il ne doit donc PAS être confondu
+              // avec une déconnexion cliente, sinon le fournisseur fautif n'est ni
+              // pénalisé ni remplacé par un fallback.
+              if (clientDisconnected) {
+                logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'client_aborted', inputTokens, totalOutputTokens, Date.now() - requestStart, streamErr.message, taskType, fallbackCount, requestId);
+                return;
+              }
               if (streamStarted) {
-                // Mid-stream error → classify and log
+                // Mid-stream error → classify and penalise.
                 const classified = classifyError(streamErr, route.platform);
-                healthMonitor.recordFailure(route.platform, classified.rawMessage, Date.now() - requestStart);
-                cbV2.recordFailure(route.platform);
+                // D3 : `blacklistProvider` (classifieur) décide seul ; le jeu de
+                // pénalités est identique à celui de la branche non-streaming.
+                applyProviderPenalty(classified, route, Date.now() - requestStart);
 
                 try { res.write('data: ' + JSON.stringify({ error: { message: `Provider error (${route.displayName}): stream interrupted`, type: 'stream_error' } }) + '\n\n'); } catch {}
                 try { res.write('data: [DONE]\n\n'); res.end(); } catch {}
@@ -563,7 +725,7 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
             // ── NON-STREAMING ──
             const result = await route.provider.chatCompletion(
               route.apiKey, safeMessages, route.modelId,
-              { temperature, max_tokens, top_p, tools, tool_choice, timeout: requestTimeout }
+              { temperature, max_tokens, top_p, tools, tool_choice, timeout: requestTimeout, signal: clientAbort.signal }
             );
             profiler.mark('providerEnd');
 
@@ -574,10 +736,9 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
             });
 
             if (!validation.valid) {
-              // Response is invalid → classify and fallback
+              // Response is invalid → classify, penalise the provider and fallback.
               const classified = classifyError(new Error(`Invalid response from ${route.platform}: ${validation.issues.join(', ')}`), route.platform);
-              healthMonitor.recordFailure(route.platform, classified.rawMessage);
-              cbV2.recordFailure(route.platform);
+              applyProviderPenalty(classified, route, Date.now() - requestStart);
               skipKeys.add(`${route.platform}:${route.modelId}:${route.keyId}`);
               fallbackCount++;
               continue;
@@ -618,15 +779,26 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
 
         } catch (err) {
           const latency = Date.now() - requestStart;
+          // Déconnexion client réelle : rien à écrire, aucune pénalité pour le
+          // fournisseur, aucun fallback inutile. Un timeout fournisseur, en
+          // revanche, est un vrai échec provider (voir catch streaming ci-dessus).
+          if (clientDisconnected) {
+            logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'client_aborted', inputTokens, 0, latency, err.message, taskType, fallbackCount, requestId);
+            return;
+          }
 
           // ═══ ERROR CLASSIFICATION (NEW) ═══
           const classified = classifyError(err, route.platform);
 
-          // Record failure in all systems
-          healthMonitor.recordFailure(route.platform, classified.rawMessage, latency);
-          cbV2.recordFailure(route.platform);
-          perfMetrics.recordFailure(route.platform, route.modelId);
-          keyPoolManager.recordKeyFailure(route.platform, route.keyId, classified.rawMessage);
+          // Record failure in all systems.
+          //
+          // D3 : `blacklistProvider` (classifieur) est la source unique de vérité.
+          // Une erreur imputable au client — INVALID_REQUEST, CONTENT_POLICY —
+          // ne doit ni faire avancer le Circuit Breaker, ni dégrader la santé ou
+          // le score du fournisseur, ni refroidir/comptabiliser la clé : sinon
+          // quelques requêtes malformées suffisent à exclure temporairement un
+          // fournisseur sain. L'erreur reste journalisée plus bas.
+          applyProviderPenalty(classified, route, latency);
           if (route.mesh) recordMeshResult(requestId, route.platform, String(route.keyId), route.modelId, false, latency, classified.rawMessage, classified.category);
 
           logRequest(RequestsModel, userId, route.platform, route.modelId, route.keyId, 'error', inputTokens, 0, latency, classified.rawMessage, taskType, fallbackCount, requestId);
@@ -660,6 +832,12 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
             // qu'on quitte ; attendre n'apportait rien au suivant et ajoutait
             // jusqu'à 10 s par étape, soit 20-30 s sur une chaîne courte.
             skipKeys.add(`${route.platform}:${route.modelId}:${route.keyId}`);
+            // Modèle indisponible (HTTP 400/404/422 « model unavailable ») : ce
+            // n'est pas une erreur de requête, on écarte le couple provider/modèle
+            // pour ne pas retenter inutilement le même fournisseur.
+            if (classified.category === 'model_unavailable') {
+              unavailableModelRoutes.add(`${route.platform}:${route.modelId}`);
+            }
             fallbackCount++;
             fallbackMetrics.totalFallbacks++;
             continue;
@@ -679,6 +857,9 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
       });
 
     } finally {
+      // Libère le listener de déconnexion (évite toute fuite de ressources).
+      res.off('close', onClientClose);
+
       // Always log final status
       const summary = retryState.getSummary();
       if (summary.totalAttempts > 0) {
@@ -690,4 +871,4 @@ function createEnhancedProxyRouter(ModelsModel, ApiKeysModel, FallbackConfigMode
   return router;
 }
 
-module.exports = { createEnhancedProxyRouter, fallbackMetrics };
+module.exports = { createEnhancedProxyRouter, fallbackMetrics, hasBudgetForAttempt };

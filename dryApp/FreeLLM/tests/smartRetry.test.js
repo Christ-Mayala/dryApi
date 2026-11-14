@@ -30,12 +30,14 @@ test('initializes with correct defaults', () => {
   assert.strictEqual(state.shouldContinue(), true);
 });
 
-test('records timeout as retry_same_provider', () => {
+test('records timeout as fallback (jamais de retry sur le même fournisseur)', () => {
   const state = new RetryState({ maxNetworkRetries: 2 });
   const decision = state.recordAttempt(new Error('ETIMEDOUT'), 'groq', 'key1');
-  assert.strictEqual(decision.action, 'retry_same_provider');
+  assert.strictEqual(decision.action, 'fallback');
   assert.strictEqual(decision.classifiedError.category, 'timeout');
   assert.ok(decision.delayMs >= 0);
+  assert.strictEqual(state.networkRetries, 0, 'un timeout ne consomme pas le budget réseau');
+  assert.strictEqual(state.fallbackCount, 1);
 });
 
 test('records 429 as fallback', () => {

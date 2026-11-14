@@ -41,6 +41,7 @@ class CloudflareProvider extends BaseProvider {
         tool_choice: options?.tool_choice,
         parallel_tool_calls: options?.parallel_tool_calls,
       }),
+      signal: options?.signal,
     });
 
     if (!res.ok) {
@@ -74,6 +75,7 @@ class CloudflareProvider extends BaseProvider {
         parallel_tool_calls: options?.parallel_tool_calls,
         stream: true,
       }),
+      signal: options?.signal,
     });
 
     if (!res.ok) {

@@ -47,18 +47,21 @@ console.log('\n🔗 Integration Tests\n');
 // ─── SCENARIO 1: Provider A timeout → fallback vers B ────────
 console.log('Scenario 1: Provider A timeout → fallback B');
 
-test('timeout on provider A → retry same provider → fallback to B', () => {
+test('timeout on provider A → fallback immédiat vers B', () => {
   const retry = new RetryState({ maxRetries: 2, maxNetworkRetries: 1 });
 
-  // Simulate timeout on A → network retry
+  // Un timeout consomme déjà tout le délai du fournisseur : on ne le relance
+  // pas, on bascule directement vers le suivant.
   const d1 = retry.recordAttempt(new Error('ETIMEDOUT'), 'groq', 'key-a');
-  assertEqual(d1.action, 'retry_same_provider', 'Should retry same provider on timeout');
-  assertEqual(retry.networkRetries, 1);
-
-  // Second timeout → network budget exhausted → fallback
-  const d2 = retry.recordAttempt(new Error('ETIMEDOUT'), 'groq', 'key-a');
-  assertEqual(d2.action, 'fallback', 'Network budget exhausted → fallback to different provider');
+  assertEqual(d1.action, 'fallback', 'Timeout → fallback immédiat (pas de retry même fournisseur)');
+  assertEqual(d1.classifiedError.category, ErrorCategory.TIMEOUT);
+  assertEqual(retry.networkRetries, 0, 'Un timeout ne consomme pas le budget réseau');
   assertEqual(retry.fallbackCount, 1);
+
+  // Timeout sur le second fournisseur → fallback à nouveau
+  const d2 = retry.recordAttempt(new Error('ETIMEDOUT'), 'kilo', 'key-b');
+  assertEqual(d2.action, 'fallback', 'Timeout → fallback vers le fournisseur suivant');
+  assertEqual(retry.fallbackCount, 2);
 });
 
 // ─── SCENARIO 2: Rate limit → changement de clé ─────────────

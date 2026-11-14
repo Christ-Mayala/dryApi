@@ -63,7 +63,7 @@ register(new OpenAICompatProvider({
 }));
 
 // Ollama Cloud : API compatible OpenAI.
-// Timeout aligné sur la philosophie du budget global de fallback (60 s) : à
+// Timeout aligné sur la philosophie du budget global de fallback (45 s) : à
 // 120 s, un seul fournisseur pouvait consommer — et dépasser — tout le budget,
 // empêchant tout repli vers un autre fournisseur.
 register(new OpenAICompatProvider({
@@ -77,7 +77,7 @@ register(new OpenAICompatProvider({
 // sont accessibles sans clé (200 req/h/IP) ; le seed enregistre une clé
 // partagée « marqueur » pour rendre ces modèles routables sans configuration.
 // Timeout court : les modèles `:free` sont mis en file d'attente et dépassent
-// souvent 30 s. Un échec rapide laisse le budget global de fallback (60 s)
+// souvent 30 s. Un échec rapide laisse le budget global de fallback (45 s)
 // servir à un autre fournisseur au lieu d'être consommé par un seul.
 register(new OpenAICompatProvider({
   platform: 'kilo',

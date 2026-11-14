@@ -24,15 +24,37 @@ const ErrorCategory = {
 };
 
 /**
- * Classification rules: for each category we define whether
- * it's retryable, whether to blacklist the key, and whether
- * to blacklist the entire provider.
+ * Classification rules: for each category we define whether it's retryable,
+ * whether to blacklist the key (`blacklistKey`) and whether the failure is
+ * imputable au fournisseur (`blacklistProvider`).
+ *
+ * `blacklistProvider` est la SOURCE UNIQUE DE VÉRITÉ (correction D3) consultée
+ * par le proxy pour décider si un échec dégrade la santé du fournisseur :
+ * Circuit Breaker (cbV2), health monitor, métriques de performance utilisées par
+ * le routeur, et cooldown de la clé. Règle métier : une erreur imputable au
+ * client (INVALID_REQUEST, CONTENT_POLICY) doit rester à `false` — sinon
+ * quelques requêtes malformées suffisent à ouvrir le circuit d'un fournisseur
+ * parfaitement sain ; à l'inverse une déconnexion client n'est même pas
+ * classifiée (le proxy sort avant).
+ *
+ * AUTH_ERROR : politique explicite. Un fournisseur qui rejette nos identifiants
+ * n'est plus utilisable pour nous, et l'erreur ne provient pas de la requête du
+ * client : la clé est blacklistée 24 h (`blacklistKey`) ET le fournisseur est
+ * pénalisé (`blacklistProvider`). Traiter l'auth comme une erreur client
+ * laisserait un fournisseur inutilisable en tête de chaîne ; les deux Circuit
+ * Breakers (cbV2 et celui alimenté par le KeyPool) restent ainsi cohérents.
+ *
+ * MODEL_UNAVAILABLE : reste à `false`. L'indisponibilité porte sur UN modèle,
+ * alors que tous les mécanismes de santé (les deux Circuit Breakers,
+ * `healthMonitor`, `PROVIDER_METRICS`) sont scopés plateforme : les pénaliser
+ * écarterait les autres modèles du fournisseur pour un modèle mort. Le
+ * fallback est conservé (`retryable` + `skipToNextKey`).
  */
 const CLASSIFICATION_RULES = {
   [ErrorCategory.TIMEOUT]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true, // le fournisseur n'a pas répondu dans les délais
     skipToNextKey: true,
     cooldownMs: 10_000,
     description: 'Provider did not respond in time',
@@ -40,7 +62,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.RATE_LIMIT]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true, // politique de santé existante : le fournisseur sature
     skipToNextKey: true,
     cooldownMs: 60_000,
     description: 'Rate limit (429) — try another key or provider',
@@ -48,7 +70,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.AUTH_ERROR]: {
     retryable: false,
     blacklistKey: true,
-    blacklistProvider: false,
+    blacklistProvider: true, // politique explicite : clé morte → fournisseur inutilisable pour nous
     skipToNextKey: true,
     cooldownMs: 24 * 60 * 60 * 1000, // 24h
     description: 'Invalid API key or unauthorized access',
@@ -56,7 +78,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.INVALID_REQUEST]: {
     retryable: false,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: false, // erreur du client : aucune pénalité fournisseur (D3)
     skipToNextKey: false,
     cooldownMs: 0,
     description: 'Invalid request payload — will fail with any provider',
@@ -64,7 +86,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.SERVER_ERROR]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true, // panne interne du fournisseur (5xx)
     skipToNextKey: true,
     cooldownMs: 30_000,
     description: 'Provider internal server error (5xx)',
@@ -72,7 +94,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.NETWORK_ERROR]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true, // connectivité du fournisseur en cause
     skipToNextKey: false, // same provider, retry
     cooldownMs: 5_000,
     description: 'Network connectivity issue',
@@ -80,7 +102,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.QUOTA_EXCEEDED]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true,
     skipToNextKey: true,
     cooldownMs: 3600_000, // 1h
     description: 'Token/request quota exhausted for this key',
@@ -88,6 +110,12 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.MODEL_UNAVAILABLE]: {
     retryable: true,
     blacklistKey: false,
+    // Un modèle retiré par un fournisseur ne remet pas en cause ses AUTRES
+    // modèles. Pénaliser le fournisseur ici ouvrirait son Circuit Breaker
+    // global (les deux CB, plus `PROVIDER_METRICS`/health, tous scopés
+    // plateforme) et écarterait des modèles parfaitement sains. Le fallback
+    // reste assuré par `skipToNextKey` + `unavailableModelRoutes` (par
+    // requête) : on écarte le couple provider/modèle, pas le fournisseur.
     blacklistProvider: false,
     skipToNextKey: true,
     cooldownMs: 300_000, // 5min
@@ -96,7 +124,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.CONTENT_POLICY]: {
     retryable: false,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: false, // le contenu vient du client : aucune pénalité fournisseur (D3)
     skipToNextKey: false,
     cooldownMs: 0,
     description: 'Content violated provider policy — will fail everywhere',
@@ -104,7 +132,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.STREAM_INTERRUPTED]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true, // flux coupé côté fournisseur
     skipToNextKey: true,
     cooldownMs: 10_000,
     description: 'Stream was interrupted mid-response',
@@ -112,7 +140,7 @@ const CLASSIFICATION_RULES = {
   [ErrorCategory.UNKNOWN]: {
     retryable: true,
     blacklistKey: false,
-    blacklistProvider: false,
+    blacklistProvider: true,
     skipToNextKey: true,
     cooldownMs: 15_000,
     description: 'Unrecognized error — try another provider',
@@ -153,6 +181,24 @@ function extractRetryAfter(errorMessage) {
 }
 
 /**
+ * Motifs indiquant qu'un fournisseur signale un modèle indisponible/inexistant
+ * (et non une requête malformée). Ces motifs sont cherchés dans le message AVANT
+ * de conclure qu'un HTTP 400 est une vraie INVALID_REQUEST.
+ */
+const MODEL_UNAVAILABLE_PATTERNS = [
+  /model[^.]{0,60}(unavailable|not available|no longer available|not found|does not exist|doesn't exist|retired|decommissioned|unsupported|not supported)/i,
+  /(no such model|unknown model|invalid model|not a valid model|model_not_found|model unavailable|model is unavailable|model currently unavailable)/i,
+];
+
+/**
+ * Vrai si le message décrit une indisponibilité de modèle (fallback approprié).
+ */
+function looksLikeModelUnavailable(message) {
+  if (!message) return false;
+  return MODEL_UNAVAILABLE_PATTERNS.some(re => re.test(message));
+}
+
+/**
  * Classe une erreur provider en catégorie structurée.
  *
  * @param {Error|string} error - L'erreur à classifier
@@ -161,6 +207,10 @@ function extractRetryAfter(errorMessage) {
  *             blacklistProvider: boolean, skipToNextKey: boolean,
  *             cooldownMs: number, retryAfterMs: number|null,
  *             httpCode: number|null, rawMessage: string }}
+ *
+ * `blacklistProvider` : vrai si l'échec est imputable au fournisseur. Le proxy
+ * s'appuie uniquement sur ce champ pour décider d'appliquer une pénalité
+ * (Circuit Breaker, health monitor, métriques, cooldown de clé).
  */
 function classifyError(error, provider = null) {
   const rawMessage = typeof error === 'string' ? error : (error?.message || String(error));
@@ -176,7 +226,12 @@ function classifyError(error, provider = null) {
     } else if (httpCode === 401 || httpCode === 403) {
       category = ErrorCategory.AUTH_ERROR;
     } else if (httpCode === 400 || httpCode === 422) {
-      category = ErrorCategory.INVALID_REQUEST;
+      // Un 400 n'est pas toujours une requête invalide : certains fournisseurs
+      // renvoient 400 quand LEUR modèle est indisponible. Ce cas doit autoriser
+      // le fallback, on inspecte donc le message avant de conclure.
+      category = looksLikeModelUnavailable(rawMessage)
+        ? ErrorCategory.MODEL_UNAVAILABLE
+        : ErrorCategory.INVALID_REQUEST;
     } else if (httpCode === 404) {
       category = ErrorCategory.MODEL_UNAVAILABLE;
     } else if (httpCode >= 500) {
@@ -199,6 +254,10 @@ function classifyError(error, provider = null) {
       category = ErrorCategory.AUTH_ERROR;
     } else if (lowerMsg.includes('403') || lowerMsg.includes('forbidden')) {
       category = ErrorCategory.AUTH_ERROR;
+    } else if (looksLikeModelUnavailable(lowerMsg)) {
+      // Modèle indisponible chez le fournisseur : retryable et redirigeable,
+      // donc distinct d'une vraie INVALID_REQUEST (à ne pas confondre).
+      category = ErrorCategory.MODEL_UNAVAILABLE;
     } else if (lowerMsg.includes('400') || lowerMsg.includes('invalid argument')
                || lowerMsg.includes('bad request')) {
       category = ErrorCategory.INVALID_REQUEST;
@@ -241,6 +300,7 @@ module.exports = {
   ErrorCategory,
   CLASSIFICATION_RULES,
   classifyError,
+  looksLikeModelUnavailable,
   extractHttpCode,
   extractRetryAfter,
 };
