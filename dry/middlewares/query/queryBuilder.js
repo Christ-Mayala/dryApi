@@ -19,6 +19,22 @@ const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // non borne, DoS memoire/CPU. 100 couvre tous les usages legitimes actuels.
 const MAX_LIMIT = 100;
 
+// Longueur maximale d'un terme de recherche : au-delà, on refuse la requête
+// plutôt que de construire un regex coûteux et malveillant.
+const MAX_SEARCH_LENGTH = 200;
+
+// Opérateurs Mongo permettant l'exécution de code ou d'expressions arbitraires :
+// ils sont refusés dans le filtre `?json=` fourni par le client.
+const OPERATEURS_INTERDITS = new Set(['$where', '$expr', '$function', '$accumulator', '$jsonSchema']);
+
+function contientOperateurInterdit(valeur) {
+  if (Array.isArray(valeur)) return valeur.some(contientOperateurInterdit);
+  if (!valeur || typeof valeur !== 'object') return false;
+  return Object.entries(valeur).some(([cle, enfant]) =>
+    OPERATEURS_INTERDITS.has(cle) || contientOperateurInterdit(enfant)
+  );
+}
+
 const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async (req, res, next) => {
     try {
         // Résoudre le modèle (direct ou via une fonction getter(req)).
@@ -87,16 +103,32 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
 
         // 4. Construction de la requête de base
         let findQuery = JSON.parse(queryStr);
-        // 4b. Support du paramètre json pour filtres complexes
+        // 4b. Support du paramètre json pour filtres complexes.
+        // Un JSON invalide ou contenant un opérateur d'exécution de code est
+        // refusé : il ne doit jamais être silencieusement ignoré (risque de
+        // faire croire à un filtre appliqué alors qu'il ne l'est pas).
         if (req.query.json) {
+            let jsonFilter;
             try {
-                const jsonFilter = JSON.parse(req.query.json);
-                if (Object.keys(findQuery).length === 0) {
-                    findQuery = jsonFilter;
-                } else {
-                    findQuery = { $and: [findQuery, jsonFilter] };
-                }
-            } catch (e) { /* invalid JSON, ignore */ }
+                jsonFilter = JSON.parse(req.query.json);
+            } catch {
+                const erreur = new Error('Paramètre json invalide');
+                erreur.status = 400;
+                return next(erreur);
+            }
+            if (!jsonFilter || typeof jsonFilter !== 'object' || Array.isArray(jsonFilter)) {
+                const erreur = new Error('Paramètre json invalide');
+                erreur.status = 400;
+                return next(erreur);
+            }
+            if (contientOperateurInterdit(jsonFilter)) {
+                const erreur = new Error('Opérateur de requête interdit');
+                erreur.status = 400;
+                return next(erreur);
+            }
+            findQuery = Object.keys(findQuery).length === 0
+                ? jsonFilter
+                : { $and: [findQuery, jsonFilter] };
         }
 
         // 4c. Fusion avec le filtre par défaut (ex: { isDeleted: false })
@@ -108,49 +140,58 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
             }
         }
 
-        // 5. Recherche textuelle (si fields ET search sont fournis)
-        if (req.query.fields && req.query.search) {
-            const searchFields = req.query.fields.split(',').map(f => f.trim()).filter(Boolean);
-            const searchTerm = req.query.search;
-            if (searchFields.length > 0 && searchTerm) {
-                // Filtrer les champs non recherchables (ObjectId, dot-notation)
-                const searchableFields = searchFields.filter((property) => {
-                    if (property.includes('.')) return false;
-                    const st = schemaPaths[property];
-                    if (st && st.instance === 'ObjectId') return false;
-                    return true;
-                });
-
-                if (searchableFields.length > 0) {
-                    const orConditions = searchableFields.map(field => ({
-                        [field]: { $regex: escapeRegex(searchTerm), $options: 'i' }
-                    }));
-                    const currentQuery = { ...findQuery };
-                    delete currentQuery.$and;
-                    if (Object.keys(currentQuery).length === 0) {
-                        findQuery = { $or: orConditions };
-                    } else {
-                        findQuery = { $and: [currentQuery, { $or: orConditions }] };
-                    }
-                }
+        // 5. Recherche textuelle. Le filtre ACL est inclus dans `findQuery` :
+        // il est impératif de le CONSERVER. L'ancien code supprimait `$and`
+        // avant d'ajouter `$or`, ce qui permettait de contourner totalement
+        // les restrictions d'espace avec `?search=`.
+        if (req.query.search) {
+            if (typeof req.query.search !== 'string') {
+                const erreur = new Error('Terme de recherche invalide');
+                erreur.status = 400;
+                return next(erreur);
             }
-        } else if (req.query.search && !req.query.fields) {
-            // Recherche générique dans les champs String du modèle
-            const allSchemaPaths = model.schema && model.schema.paths ? Object.keys(model.schema.paths) : [];
-            const stringPaths = schemaPaths.filter(p => {
-                const pathType = model.schema.paths[p];
-                return pathType && (pathType.instance === 'String' || (pathType.options && pathType.options.type === String));
-            }).filter(p => !['_id', '__v', 'password', 'token'].includes(p));
-            
-            if (stringPaths.length > 0) {
-                const searchRegex = { $regex: escapeRegex(req.query.search), $options: 'i' };
-                const orConditions = stringPaths.map(field => ({ [field]: searchRegex }));
-                const currentQuery = { ...findQuery };
-                delete currentQuery.$and;
-                if (Object.keys(currentQuery).length === 0) {
-                    findQuery = { $or: orConditions };
+            const searchTerm = req.query.search;
+            if (!searchTerm.trim()) {
+                const erreur = new Error('Terme de recherche vide');
+                erreur.status = 400;
+                return next(erreur);
+            }
+            if (searchTerm.length > MAX_SEARCH_LENGTH) {
+                const erreur = new Error('Terme de recherche trop long');
+                erreur.status = 400;
+                return next(erreur);
+            }
+
+            let champs = [];
+            if (req.query.fields) {
+                champs = req.query.fields
+                    .split(',')
+                    .map((champ) => champ.trim())
+                    .filter(Boolean)
+                    .filter((champ) => {
+                        if (champ.includes('.') || !schemaPaths[champ]) return false;
+                        return schemaPaths[champ].instance !== 'ObjectId';
+                    });
+            } else {
+                // `schemaPaths` est un OBJET : `Object.keys()` est obligatoire.
+                champs = Object.keys(schemaPaths).filter((champ) => {
+                    const type = schemaPaths[champ];
+                    if (['_id', '__v', 'password', 'token'].includes(champ)) return false;
+                    return Boolean(type) && (type.instance === 'String' || type.options?.type === String);
+                });
+            }
+
+            if (champs.length > 0) {
+                const searchRegex = { $regex: escapeRegex(searchTerm), $options: 'i' };
+                const condition = { $or: champs.map((champ) => ({ [champ]: searchRegex })) };
+                if (Object.keys(findQuery).length === 0) {
+                    findQuery = condition;
+                } else if (Array.isArray(findQuery.$and) && Object.keys(findQuery).length === 1) {
+                    // Le filtre ACL est déjà un `$and` : on y ajoute la recherche
+                    // sans l'imbriquer dans un second `$and`.
+                    findQuery = { $and: [...findQuery.$and, condition] };
                 } else {
-                    findQuery = { $and: [currentQuery, { $or: orConditions }] };
+                    findQuery = { $and: [findQuery, condition] };
                 }
             }
         }
@@ -226,13 +267,12 @@ const queryBuilder = (modelOrGetter, populateOpts = null, options = {}) => async
 
         next();
     } catch (err) {
-        console.error('[queryBuilder] Error:', err.message);
-        res.advancedResults = {
-            success: false,
-            data: [],
-            pagination: { total: 0, count: 0, page: 1, limit: 10, totalPages: 0 }
-        };
-        next();
+        // Ne plus renvoyer une liste vide « réussie » : une erreur de requête
+        // doit remonter au gestionnaire d'erreurs centralisé, sinon le client
+        // croit à tort qu'aucun document ne correspond alors que l'ACL a
+        // peut-être été contournée ou que la base est indisponible.
+        err.message = `[queryBuilder] ${err.message}`;
+        return next(err);
     }
 };
 

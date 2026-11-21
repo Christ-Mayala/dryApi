@@ -1,6 +1,12 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const { validateNova } = require('../../../validation/middleware');
-const { idsEspacesAutorises, forcerFiltre } = require('../../../services/acl.service');
+const {
+  idsEspacesAutorises,
+  forcerFiltre,
+  exigerEditionNova,
+  verifierPayloadAcces,
+  exigerAccesRessource,
+} = require('../../../services/acl.service');
 const BasesSchema = require('../model/bases.schema');
 
 /**
@@ -14,7 +20,7 @@ const filtrerListe = (req, res, next) => {
   const filtre = {
     $nor: [{ section: 'prive', createdBy: { $ne: req.user._id } }],
   };
-  const ids = idsEspacesAutorises(req.user);
+  const ids = idsEspacesAutorises(req);
   if (ids !== null) {
     filtre.$or = [{ espaceId: { $in: ids } }, { createdBy: req.user._id }];
   }
@@ -26,7 +32,7 @@ const filtrerListe = (req, res, next) => {
 // Lecture reservee aux membres connectes (la liste est filtree par visibilite) ;
 // ecriture reservee aux membres connectes.
 module.exports = buildCrudRouter('Base', BasesSchema, {
-  auth: { list: 'user', create: 'user', update: 'user', delete: 'user' },
+  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.bases.create,
@@ -34,6 +40,27 @@ module.exports = buildCrudRouter('Base', BasesSchema, {
   },
   middlewares: {
     list: [filtrerListe],
+    get: [exigerAccesRessource({ modelName: 'Base', schema: BasesSchema, sectionPrivee: true })],
+    create: [exigerEditionNova, verifierPayloadAcces()],
+    update: [
+      exigerEditionNova,
+      exigerAccesRessource({
+        modelName: 'Base',
+        schema: BasesSchema,
+        droit: 'edition',
+        sectionPrivee: true,
+      }),
+      verifierPayloadAcces(),
+    ],
+    delete: [
+      exigerEditionNova,
+      exigerAccesRessource({
+        modelName: 'Base',
+        schema: BasesSchema,
+        droit: 'edition',
+        sectionPrivee: true,
+      }),
+    ],
   },
   crudOptions: {
     populateFields: '',

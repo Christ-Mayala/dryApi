@@ -5,28 +5,32 @@ const logger = require('../../../../../dry/utils/logging/logger');
 const { notificationsEmailActives } = require('../../parametres/services/notifications.service');
 const MembresSchema = require('../model/membres.schema');
 
-/** Libellés français des rôles d'un membre de l'espace. */
+/** Libellés français des rôles dans un espace de travail. */
 const LIBELLES_ROLES = {
+  proprietaire: 'Propriétaire',
   admin: 'Administrateur',
   membre: 'Membre',
   invite: 'Invité',
 };
 
 /**
- * Correspondance rôle d'espace NOVA → rôle de compte utilisateur DRY.
- * Seul le rôle « Administrateur » ouvre les droits d'administration réels.
+ * Les rôles NOVA sont strictement locaux au workspace : le compte DRY reste
+ * toujours `user`. Le rôle global n'est modifié par aucune opération NOVA.
  */
-const ROLE_UTILISATEUR = {
-  admin: 'admin',
+const ROLE_UTILISATEUR = Object.freeze({
+  proprietaire: 'user',
+  admin: 'user',
   membre: 'user',
   invite: 'user',
-};
+});
 
 /**
- * Permissions par défaut associées à chaque rôle d'espace NOVA.
- * Elles restent personnalisables membre par membre par un administrateur.
+ * Permissions par défaut associées à chaque rôle d'un workspace NOVA.
+ * Une seule matrice : l'ACL centrale importe celle de `acl.service.js`, qui
+ * doit rester alignée avec celle-ci.
  */
 const PERMISSIONS_PAR_ROLE = {
+  proprietaire: { lecture: true, edition: true, commentaire: true, partage: true, admin: true },
   admin: { lecture: true, edition: true, commentaire: true, partage: true, admin: true },
   membre: { lecture: true, edition: true, commentaire: true, partage: false, admin: false },
   invite: { lecture: true, edition: false, commentaire: false, partage: false, admin: false },
@@ -63,8 +67,9 @@ function normaliserPermissions(role, permissions) {
 }
 
 /**
- * Normalise une liste d'identifiants d'espaces : renvoie `null` lorsque la
- * valeur est absente (aucun filtrage) ou un tableau de chaînes triées.
+ * Normalise une liste d'identifiants d'espaces. Ici `null` signifie
+ * « valeur absente : ne pas modifier le périmètre de l'utilisateur » ; côté ACL,
+ * un périmètre absent signifie au contraire « aucun espace autorisé ».
  */
 function normaliserEspaceIds(espaceIds) {
   if (espaceIds === undefined || espaceIds === null) return null;
@@ -82,42 +87,52 @@ function normaliserEspaceIds(espaceIds) {
 }
 
 /**
- * Applique le rôle, les permissions et les espaces d'un membre au compte
- * utilisateur. Ne modifie jamais un super-administrateur global. Renvoie `true`
- * si le document a changé (l'appelant décide de l'enregistrement).
+ * Crée l'appartenance « propriétaire » d'un compte à un workspace. Appelée
+ * automatiquement à la création d'un espace de travail : l'auteur en est le
+ * propriétaire, avec tous les droits, sans aucune élévation globale.
+ * Idempotente : une fiche existante n'est pas écrasée.
  */
-function appliquerAccesUtilisateur({ utilisateur, role, permissions, espaceIds }) {
-  if (!utilisateur) return false;
-  if (utilisateur.role === 'superadmin') return false;
+async function creerAppartenanceProprietaire({ req, workspaceId, utilisateur }) {
+  if (!workspaceId || !utilisateur?._id) return null;
+  const Membre = req.getModel('Membre', MembresSchema);
+  const email = String(utilisateur.email || '')
+    .trim()
+    .toLowerCase();
 
-  let modifie = false;
-  const roleCible = ROLE_UTILISATEUR[role] || 'user';
-  if (utilisateur.role !== roleCible) {
-    utilisateur.role = roleCible;
-    modifie = true;
-  }
-  if (utilisateur.novaRole !== role) {
-    utilisateur.novaRole = role;
-    modifie = true;
+  // Une invitation historique peut déjà exister pour cette adresse sans être
+  // liée au compte. On la réutilise (et on la promeut) plutôt que de tenter
+  // une insertion qui violerait l'index unique {workspaceId, email}.
+  const existant =
+    (await Membre.findOne({ workspaceId, utilisateurId: utilisateur._id }).lean()) ||
+    (email ? await Membre.findOne({ workspaceId, email }).lean() : null);
+  if (existant) {
+    if (existant.role === 'proprietaire') return existant;
+    const permissions = permissionsPourRole('proprietaire');
+    await Membre.updateOne(
+      { _id: existant._id },
+      {
+        $set: {
+          role: 'proprietaire',
+          permissions,
+          utilisateurId: utilisateur._id,
+          updatedBy: utilisateur._id,
+        },
+      }
+    );
+    return { ...existant, role: 'proprietaire', permissions, utilisateurId: utilisateur._id };
   }
 
-  const cible = normaliserPermissions(role, permissions);
-  const actuel = utilisateur.novaPermissions || {};
-  const differentes = CLES_PERMISSIONS.some((cle) => Boolean(actuel[cle]) !== cible[cle]);
-  if (differentes || !utilisateur.novaPermissions) {
-    utilisateur.novaPermissions = cible;
-    modifie = true;
-  }
-
-  const espacesCible = normaliserEspaceIds(espaceIds);
-  if (espacesCible !== null) {
-    const espacesActuels = normaliserEspaceIds(utilisateur.novaEspaceIds) || [];
-    if (JSON.stringify(espacesActuels) !== JSON.stringify(espacesCible)) {
-      utilisateur.novaEspaceIds = espacesCible;
-      modifie = true;
-    }
-  }
-  return modifie;
+  if (!email) return null;
+  return Membre.create({
+    workspaceId,
+    email,
+    nom: utilisateur.nom || utilisateur.name || undefined,
+    role: 'proprietaire',
+    permissions: permissionsPourRole('proprietaire'),
+    utilisateurId: utilisateur._id,
+    createdBy: utilisateur._id,
+    updatedBy: utilisateur._id,
+  });
 }
 
 /** Échappe les caractères HTML des valeurs interpolées dans l'e-mail. */
@@ -137,7 +152,9 @@ function nomPlateforme() {
 
 /** Construit le lien d'acceptation de l'invitation (écran connexion). */
 function resoudreLienInvitation(email) {
-  const base = String(config.FRONTEND_URL || 'http://localhost:3000').split(',')[0].trim();
+  const base = String(config.FRONTEND_URL || 'http://localhost:3000')
+    .split(',')[0]
+    .trim();
   return `${base.replace(/\/+$/, '')}/connexion?email=${encodeURIComponent(email)}`;
 }
 
@@ -178,24 +195,16 @@ function genererMotDePasseTemporaire() {
  * @returns {Promise<{ utilisateur: Object|null, motDePasseTemporaire: string|null }>}
  */
 async function creerOuLierCompteMembre({ req, membre, regenererMotDePasse = false }) {
-  const email = String(membre?.email || '').trim().toLowerCase();
+  const email = String(membre?.email || '')
+    .trim()
+    .toLowerCase();
   if (!email) return { utilisateur: null, motDePasseTemporaire: null };
 
   const User = req.getModel('User');
-  const permissions = normaliserPermissions(membre.role, membre.permissions);
 
   const existant = await User.findOne({ email }).select('+password');
   if (existant) {
     await lierCompteAuMembre({ req, membre, utilisateurId: existant._id });
-
-    // Le rôle et les permissions de la fiche membre font foi : on les reporte
-    // sur le compte afin qu'une rétrogradation révoque immédiatement les droits.
-    const accesModifie = appliquerAccesUtilisateur({
-      utilisateur: existant,
-      role: membre.role,
-      permissions,
-      espaceIds: membre.espaceIds,
-    });
 
     // Renvoi d'invitation : on remplace l'ancien mot de passe provisoire par un
     // nouveau, afin que l'e-mail réexpédié contienne des identifiants valides.
@@ -207,8 +216,8 @@ async function creerOuLierCompteMembre({ req, membre, regenererMotDePasse = fals
       return { utilisateur: existant, motDePasseTemporaire: nouveauTemporaire };
     }
 
-    if (accesModifie) await existant.save();
-
+    // Aucun champ de droits n'est écrit sur le compte : les droits sont lus
+    // dans la fiche Membre du workspace courant.
     return { utilisateur: existant, motDePasseTemporaire: null };
   }
 
@@ -218,10 +227,8 @@ async function creerOuLierCompteMembre({ req, membre, regenererMotDePasse = fals
     nom: membre.nom || undefined,
     email,
     password: motDePasseTemporaire,
+    // Compte DRY ordinaire : le rôle reste `user`, NOVA ne l'élève jamais.
     role: ROLE_UTILISATEUR[membre.role] || 'user',
-    novaRole: membre.role || 'membre',
-    novaPermissions: permissions,
-    novaEspaceIds: normaliserEspaceIds(membre.espaceIds) || undefined,
     mustChangePassword: true,
   });
 
@@ -238,43 +245,58 @@ async function lierCompteAuMembre({ req, membre, utilisateurId }) {
 }
 
 /**
- * Reporte le rôle et les permissions d'une fiche Membre sur le compte
- * utilisateur correspondant. Utilisé après création/mise à jour d'un membre :
- * une rétrogradation ou un retrait de droits est ainsi immédiatement effectif
- * (le middleware `protect` recharge l'utilisateur depuis la base à chaque
- * requête, donc aucun jeton n'a besoin d'être réémis).
+ * Relie la fiche Membre au compte utilisateur existant après une mise à jour.
+ * Les droits ne sont plus reportés sur le compte : ils sont lus directement
+ * dans la fiche du workspace par `protect`, sans réémission de jeton.
  *
- * @returns {Promise<boolean>} true si le compte a été mis à jour.
+ * @returns {Promise<boolean>} true si le lien a été créé.
  */
 async function synchroniserAccesUtilisateur({ req, membre }) {
-  if (!membre?.email) return false;
-
+  if (!membre?.email || membre?.utilisateurId) return false;
   const User = req.getModel('User');
-  const utilisateur = membre.utilisateurId
-    ? await User.findById(membre.utilisateurId)
-    : await User.findOne({ email: String(membre.email).trim().toLowerCase() });
+  const utilisateur = await User.findOne({
+    email: String(membre.email).trim().toLowerCase(),
+  }).select('_id');
   if (!utilisateur) return false;
+  await lierCompteAuMembre({ req, membre, utilisateurId: utilisateur._id });
+  return true;
+}
 
-  const modifie = appliquerAccesUtilisateur({
-    utilisateur,
-    role: membre.role || 'membre',
-    permissions: membre.permissions,
-    espaceIds: membre.espaceIds,
+/**
+ * La révocation est la suppression (logique) de la fiche Membre du workspace.
+ * Cette fonction n'existe plus comme effet global : si elle est appelée avec
+ * une fiche encore active, elle la retire uniquement du workspace concerné.
+ * Aucun champ du compte utilisateur n'est modifié.
+ */
+async function revoquerAccesUtilisateur({ req, membre }) {
+  if (!membre?._id) return false;
+  const Membre = req.getModel('Membre', MembresSchema);
+  const resultat = await Membre.findByIdAndUpdate(membre._id, {
+    $set: { role: 'invite', permissions: permissionsPourRole('invite'), espaceIds: [] },
   });
-  if (modifie) await utilisateur.save();
-  return modifie;
+  return Boolean(resultat);
 }
 
 /** Gabarit HTML de l'e-mail d'invitation avec identifiants et consignes. */
-function gabaritInvitation({ email, nom, role, lien, motDePasseTemporaire, nomEspace, expediteur, annee }) {
+function gabaritInvitation({
+  email,
+  nom,
+  role,
+  lien,
+  motDePasseTemporaire,
+  nomEspace,
+  expediteur,
+  annee,
+}) {
   const roleLibelle = LIBELLES_ROLES[role] || 'Membre';
   const destinataire = String(nom || '').trim();
   const salutation = destinataire ? `Bonjour ${echapper(destinataire)},` : 'Bonjour,';
   // L'invitant et l'espace portent parfois le même nom : on évite alors la
   // formulation « NOVA vous invite à rejoindre NOVA ».
-  const invitation = expediteur && expediteur !== nomEspace
-    ? `<strong>${echapper(expediteur)}</strong> vous invite à rejoindre <strong>${echapper(nomEspace)}</strong>`
-    : `Vous êtes invité(e) à rejoindre <strong>${echapper(nomEspace)}</strong>`;
+  const invitation =
+    expediteur && expediteur !== nomEspace
+      ? `<strong>${echapper(expediteur)}</strong> vous invite à rejoindre <strong>${echapper(nomEspace)}</strong>`
+      : `Vous êtes invité(e) à rejoindre <strong>${echapper(nomEspace)}</strong>`;
 
   const blocIdentifiants = motDePasseTemporaire
     ? `
@@ -498,7 +520,7 @@ function texteInvitation({ email, nom, role, lien, motDePasseTemporaire, nomEspa
     '',
     `Sécurité : ne partagez jamais ce mot de passe. Si vous n'êtes pas à l'origine de cette invitation, ignorez ce message.`,
     '',
-    `© ${new Date().getFullYear()} ${nomEspace}. Tous droits réservés.`,
+    `© ${new Date().getFullYear()} ${nomEspace}. Tous droits réservés.`
   );
   return lignes.join('\n');
 }
@@ -541,7 +563,7 @@ async function notifierInvitationMembre({ req, membre, regenererMotDePasse = fal
     if (motDePasseTemporaire) {
       logger(
         `[Nova] ${regenererMotDePasse ? 'Mot de passe provisoire réinitialisé' : 'Compte créé'} pour ${email}`,
-        'info',
+        'info'
       );
     }
   } catch (e) {
@@ -549,7 +571,10 @@ async function notifierInvitationMembre({ req, membre, regenererMotDePasse = fal
   }
 
   if (!(await notificationsEmailActives(req))) {
-    logger(`[Nova] Invitation membre non envoyée à ${email} (notifications e-mail désactivées)`, 'info');
+    logger(
+      `[Nova] Invitation membre non envoyée à ${email} (notifications e-mail désactivées)`,
+      'info'
+    );
     return false;
   }
 
@@ -557,8 +582,7 @@ async function notifierInvitationMembre({ req, membre, regenererMotDePasse = fal
   const nomEspace = await nomEspaceDe(req);
   // L'invitant est l'utilisateur qui effectue l'ajout ; à défaut, l'invitation
   // est présentée au nom de l'espace de travail.
-  const expediteur =
-    String(req?.user?.name || req?.user?.nom || '').trim() || nomEspace;
+  const expediteur = String(req?.user?.name || req?.user?.nom || '').trim() || nomEspace;
   const annee = new Date().getFullYear();
   const invitation = {
     email,
@@ -590,7 +614,9 @@ module.exports = {
   notifierInvitationMembre,
   resoudreLienInvitation,
   genererMotDePasseTemporaire,
+  creerAppartenanceProprietaire,
   synchroniserAccesUtilisateur,
+  revoquerAccesUtilisateur,
   permissionsPourRole,
   normaliserPermissions,
 };

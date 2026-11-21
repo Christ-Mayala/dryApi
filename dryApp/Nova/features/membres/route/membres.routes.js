@@ -4,11 +4,19 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateNova } = require('../../../validation/middleware');
-const { exigerAdministrationNova } = require('../../../services/acl.service');
+const {
+  exigerAdministrationNova,
+  filtrerEspacesMiddleware,
+  filtrerWorkspaceMiddleware,
+  estAdminNova,
+  idsEspacesAutorises,
+  contexteDe,
+} = require('../../../services/acl.service');
 const MembresSchema = require('../model/membres.schema');
 const {
   notifierInvitationMembre,
   synchroniserAccesUtilisateur,
+  revoquerAccesUtilisateur,
   normaliserPermissions,
 } = require('../services/invitation.service');
 
@@ -39,17 +47,36 @@ async function avecStatut({ req, doc }) {
   return objet;
 }
 
+/** Une fiche membre n'est visible que dans le workspace courant. */
+async function verifierAccesMembre(req, res, next) {
+  const contexte = contexteDe(req);
+  const Membre = req.getModel('Membre', MembresSchema);
+  const membre = await Membre.findById(req.params.id).select('workspaceId espaceIds').lean();
+  if (!membre) return sendResponse(res, null, 'Membre introuvable', false, undefined, 404);
+  if (contexte.workspaceId && String(membre.workspaceId) !== contexte.workspaceId) {
+    return sendResponse(res, null, 'Membre appartenant à un autre espace de travail', false, undefined, 403);
+  }
+  if (estAdminNova(req)) return next();
+  const autorises = (idsEspacesAutorises(req) || []).map(String);
+  const accessible = (membre.espaceIds || []).some((id) => autorises.includes(String(id)));
+  if (!accessible) {
+    return sendResponse(res, null, 'Membre non autorisé', false, undefined, 403);
+  }
+  return next();
+}
+
 // Fabrique CRUD du noyau DRY : GET /, GET /:id, POST /, PUT /:id, DELETE /:id.
-// Liste réservée aux utilisateurs connectés ; écriture au propriétaire ou à un
-// administrateur.
+// Lecture filtrée par espace ; écriture réservée à l'administration NOVA.
 const router = buildCrudRouter('Membre', MembresSchema, {
-  auth: { list: 'user', create: 'user', update: 'user', delete: 'user' },
+  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.membres.create,
     update: validateNova.membres.update,
   },
   middlewares: {
+    list: [filtrerWorkspaceMiddleware(), filtrerEspacesMiddleware('espaceIds')],
+    get: [verifierAccesMembre],
     create: [exigerAdministrationNova],
     update: [exigerAdministrationNova],
     delete: [exigerAdministrationNova],
@@ -62,10 +89,21 @@ const router = buildCrudRouter('Membre', MembresSchema, {
         payload.createdBy = payload.createdBy || req.user._id;
         payload.updatedBy = req.user._id;
       }
+      // Le workspace est imposé par le contexte courant : un client ne peut
+      // pas inviter quelqu'un dans un workspace qu'il n'administre pas.
+      const contexte = contexteDe(req);
+      if (!contexte.workspaceId) {
+        throw httpError('Espace de travail courant requis', 400);
+      }
+      if (mode === 'create') {
+        payload.workspaceId = contexte.workspaceId;
+      } else {
+        delete payload.workspaceId;
+      }
       if (mode === 'create' && payload.email) {
         const Membre = req.getModel('Membre', MembresSchema);
-        const existe = await Membre.findOne({ email: payload.email }).lean();
-        if (existe) throw httpError('Cette adresse est déjà membre ou invitée', 409);
+        const existe = await Membre.findOne({ workspaceId: contexte.workspaceId, email: payload.email }).lean();
+        if (existe) throw httpError('Cette adresse est déjà membre ou invitée dans cet espace de travail', 409);
       }
 
       // Permissions : déduites du rôle par défaut, personnalisables. Un
@@ -73,11 +111,20 @@ const router = buildCrudRouter('Membre', MembresSchema, {
       // du nouveau rôle (une rétrogradation révoque donc bien les droits).
       if (mode === 'create') {
         payload.role = payload.role || 'membre';
+        if (payload.role === 'proprietaire' && contexte.role !== 'proprietaire') {
+          throw httpError('Seul le propriétaire peut déléguer un rôle de propriétaire', 403);
+        }
         payload.permissions = normaliserPermissions(payload.role, payload.permissions);
       } else if (mode === 'update' && (payload.role || payload.permissions)) {
         const Membre = req.getModel('Membre', MembresSchema);
         const actuel = await Membre.findById(req.params.id).lean();
+        if (actuel?.role === 'proprietaire' && contexte.role !== 'proprietaire') {
+          throw httpError('Le propriétaire ne peut être modifié que par lui-même', 403);
+        }
         const role = payload.role || actuel?.role || 'membre';
+        if (role === 'proprietaire' && contexte.role !== 'proprietaire') {
+          throw httpError('Seul le propriétaire peut promouvoir un propriétaire', 403);
+        }
         payload.permissions = normaliserPermissions(role, payload.permissions);
       }
       return payload;
@@ -92,6 +139,10 @@ const router = buildCrudRouter('Membre', MembresSchema, {
     // Toute modification de rôle/permissions est répercutée sur le compte.
     afterUpdate: async ({ req, doc }) => {
       await synchroniserAccesUtilisateur({ req, membre: doc });
+    },
+    // Retrait d'un membre : révocation immédiate des droits NOVA sur le compte.
+    afterDelete: async ({ req, doc }) => {
+      await revoquerAccesUtilisateur({ req, membre: doc });
     },
   },
 });

@@ -9,7 +9,7 @@
 
 const getModel = require('../../../dry/core/factories/modelFactory');
 const logger = require('../../../dry/utils/logging/logger');
-const { idsEspacesAutorises } = require('./acl.service');
+const { contexteDe, peutLireNova, peutEditerNova } = require('./acl.service');
 
 /** Tenant NOVA (nom du dossier dryApp). */
 const APP = 'Nova';
@@ -84,22 +84,57 @@ async function membresDeEspace(req, espaceId) {
     });
     if (emails.length) {
       const User = req.getModel('User');
-      const comptes = await User.find({ email: { $in: emails } }).select('_id').lean();
+      const comptes = await User.find({ email: { $in: emails } })
+        .select('_id')
+        .lean();
       comptes.forEach((compte) => ids.add(String(compte._id)));
     }
   } catch (_) {
     /* fiches membres indisponibles */
   }
 
-  try {
-    const User = req.getModel('User');
-    const comptes = await User.find({ novaEspaceIds: espaceId }).select('_id').lean();
-    comptes.forEach((compte) => ids.add(String(compte._id)));
-  } catch (_) {
-    /* périmètre utilisateurs indisponible */
-  }
+  // L'ancien périmètre global `User.novaEspaceIds` n'est plus une source de
+  // droits : seules les fiches d'appartenance aux workspaces sont consultées.
 
   return ids;
+}
+
+/** Toutes les fiches d'appartenance actives d'un compte. */
+async function membresDuCompte(userId, email = null) {
+  const Membre = getModel(APP, 'Membre');
+  const filtre = {
+    deletedAt: null,
+    status: { $ne: 'deleted' },
+    $or: [
+      { utilisateurId: userId },
+      ...(email ? [{ utilisateurId: { $exists: false }, email: String(email).toLowerCase() }] : []),
+    ],
+  };
+  return Membre.find(filtre).select('workspaceId role permissions espaceIds').lean();
+}
+
+/** Union des espaces accessibles à un compte, tous workspaces confondus. */
+function espacesDesMembres(membres) {
+  const ids = new Set();
+  membres.forEach((membre) => {
+    (Array.isArray(membre.espaceIds) ? membre.espaceIds : []).forEach((id) => {
+      const brut = typeof id === 'object' ? id._id || id : id;
+      if (brut) ids.add(String(brut));
+    });
+  });
+  return ids;
+}
+
+/** Contexte ACL synthétique pour une connexion Socket.IO. */
+function contexteSocket(membres, workspaceId = null) {
+  return {
+    novaMembres: membres,
+    getModel: (nom, schema) => getModel(APP, nom, schema),
+    query: workspaceId ? { workspaceId } : {},
+    headers: {},
+    params: {},
+    body: {},
+  };
 }
 
 /**
@@ -144,13 +179,26 @@ async function notifierActiviteEquipe({
   return envoyees;
 }
 
-/** Identifiants des espaces dont un utilisateur est membre. */
+/**
+ * Identifiants des espaces dont un utilisateur est membre, tous workspaces
+ * confondus. Un propriétaire/admin voit les espaces de ses propres workspaces
+ * (aucune élévation globale).
+ */
 async function espacesDeUtilisateur(utilisateur) {
-  const autorises = idsEspacesAutorises(utilisateur);
-  if (autorises !== null) return autorises;
+  const membres = await membresDuCompte(
+    String(utilisateur._id || utilisateur.userId || ''),
+    utilisateur.email
+  );
+  const ids = [...espacesDesMembres(membres)];
   const Espace = getModel(APP, 'Espace');
-  const espaces = await Espace.find({ status: { $ne: 'deleted' } }).select('_id').lean();
-  return espaces.map((espace) => String(espace._id));
+  const workspacesIds = membres.map((m) => String(m.workspaceId));
+  if (workspacesIds.length) {
+    const espaces = await Espace.find({ workspaceId: { $in: workspacesIds } })
+      .select('_id')
+      .lean();
+    espaces.forEach((espace) => ids.push(String(espace._id)));
+  }
+  return [...new Set(ids)];
 }
 
 /**
@@ -164,16 +212,17 @@ function initTempsReelNova(io) {
   io.on('connection', async (socket) => {
     const userId = String(socket.userId || '');
     if (!userId) return;
+    let contexteEdition = null;
+    let emailUtilisateur = null;
 
     // Rejoint la room personnelle de l'utilisateur pour recevoir ses notifications en direct.
     socket.join(roomUtilisateur(userId));
 
     try {
       const User = getModel(APP, 'User');
-      const utilisateur = await User.findById(userId)
-        .select('role novaPermissions novaEspaceIds')
-        .lean();
+      const utilisateur = await User.findById(userId).select('nom email').lean();
       if (utilisateur) {
+        emailUtilisateur = utilisateur.email || null;
         const ids = await espacesDeUtilisateur(utilisateur);
         ids.forEach((id) => socket.join(roomEquipe(id)));
       }
@@ -181,20 +230,23 @@ function initTempsReelNova(io) {
       logger(`[Nova] Rooms temps réel indisponibles : ${e.message}`, 'warning');
     }
 
-    // Rejoint un espace d'équipe créé pendant la session.
+    // Rejoint un espace d'équipe créé pendant la session. L'espace doit
+    // appartenir à un workspace auquel le compte appartient réellement.
     socket.on('equipe:rejoindre', async (espaceId) => {
       if (!espaceId) return;
       try {
-        const User = getModel(APP, 'User');
-        const utilisateur = await User.findById(userId)
-          .select('role novaPermissions novaEspaceIds')
-          .lean();
-        const autorises = idsEspacesAutorises(utilisateur);
-        if (autorises === null || autorises.includes(String(espaceId))) {
+        const Espace = getModel(APP, 'Espace');
+        const espace = await Espace.findById(espaceId).select('workspaceId').lean();
+        if (!espace) return;
+        const membres = await membresDuCompte(userId, emailUtilisateur);
+        const contexte = contexteSocket(membres, String(espace.workspaceId));
+        const autorises = contexteDe(contexte);
+        const ids = espacesDesMembres(membres);
+        if (peutLireNova(contexte) && (autorises.permissions.admin || ids.has(String(espaceId)))) {
           socket.join(roomEquipe(String(espaceId)));
         }
-      } catch (_) {
-        /* le client ne rejoint simplement pas la room */
+      } catch (erreur) {
+        logger(`[Nova] Refus rejoindre espace temps réel : ${erreur.message}`, 'warning');
       }
     });
 
@@ -230,16 +282,29 @@ function initTempsReelNova(io) {
       const pageId = String(payload?.pageId || payload || '');
       if (!pageId) return;
       try {
+        const User = getModel(APP, 'User');
+        const utilisateur = await User.findById(userId).select('nom email').lean();
+        const membres = await membresDuCompte(userId, emailUtilisateur);
         const Page = getModel(APP, 'Page');
-        const page = await Page.findById(pageId).select('espaceId').lean();
+        const page = await Page.findById(pageId)
+          .select('espaceId workspaceId createdBy section')
+          .lean();
         if (!page) return;
 
-        const User = getModel(APP, 'User');
-        const utilisateur = await User.findById(userId)
-          .select('nom email role novaPermissions novaEspaceIds')
-          .lean();
-        const autorises = idsEspacesAutorises(utilisateur);
-        if (autorises !== null && page.espaceId && !autorises.includes(String(page.espaceId))) {
+        // Contexte ACL du workspace de la page : aucun droit n'est déduit du
+        // rôle global ni d'un champ nova* stocké sur le compte.
+        const contexte = contexteSocket(
+          membres,
+          page.workspaceId ? String(page.workspaceId) : null
+        );
+        if (!peutLireNova(contexte)) return;
+        contexteEdition = contexte;
+
+        if (page.section === 'prive' && String(page.createdBy) !== String(userId)) return;
+
+        const acces = contexteDe(contexte);
+        const idsEspace = espacesDesMembres(membres);
+        if (!acces.permissions.admin && page.espaceId && !idsEspace.has(String(page.espaceId))) {
           return;
         }
 
@@ -265,21 +330,25 @@ function initTempsReelNova(io) {
     });
 
     // Relaie une modification de bloc aux autres éditeurs de la page.
+    /** La diffusion collaborative est réservée aux comptes ayant le droit d'édition. */
+    const peutDiffuserBloc = (pageId) =>
+      Boolean(pageId && pagesRejointes.has(pageId) && peutEditerNova(contexteEdition));
+
     socket.on('bloc:diffuser', (payload) => {
       const pageId = String(payload?.pageId || '');
-      if (!pageId || !pagesRejointes.has(pageId)) return;
+      if (!peutDiffuserBloc(pageId)) return;
       socket.to(roomPage(pageId)).emit('bloc:maj', payload);
     });
 
     socket.on('bloc:cree', (payload) => {
       const pageId = String(payload?.pageId || '');
-      if (!pageId || !pagesRejointes.has(pageId)) return;
+      if (!peutDiffuserBloc(pageId)) return;
       socket.to(roomPage(pageId)).emit('bloc:cree', payload);
     });
 
     socket.on('bloc:supprime', (payload) => {
       const pageId = String(payload?.pageId || '');
-      if (!pageId || !pagesRejointes.has(pageId)) return;
+      if (!peutDiffuserBloc(pageId)) return;
       socket.to(roomPage(pageId)).emit('bloc:supprime', payload);
     });
 

@@ -3,6 +3,14 @@ const sendResponse = require('../../../../../dry/utils/http/response');
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
 const { validateId } = require('../../../../../dry/middlewares/validation/validation.middleware');
 const { validateNova } = require('../../../validation/middleware');
+const {
+  exigerAccesRessource,
+  exigerEditionNova,
+  exigerAdministrationNova,
+  filtrerParPages,
+  verifierPayloadAcces,
+} = require('../../../services/acl.service');
+const logger = require('../../../../../dry/utils/logging/logger');
 const VersionsSchema = require('../model/versions.schema');
 const PagesSchema = require('../../pages/model/pages.schema');
 const BlocsSchema = require('../../blocs/model/blocs.schema');
@@ -19,12 +27,42 @@ function extraireBloc(bloc, index) {
   };
 }
 
+/**
+ * Remonte l'espace de la page cible : une version n'a pas d'`espaceId` propre,
+ * c'est la page instantanée qui porte l'appartenance.
+ */
+async function espaceDeLaVersion(version, req) {
+  const Page = req.getModel('Page', PagesSchema);
+  const page = await Page.findById(version.pageId).select('espaceId').lean();
+  return page?.espaceId || null;
+}
+
+const accesVersion = {
+  modelName: 'Version',
+  schema: VersionsSchema,
+  resoudreEspaceId: espaceDeLaVersion,
+};
+
 const router = buildCrudRouter('Version', VersionsSchema, {
-  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'admin' },
+  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.versions.create,
     update: validateNova.versions.update,
+  },
+  middlewares: {
+    list: [filtrerParPages()],
+    get: [exigerAccesRessource(accesVersion)],
+    create: [exigerEditionNova, verifierPayloadAcces()],
+    update: [
+      exigerEditionNova,
+      exigerAccesRessource({ ...accesVersion, droit: 'edition' }),
+      verifierPayloadAcces(),
+    ],
+    delete: [
+      exigerAdministrationNova,
+      exigerAccesRessource({ ...accesVersion, droit: 'edition' }),
+    ],
   },
   crudOptions: {
     populateFields: '',
@@ -43,7 +81,18 @@ const router = buildCrudRouter('Version', VersionsSchema, {
  * Restaure une version : l'etat courant est d'abord archive (pour rester
  * reversible), puis la page et ses blocs sont remplaces par l'instantane.
  */
-router.post('/:id/restaurer', validateId, protect, async (req, res) => {
+router.post(
+  '/:id/restaurer',
+  validateId,
+  protect,
+  exigerEditionNova,
+  exigerAccesRessource({
+    modelName: 'Version',
+    schema: VersionsSchema,
+    droit: 'edition',
+    resoudreEspaceId: espaceDeLaVersion,
+  }),
+  async (req, res) => {
   const Version = req.getModel('Version', VersionsSchema);
   const Page = req.getModel('Page', PagesSchema);
   const Bloc = req.getModel('Bloc', BlocsSchema);
@@ -55,7 +104,7 @@ router.post('/:id/restaurer', validateId, protect, async (req, res) => {
   if (!page) return sendResponse(res, null, 'Page introuvable', false, undefined, 404);
 
   const blocsActuels = await Bloc.find({ pageId: page._id }).sort('ordre').lean();
-  await Version.create({
+  const sauvegarde = await Version.create({
     pageId: page._id,
     titre: page.titre,
     icone: page.icone,
@@ -73,7 +122,12 @@ router.post('/:id/restaurer', validateId, protect, async (req, res) => {
   page.publie = Boolean(version.publie);
   await page.save();
 
-  await Bloc.deleteMany({ pageId: page._id });
+  // Les blocs courants sont archivés (soft-delete) et non supprimés : la
+  // sauvegarde créée ci-dessus permet un retour arrière complet.
+  await Bloc.updateMany(
+    { pageId: page._id, status: { $ne: 'deleted' } },
+    { $set: { status: 'deleted', deletedAt: new Date(), updatedBy: req.user?._id } }
+  );
   const blocs = Array.isArray(version.blocs) ? version.blocs : [];
   for (let index = 0; index < blocs.length; index += 1) {
     await Bloc.create({
@@ -84,7 +138,18 @@ router.post('/:id/restaurer', validateId, protect, async (req, res) => {
     });
   }
 
-  return sendResponse(res, { pageId: page._id }, 'Version restauree', true);
-});
+  logger(
+    `[NOVA] Restauration version ${version._id} sur page ${page._id} par ${req.user?._id} ` +
+      `(sauvegarde ${sauvegarde._id}, ${blocs.length} bloc(s))`,
+    'info'
+  );
+  return sendResponse(
+    res,
+    { pageId: page._id, sauvegardeId: sauvegarde._id },
+    'Version restauree',
+    true
+  );
+  },
+);
 
 module.exports = router;

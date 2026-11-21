@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const config = require('../../../config/database');
 
-// Permissions NOVA explicites. Absentes (`undefined`) pour les comptes
-// autonomes : dans ce cas le frontend considère l'accès complet (propriétaire).
+// Permissions NOVA explicites. Une absence (`undefined`) n'accorde aucun
+// privilège : le runtime et le frontend doivent rester en échec fermé jusqu'à
+// l'attribution explicite d'un `novaRole` (voir migration 003).
 const NovaPermissionsSchema = new mongoose.Schema(
     {
         lecture: { type: Boolean, default: true },
@@ -27,12 +28,13 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, select: false },
     role: { type: String, enum: ['user', 'admin', 'librarian', 'client', 'agent', 'prestataire', 'professional', 'superadmin'], default: 'user' },
     // Rôle et permissions propres à l'espace de travail NOVA (synchronisés avec
-    // la fiche Membre). `novaPermissions` prime sur `role` pour les droits fins.
-    novaRole: { type: String, enum: ['admin', 'membre', 'invite', null], default: null },
+    // la fiche Membre). `novaRole` est la seule source de vérité ; le rôle global
+    // `role` n'accorde aucun droit NOVA et n'est jamais modifié par NOVA.
+    novaRole: { type: String, enum: ['proprietaire', 'admin', 'membre', 'invite', null], default: null },
     novaPermissions: { type: NovaPermissionsSchema, default: undefined },
-    // Espaces d'equipe (teamspaces) accessibles. Absent (`undefined`) pour les
-    // comptes autonomes/proprietaires = aucun filtrage. Un tableau (meme vide)
-    // restreint l'acces aux pages de ces espaces.
+    // Espaces d'équipe (teamspaces) accessibles. Seuls les administrateurs NOVA
+    // explicites échappent au filtrage. Pour tous les autres, un tableau vide
+    // ou absent signifie « aucun espace autorisé » (échec fermé).
     novaEspaceIds: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Espace' }], default: undefined },
     // subtype: null = chercheur de pros | 'prestataire' = peut répondre aux leads
     subtype: { type: String, enum: [null, 'prestataire'], default: null },

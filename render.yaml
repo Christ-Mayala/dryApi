@@ -12,10 +12,10 @@ services:
       - key: SERVER_URL
         value: https://dryapi.onrender.com
       - key: FRONTEND_URL
-        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
+        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app,https://nova-workspace.mayalachristgottlieb-cc9.workers.dev
       - key: ALLOWED_ORIGINS
-        value: https://spirit-kes.netlify.app,https://scim-alvine.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
+        value: https://spirit-kes.netlify.app,https://scim-alvine.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app,https://nova-workspace.mayalachristgottlieb-cc9.workers.dev
       - key: CORS_ORIGINS
-        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app
+        value: https://spirit-kes.netlify.app,https://scim.netlify.app,https://la-street.netlify.app,https://medias-dl.netlify.app,https://freellmapi.netlify.app,https://trivida.netlify.app,https://nova-workspace.mayalachristgottlieb-cc9.workers.dev
       - key: YTDLP_BIN
         value: yt-dlp

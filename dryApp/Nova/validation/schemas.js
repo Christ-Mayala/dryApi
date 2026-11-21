@@ -465,9 +465,12 @@ const novaSchemas = {
   },
   Membres: {
     create: Joi.object({
+      // Appartenance à un espace de travail : obligatoire. Le workspace est
+      // résolu côté route depuis l'en-tête courant si le client l'omet.
+      workspaceId: objectId.optional(),
       email: Joi.string().email().max(200).required(),
       nom: Joi.string().max(200).optional(),
-      role: Joi.string().valid('admin', 'membre', 'invite').optional(),
+      role: Joi.string().valid('proprietaire', 'admin', 'membre', 'invite').optional(),
       permissions: Joi.object({
         lecture: Joi.boolean().optional(),
         edition: Joi.boolean().optional(),
@@ -483,9 +486,10 @@ const novaSchemas = {
       status: commonSchemas.status.optional(),
     }),
     update: Joi.object({
+      workspaceId: objectId.optional(),
       email: Joi.string().email().max(200).optional(),
       nom: Joi.string().max(200).optional(),
-      role: Joi.string().valid('admin', 'membre', 'invite').optional(),
+      role: Joi.string().valid('proprietaire', 'admin', 'membre', 'invite').optional(),
       permissions: Joi.object({
         lecture: Joi.boolean().optional(),
         edition: Joi.boolean().optional(),

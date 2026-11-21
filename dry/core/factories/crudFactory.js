@@ -17,23 +17,24 @@ const logger = require('../../utils/logging/logger');
  * @property {function({req: Request, mode: string, payload: Object}): Promise<Object>} [transformInput] - Fonction pour transformer les données entrantes avant création/mise à jour.
  * @property {string[]} [allowedFields] - Liste des champs autorisés pour la création/mise à jour.
  * @property {function({req: Request, doc: Object, payload: Object}): Promise<void>} [afterCreate] - Effet de bord après création (ex: envoi d'email). Non bloquant.
- * @property {function({req: Request, doc: Object, previous: Object, payload: Object}): Promise<void>} [afterUpdate] - Effet de bord après mise à jour. Non bloquant.
+ * @property {function({req: Request, doc: Object, previous: Object, payload: Object}): Promise<void>} [afterUpdate] - Effet de bord après mise à jour.
+ * @property {function({req: Request, doc: Object, suppressionDéfinitive: boolean}): Promise<void>} [afterDelete] - Effet de bord après suppression.
  */
 
 /**
  * Fabrique de contrôleurs CRUD génériques pour un modèle Mongoose dynamique.
- * 
+ *
  * @param {string} modelName - Le nom du modèle (ex: 'Product').
  * @param {Object} schema - Le schéma Mongoose du modèle.
  * @param {Object} [options={}] - Options de configuration supplémentaires.
- * @param {Function} [options.transformInput] - Fonction async pour transformer le payload avant création/mise à jour. 
+ * @param {Function} [options.transformInput] - Fonction async pour transformer le payload avant création/mise à jour.
  *                                              Signature: `({ req, mode, payload }) => Promise<Object>`
  * @returns {{
  *   createOne: import('express').RequestHandler,
  *   updateOne: import('express').RequestHandler,
  *   deleteOne: import('express').RequestHandler
  * }} Objet contenant les handlers express (createOne, updateOne, deleteOne).
- * 
+ *
  * @example
  * const ProductSchema = require('../model/product.schema');
  * const { createOne, updateOne, deleteOne } = buildCrudHandlers('Product', ProductSchema);
@@ -49,6 +50,45 @@ const logger = require('../../utils/logging/logger');
  *   deleteOne: function(Request, Response, NextFunction): Promise<void>
  * }} Un objet contenant les middlewares Express pour createOne, updateOne, deleteOne.
  */
+/**
+ * Exécute un effet de bord avec une reprise immédiate et une journalisation
+ * structurée. L'effet n'est plus « fire-and-forget » : le client ne reçoit sa
+ * réponse qu'après son exécution (ou après épuisement des tentatives). Une
+ * panne est tracée avec le modèle, l'action et l'identifiant du document pour
+ * permettre une reprise manuelle ou, en P6, via une file durable.
+ */
+async function executerEffet({ modelName, action, doc, effet, critique = false }) {
+  const contexte = {
+    evenement: 'nova.crud.effet',
+    modele: modelName,
+    action,
+    documentId: String(doc?._id || ''),
+  };
+  let dernierErreur = null;
+  for (let tentative = 1; tentative <= 2; tentative += 1) {
+    try {
+      await effet();
+      logger(JSON.stringify({ ...contexte, statut: 'ok', tentative }), 'info');
+      return;
+    } catch (erreur) {
+      dernierErreur = erreur;
+      logger(
+        JSON.stringify({
+          ...contexte,
+          statut: tentative === 2 ? 'echec' : 'reessai',
+          tentative,
+          erreur: erreur?.message || String(erreur),
+        }),
+        'error'
+      );
+    }
+  }
+  // Un effet critique (ex. : création de l'appartenance propriétaire d'un
+  // workspace) ne peut pas être journalisé puis ignoré : le client recevrait
+  // un succès pour un workspace inutilisable.
+  if (critique && dernierErreur) throw dernierErreur;
+}
+
 function buildCrudHandlers(modelName, schema, options = {}) {
   const {
     // transformInput permet d'adapter la payload (ex: ajout des URLs Cloudinary)
@@ -57,15 +97,18 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     transformOutput,
     // populateFields permet de faire des populate automatiques
     populateFields = '',
-    // afterCreate / afterUpdate : effets de bord non bloquants (ex: envoi d'email)
+    // afterCreate / afterUpdate / afterDelete : effets structurés (ex: envoi
+    // d'email, synchronisation des accès). Ils sont await et journalisés.
     afterCreate,
     afterUpdate,
+    afterDelete,
+    effetsCritiques = [],
   } = options;
 
   /**
    * Crée un nouveau document.
-   * @param {Request} req 
-   * @param {Response} res 
+   * @param {Request} req
+   * @param {Response} res
    */
   const createOne = asyncHandler(async (req, res) => {
     const Model = req.getModel(modelName, schema);
@@ -76,14 +119,18 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     }
 
     let doc = await Model.create(payload);
-    
+
     if (transformOutput) {
       doc = await transformOutput({ req, doc });
     }
 
     if (afterCreate) {
-      Promise.resolve(afterCreate({ req, doc, payload })).catch((err) => {
-        logger(`[crudFactory] afterCreate ${modelName}: ${err.message}`, 'error');
+      await executerEffet({
+        modelName,
+        action: 'afterCreate',
+        doc,
+        effet: () => afterCreate({ req, doc, payload }),
+        critique: effetsCritiques.includes('afterCreate'),
       });
     }
 
@@ -92,8 +139,8 @@ function buildCrudHandlers(modelName, schema, options = {}) {
 
   /**
    * Met à jour un document existant par son ID.
-   * @param {Request} req 
-   * @param {Response} res 
+   * @param {Request} req
+   * @param {Response} res
    */
   const updateOne = asyncHandler(async (req, res) => {
     const Model = req.getModel(modelName, schema);
@@ -119,8 +166,11 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     }
 
     if (afterUpdate) {
-      Promise.resolve(afterUpdate({ req, doc, previous, payload })).catch((err) => {
-        logger(`[crudFactory] afterUpdate ${modelName}: ${err.message}`, 'error');
+      await executerEffet({
+        modelName,
+        action: 'afterUpdate',
+        doc,
+        effet: () => afterUpdate({ req, doc, previous, payload }),
       });
     }
 
@@ -129,14 +179,37 @@ function buildCrudHandlers(modelName, schema, options = {}) {
 
   /**
    * Supprime un document par son ID.
-   * @param {Request} req 
-   * @param {Response} res 
+   * @param {Request} req
+   * @param {Response} res
    */
   const deleteOne = asyncHandler(async (req, res) => {
     const Model = req.getModel(modelName, schema);
-    // `?includeDeleted=true` : purge définitive d'un document déjà supprimé.
-    const options = req.query?.includeDeleted === 'true' ? { includeDeleted: true } : {};
-    const doc = await Model.findByIdAndDelete(req.params.id, options);
+    const suppressionDéfinitive =
+      req.allowPermanentDelete === true && req.query?.includeDeleted === 'true';
+    const prendEnChargeSoftDelete = Boolean(schema?.path?.('status'));
+
+    let doc;
+    if (suppressionDéfinitive || !prendEnChargeSoftDelete) {
+      // Purge définitive : uniquement si la route a explicitement autorisé
+      // cette opération (middleware ACL dédié) et ciblé un document déjà en
+      // corbeille. Aucun appel client ne peut la déclencher par défaut.
+      const options = req.query?.includeDeleted === 'true' ? { includeDeleted: true } : {};
+      doc = await Model.findByIdAndDelete(req.params.id, options);
+    } else {
+      // Suppression logique par défaut : le document reste en corbeille et
+      // reste restaurable. Le plugin DRY masque ensuite `status: 'deleted'`.
+      const maj = {
+        $set: {
+          status: 'deleted',
+          deletedAt: new Date(),
+          ...(req.user?._id ? { updatedBy: req.user._id } : {}),
+        },
+      };
+      doc = await Model.findOneAndUpdate({ _id: req.params.id, status: { $ne: 'deleted' } }, maj, {
+        new: true,
+        includeDeleted: false,
+      });
+    }
 
     if (!doc) {
       const err = new Error(`${modelName} introuvable`);
@@ -144,7 +217,17 @@ function buildCrudHandlers(modelName, schema, options = {}) {
       throw err;
     }
 
-    sendResponse(res, null, `${modelName} supprimé`, true);
+    if (afterDelete) {
+      await executerEffet({
+        modelName,
+        action: 'afterDelete',
+        doc,
+        effet: () => afterDelete({ req, doc, suppressionDéfinitive }),
+      });
+    }
+
+    logger(`[crudFactory] ${modelName} ${suppressionDéfinitive ? 'purgé' : 'archivé'}`, 'info');
+    sendResponse(res, null, `${modelName} ${suppressionDéfinitive ? 'purgé' : 'supprimé'}`, true);
   });
 
   /**
@@ -158,7 +241,7 @@ function buildCrudHandlers(modelName, schema, options = {}) {
       const { data, pagination } = res.advancedResults || { data: [], pagination: undefined };
       let list = data;
       if (transformOutput && list) {
-        list = await Promise.all(list.map(doc => transformOutput({ req, doc })));
+        list = await Promise.all(list.map((doc) => transformOutput({ req, doc })));
       }
       sendResponse(res, list, `Liste des ${modelName} récupérée`, true, pagination);
     });
@@ -171,7 +254,7 @@ function buildCrudHandlers(modelName, schema, options = {}) {
     const Model = req.getModel(modelName, schema);
     let query = Model.findById(req.params.id);
     if (populateFields) query = query.populate(populateFields);
-    
+
     let doc = await query;
     if (!doc) {
       const err = new Error(`${modelName} introuvable`);

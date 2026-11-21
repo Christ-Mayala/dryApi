@@ -1,41 +1,72 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const { validateNova } = require('../../../validation/middleware');
+const {
+  exigerCommentaireNova,
+  filtrerParPages,
+  verifierPayloadAcces,
+  exigerAccesRessource,
+} = require('../../../services/acl.service');
 const CommentairesSchema = require('../model/commentaires.schema');
-const { roomEquipe, emettre, notifierActiviteEquipe } = require('../../../services/tempsReel.service');
+const {
+  roomEquipe,
+  emettre,
+  notifierActiviteEquipe,
+} = require('../../../services/tempsReel.service');
 
 /**
  * Espace d'équipe auquel appartient la page d'un commentaire (ou `null`).
  * Le commentaire ne porte pas d'`espaceId` : on relit la page.
  */
 async function espaceDuCommentaire(req, doc) {
-  try {
-    const pageId = doc?.pageId;
-    if (!pageId) return null;
-    const Page = req.getModel('Page');
-    const page = await Page.findById(pageId).select('espaceId').lean();
-    return page?.espaceId || null;
-  } catch (_) {
-    return null;
-  }
+  const pageId = doc?.pageId || null;
+  if (!pageId) return null;
+  const Page = req.getModel('Page');
+  const page = await Page.findById(pageId).select('espaceId').lean();
+  return page?.espaceId || null;
 }
 
-/**
- * Diffuse un événement de commentaire dans la room de l'espace de la page.
- */
+/** Diffuse un événement de commentaire dans la room de l'espace de la page. */
 async function diffuserCommentaire(req, doc, evenement) {
   const espaceId = await espaceDuCommentaire(req, doc);
   if (!espaceId) return;
   emettre(req, roomEquipe(espaceId), evenement, doc.toObject ? doc.toObject() : doc);
 }
 
-// Fabrique CRUD du noyau DRY : GET /, GET /:id, POST /, PUT /:id, DELETE /:id.
-// Lecture publique ; ecriture reservee aux membres connectes.
 module.exports = buildCrudRouter('Commentaire', CommentairesSchema, {
-  auth: { create: 'user', update: 'user', delete: 'user' },
+  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.commentaires.create,
     update: validateNova.commentaires.update,
+  },
+  middlewares: {
+    list: [filtrerParPages({ champs: ['pageId', 'blocId'] })],
+    get: [exigerAccesRessource({ modelName: 'Commentaire', schema: CommentairesSchema })],
+    create: [
+      exigerCommentaireNova,
+      verifierPayloadAcces({ droit: 'commentaire', exigerReference: true }),
+    ],
+    update: [
+      exigerCommentaireNova,
+      exigerAccesRessource({
+        modelName: 'Commentaire',
+        schema: CommentairesSchema,
+        droit: 'commentaire',
+        proprieteProprietaire: 'createdBy',
+        autoriserAdminProprietaire: true,
+      }),
+      verifierPayloadAcces({ droit: 'commentaire', exigerReference: true }),
+    ],
+    delete: [
+      exigerCommentaireNova,
+      exigerAccesRessource({
+        modelName: 'Commentaire',
+        schema: CommentairesSchema,
+        droit: 'commentaire',
+        proprieteProprietaire: 'createdBy',
+        autoriserAdminProprietaire: true,
+      }),
+    ],
   },
   crudOptions: {
     populateFields: '',
@@ -43,14 +74,21 @@ module.exports = buildCrudRouter('Commentaire', CommentairesSchema, {
       if (req.user?._id) {
         payload.createdBy = payload.createdBy || req.user._id;
         payload.updatedBy = req.user._id;
+        // L'auteur affiché est toujours le compte authentifié : interdiction
+        // d'usurper l'identité d'un autre membre via `auteurNom`.
+        payload.auteurNom = req.user.nom || req.user.name || payload.auteurNom;
       }
       return payload;
     },
     afterCreate: async ({ req, doc }) => {
       const espaceId = await espaceDuCommentaire(req, doc);
       if (!espaceId) return;
-      // Diffusion immédiate + notification d'activité aux autres membres.
-      emettre(req, roomEquipe(espaceId), 'commentaire:nouveau', doc.toObject ? doc.toObject() : doc);
+      emettre(
+        req,
+        roomEquipe(espaceId),
+        'commentaire:nouveau',
+        doc.toObject ? doc.toObject() : doc
+      );
       await notifierActiviteEquipe({
         req,
         espaceId,

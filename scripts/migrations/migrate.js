@@ -75,11 +75,16 @@ const unrecordMigration = async (db, name) => {
  * Exécute les migrations en attente
  * @param {MongoClient} client - Connexion MongoDB
  */
+const isDryRun = () => process.env.NOVA_MIGRATION_DRY_RUN === '1';
+
 const runMigrations = async (client) => {
   const db = client.db();
   const migrations = loadMigrations();
   const executed = await getExecutedMigrations(db);
   const pending = migrations.filter((m) => !executed.has(m.name));
+  const simulation = isDryRun();
+
+  if (simulation) console.log('[Migrate] MODE SIMULATION : aucun enregistrement ne sera écrit');
 
   if (pending.length === 0) {
     console.log('[Migrate] Aucune migration en attente');
@@ -98,8 +103,10 @@ const runMigrations = async (client) => {
 
       if (typeof mod.up === 'function') {
         await mod.up(client);
-        await recordMigration(db, migration.name);
-        console.log(`[Migrate] ✓ ${migration.name} réussie`);
+        // Une simulation ne doit jamais marquer une migration comme exécutée :
+        // sinon l'exécution réelle serait silencieusement ignorée ensuite.
+        if (!simulation) await recordMigration(db, migration.name);
+        console.log(`[Migrate] ✓ ${migration.name} ${simulation ? 'simulée' : 'réussie'}`);
       } else {
         console.error(`[Migrate] ✗ ${migration.name}: pas de fonction 'up' exportée`);
       }
@@ -109,7 +116,9 @@ const runMigrations = async (client) => {
     }
   }
 
-  console.log('\n[Migrate] Toutes les migrations exécutées avec succès');
+  console.log(simulation
+    ? '\n[Migrate] Simulation terminée — aucune migration enregistrée.'
+    : '\n[Migrate] Toutes les migrations exécutées avec succès');
 };
 
 /**
@@ -130,6 +139,8 @@ const rollbackLastMigration = async (client) => {
     console.log('[Migrate] Aucune migration à annuler');
     return;
   }
+  const simulation = isDryRun();
+  if (simulation) console.log('[Migrate] MODE SIMULATION : le statut ne sera pas modifié');
 
   try {
     console.log(`[Migrate] Annulation: ${lastExecuted.name}`);
@@ -137,8 +148,8 @@ const rollbackLastMigration = async (client) => {
 
     if (typeof mod.down === 'function') {
       await mod.down(client);
-      await unrecordMigration(db, lastExecuted.name);
-      console.log(`[Migrate] ✓ ${lastExecuted.name} annulée`);
+      if (!simulation) await unrecordMigration(db, lastExecuted.name);
+      console.log(`[Migrate] ✓ ${lastExecuted.name} ${simulation ? 'simulée' : 'annulée'}`);
     } else {
       console.error(`[Migrate] ✗ ${lastExecuted.name}: pas de fonction 'down' exportée`);
     }

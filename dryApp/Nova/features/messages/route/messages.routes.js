@@ -1,5 +1,12 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const { validateNova } = require('../../../validation/middleware');
+const {
+  exigerEditionNova,
+  filtrerEspacesMiddleware,
+  forcerProprietaire,
+  verifierPayloadAcces,
+  exigerAccesRessource,
+} = require('../../../services/acl.service');
 const MessagesSchema = require('../model/messages.schema');
 const {
   roomEquipe,
@@ -7,13 +14,11 @@ const {
   notifierActiviteEquipe,
 } = require('../../../services/tempsReel.service');
 
-/**
- * Messagerie temps réel d'un espace d'équipe.
- *
- * La liste est filtrée par `?espaceId=<id>` (géré par le queryBuilder du noyau).
- * À la création d'un message, on diffuse l'événement `message:nouveau` dans la
- * room de l'espace puis on notifie les autres membres.
- */
+const accesMessage = {
+  modelName: 'Message',
+  schema: MessagesSchema,
+};
+
 module.exports = buildCrudRouter('Message', MessagesSchema, {
   auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
@@ -21,10 +26,34 @@ module.exports = buildCrudRouter('Message', MessagesSchema, {
     create: validateNova.messages.create,
     update: validateNova.messages.update,
   },
+  middlewares: {
+    list: [filtrerEspacesMiddleware('espaceId')],
+    get: [exigerAccesRessource(accesMessage)],
+    create: [exigerEditionNova, forcerProprietaire('auteurId'), verifierPayloadAcces()],
+    update: [
+      exigerEditionNova,
+      exigerAccesRessource({
+        ...accesMessage,
+        droit: 'edition',
+        proprieteProprietaire: 'auteurId',
+        autoriserAdminProprietaire: true,
+      }),
+      verifierPayloadAcces(),
+    ],
+    delete: [
+      exigerEditionNova,
+      exigerAccesRessource({
+        ...accesMessage,
+        droit: 'edition',
+        proprieteProprietaire: 'auteurId',
+        autoriserAdminProprietaire: true,
+      }),
+    ],
+  },
   crudOptions: {
     transformInput: async ({ req, payload }) => {
       if (req.user?._id) {
-        payload.auteurId = payload.auteurId || req.user._id;
+        payload.auteurId = req.user._id;
         payload.createdBy = payload.createdBy || req.user._id;
         payload.updatedBy = req.user._id;
         if (!payload.auteurNom) payload.auteurNom = req.user.nom || req.user.name;
@@ -35,10 +64,7 @@ module.exports = buildCrudRouter('Message', MessagesSchema, {
     afterCreate: async ({ req, doc }) => {
       const message = doc.toObject ? doc.toObject() : doc;
       if (message.espaceId) {
-        // Diffusion immédiate aux clients connectés de l'espace.
         emettre(req, roomEquipe(message.espaceId), 'message:nouveau', message);
-
-        // Notification persistée pour les autres membres de l'équipe.
         await notifierActiviteEquipe({
           req,
           espaceId: message.espaceId,

@@ -17,7 +17,7 @@ const IaSchema = require('./features/ia/model/ia.schema');
 const MembresSchema = require('./features/membres/model/membres.schema');
 const VersionsSchema = require('./features/versions/model/versions.schema');
 const MessagesSchema = require('./features/messages/model/messages.schema');
-const { normaliserPermissions } = require('./features/membres/services/invitation.service');
+
 
 /**
  * Modeles Nova, dans l'ordre d'enregistrement.
@@ -47,54 +47,19 @@ const MODELS = [
 ];
 
 /**
- * Bootstrap Nova : compile tous les modeles sur le tenant de l'application.
+ * Bootstrap Nova : compile tous les modèles sur le tenant de l'application.
+ * Les droits étant désormais stockés dans les fiches `Membre` (une par
+ * workspace), aucune synchronisation vers le compte global n'est effectuée :
+ * le rôle DRY reste intact et les anciens champs nova* ne sont pas réécrits.
  *
  * @param {string} appName - nom du tenant (ici 'Nova')
  * @returns {Promise<Object>} map { NomModele: Modele Mongoose }
  */
-/**
- * Migration douce : reporte le rôle et les permissions des fiches Membre
- * existantes sur les comptes utilisateur qui n'ont pas encore de permissions
- * NOVA explicites. Évite qu'un invité antérieur conserve les droits complets.
- * Non bloquant : toute erreur est journalisée sans empêcher le démarrage.
- */
-async function synchroniserMembresExistants(appName, Membre) {
-  try {
-    const User = getModel(appName, 'User');
-    const membres = await Membre.find({ deletedAt: null })
-      .select('email role permissions utilisateurId')
-      .lean();
-
-    let synchronises = 0;
-    for (const membre of membres) {
-      if (!membre?.email) continue;
-      const utilisateur = membre.utilisateurId
-        ? await User.findById(membre.utilisateurId)
-        : await User.findOne({ email: String(membre.email).trim().toLowerCase() });
-      if (!utilisateur || utilisateur.role === 'superadmin' || utilisateur.novaPermissions) continue;
-
-      const role = membre.role || 'membre';
-      utilisateur.role = role === 'admin' ? 'admin' : 'user';
-      utilisateur.novaRole = role;
-      utilisateur.novaPermissions = normaliserPermissions(role, membre.permissions);
-      await utilisateur.save();
-      synchronises += 1;
-    }
-
-    if (synchronises > 0) {
-      console.log(`   ✅ Permissions NOVA synchronisées pour ${synchronises} compte(s) membre(s)`);
-    }
-  } catch (e) {
-    console.warn(`   ⚠️  Synchronisation des permissions NOVA impossible: ${e.message}`);
-  }
-}
-
 const bootstrap = async (appName) => {
   const models = {};
   for (const [modelName, schema] of MODELS) {
     models[modelName] = getModel(appName, modelName, schema);
   }
-  await synchroniserMembresExistants(appName, models.Membre);
   return models;
 };
 

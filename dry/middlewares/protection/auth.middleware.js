@@ -53,6 +53,29 @@ const resolveUserFromToken = async (req, res, token) => {
             return sendResponse(res, null, 'Compte désactivé', false, undefined, 403);
         }
 
+        // NOVA : les droits sont locaux à chaque espace de travail. On charge
+        // toutes les appartenances actives du compte ; l'ACL choisit ensuite
+        // celle du workspace courant (en-tête `X-Workspace-Id`). Aucune donnée
+        // n'est déduite du rôle global DRY ni des anciens champs novaRole.
+        if (req.appName === 'Nova' && typeof req.getModel === 'function') {
+            try {
+                const Membre = req.getModel('Membre');
+                req.novaMembres = await Membre.find({
+                    deletedAt: null,
+                    status: { $ne: 'deleted' },
+                    $or: [
+                        { utilisateurId: req.user._id },
+                        { utilisateurId: { $exists: false }, email: String(req.user.email || '').toLowerCase() },
+                    ],
+                }).select('workspaceId role permissions espaceIds').lean();
+            } catch (e) {
+                // Fail-closed : une panne de lecture des appartenances ne doit
+                // jamais accorder de privilège. L'erreur est journalisée.
+                req.novaMembres = [];
+                console.warn(`[protect] Chargement des appartenances NOVA impossible : ${e.message}`);
+            }
+        }
+
         return true;
     } catch (err) {
         return sendResponse(res, null, 'Non autorisé, token invalide', false, undefined, 401);

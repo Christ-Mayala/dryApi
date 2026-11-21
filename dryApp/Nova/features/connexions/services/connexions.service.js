@@ -11,7 +11,59 @@
  * renvoyé comme un test en échec, l'API répondant toujours en succès.
  */
 
+const dns = require('dns').promises;
+const net = require('net');
+
 const DELAI_MAX_MS = 8000;
+
+/**
+ * Hôtes de webhook autorisés. La valeur par défaut est volontairement
+ * restrictive (Slack) : une intégration supplémentaire doit être ajoutée
+ * explicitement dans l'environnement du serveur, jamais par un simple
+ * utilisateur via le champ `config`.
+ */
+const HOTES_WEBHOOK = (process.env.NOVA_WEBHOOK_HOSTS || 'hooks.slack.com')
+  .split(',')
+  .map((h) => h.trim().toLowerCase())
+  .filter(Boolean);
+
+/** True pour une adresse IP loopback/privée/réservée (cible SSRF classique). */
+function estAdressePrivee(adresse) {
+  const ip = String(adresse || '').toLowerCase();
+  if (ip.startsWith('::ffff:')) return estAdressePrivee(ip.slice(7));
+  if (ip === '::1' || ip === 'unspecified' || ip === '0.0.0.0') return true;
+  if (net.isIPv6(ip)) return /^(fc|fd|fe[89ab])/i.test(ip) || ip.startsWith('::');
+  if (!net.isIPv4(ip)) return true;
+
+  const [a, b] = ip.split('.').map(Number);
+  if (a === 10 || a === 127 || a === 0) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true;
+  if (a === 198 && (b === 18 || b === 19)) return true;
+  if (a >= 224) return true;
+  return false;
+}
+
+/** Valide l'URL d'un webhook avant tout appel réseau (protection SSRF). */
+async function estUrlWebhookAutorisee(url) {
+  let parsed;
+  try {
+    parsed = new URL(String(url));
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:') return false;
+  if (parsed.username || parsed.password) return false;
+  const hote = parsed.hostname.toLowerCase().replace(/\.$/, '');
+  if (!HOTES_WEBHOOK.includes(hote)) return false;
+
+  if (net.isIP(hote)) return !estAdressePrivee(hote);
+  const resolutions = await dns.lookup(hote, { all: true });
+  if (!resolutions.length) return false;
+  return resolutions.every(({ address }) => !estAdressePrivee(address));
+}
 
 /** Exécute un `fetch` avec un délai maximal, en libérant le minuteur ensuite. */
 async function avecDelai(url, options = {}) {
@@ -49,6 +101,13 @@ async function testerConnexion(connexion) {
         const webhook = valeurConfig(config, 'webhook');
         if (!webhook) {
           return { supporte: true, ok: false, message: 'Renseignez l’URL de webhook Slack.' };
+        }
+        if (!(await estUrlWebhookAutorisee(webhook))) {
+          return {
+            supporte: true,
+            ok: false,
+            message: 'URL de webhook refusée : seul un hôte HTTPS autorisé par l’administrateur peut être testé.',
+          };
         }
         const reponse = await avecDelai(webhook, {
           method: 'POST',
@@ -126,4 +185,4 @@ async function testerConnexion(connexion) {
   }
 }
 
-module.exports = { testerConnexion };
+module.exports = { testerConnexion, estUrlWebhookAutorisee, estAdressePrivee };

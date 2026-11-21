@@ -7,6 +7,7 @@ const os = require('os');
 const config = require('../../../../../config/database');
 const sendResponse = require('../../../../../dry/utils/http/response');
 const { protect } = require('../../../../../dry/middlewares/protection/auth.middleware');
+const { exigerEditionNova, verifierPayloadAcces } = require('../../../services/acl.service');
 
 const router = express.Router();
 
@@ -107,7 +108,13 @@ const televerser = (req, res, next) => {
 };
 
 // POST /api/v1/nova/medias — televersement authentifie d'un media local.
-router.post('/', protect, televerser, (req, res, next) => {
+router.post(
+  '/',
+  protect,
+  exigerEditionNova,
+  verifierPayloadAcces(),
+  televerser,
+  (req, res, next) => {
   try {
     if (!req.file) {
       return sendResponse(
@@ -143,6 +150,7 @@ router.post('/', protect, televerser, (req, res, next) => {
   } catch (erreur) {
     return next(erreur);
   }
-});
+  }
+);
 
 module.exports = router;

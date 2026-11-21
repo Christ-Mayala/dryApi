@@ -1,22 +1,39 @@
 const { buildCrudRouter } = require('../../../../../dry/core/factories/routerFactory');
 const { validateNova } = require('../../../validation/middleware');
-const { exigerPartageNova } = require('../../../services/acl.service');
+const {
+  exigerPartageNova,
+  filtrerParPages,
+  verifierPayloadAcces,
+  exigerAccesRessource,
+} = require('../../../services/acl.service');
 const PublicationsSchema = require('../model/publications.schema');
 const { notifierNouvellesInvitations } = require('../services/invitations.service');
 
-// Fabrique CRUD du noyau DRY : GET /, GET /:id, POST /, PUT /:id, DELETE /:id.
-// Lecture publique ; ecriture reservee au proprietaire ou a un administrateur.
+const accesPublication = {
+  modelName: 'Publication',
+  schema: PublicationsSchema,
+};
+
 module.exports = buildCrudRouter('Publication', PublicationsSchema, {
-  auth: { create: 'user', update: 'user', delete: 'user' },
+  auth: { list: 'user', get: 'user', create: 'user', update: 'user', delete: 'user' },
   caching: { list: 0, get: 0 },
   validation: {
     create: validateNova.publications.create,
     update: validateNova.publications.update,
   },
   middlewares: {
-    create: [exigerPartageNova],
-    update: [exigerPartageNova],
-    delete: [exigerPartageNova],
+    list: [exigerPartageNova, filtrerParPages()],
+    get: [exigerPartageNova, exigerAccesRessource(accesPublication)],
+    create: [exigerPartageNova, verifierPayloadAcces()],
+    update: [
+      exigerPartageNova,
+      exigerAccesRessource({ ...accesPublication, droit: 'edition' }),
+      verifierPayloadAcces(),
+    ],
+    delete: [
+      exigerPartageNova,
+      exigerAccesRessource({ ...accesPublication, droit: 'edition' }),
+    ],
   },
   crudOptions: {
     populateFields: '',
@@ -27,7 +44,6 @@ module.exports = buildCrudRouter('Publication', PublicationsSchema, {
       }
       return payload;
     },
-    // Invitations : notifie par email les personnes nouvellement invitées.
     afterCreate: async ({ req, doc }) => {
       if (doc?.invites?.length) await notifierNouvellesInvitations({ req, publication: doc });
     },
