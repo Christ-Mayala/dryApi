@@ -150,11 +150,11 @@ $env:CLOUDFLARE_API_TOKEN = '<jeton Pages:Edit>'
 npx wrangler pages deploy '.vercel\output\static' --project-name novaworkspace --branch main --commit-dirty=true
 ```
 
-Trois correctifs locaux dans `node_modules` ont été nécessaires sous Windows (ils sont perdus lors d'un `npm install` et devront être reappliqués ou portés par un script de patch) :
+Trois correctifs locaux dans `node_modules` ont été nécessaires sous Windows (ils sont perdus lors d'un `npm install`). Le script idempotent `scripts/patch-cloudflare-pages-windows.cjs` les reapplique automatiquement via `npm run build:pages` ; il peut aussi être lancé seul avec `npm run patch:pages`. `npm run deploy:pages` enchaîne le patch, le build et le déploiement sur `novaworkspace` (les artefacts `.vercel/` sont ignorés par Git) :
 
 1. `@vercel/next/dist/index.js` : normaliser les séparateurs `\` en `/` dans les clés de page/lambda (`pageName`, `pathname`) et utiliser `path.posix.join` pour les clés de lambdas ; sans cela : `Unable to find lambda for route`.
 2. `vercel/dist/index.js` : `writeFunctionSymlink` copie le répertoire au lieu de créer un symlink ; sans cela : `EPERM: operation not permitted, symlink ...` (Windows sans mode développeur).
-3. `bash` de Git for Windows dans le `PATH` pour le CLI next-on-pages.
+3. `bash` de Git for Windows dans le `PATH` pour le CLI next-on-pages : `$env:PATH = 'C:\Program Files\Git\bin;' + $env:PATH` (prérequis hors script npm).
 
 `DRY_API_URL` est lu au build par `next.config.mjs` pour les rewrites `/api`, `/v1`, `/socket.io` ; les `NEXT_PUBLIC_*` sont inlinées au build. Le dashboard Cloudflare ne suffit pas. Le backend Render doit autoriser `https://novaworkspace.pages.dev` (et l'ancienne origine Workers tant qu'elle reste publiée) dans `CORS_ORIGINS` / `ALLOWED_ORIGINS` pour Socket.IO et l'assistant IA directs. `render.yaml` a été mis à jour et poussé sur `origin/main`.
 

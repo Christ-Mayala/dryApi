@@ -40,6 +40,7 @@ Chaque utilisateur est un compte ordinaire. **Créer un espace de travail le ren
 | W6 | Tour complet des fonctionnalités avec chrome-devtools (DOM, console, réseau) | TERMINÉ |
 | W7 | Déploiement frontend Cloudflare via Wrangler (sans commit/push) | TERMINÉ |
 | W8 | Migration vers Cloudflare Pages et URL `novaworkspace.pages.dev` (sans nom de compte) | TERMINÉ |
+| W9 | Build Pages reproductible (`npm run build:pages` / `deploy:pages`) et documentation de sécurité du déploiement | TERMINÉ |
 
 ## Décisions techniques retenues
 

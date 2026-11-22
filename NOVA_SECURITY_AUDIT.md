@@ -131,7 +131,7 @@ Ils partagent la même vérification : page existante, publication `actif: true`
 | Effet `afterCreate` critique propagé | `tests/unit/factories/crudFactory.softDelete.test.js` | OK |
 | Parcours navigateur réels (DOM/console/réseau) | chrome-devtools sur `localhost:3000` | 22 routes sans « Accès refusé » ni erreur API ; seule la 404 externe de l'avatar Cloudinary |
 
-`node --check`, ESLint et Prettier sur les fichiers modifiés sont également passés. `npm run typecheck` et `npm run build` (22 pages) passent côté frontend. Voir `NOVA_PROJECT_STATUS.md` pour les commandes exactes.
+`node --check`, ESLint et Prettier sur les fichiers modifiés sont également passés. `npm run typecheck` et le build Pages (`vercel build` + `next-on-pages --skip-build`, 23 routes Edge) passent côté frontend. Voir `NOVA_PROJECT_STATUS.md` pour les commandes exactes.
 
 ## 5. Risques résiduels et limites de l'audit
 
@@ -143,3 +143,11 @@ Ils partagent la même vérification : page existante, publication `actif: true`
 - `npm run lint` frontend reste non vérifiable en non-interactif (`next lint` demande une configuration ESLint) ; la phase lint/type du build passe.
 - Le fournisseur LLM, la clé de chiffrement et la liste `NOVA_WEBHOOK_HOSTS` restent à configurer par un responsable ; aucun secret ni configuration sensible n'a été écrit.
 - L'audit REA de Notion Desktop est distinct et non bloquant : aucun lancement, aucune lecture de profil privé, aucune inférence à partir d'artefacts non observés.
+
+## 6. Sécurité du déploiement Cloudflare (22/11/2026)
+
+- Origine active : `https://novaworkspace.pages.dev` (Pages `novaworkspace`). `render.yaml` l'autorise dans `FRONTEND_URL`, `ALLOWED_ORIGINS` et `CORS_ORIGINS`, en plus de l'ancienne origine Worker conservée pour retour arrière. Retirer l'ancienne origine et mettre hors service le Worker `nova-workspace` une fois la migration confirmée réduit la surface d'exposition.
+- Aucun secret applicatif n'a été modifié : le backend reste sur Render, les variables `NEXT_PUBLIC_*` et `DRY_API_URL` sont injectées au build. Le modèle de permissions reste inchangé par le déploiement (toujours workspace-scoped, fail-closed).
+- Un jeton API Cloudflare a été saisi dans la conversation pour créer et publier les projets. Il doit être **révoqué** (Cloudflare → My Profile → API Tokens) ; aucune révocation n'a été effectuée sans autorisation explicite.
+- La zone `workspace.dev` créée chez Cloudflare reste `pending` et non déléguée (DNS chez AWS Route 53) : aucune route ne l'utilise. Le projet Pages au suffixe `-25z` est également inutilisé.
+- Vérifications après publication : 6 routes en 200, `GET /api/v1/nova/workspaces` en 401 (rewrite vers Render), hydratation et redirection vers `/connexion?suivant=%2F` dans Chrome sans erreur console. Les parcours **authentifiés** n'ont pas été rejoués sur l'URL Pages (aucun compte de test fourni) ; ils restent validés sur `localhost:3000`.
