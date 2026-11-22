@@ -118,34 +118,54 @@ npm run migrate:up
    - l'invitation et la révocation d'un membre ne modifient que le workspace courant.
 7. Exécution des suites d'intégration/E2E automatisées dans un environnement dédié. Les parcours ont été vérifiés manuellement avec chrome-devtools en développement : 22 routes sans « Accès refusé » ni erreur API, création et bascule de workspace, cloisonnement des pages, page privée en 200 pour son créateur et 403 pour un autre workspace.
 
-## 5. Déploiement frontend sur Cloudflare (effectué le 2026-11-21)
+## 5. Déploiement frontend Cloudflare (effectué les 21-22/11/2026)
 
-Le frontend a été publié **du dépôt de travail local** via Wrangler (pas de commit ni de push Git) :
+### 5.1 URL retenue (active)
 
-- Worker : `nova-workspace`
-- URL publique : `https://nova-workspace.mayalachristgottlieb-cc9.workers.dev`
-- Version ID : `f8e5b34f-d1f9-46db-b34e-122fc6c463c2`
-- Adaptateur : `@opennextjs/cloudflare@1.15.1` (compatible Next 14.2.35), Wrangler `4.166.0`
-- Fichiers ajoutés : `open-next.config.ts` (cache dummy, aucun R2), `wrangler.jsonc`, `public/_headers` ; scripts `deploy:cloudflare`, `preview:cloudflare`, `upload:cloudflare`, `cf-typegen`.
+- **Pages** : `https://novaworkspace.pages.dev` (projet Cloudflare Pages `novaworkspace`, id `985deb74-f15a-4cb1-93ba-cd2fcd398577`, branche de production `main`).
+- Déploiement courant : `https://6ccd9cc6.novaworkspace.pages.dev`.
+- Le nom `nova-workspace.pages.dev` était déjà pris : Cloudflare a attribué un suffixe aléatoire au premier projet (`nova-workspace-25z.pages.dev`). Le projet `novaworkspace` (sans tiret) a été créé pour obtenir une URL propre, sans nom de compte ni suffixe.
+- Adaptateur : `@cloudflare/next-on-pages@1.13.15` (la 1.13.16 exige Next ≥ 14.3, or le projet est en 14.2.35), `vercel@46.1.1`, Wrangler `4.166.0`.
+- `src/app/layout.tsx` exporte désormais `runtime = 'edge'` : l'application n'a aucune logique serveur Node, et l'adaptateur Pages exige le runtime Edge pour les 23 routes dynamiques.
 
-Commandes utilisées (build puis déploiement, avec le serveur de dev arrêté pour libérer `.next`) :
+### 5.2 Ancien déploiement Worker (toujours en ligne, non supprimé)
+
+- Worker `nova-workspace`, `https://nova-workspace.mayalachristgottlieb-cc9.workers.dev`, version `f8e5b34f-d1f9-46db-b34e-122fc6c463c2`.
+- Construit avec `@opennextjs/cloudflare@1.15.1` et déployé via `npx opennextjs-cloudflare deploy -- --keep-vars`.
+- `open-next.config.ts` (cache dummy, aucun R2), `wrangler.jsonc`, `public/_headers`, scripts `deploy:cloudflare`, `preview:cloudflare`, `upload:cloudflare`, `cf-typegen` restent présents pour un retour arrière.
+- Le sous-domaine `workers.dev` du compte ne peut plus être changé (code Cloudflare 10036 : modification unique déjà consommée).
+
+### 5.3 Commandes de build et de publication Pages
+
+Le serveur de dev doit être arrêté (`.next` est partagé). Sous Windows, Git Bash doit être dans le `PATH` (le CLI appelle `bash --noprofile --norc`).
 
 ```powershell
+$env:PATH = 'C:\Program Files\Git\bin;' + $env:PATH
 $env:DRY_API_URL = 'https://dryapi.onrender.com'
 $env:NEXT_PUBLIC_SOCKET_URL = 'https://dryapi.onrender.com'
 $env:NEXT_PUBLIC_DRY_API_URL = 'https://dryapi.onrender.com'
-npx opennextjs-cloudflare build
-npx opennextjs-cloudflare deploy -- --keep-vars
+npx vercel build --yes
+npx @cloudflare/next-on-pages --skip-build
+$env:CLOUDFLARE_API_TOKEN = '<jeton Pages:Edit>'
+npx wrangler pages deploy '.vercel\output\static' --project-name novaworkspace --branch main --commit-dirty=true
 ```
 
-Points importants :
+Trois correctifs locaux dans `node_modules` ont été nécessaires sous Windows (ils sont perdus lors d'un `npm install` et devront être reappliqués ou portés par un script de patch) :
 
-- `DRY_API_URL` est lu par `next.config.mjs` **au build** pour les rewrites `/api`, `/v1` et `/socket.io` : le définir seulement dans le dashboard Cloudflare ne suffit pas. Les variables `NEXT_PUBLIC_*` sont également inlinées au build. Il faut donc fournir les mêmes valeurs au build (local ou Workers Builds → « Build variables and secrets »).
-- `--keep-vars` préserve les variables définies dans le dashboard Cloudflare lors des prochains déploiements.
-- Le backend Render doit autoriser l'origine `https://nova-workspace.mayalachristgottlieb-cc9.workers.dev` dans `CORS_ORIGINS` / `ALLOWED_ORIGINS` : le client appelle directement `https://dryapi.onrender.com` pour Socket.IO et pour l'assistant IA (`NEXT_PUBLIC_*`), en dehors des rewrites same-origin.
-- OpenNext avertit que le support Windows n'est pas optimal (conseil WSL) ; le build et le déploiement ont néanmoins réussi ici.
+1. `@vercel/next/dist/index.js` : normaliser les séparateurs `\` en `/` dans les clés de page/lambda (`pageName`, `pathname`) et utiliser `path.posix.join` pour les clés de lambdas ; sans cela : `Unable to find lambda for route`.
+2. `vercel/dist/index.js` : `writeFunctionSymlink` copie le répertoire au lieu de créer un symlink ; sans cela : `EPERM: operation not permitted, symlink ...` (Windows sans mode développeur).
+3. `bash` de Git for Windows dans le `PATH` pour le CLI next-on-pages.
 
-Vérifications après publication : `GET /`, `/connexion`, `/recherche`, `/parametres/membres`, `/sw.js`, `/manifest.webmanifest` → **200** ; la page hydrate dans Chrome et redirige vers `/connexion` sans session ; `GET /api/v1/nova/workspaces` → **401** depuis le backend Render, ce qui confirme que le rewrite fonctionne. Le serveur de développement local a été relancé après le build.
+`DRY_API_URL` est lu au build par `next.config.mjs` pour les rewrites `/api`, `/v1`, `/socket.io` ; les `NEXT_PUBLIC_*` sont inlinées au build. Le dashboard Cloudflare ne suffit pas. Le backend Render doit autoriser `https://novaworkspace.pages.dev` (et l'ancienne origine Workers tant qu'elle reste publiée) dans `CORS_ORIGINS` / `ALLOWED_ORIGINS` pour Socket.IO et l'assistant IA directs. `render.yaml` a été mis à jour et poussé sur `origin/main`.
+
+### 5.4 Vérifications après publication
+
+`GET /`, `/connexion`, `/recherche`, `/parametres/membres`, `/sw.js`, `/manifest.webmanifest` → **200** sur `novaworkspace.pages.dev` ; `GET /api/v1/nova/workspaces` → **401** (rewrite vers Render confirmé). Dans Chrome : hydratation OK, redirection vers `/connexion?suivant=%2F`, aucune erreur console (seuls des avertissements PWA mineurs). Le serveur de dev local doit être relancé séparément.
+
+### 5.5 Points à nettoyer côté Cloudflare
+
+- La zone `workspace.dev` a été créée (id `fe1a74cadecac33d1092e4bde2859ab0`, `pending`) avec les enregistrements A existants recréés, mais elle n'est pas déléguée : aucun accès à la DNS AWS Route 53 n'était disponible. Elle n'est utilisée par aucun déploiement.
+- Le token API créé pour cette configuration a été exposé dans la conversation : il doit être **révoqué** dans Cloudflare → My Profile → API Tokens.
 
 ## 6. Opérations interdites sans accord
 

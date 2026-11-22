@@ -1,6 +1,16 @@
 # NOVA — journal des modifications
 
-Toutes les entrées ci-dessous sont datées du 2026-11-21 et concernent des modifications **locales, non commitées**, dans `D:\Alvine\dryApi` et `D:\Alvine\notion`. Le frontend a en revanche été **déployé sur Cloudflare** depuis cet état de travail local (sans commit ni push).
+Les entrées ci-dessous concernent `D:\Alvine\dryApi` et `D:\Alvine\notion`. Le backend a été commité et poussé sur `origin/main` (commit `96f5105`, puis mise à jour des origines Render). Le frontend reste **non commité** mais a été publié directement sur Cloudflare depuis l'état de travail local.
+
+## 2026-11-22 — Migration frontend Cloudflare Pages (URL propre)
+
+- Le sous-domaine `workers.dev` du compte ne pouvant pas être changé (erreur 10036) et la DNS de `workspace.dev` étant inaccessible (AWS Route 53 hors de portée), le frontend a été migré vers Cloudflare Pages à la demande de l'utilisateur.
+- Dépendances installées : `@cloudflare/next-on-pages@1.13.15` (compatible Next 14.2.35), `vercel@46.1.1`, `@cloudflare/workers-types` via Wrangler. Le CLI OpenNext est conservé pour le retour arrière.
+- `src/app/layout.tsx` exporte `runtime = 'edge'` : les 23 routes sont servies par des Pages Functions Edge (aucune logique Node dans l'application).
+- Build Vercel → next-on-pages réussi après trois correctifs locaux Windows (clés de lambda en `posix.join`, copie au lieu de symlink, `bash` de Git dans le `PATH`) ; détails dans `NOVA_DEPLOYMENT.md` §5.
+- **URL finale : `https://novaworkspace.pages.dev`** (projet `novaworkspace`). `nova-workspace.pages.dev` était déjà occupé ; le premier projet a reçu le suffixe `-25z` et reste en ligne sans être utilisé.
+- Vérifications : 6 routes HTTP en 200, rewrite `/api` → Render (401), hydratation Chrome et redirection `/connexion?suivant=%2F`, aucune erreur console.
+- `render.yaml` autorise désormais l'origine Pages en plus de l'ancienne origine Workers ; changement poussé sur `origin/main`. La zone `workspace.dev` créée mais non déléguée reste inactive ; le token API utilisé pour la configuration doit être révoqué.
 
 ## 2026-11-21 — Déploiement frontend Cloudflare (frontend uniquement)
 

@@ -1,12 +1,12 @@
 # NOVA — suivi d'exécution
 
-Dernière mise à jour : 2026-11-21.
+Dernière mise à jour : 2026-11-22.
 
 - Backend : `D:\Alvine\dryApi` (CommonJS, Express 5, Mongoose 9, Jest 30).
 - Frontend : `D:\Alvine\notion` (`nova-workspace`, Next.js 14.2.35, TypeScript).
-- Les deux dépôts étaient propres au démarrage. Toutes les modifications ci-dessous sont locales et **non commitées** ; aucun push Git n'a été effectué. Le frontend a été publié sur Cloudflare depuis cet état de travail via Wrangler.
-- `@opennextjs/cloudflare@1.15.1` et `wrangler@4.166.0` ont été installés côté frontend avec accord. Aucune donnée de production modifiée. Les serveurs locaux (backend nodemon et frontend Next.js sur `localhost:3000`) ont été relancés après réparation du cache de développement et après le build Cloudflare.
-- Frontend déployé : Worker `nova-workspace`, `https://nova-workspace.mayalachristgottlieb-cc9.workers.dev` (version `f8e5b34f-d1f9-46db-b34e-122fc6c463c2`). Le backend reste sur Render, sans changement de configuration sensible.
+- Backend : commité et poussé sur `origin/main` (commit `96f5105`, puis mise à jour de `render.yaml` avec les origines autorisées). Frontend : modifications **non commitées**, publiées directement sur Cloudflare depuis l'état de travail local.
+- `@opennextjs/cloudflare@1.15.1`, `wrangler@4.166.0`, `@cloudflare/next-on-pages@1.13.15` et `vercel@46.1.1` ont été installés côté frontend avec accord. Aucune donnée de production modifiée. Les serveurs locaux ont été arrêtés pour les builds puis doivent être relancés.
+- Frontend actif : **Cloudflare Pages `novaworkspace` → `https://novaworkspace.pages.dev`** (23 routes Edge). Ancien déploiement Worker `nova-workspace` → `https://nova-workspace.mayalachristgottlieb-cc9.workers.dev` (version `f8e5b34f-d1f9-46db-b34e-122fc6c463c2`) conservé pour retour arrière. Le backend reste sur Render.
 - Une seule migration réelle a été exécutée, sur la base de développement `NovaDB` uniquement et avec accord explicite : la migration 006 (retrait de l'ancien index global `email_1`). Aucun document modifié. Les migrations 004 et 005 restent non exécutées.
 
 ## Modèle de droits retenu (refonte workspace-scoped)
@@ -39,6 +39,7 @@ Chaque utilisateur est un compte ordinaire. **Créer un espace de travail le ren
 | W5 | Création de workspace fiable : `afterCreate` critique, archivage en cas d'échec, migration 006 locale de l'index `email_1` | TERMINÉ et vérifié en navigateur réel |
 | W6 | Tour complet des fonctionnalités avec chrome-devtools (DOM, console, réseau) | TERMINÉ |
 | W7 | Déploiement frontend Cloudflare via Wrangler (sans commit/push) | TERMINÉ |
+| W8 | Migration vers Cloudflare Pages et URL `novaworkspace.pages.dev` (sans nom de compte) | TERMINÉ |
 
 ## Décisions techniques retenues
 
